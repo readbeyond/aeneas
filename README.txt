@@ -58,8 +58,7 @@ System Requirements
    (``pip install ...``)
 4. ``ffmpeg`` and ``ffprobe`` executables installed
    (``apt-get install ffmpeg*``)
-5. ``espeak`` executable installed installed
-   (``apt-get install espeak*``)
+5. ``espeak`` executable installed (``apt-get install espeak*``)
 
 Depending on the format(s) of audio files you work with, you might need
 to install additional audio codecs for ``ffmpeg``. Similarly, you might
@@ -166,6 +165,9 @@ Supported Features
 -  Input audio file formats: all those supported by ``ffmpeg``
 -  Batch processing
 -  Output sync map formats: CSV, JS, SMIL, TTML, TXT, VTT, XML
+-  Supported (= tested) languages: BG, CA, CY, DA, DE, EL, EN, ES, ET,
+   FI, FR, GA, GRC, HR, HU, IS, IT, LA, LT, LV, NL, NO, RO, RU, PL, PT,
+   SK, SR, SV, TR, UK
 -  Robust against misspelled/mispronounced words, local rearrangements
    of words, background noise/sporadic spikes
 -  Code suitable for a Web app deployment (e.g., on-demand AWS
@@ -302,7 +304,7 @@ Overlays (SMIL files) computed automatically by this package
 
 **July 2013**: incorporation of ReadBeyond Srl
 
-**July 2013-March 2014**: development of ReadBeyond Sync, a SasS version
+**July 2013-March 2014**: development of ReadBeyond Sync, a SaaS version
 of this package, exposing the alignment function via APIs and a Web
 application
 
