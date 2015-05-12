@@ -1,0 +1,1 @@
+This text contains ISO 8859 (LATIN1) characters like אטלעש and ביםףת. 

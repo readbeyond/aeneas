@@ -1,0 +1,44 @@
+<?xml version = "1.0" encoding="UTF-8" standalone="no"?>
+<job>
+    <job_language>en</job_language>
+    <job_description>Example 7 (XML, multiple languages, multiple output formats)</job_description>
+    <tasks>
+        <task>
+            <task_language>en</task_language>
+            <task_description>Sonnet 1</task_description>
+            <task_custom_id>sonnet001</task_custom_id>
+            <is_text_file>OEBPS/Resources/en.txt</is_text_file>
+            <is_text_type>parsed</is_text_type>
+            <is_audio_file>OEBPS/Resources/en.mp3</is_audio_file>
+            <os_task_file_name>en.smil</os_task_file_name>
+            <os_task_file_format>smil</os_task_file_format>
+            <os_task_file_smil_page_ref>en.xhtml</os_task_file_smil_page_ref>
+            <os_task_file_smil_audio_ref>en.mp3</os_task_file_smil_audio_ref>
+        </task>
+        <task>
+            <task_language>de</task_language>
+            <task_description>Simplicissimus</task_description>
+            <task_custom_id>simplicissimus</task_custom_id>
+            <is_text_file>OEBPS/Resources/de.txt</is_text_file>
+            <is_text_type>parsed</is_text_type>
+            <is_audio_file>OEBPS/Resources/de.mp3</is_audio_file>
+            <os_task_file_name>de.csv</os_task_file_name>
+            <os_task_file_format>csv</os_task_file_format>
+        </task>
+        <task>
+            <task_language>es</task_language>
+            <task_description>Capitan Veneno</task_description>
+            <task_custom_id>capitan veneno</task_custom_id>
+            <is_text_file>OEBPS/Resources/es.txt</is_text_file>
+            <is_text_type>parsed</is_text_type>
+            <is_audio_file>OEBPS/Resources/es.mp3</is_audio_file>
+            <os_task_file_name>es.srt</os_task_file_name>
+            <os_task_file_format>srt</os_task_file_format>
+        </task>
+    </tasks>
+    <os_job_file_name>output_example7</os_job_file_name>
+    <os_job_file_container>zip</os_job_file_container>
+    <os_job_file_hierarchy_type>flat</os_job_file_hierarchy_type>
+    <os_job_file_hierarchy_prefix>OEBPS/Resources/</os_job_file_hierarchy_prefix>
+</job>
+

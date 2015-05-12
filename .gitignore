@@ -1,0 +1,11 @@
+*.py[cdo]
+*.swp
+MANIFEST
+bak
+dist
+docs/build
+tmp
+
+zzz_*.py
+zzz_*.sh
+

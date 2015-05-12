@@ -1,0 +1,7 @@
+<h1 id="f001">1</span></h1>
+<p>
+<span id="f2">From fairest creatures we desire increase,</span><br/>
+<span id="f003">That thereby beauty's rose might never die,</span><br/>
+<span id="f4">But as the riper should by time decease,</span><br/>
+<span id="f050">His tender heir might bear his memory:</span><br/>
+</p>

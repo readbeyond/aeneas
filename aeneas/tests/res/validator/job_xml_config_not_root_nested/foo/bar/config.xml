@@ -1,0 +1,48 @@
+<?xml version = "1.0" encoding="UTF-8" standalone="no"?>
+<job>
+    <job_language>en</job_language>
+    <job_description>Example 4 (XML, flat hierarchy, parsed text files)</job_description>
+    <tasks>
+        <task>
+            <task_language>en</task_language>
+            <task_description>Sonnet 1</task_description>
+            <task_custom_id>sonnet001</task_custom_id>
+            <is_text_file>OEBPS/Resources/sonnet001.txt</is_text_file>
+            <is_text_type>parsed</is_text_type>
+            <is_audio_file>OEBPS/Resources/sonnet001.mp3</is_audio_file>
+            <os_task_file_name>sonnet001.smil</os_task_file_name>
+            <os_task_file_format>smil</os_task_file_format>
+            <os_task_file_smil_page_ref>sonnet001.xhtml</os_task_file_smil_page_ref>
+            <os_task_file_smil_audio_ref>sonnet001.mp3</os_task_file_smil_audio_ref>
+        </task>
+        <task>
+            <task_language>en</task_language>
+            <task_description>Sonnet 2</task_description>
+            <task_custom_id>sonnet002</task_custom_id>
+            <is_text_file>OEBPS/Resources/sonnet002.txt</is_text_file>
+            <is_text_type>parsed</is_text_type>
+            <is_audio_file>OEBPS/Resources/sonnet002.mp3</is_audio_file>
+            <os_task_file_name>sonnet002.smil</os_task_file_name>
+            <os_task_file_format>smil</os_task_file_format>
+            <os_task_file_smil_page_ref>sonnet002.xhtml</os_task_file_smil_page_ref>
+            <os_task_file_smil_audio_ref>sonnet002.mp3</os_task_file_smil_audio_ref>
+        </task>
+        <task>
+            <task_language>en</task_language>
+            <task_description>Sonnet 3</task_description>
+            <task_custom_id>sonnet003</task_custom_id>
+            <is_text_file>OEBPS/Resources/sonnet003.txt</is_text_file>
+            <is_text_type>parsed</is_text_type>
+            <is_audio_file>OEBPS/Resources/sonnet003.mp3</is_audio_file>
+            <os_task_file_name>sonnet003.smil</os_task_file_name>
+            <os_task_file_format>smil</os_task_file_format>
+            <os_task_file_smil_page_ref>sonnet003.xhtml</os_task_file_smil_page_ref>
+            <os_task_file_smil_audio_ref>sonnet003.mp3</os_task_file_smil_audio_ref>
+        </task>
+    </tasks>
+    <os_job_file_name>output_example4</os_job_file_name>
+    <os_job_file_container>zip</os_job_file_container>
+    <os_job_file_hierarchy_type>flat</os_job_file_hierarchy_type>
+    <os_job_file_hierarchy_prefix>OEBPS/Resources/</os_job_file_hierarchy_prefix>
+</job>
+

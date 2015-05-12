@@ -1,0 +1,48 @@
+<!ELEMENT job (job_language?,
+               job_description?,
+               tasks,
+               os_job_file_name,
+               os_job_file_container,
+               os_job_file_hierarchy_type,
+               os_job_file_hierarchy_prefix)>
+
+<!ELEMENT job_language (#PCDATA)>
+<!ELEMENT job_description (#PCDATA)>
+<!ELEMENT os_job_file_name (#PCDATA)>
+<!ELEMENT os_job_file_container (#PCDATA)>
+<!ELEMENT os_job_file_hierarchy_type (#PCDATA)>
+<!ELEMENT os_job_file_hierarchy_prefix (#PCDATA)>
+
+<!ELEMENT tasks (task+)>
+<!ELEMENT task (task_language,
+                task_description?,
+                task_custom_id?,
+                is_text_file,
+                is_text_type,
+                is_text_unparsed_class_regex?,
+                is_text_unparsed_id_regex?,
+                is_text_unparsed_id_sort?,
+                is_audio_file,
+                is_audio_file_head_length?,
+                is_audio_file_process_length?,
+                os_task_file_name,
+                os_task_file_format,
+                os_task_file_smil_page_ref?,
+                os_task_file_smil_audio_ref?)>
+
+<!ELEMENT task_language (#PCDATA)>
+<!ELEMENT task_description (#PCDATA)>
+<!ELEMENT task_custom_id (#PCDATA)>
+<!ELEMENT is_text_file (#PCDATA)>
+<!ELEMENT is_text_type (#PCDATA)>
+<!ELEMENT is_text_unparsed_class_regex (#PCDATA)>
+<!ELEMENT is_text_unparsed_id_regex (#PCDATA)>
+<!ELEMENT is_text_unparsed_id_sort (#PCDATA)>
+<!ELEMENT is_audio_file (#PCDATA)>
+<!ELEMENT is_audio_file_head_length (#PCDATA)>
+<!ELEMENT is_audio_file_process_length (#PCDATA)>
+<!ELEMENT os_task_file_name (#PCDATA)>
+<!ELEMENT os_task_file_format (#PCDATA)>
+<!ELEMENT os_task_file_smil_page_ref (#PCDATA)>
+<!ELEMENT os_task_file_smil_audio_ref (#PCDATA)>
+

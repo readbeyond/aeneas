@@ -1,0 +1,22 @@
+is_hierarchy_type=paged
+is_hierarchy_prefix=assets/
+is_task_dir_name_regex=page[0-9]+
+is_text_file_relative_path=.
+is_text_file_name_regex=.*\.xhtml
+is_text_type=unparsed
+is_audio_file_relative_path=.
+is_audio_file_name_regex=.*\.mp3
+is_text_unparsed_id_regex=f[0-9]+
+is_text_unparsed_id_sort=numeric
+
+os_job_file_name=demo_sync_job_output
+os_job_file_container=zip
+os_job_file_hierarchy_type=paged
+os_job_file_hierarchy_prefix=assets/
+os_task_file_name=$PREFIX.xhtml.smil
+os_task_file_format=smil
+os_task_file_smil_page_ref=$PREFIX.xhtml
+os_task_file_smil_audio_ref=../Audio/$PREFIX.mp3
+
+job_language=en
+job_description=Demo Sync Job
