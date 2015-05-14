@@ -87,6 +87,7 @@ Installation
 
     $ git clone https://github.com/readbeyond/aeneas.git
     $ cd aeneas
+    $ pip install -r requirements.txt
     $ python check_dependencies.py
 
 If the last command prints a success message, you have all the required

@@ -79,6 +79,7 @@ to run **aeneas** inside a virtualized Debian image.
 ```bash
 $ git clone https://github.com/readbeyond/aeneas.git
 $ cd aeneas
+$ pip install -r requirements.txt
 $ python check_dependencies.py
 ```
 
