@@ -48,7 +48,7 @@ or raw CSV/TXT/XML for further processing.
 
 1. 2 GB RAM (4 GB recommended), 2 GHz CPU (3 GHz 64bit recommended)
 2. Python 2.7.x
-3. Python optional modules `BeautifulSoup`, `numpy`, and `scikits` (`pip install ...`)
+3. Python optional modules ``BeautifulSoup``, ``lxml``, ``numpy``, and ``scikits.audiolab`` (``pip install ...``)
 4. `ffmpeg` and `ffprobe` executables installed (`apt-get install ffmpeg*`)
 5. `espeak` executable installed (`apt-get install espeak*`)
 
