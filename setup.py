@@ -8,7 +8,7 @@ except ImportError:
 setup(
     name='aeneas',
     packages=['aeneas', 'aeneas.tests', 'aeneas.tools'],
-    version='1.0.0',
+    version='1.0.1',
     description='aeneas is a Python library and a set of tools to automagically synchronize audio and text',
     author='Alberto Pettarin',
     author_email='alberto@albertopettarin.it',

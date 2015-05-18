@@ -32,7 +32,7 @@ __copyright__ = """
     Copyright 2013-2015, ReadBeyond Srl (www.readbeyond.it)
     """
 __license__ = "GNU AGPL v3"
-__version__ = "1.0.0"
+__version__ = "1.0.1"
 __email__ = "aeneas@readbeyond.it"
 __status__ = "Production"
 
@@ -139,6 +139,8 @@ class SyncMap(object):
                 self._output_smil(output_file, parameters)
             elif sync_map_format == SyncMapFormat.SRT:
                 self._output_srt(output_file)
+            elif sync_map_format == SyncMapFormat.TAB:
+                self._output_tab(output_file)
             elif sync_map_format == SyncMapFormat.TTML:
                 self._output_ttml(output_file, parameters)
             elif sync_map_format == SyncMapFormat.TXT:
@@ -222,7 +224,9 @@ class SyncMap(object):
         output_file.write("</smil>\n")
 
     def _output_srt(self, output_file):
-        """ Output to SRT """
+        """
+        Output to SRT
+        """
         i = 1
         for fragment in self.fragments:
             text = fragment.text_fragment
@@ -234,6 +238,18 @@ class SyncMap(object):
             output_file.write("%s\n" % text.text)
             output_file.write("\n")
             i += 1
+
+    def _output_tab(self, output_file):
+        """
+        Output to TAB
+        """
+        for fragment in self.fragments:
+            text = fragment.text_fragment
+            output_file.write("%s\t%s\t%s\n" % (
+                gf.time_to_ssmmm(fragment.begin),
+                gf.time_to_ssmmm(fragment.end),
+                text.identifier
+            ))
 
     def _output_ttml(self, output_file, parameters=None):
         """
@@ -397,12 +413,14 @@ class SyncMapFormat(object):
     SRT = "srt"
     """ SRT """
 
+    TAB = "tab"
+    """ Tab-separated plain text, compatible with ``Audacity`` """
+
     TTML = "ttml"
     """ TTML """
 
     TXT = "txt"
-    """ Space-separated plain text, compatible with
-    ``Audacity`` and ``SonicVisualizer`` """
+    """ Space-separated plain text, compatible with ``SonicVisualizer`` """
 
     VTT = "vtt"
     """ WebVTT """
@@ -410,7 +428,7 @@ class SyncMapFormat(object):
     XML = "xml"
     """ XML """
 
-    ALLOWED_VALUES = [CSV, JSON, SMIL, SRT, TTML, TXT, VTT, XML]
+    ALLOWED_VALUES = [CSV, JSON, SMIL, SRT, TAB, TTML, TXT, VTT, XML]
     """ List of all the allowed values """
 
 

@@ -103,6 +103,16 @@ class TestSyncMap(unittest.TestCase):
         os.close(handler)
         os.remove(output_file_path)
 
+    def test_output_tab(self):
+        syn = self.load()
+        handler, output_file_path = tempfile.mkstemp(suffix=".tab")
+        result = syn.output(SyncMapFormat.TAB, output_file_path)
+        self.assertTrue(result)
+        self.assertTrue(os.path.isfile(output_file_path))
+        #print output_file_path
+        os.close(handler)
+        os.remove(output_file_path)
+
     def test_output_ttml(self):
         syn = self.load()
         handler, output_file_path = tempfile.mkstemp(suffix=".ttml")
@@ -147,6 +157,16 @@ class TestSyncMap(unittest.TestCase):
         syn = self.load("res/example_jobs/example7/OEBPS/Resources/de.txt", 24)
         handler, output_file_path = tempfile.mkstemp(suffix=".csv")
         result = syn.output(SyncMapFormat.CSV, output_file_path)
+        self.assertTrue(result)
+        self.assertTrue(os.path.isfile(output_file_path))
+        #print output_file_path
+        os.close(handler)
+        os.remove(output_file_path)
+
+    def test_output_tab_unicode(self):
+        syn = self.load("res/example_jobs/example7/OEBPS/Resources/de.txt", 24)
+        handler, output_file_path = tempfile.mkstemp(suffix=".tab")
+        result = syn.output(SyncMapFormat.TAB, output_file_path)
         self.assertTrue(result)
         self.assertTrue(os.path.isfile(output_file_path))
         #print output_file_path

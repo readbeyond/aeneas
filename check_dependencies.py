@@ -14,7 +14,7 @@ __copyright__ = """
     Copyright 2013-2015, ReadBeyond Srl (www.readbeyond.it)
     """
 __license__ = "GNU AGPL 3"
-__version__ = "1.0.0"
+__version__ = "1.0.1"
 __email__ = "aeneas@readbeyond.it"
 __status__ = "Production"
 
@@ -39,8 +39,9 @@ def main():
         on_error("Unable to import package aeneas.")
         on_error("Check that you have installed the following Python (2.7.x) packages:")
         on_error("1. BeautifulSoup")
-        on_error("2. numpy")
-        on_error("3. scikits")
+        on_error("2. lxml")
+        on_error("3. numpy")
+        on_error("4. scikits.audiolab")
         return
 
     on_info("Test 2/4...")
