@@ -103,10 +103,10 @@ class TestSyncMap(unittest.TestCase):
         os.close(handler)
         os.remove(output_file_path)
 
-    def test_output_tab(self):
+    def test_output_tsv(self):
         syn = self.load()
-        handler, output_file_path = tempfile.mkstemp(suffix=".tab")
-        result = syn.output(SyncMapFormat.TAB, output_file_path)
+        handler, output_file_path = tempfile.mkstemp(suffix=".tsv")
+        result = syn.output(SyncMapFormat.TSV, output_file_path)
         self.assertTrue(result)
         self.assertTrue(os.path.isfile(output_file_path))
         #print output_file_path
@@ -163,10 +163,10 @@ class TestSyncMap(unittest.TestCase):
         os.close(handler)
         os.remove(output_file_path)
 
-    def test_output_tab_unicode(self):
+    def test_output_tsv_unicode(self):
         syn = self.load("res/example_jobs/example7/OEBPS/Resources/de.txt", 24)
-        handler, output_file_path = tempfile.mkstemp(suffix=".tab")
-        result = syn.output(SyncMapFormat.TAB, output_file_path)
+        handler, output_file_path = tempfile.mkstemp(suffix=".tsv")
+        result = syn.output(SyncMapFormat.TSV, output_file_path)
         self.assertTrue(result)
         self.assertTrue(os.path.isfile(output_file_path))
         #print output_file_path

@@ -32,7 +32,7 @@ __copyright__ = """
     Copyright 2013-2015, ReadBeyond Srl (www.readbeyond.it)
     """
 __license__ = "GNU AGPL v3"
-__version__ = "1.0.1"
+__version__ = "1.0.2"
 __email__ = "aeneas@readbeyond.it"
 __status__ = "Production"
 
@@ -109,7 +109,7 @@ class SyncMap(object):
         self._log("Output parameters: '%s'" % parameters)
 
         # create dir hierarchy, if needed
-        parent_directory = os.path.dirname(output_file_path)
+        parent_directory = os.path.dirname(os.path.abspath(output_file_path))
         if not os.path.exists(parent_directory):
             self._log("Creating directory '%s'" % parent_directory)
             os.makedirs(parent_directory)
@@ -140,7 +140,9 @@ class SyncMap(object):
             elif sync_map_format == SyncMapFormat.SRT:
                 self._output_srt(output_file)
             elif sync_map_format == SyncMapFormat.TAB:
-                self._output_tab(output_file)
+                self._output_tsv(output_file)
+            elif sync_map_format == SyncMapFormat.TSV:
+                self._output_tsv(output_file)
             elif sync_map_format == SyncMapFormat.TTML:
                 self._output_ttml(output_file, parameters)
             elif sync_map_format == SyncMapFormat.TXT:
@@ -239,9 +241,9 @@ class SyncMap(object):
             output_file.write("\n")
             i += 1
 
-    def _output_tab(self, output_file):
+    def _output_tsv(self, output_file):
         """
-        Output to TAB
+        Output to TSV
         """
         for fragment in self.fragments:
             text = fragment.text_fragment
@@ -408,12 +410,15 @@ class SyncMapFormat(object):
     """ JSON compatible with ``rb_smil_emulator.js`` """
 
     SMIL = "smil"
-    """ SMIL (as EPUB 3 Media Overlay specification) """
+    """ SMIL (as in the EPUB 3 Media Overlay specification) """
 
     SRT = "srt"
     """ SRT """
 
     TAB = "tab"
+    """ Deprecated, will be removed in v2.0.0. Use TSV instead. """
+
+    TSV = "tsv"
     """ Tab-separated plain text, compatible with ``Audacity`` """
 
     TTML = "ttml"
@@ -428,7 +433,7 @@ class SyncMapFormat(object):
     XML = "xml"
     """ XML """
 
-    ALLOWED_VALUES = [CSV, JSON, SMIL, SRT, TAB, TTML, TXT, VTT, XML]
+    ALLOWED_VALUES = [CSV, JSON, SMIL, SRT, TAB, TSV, TTML, TXT, VTT, XML]
     """ List of all the allowed values """
 
 

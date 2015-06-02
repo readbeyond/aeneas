@@ -2,8 +2,8 @@
 
 **aeneas** is a Python library and a set of tools to automagically synchronize audio and text.
 
-* Version: 1.0.1
-* Date: 2015-05-18
+* Version: 1.0.2
+* Date: 2015-06-02
 * Developed by: [ReadBeyond](http://www.readbeyond.it/)
 * Lead Developer: [Alberto Pettarin](http://www.albertopettarin.it/)
 * License: the GNU Affero General Public License Version 3 (AGPL v3)
@@ -39,7 +39,7 @@ and [this audio file](aeneas/tests/res/container/job/assets/p001.mp3),
 
 Moreover, the map can be output in several formats: SMIL for EPUB 3,
 SRT/TTML/VTT for closed captioning, JS for Web usage,
-or raw CSV/TAB/TXT/XML for further processing.
+or raw CSV/TSV/TXT/XML for further processing.
 
 
 ## System Requirements, Supported Platforms and Installation
@@ -148,6 +148,8 @@ $ cd aeneas/docs
 $ make html
 ```
 
+Tutorial: [A Practical Introduction To The aeneas Package](http://www.albertopettarin.it/blog/2015/05/21/a-practical-introduction-to-the-aeneas-package.html)
+
 
 ## Supported Features
 
@@ -156,7 +158,7 @@ $ make html
 * Arbitrary text fragment granularity (single word, subphrase, phrase, paragraph, etc.)
 * Input audio file formats: all those supported by `ffmpeg`
 * Batch processing
-* Output sync map formats: CSV, JS, SMIL, TAB, TTML, TXT, VTT, XML
+* Output sync map formats: CSV, JS, SMIL, TSV, TTML, TXT, VTT, XML
 * Supported (= tested) languages: BG, CA, CY, DA, DE, EL, EN, ES, ET, FI, FR, GA, GRC, HR, HU, IS, IT, LA, LT, LV, NL, NO, RO, RU, PL, PT, SK, SR, SV, TR, UK
 * Robust against misspelled/mispronounced words, local rearrangements of words, background noise/sporadic spikes
 * Code suitable for a Web app deployment (e.g., on-demand AWS instances)
