@@ -32,7 +32,7 @@ __copyright__ = """
     Copyright 2013-2015, ReadBeyond Srl (www.readbeyond.it)
     """
 __license__ = "GNU AGPL v3"
-__version__ = "1.0.2"
+__version__ = "1.0.3"
 __email__ = "aeneas@readbeyond.it"
 __status__ = "Production"
 
@@ -404,34 +404,167 @@ class SyncMapFormat(object):
     """
 
     CSV = "csv"
-    """ Comma-separated values (CSV) """
+    """
+    Comma-separated values (CSV)::
+    
+        f001,0.000,1.234,First fragment text
+        f002,1.234,5.678,Second fragment text
+        f003,5.678,7.890,Third fragment text
+    
+    """
 
     JSON = "json"
-    """ JSON compatible with ``rb_smil_emulator.js`` """
+    """
+    JSON compatible with ``rb_smil_emulator.js``::
+
+        {
+         "smil_ids": [
+          "f001",
+          "f002",
+          "f003",
+         ],
+         "smil_data": [
+          { "id": "f001", "begin": 0.000, "end": 1.234 },
+          { "id": "f002", "begin": 1.234, "end": 5.678 },
+          { "id": "f003", "begin": 5.678, "end": 7.890 }
+         ]
+        }
+    
+    """
 
     SMIL = "smil"
-    """ SMIL (as in the EPUB 3 Media Overlay specification) """
+    """
+    SMIL (as in the EPUB 3 Media Overlay specification)::
+
+        <smil xmlns="http://www.w3.org/ns/SMIL" xmlns:epub="http://www.idpf.org/2007/ops" version="3.0">
+         <body>
+          <seq id="s000001" epub:textref="p001.xhtml">
+           <par id="p000001">
+            <text src="p001.xhtml#f001"/>
+            <audio clipBegin="00:00:00.000" clipEnd="00:00:01.234" src="../Audio/p001.mp3"/>
+           </par>
+           <par id="p000002">
+            <text src="p001.xhtml#f002"/>
+            <audio clipBegin="00:00:01.234" clipEnd="00:00:05.678" src="../Audio/p001.mp3"/>
+           </par>
+           <par id="p000003">
+            <text src="p001.xhtml#f003"/>
+            <audio clipBegin="00:00:05.678" clipEnd="00:00:07.890" src="../Audio/p001.mp3"/>
+           </par>
+          </seq>
+         </body>
+        </smil>
+
+    """
 
     SRT = "srt"
-    """ SRT """
+    """
+    SRT caption/subtitle format::
+
+        1
+        00:00:00,000 --> 00:00:01,234
+        First fragment text
+
+        2
+        00:00:01,234 --> 00:00:05,678
+        Second fragment text
+
+        3
+        00:00:05,678 --> 00:00:07,890
+        Third fragment text
+
+    """
 
     TAB = "tab"
-    """ Deprecated, will be removed in v2.0.0. Use TSV instead. """
+    """ Deprecated, it will be removed in v2.0.0. Use TSV instead. """
 
     TSV = "tsv"
-    """ Tab-separated plain text, compatible with ``Audacity`` """
+    """
+    Tab-separated plain text, compatible with ``Audacity``::
+
+        0.000   1.234   f001 
+        1.234   5.678   f002
+        5.678   7.890   f003
+
+    """
 
     TTML = "ttml"
-    """ TTML """
+    """
+    TTML caption/subtitle format::
+
+        <?xml version="1.0" encoding="UTF-8" ?>
+        <tt xmlns="http://www.w3.org/ns/ttml">
+         <body>
+          <div>
+           <p xml:id="f001" begin="0.000" end="1.234">
+            First fragment text
+           </p>
+           <p xml:id="f002" begin="1.234" end="5.678">
+            Second fragment text
+           </p>
+           <p xml:id="f003" begin="5.678" end="7.890">
+            Third fragment text
+           </p>
+          </div>
+         </body>
+        </tt>
+
+    """
 
     TXT = "txt"
-    """ Space-separated plain text, compatible with ``SonicVisualizer`` """
+    """
+    Space-separated plain text, compatible with ``SonicVisualizer``::
+
+        f001 0.000 1.234 "First fragment text"
+        f002 1.234 5.678 "Second fragment text"
+        f003 5.678 7.890 "Third fragment text"
+
+    """
 
     VTT = "vtt"
-    """ WebVTT """
+    """
+    WebVTT caption/subtitle format::
+
+        WEBVTT
+        
+        1
+        00:00:00,000 --> 00:00:01,234
+        First fragment text
+        
+        2
+        00:00:01,234 --> 00:00:05,678
+        Second fragment text
+        
+        3
+        00:00:05,678 --> 00:00:07,890
+        Third fragment text
+
+    """
 
     XML = "xml"
-    """ XML """
+    """
+    XML::
+
+        <?xml version="1.0" encoding="UTF-8" ?>
+        <map>
+         <fragment>
+          <identifier>f001</identifier>
+          <start>0.000</start>
+          <end>1.234</end>
+         </fragment>
+         <fragment>
+          <identifier>f002</identifier>
+          <start>1.234</start>
+          <end>5.678</end>
+         </fragment>
+         <fragment>
+          <identifier>f003</identifier>
+          <start>5.678</start>
+          <end>7.890</end>
+         </fragment>
+        </map>
+
+    """
 
     ALLOWED_VALUES = [CSV, JSON, SMIL, SRT, TAB, TSV, TTML, TXT, VTT, XML]
     """ List of all the allowed values """

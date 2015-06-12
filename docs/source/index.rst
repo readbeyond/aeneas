@@ -37,7 +37,7 @@ for example:
 #. SMIL for EPUB 3 ebooks with Media Overlays,
 #. SRT/TTML/VTT for closed captioning,
 #. JS for consumption on the Web, and
-#. "raw" CSV/TXT/XML useful for further processing.
+#. "raw" CSV/TSV/TXT/XML useful for further processing.
 
 
 Quick Start

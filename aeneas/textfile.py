@@ -21,7 +21,7 @@ __copyright__ = """
     Copyright 2013-2015, ReadBeyond Srl (www.readbeyond.it)
     """
 __license__ = "GNU AGPL v3"
-__version__ = "1.0.2"
+__version__ = "1.0.3"
 __email__ = "aeneas@readbeyond.it"
 __status__ = "Production"
 
@@ -74,7 +74,7 @@ class TextFragment(object):
         self.text = text
 
     def __str__(self):
-        return "%s %s" % (self.identifier, self.text)
+        return ("%s %s" % (self.identifier, self.text)).encode('utf-8')
 
     @property
     def identifier(self):
