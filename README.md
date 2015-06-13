@@ -47,10 +47,10 @@ or raw CSV/TSV/TXT/XML for further processing.
 ### System Requirements
 
 1. 2 GB RAM (4 GB recommended), 2 GHz CPU (3 GHz 64bit recommended)
-2. Python 2.7.x
-3. Python optional modules ``BeautifulSoup``, ``lxml``, ``numpy``, and ``scikits.audiolab`` (``pip install ...``)
-4. `ffmpeg` and `ffprobe` executables installed (`apt-get install ffmpeg*`)
-5. `espeak` executable installed (`apt-get install espeak*`)
+2. `ffmpeg` and `ffprobe` executables installed (`apt-get install ffmpeg*` from `deb-multimedia`)
+3. `espeak` executable installed (`apt-get install espeak*`)
+4. Python 2.7.x
+5. Python optional modules ``BeautifulSoup``, ``lxml``, ``numpy``, and ``scikits.audiolab`` (``pip install ...``)
 
 Depending on the format(s) of audio files you work with,
 you might need to install additional audio codecs for `ffmpeg`.
@@ -58,6 +58,10 @@ Similarly, you might need to install additional voices
 for `espeak`, depending on the language(s) you work on.
 (Installing _all_ the codecs and _all_ the voices available
 in the Debian repository might be a good idea.)
+
+If installing the above dependencies prove difficult on your OS,
+consider using the [Vagrant box](http://www.vagrantup.com)
+created by [aeneas-vagrant](https://github.com/readbeyond/aeneas-vagrant).
 
 ### Supported Platforms
 
@@ -87,6 +91,8 @@ If the last command prints a success message,
 you have all the required dependencies installed
 and you can confidently run **aeneas** in production.
 
+Alternatively, consider using the [Vagrant box](http://www.vagrantup.com)
+created by [aeneas-vagrant](https://github.com/readbeyond/aeneas-vagrant).
 
 ## Usage
 
