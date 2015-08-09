@@ -52,6 +52,58 @@ class TestLogger(unittest.TestCase):
         self.assertEqual(strings[2].find("TEST") > -1, True)
         self.assertEqual(strings[3].find("TEST") > -1, False)
 
+    def run_test_multi(self, msg):
+        #logger = Logger(tee=True)
+        logger = Logger(tee=False)
+        logger.log(msg)
+        self.assertEqual(len(logger), 1)
+
+    def test_multi_01(self):
+        self.run_test_multi("Message ascii")
+
+    def test_multi_02(self):
+        self.run_test_multi("Message with unicode chars: à and '…'")
+
+    def test_multi_03(self):
+        self.run_test_multi(["Message ascii"])
+
+    def test_multi_04(self):
+        self.run_test_multi(["Message with unicode chars: à and '…'"])
+
+    def test_multi_05(self):
+        self.run_test_multi(["Message %s", "1"])
+
+    def test_multi_06(self):
+        self.run_test_multi(["Message %d", 1])
+
+    def test_multi_07(self):
+        self.run_test_multi(["Message %.3f", 1.234])
+
+    def test_multi_08(self):
+        self.run_test_multi(["Message %.3f %.3f", 1.234, 2.345])
+
+    def test_multi_09(self):
+        self.run_test_multi(["Message with unicode chars: à and '…' and %s", "ascii"])
+
+    def test_multi_10(self):
+        self.run_test_multi(u"unicode but only with ascii chars")
+
+    def test_multi_11(self):
+        self.run_test_multi(u"unicode with non-ascii chars: à and '…'")
+
+    def test_multi_12(self):
+        self.run_test_multi(["Message with unicode chars: %s and '…' and ascii", "àbc"])
+
+    def test_multi_13(self):
+        self.run_test_multi(["Message with unicode chars: %s and '…' and ascii", u"àbc"])
+
+    def test_multi_14(self):
+        self.run_test_multi(["Message %.3f %s %.3f", 1.234, "--->", 2.345])
+
+    def test_multi_15(self):
+        self.run_test_multi(["Message %.3f %s %.3f", 1.234, u"-à->", 2.345])
+
+
 if __name__ == '__main__':
     unittest.main()
 

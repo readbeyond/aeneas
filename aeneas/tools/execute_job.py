@@ -18,7 +18,7 @@ __copyright__ = """
     Copyright 2013-2015, ReadBeyond Srl (www.readbeyond.it)
     """
 __license__ = "GNU AGPL 3"
-__version__ = "1.0.3"
+__version__ = "1.0.4"
 __email__ = "aeneas@readbeyond.it"
 __status__ = "Production"
 
@@ -27,7 +27,7 @@ def usage():
     file_path = get_rel_path("../tests/res/container/job.zip")
     print ""
     print "Usage:"
-    print "  $ python -m %s /path/to/container [config_string] /path/to/output/dir" % name
+    print "  $ python -m %s /path/to/container [config_string] /path/to/output/dir [-v]" % name
     print ""
     print "Example:"
     print "  $ python -m %s %s /tmp/" % (name, file_path)
@@ -38,16 +38,20 @@ def main():
         usage()
         return
 
+    # TODO use argparse
     container_path = sys.argv[1]
     config_string = None
-    if len(sys.argv) >= 4:
+    verbose = (sys.argv[-1] == "-v")
+    number_of_arguments = 4
+    if verbose:
+        number_of_arguments += 1
+    if len(sys.argv) >= number_of_arguments:
         config_string = sys.argv[2]
         output_dir = sys.argv[3]
     else:
         output_dir = sys.argv[2]
 
-    #logger = Logger(tee=True)
-    logger = Logger(tee=False)
+    logger = Logger(tee=verbose)
     executor = ExecuteJob(logger=logger)
 
     print "[INFO] Loading job from container..."

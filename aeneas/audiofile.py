@@ -17,7 +17,7 @@ __copyright__ = """
     Copyright 2013-2015, ReadBeyond Srl (www.readbeyond.it)
     """
 __license__ = "GNU AGPL v3"
-__version__ = "1.0.3"
+__version__ = "1.0.4"
 __email__ = "aeneas@readbeyond.it"
 __status__ = "Production"
 
@@ -152,14 +152,13 @@ class AudioFile(object):
 
         # check the file can be read
         if not os.path.isfile(self.file_path):
-            msg = "File '%s' cannot be read" % self.file_path
-            self._log(msg, Logger.CRITICAL)
-            raise OSError(msg)
+            self._log(["File '%s' cannot be read", self.file_path], Logger.CRITICAL)
+            raise OSError("File cannot be read")
 
         # get the file size
-        self._log("Getting file size for '%s'" % self.file_path)
+        self._log(["Getting file size for '%s'", self.file_path])
         self.file_size = os.path.getsize(self.file_path)
-        self._log("File size for '%s' is '%d'" % (self.file_path, self.file_size))
+        self._log(["File size for '%s' is '%d'", self.file_path, self.file_size])
 
         # get the audio properties
         self._log("Reading properties with FFPROBEWrapper...")
@@ -169,13 +168,13 @@ class AudioFile(object):
 
         # save relevant properties in results inside the audiofile object
         self.audio_length = gf.safe_float(properties[FFPROBEWrapper.STDOUT_DURATION])
-        self._log("Stored audio_length: '%s'" % self.audio_length)
+        self._log(["Stored audio_length: '%s'", self.audio_length])
         self.audio_format = properties[FFPROBEWrapper.STDOUT_CODEC_NAME]
-        self._log("Stored audio_format: '%s'" % self.audio_format)
+        self._log(["Stored audio_format: '%s'", self.audio_format])
         self.audio_sample_rate = gf.safe_int(properties[FFPROBEWrapper.STDOUT_SAMPLE_RATE])
-        self._log("Stored audio_sample_rate: '%s'" % self.audio_sample_rate)
+        self._log(["Stored audio_sample_rate: '%s'", self.audio_sample_rate])
         self.audio_channels = gf.safe_int(properties[FFPROBEWrapper.STDOUT_CHANNELS])
-        self._log("Stored audio_channels: '%s'" % self.audio_channels)
+        self._log(["Stored audio_channels: '%s'", self.audio_channels])
 
 
 

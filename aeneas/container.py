@@ -30,7 +30,7 @@ __copyright__ = """
     Copyright 2013-2015, ReadBeyond Srl (www.readbeyond.it)
     """
 __license__ = "GNU AGPL v3"
-__version__ = "1.0.3"
+__version__ = "1.0.4"
 __email__ = "aeneas@readbeyond.it"
 __status__ = "Production"
 
@@ -169,7 +169,7 @@ class Container(object):
         entries = self.entries()
         for entry in entries:
             if not self.is_entry_safe(entry):
-                self._log("This container is not safe: found unsafe entry '%s'" % entry)
+                self._log(["This container is not safe: found unsafe entry '%s'", entry])
                 return False
         self._log("This container is safe")
         return True
@@ -184,9 +184,9 @@ class Container(object):
         """
         normalized = os.path.normpath(entry)
         if normalized.startswith("/") or normalized.startswith("../"):
-            self._log("Entry '%s' is not safe" % entry)
+            self._log(["Entry '%s' is not safe", entry])
             return False
-        self._log("Entry '%s' is safe" % entry)
+        self._log(["Entry '%s' is safe", entry])
         return True
 
     def entries(self):
@@ -231,17 +231,17 @@ class Container(object):
         :rtype: string (path)
         """
         if exact:
-            self._log("Finding entry '%s' with exact=True" % entry)
+            self._log(["Finding entry '%s' with exact=True", entry])
             if entry in self.entries():
-                self._log("Found entry '%s'" % entry)
+                self._log(["Found entry '%s'", entry])
                 return entry
         else:
-            self._log("Finding entry '%s' with exact=False" % entry)
+            self._log(["Finding entry '%s' with exact=False", entry])
             for ent in self.entries():
                 if os.path.basename(ent) == entry:
-                    self._log("Found entry '%s'" % ent)
+                    self._log(["Found entry '%s'", ent])
                     return ent
-        self._log("Entry '%s' not found" % entry)
+        self._log(["Entry '%s' not found", entry])
         return None
 
     def read_entry(self, entry):
@@ -255,18 +255,18 @@ class Container(object):
         :rtype: string
         """
         if not self.is_entry_safe(entry):
-            self._log("Accessing entry '%s' is not safe" % entry)
+            self._log(["Accessing entry '%s' is not safe", entry])
             return None
 
         if not entry in self.entries():
-            self._log("Entry '%s' not found in this container" % entry)
+            self._log(["Entry '%s' not found in this container", entry])
             return None
 
-        self._log("Reading contents of entry '%s'" % entry)
+        self._log(["Reading contents of entry '%s'", entry])
         try:
             return self.actual_container.read_entry(entry)
         except:
-            self._log("An error occurred while reading the contents of '%s'" % entry)
+            self._log(["An error occurred while reading the contents of '%s'", entry])
             return None
 
     def decompress(self, output_path):
@@ -276,7 +276,7 @@ class Container(object):
         :param output_path: path of the destination directory
         :type  output_path: string (path)
         """
-        self._log("Decompressing the container into '%s'" % output_path)
+        self._log(["Decompressing the container into '%s'", output_path])
 
         if self.actual_container == None:
             self._log("Actual container not set, aborting")
@@ -292,9 +292,9 @@ class Container(object):
 
         try:
             self.actual_container.decompress(output_path)
-            self._log("Decompressing the container into '%s': succeeded" % output_path)
+            self._log(["Decompressing the container into '%s': succeeded", output_path])
         except:
-            self._log("Decompressing the container into '%s': failed" % output_path)
+            self._log(["Decompressing the container into '%s': failed", output_path])
 
     def compress(self, input_path):
         """
@@ -303,7 +303,7 @@ class Container(object):
         :param input_path: path of the input directory
         :type  input_path: string (path)
         """
-        self._log("Compressing '%s' into this container" % input_path)
+        self._log(["Compressing '%s' into this container", input_path])
 
         if self.actual_container == None:
             self._log("Actual container not set, aborting")
@@ -314,14 +314,14 @@ class Container(object):
             return
 
         if not os.path.isdir(input_path):
-            self._log("The input path '%s' is not a directory, aborting")
+            self._log(["The input path '%s' is not a directory, aborting", input_path])
             return
 
         try:
             self.actual_container.compress(input_path)
-            self._log("Compressing '%s' into this container: succeeded" % input_path)
+            self._log(["Compressing '%s' into this container: succeeded", input_path])
         except:
-            self._log("Compressing '%s' into this container: failed" % input_path)
+            self._log(["Compressing '%s' into this container: failed", input_path])
 
     def exists(self):
         """
@@ -348,7 +348,7 @@ class Container(object):
         if self.container_format == None:
             self._log("Inferring actual container format")
             path_lowercased = self.file_path.lower()
-            self._log("Lowercased file path: '%s'" % path_lowercased)
+            self._log(["Lowercased file path: '%s'", path_lowercased])
             if path_lowercased.endswith(ContainerFormat.ZIP):
                 self.container_format = ContainerFormat.ZIP
             elif path_lowercased.endswith(ContainerFormat.EPUB):
@@ -361,7 +361,7 @@ class Container(object):
                 self.container_format = ContainerFormat.TAR_BZ2
             else:
                 self.container_format = ContainerFormat.UNPACKED
-            self._log("Inferred format: '%s'" % self.container_format)
+            self._log(["Inferred format: '%s'", self.container_format])
 
         # set the actual container
         self._log("Setting actual container")
@@ -377,7 +377,7 @@ class Container(object):
             self.actual_container = _ContainerTAR(self.file_path, ":bz2")
         elif self.container_format == ContainerFormat.UNPACKED:
             self.actual_container = _ContainerUnpacked(self.file_path)
-        self._log("Actual container format: '%s'" % self.container_format)
+        self._log(["Actual container format: '%s'", self.container_format])
         self._log("Actual container set")
 
 

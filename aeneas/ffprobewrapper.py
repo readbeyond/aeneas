@@ -19,7 +19,7 @@ __copyright__ = """
     Copyright 2013-2015, ReadBeyond Srl (www.readbeyond.it)
     """
 __license__ = "GNU AGPL v3"
-__version__ = "1.0.3"
+__version__ = "1.0.4"
 __email__ = "aeneas@readbeyond.it"
 __status__ = "Production"
 
@@ -169,16 +169,15 @@ class FFPROBEWrapper(object):
 
         # test if we can read the file at audio_file_path
         if not os.path.isfile(audio_file_path):
-            msg = "File '%s' cannot be read" % audio_file_path
-            self._log(msg, Logger.CRITICAL)
-            raise OSError(msg)
+            self._log(["Input file '%s' cannot be read", audio_file_path], Logger.CRITICAL)
+            raise OSError("Input file cannot be read")
 
         # call ffprobe
         arguments = []
         arguments += [gc.FFPROBE_PATH]
         arguments += self.FFPROBE_PARAMETERS
         arguments += [audio_file_path]
-        self._log("Calling with arguments '%s'" % str(arguments))
+        self._log(["Calling with arguments '%s'", arguments])
         proc = subprocess.Popen(
             arguments,
             stdout=subprocess.PIPE,
@@ -200,8 +199,8 @@ class FFPROBEWrapper(object):
         results = dict()
 
         # scan the first audio stream the ffprobe stdout output
-        # TODO: more robust parsing 
-        # TODO: deal with multiple audio streams
+        # TODO more robust parsing 
+        # TODO deal with multiple audio streams
         for line in stdoutdata.splitlines():
             if line == self.STDOUT_END_STREAM:
                 self._log("Reached end of the stream")
@@ -209,7 +208,7 @@ class FFPROBEWrapper(object):
             elif len(line.split("=")) == 2:
                 key, value = line.split("=")
                 results[key] = value
-                self._log("Found property '%s'='%s'" % (key, value))
+                self._log(["Found property '%s'='%s'", key, value])
 
         # convert duration to float
         results[self.STDOUT_DURATION] = gf.safe_float(
@@ -224,14 +223,14 @@ class FFPROBEWrapper(object):
                 for line in stderrdata.splitlines():
                     match = pattern.search(line)
                     if match != None:
-                        self._log("Found matching line '%s'" % line)
+                        self._log(["Found matching line '%s'", line])
                         v_h = int(match.group(1))
                         v_m = int(match.group(2))
                         v_s = int(match.group(3))
                         v_f = float("0." + match.group(4))
                         v_length = v_h * 3600 + v_m * 60 + v_s + v_f
                         results[self.STDOUT_DURATION] = v_length
-                        self._log("Extracted duration '%f'" % v_length)
+                        self._log(["Extracted duration '%f'", v_length])
                         break
         except ValueError:
             self._log("ValueError exception")

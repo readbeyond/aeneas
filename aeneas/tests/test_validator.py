@@ -384,6 +384,81 @@ class TestValidator(unittest.TestCase):
         self.assertFalse(result.passed)
         self.assertGreater(len(result.errors), 0)
 
+    def test_check_task_configuration_24(self):
+        logger = Logger()
+        validator = Validator(logger=logger)
+        string = "task_language=it|is_text_type=plain|os_task_file_name=output.txt|os_task_file_format=txt|task_adjust_boundary_algorithm=auto"
+        result = validator.check_task_configuration(string)
+        self.assertTrue(result.passed)
+
+    def test_check_task_configuration_25(self):
+        logger = Logger()
+        validator = Validator(logger=logger)
+        string = "task_language=it|is_text_type=plain|os_task_file_name=output.txt|os_task_file_format=txt|task_adjust_boundary_algorithm=foo"
+        result = validator.check_task_configuration(string)
+        self.assertFalse(result.passed)
+        self.assertGreater(len(result.errors), 0)
+
+    def test_check_task_configuration_26(self):
+        logger = Logger()
+        validator = Validator(logger=logger)
+        string = "task_language=it|is_text_type=plain|os_task_file_name=output.txt|os_task_file_format=txt|task_adjust_boundary_algorithm=rate"
+        result = validator.check_task_configuration(string)
+        self.assertFalse(result.passed)
+        self.assertGreater(len(result.errors), 0)
+
+    def test_check_task_configuration_27(self):
+        logger = Logger()
+        validator = Validator(logger=logger)
+        string = "task_language=it|is_text_type=plain|os_task_file_name=output.txt|os_task_file_format=txt|task_adjust_boundary_algorithm=rate|task_adjust_boundary_rate_value=21"
+        result = validator.check_task_configuration(string)
+        self.assertTrue(result.passed)
+
+    def test_check_task_configuration_28(self):
+        logger = Logger()
+        validator = Validator(logger=logger)
+        string = "task_language=it|is_text_type=plain|os_task_file_name=output.txt|os_task_file_format=txt|task_adjust_boundary_algorithm=percent"
+        result = validator.check_task_configuration(string)
+        self.assertFalse(result.passed)
+        self.assertGreater(len(result.errors), 0)
+
+    def test_check_task_configuration_29(self):
+        logger = Logger()
+        validator = Validator(logger=logger)
+        string = "task_language=it|is_text_type=plain|os_task_file_name=output.txt|os_task_file_format=txt|task_adjust_boundary_algorithm=percent|task_adjust_boundary_percent_value=50"
+        result = validator.check_task_configuration(string)
+        self.assertTrue(result.passed)
+
+    def test_check_task_configuration_30(self):
+        logger = Logger()
+        validator = Validator(logger=logger)
+        string = "task_language=it|is_text_type=plain|os_task_file_name=output.txt|os_task_file_format=txt|task_adjust_boundary_algorithm=aftercurrent"
+        result = validator.check_task_configuration(string)
+        self.assertFalse(result.passed)
+        self.assertGreater(len(result.errors), 0)
+
+    def test_check_task_configuration_31(self):
+        logger = Logger()
+        validator = Validator(logger=logger)
+        string = "task_language=it|is_text_type=plain|os_task_file_name=output.txt|os_task_file_format=txt|task_adjust_boundary_algorithm=aftercurrent|task_adjust_boundary_aftercurrent_value=0.200"
+        result = validator.check_task_configuration(string)
+        self.assertTrue(result.passed)
+
+    def test_check_task_configuration_32(self):
+        logger = Logger()
+        validator = Validator(logger=logger)
+        string = "task_language=it|is_text_type=plain|os_task_file_name=output.txt|os_task_file_format=txt|task_adjust_boundary_algorithm=beforenext"
+        result = validator.check_task_configuration(string)
+        self.assertFalse(result.passed)
+        self.assertGreater(len(result.errors), 0)
+
+    def test_check_task_configuration_33(self):
+        logger = Logger()
+        validator = Validator(logger=logger)
+        string = "task_language=it|is_text_type=plain|os_task_file_name=output.txt|os_task_file_format=txt|task_adjust_boundary_algorithm=beforenext|task_adjust_boundary_beforenext_value=0.200"
+        result = validator.check_task_configuration(string)
+        self.assertTrue(result.passed)
+
     def test_check_container_txt_01(self):
         logger = Logger()
         validator = Validator(logger=logger)

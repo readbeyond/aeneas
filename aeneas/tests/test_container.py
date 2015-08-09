@@ -29,6 +29,7 @@ class TestContainer(unittest.TestCase):
     JOB_TAR_GZ = get_abs_path("res/container/job.tar.gz")
     JOB_UNPACKED = get_abs_path("res/container/job")
     JOB_ZIP = get_abs_path("res/container/job.zip")
+    JOB_ZIP_UTF8 = get_abs_path("res/container/job_utf8.zip")
 
     def test_constructor_01(self):
         file_path = self.JOB_ZIP 
@@ -114,6 +115,14 @@ class TestContainer(unittest.TestCase):
         result = cont.read_entry(entry)
         self.assertNotEqual(result, None)
         self.assertEqual(len(result), 599)
+
+    def test_read_entry_zip_utf8(self):
+        file_path = self.JOB_ZIP_UTF8
+        entry = "config.txt"
+        cont = Container(file_path)
+        result = cont.read_entry(entry)
+        self.assertNotEqual(result, None)
+        self.assertEqual(len(result), 633)
 
     def test_read_entry_epub(self):
         file_path = self.JOB_EPUB

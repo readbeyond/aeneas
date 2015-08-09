@@ -41,7 +41,7 @@ __copyright__ = """
     Copyright 2013-2015, ReadBeyond Srl (www.readbeyond.it)
     """
 __license__ = "GNU AGPL v3"
-__version__ = "1.0.3"
+__version__ = "1.0.4"
 __email__ = "aeneas@readbeyond.it"
 __status__ = "Production"
 
@@ -92,9 +92,9 @@ class DTWAligner(object):
     """
     The MFCC extractor and wave aligner.
 
-    :param wave_path_1: the path to the real wav file
+    :param wave_path_1: the path to the real wav file (must be mono!)
     :type  wave_path_1: string (path)
-    :param wave_path_2: the path to the synthesized wav file
+    :param wave_path_2: the path to the synthesized wav file (must be mono!)
     :type  wave_path_2: string (path)
     :param frame_rate: the MFCC frame rate, in frames per second. Default:
                        :class:`aeneas.globalconstants.ALIGNER_FRAME_RATE`
@@ -156,13 +156,13 @@ class DTWAligner(object):
             pass
 
     def _compute_mfcc(self, path):
-        self._log("Computing MFCCs for '%s'" % path)
+        self._log(["Computing MFCCs for '%s'", path])
         self._log("Loading wav file")
         data, sample_frequency, encoding = wavread(path)
         length = (float(len(data)) / sample_frequency)
-        self._log("Sample length:    %f" % length)
-        self._log("Sample frequency: %f" % sample_frequency)
-        self._log("Sample encoding:  %s" % encoding)
+        self._log(["Sample length:    %f", length])
+        self._log(["Sample frequency: %f", sample_frequency])
+        self._log(["Sample encoding:  %s", encoding])
         self._log("Computing MFCCs")
         computer = MFCC(samprate=sample_frequency, frate=self.frame_rate)
         result = computer.sig2s2mfc(data).transpose()
@@ -179,9 +179,9 @@ class DTWAligner(object):
         algorithm = self.algorithm
         delta = self.frame_rate * (self.margin * 2)
         mfcc2_size = self.wave_mfcc_2.shape[1]
-        self._log("Requested algorithm: '%s'" % algorithm)
-        self._log("delta = %d" % delta)
-        self._log("m = %d" % mfcc2_size)
+        self._log(["Requested algorithm: '%s'", algorithm])
+        self._log(["delta = %d", delta])
+        self._log(["m = %d", mfcc2_size])
         # check if delta is >= length of synt wave
         if mfcc2_size <= delta:
             self._log("We have mfcc2_size <= delta")
@@ -277,7 +277,7 @@ class DTWStripe(object):
         n = mfcc1.shape[1]
         m = mfcc2.shape[1]
         delta = self.delta
-        self._log("n m delta: %d %d %d" % (n, m, delta))
+        self._log(["n m delta: %d %d %d", n, m, delta])
         if delta > m:
             self._log("Limiting delta to m")
             delta = m
@@ -286,14 +286,14 @@ class DTWStripe(object):
         for i in range(n):
             # center j at row i
             center_j = (m * i) / n
-            #self._log("Center at row %d is %d" % (i, center_j))
+            #self._log(["Center at row %d is %d", i, center_j])
             range_start = max(0, center_j - (delta / 2))
             range_end = range_start + delta
             if range_end > m:
                 range_end = m
                 range_start = range_end - delta
             centers[i] = range_start
-            #self._log("Range at row %d is %d %d" % (i, range_start, range_end))
+            #self._log(["Range at row %d is %d %d", i, range_start, range_end])
             for j in range(range_start, range_end):
                 tmp = mfcc1[:, i].transpose().dot(mfcc2[:, j])
                 tmp /= norm2_1[i] * norm2_2[j]
@@ -307,7 +307,7 @@ class DTWStripe(object):
         #
         acc_matrix = numpy.zeros(cost_matrix.shape)
         n, delta = acc_matrix.shape
-        self._log("n delta: %d %d" % (n, delta))
+        self._log(["n delta: %d %d", n, delta])
         # first row
         acc_matrix[0][0] = cost_matrix[0][0]
         for j in range(1, delta):
@@ -316,22 +316,22 @@ class DTWStripe(object):
         for i in range(1, n):
             offset = centers[i] - centers[i-1]
             for j in range(delta):
-                cost1 = numpy.inf
+                cost0 = numpy.inf
                 if (j+offset) < delta:
-                    cost1 = acc_matrix[i-1][j+offset]
-                cost2 = numpy.inf
+                    cost0 = acc_matrix[i-1][j+offset]
+                cost1 = numpy.inf
                 if j > 0:
-                    cost2 = acc_matrix[i][j-1]
-                cost3 = numpy.inf
+                    cost1 = acc_matrix[i][j-1]
+                cost2 = numpy.inf
                 if ((j+offset-1) < delta) and ((j+offset-1) >= 0):
-                    cost3 = acc_matrix[i-1][j+offset-1]
-                acc_matrix[i][j] = cost_matrix[i][j] + min(cost1, cost2, cost3)
+                    cost2 = acc_matrix[i-1][j+offset-1]
+                acc_matrix[i][j] = cost_matrix[i][j] + min(cost0, cost1, cost2)
         return acc_matrix
 
     def compute_best_path(self, acc_matrix, centers):
         # get dimensions
         n, delta = acc_matrix.shape
-        self._log("n delta: %d %d" % (n, delta))
+        self._log(["n delta: %d %d", n, delta])
         i = n - 1
         j = delta - 1 + centers[i]
         path = [(i, j)]
@@ -346,19 +346,19 @@ class DTWStripe(object):
             else:
                 offset = centers[i] - centers[i-1]
                 r_j = j - centers[i]
-                cost1 = numpy.inf
+                cost0 = numpy.inf
                 if (r_j+offset) < delta:
-                    cost1 = acc_matrix[i-1][r_j+offset]
-                cost2 = numpy.inf
+                    cost0 = acc_matrix[i-1][r_j+offset]
+                cost1 = numpy.inf
                 if r_j > 0:
-                    cost2 = acc_matrix[i][r_j-1]
-                cost3 = numpy.inf
+                    cost1 = acc_matrix[i][r_j-1]
+                cost2 = numpy.inf
                 if (r_j > 0) and ((r_j+offset-1) < delta) and ((r_j+offset-1) >= 0):
-                    cost3 = acc_matrix[i-1][r_j+offset-1]
+                    cost2 = acc_matrix[i-1][r_j+offset-1]
                 costs = [
+                    cost0,
                     cost1,
-                    cost2,
-                    cost3
+                    cost2
                 ]
                 moves = [
                     (i-1, j),
@@ -366,11 +366,10 @@ class DTWStripe(object):
                     (i-1, j-1)
                 ]
                 min_cost = numpy.argmin(costs)
-                #self._log("Selected min cost move %d" % min_cost)
+                #self._log(["Selected min cost move %d", min_cost])
                 min_move = moves[min_cost]
                 path.append(min_move)
-                i = min_move[0]
-                j = min_move[1]
+                i, j = min_move
         # reverse path and return
         path.reverse()
         return path
@@ -408,16 +407,19 @@ class DTWStripeNotOptimized(object):
         norm2_2 = numpy.sqrt(numpy.sum(mfcc2 ** 2, 0))
         n = mfcc1.shape[1]
         m = mfcc2.shape[1]
-        self._log("n m: %d %d" % (n, m))
+        self._log(["n m: %d %d", n, m])
         # NOTE not space efficient 
         cost_matrix = numpy.ones((n, m)) * numpy.inf
         for i in range(n):
             # center j at row i
             center_j = (m * i) / n
-            #self._log("Center at row %d is %d" % (i, center_j))
+            #self._log(["Center at row %d is %d", i, center_j])
             range_start = max(0, center_j - (self.delta / 2))
-            range_end = min(m, center_j + (self.delta / 2))
-            #self._log("Range at row %d is %d %d" % (i, range_start, range_end))
+            range_end = range_start + delta
+            if range_end > m:
+                range_end = m
+                range_start = range_end - delta
+            #self._log(["Range at row %d is %d %d", i, range_start, range_end])
             for j in range(range_start, range_end):
                 cost_matrix[i][j] = mfcc1[:, i].transpose().dot(mfcc2[:, j])
                 cost_matrix[i][j] /= norm2_1[i] * norm2_2[j]
@@ -432,7 +434,7 @@ class DTWStripeNotOptimized(object):
         # NOTE: not space efficient
         acc_matrix = numpy.ones(cost_matrix.shape) * numpy.inf
         n, m = acc_matrix.shape
-        self._log("n m: %d %d" % (n, m))
+        self._log(["n m: %d %d", n, m])
         acc_matrix[0][0] = cost_matrix[0][0]
         for j in range(1, min(self.delta, m)):
             acc_matrix[0][j] = acc_matrix[0][j-1] + cost_matrix[0][j]
@@ -441,7 +443,10 @@ class DTWStripeNotOptimized(object):
         for i in range(1, n):
             center_j = (m * i) / n
             range_start = max(1, center_j - (self.delta / 2))
-            range_end = min(m, center_j + (self.delta / 2))
+            range_end = range_start + delta
+            if range_end > m:
+                range_end = m
+                range_start = range_end - delta
             for j in range(range_start, range_end):
                 acc_matrix[i][j] = cost_matrix[i][j] + min(
                     acc_matrix[i-1][j],
@@ -476,11 +481,10 @@ class DTWStripeNotOptimized(object):
                     (i-1, j-1)
                 ]
                 min_cost = numpy.argmin(costs)
-                #self._log("Selected min cost move %d" % min_cost)
+                #self._log(["Selected min cost move %d", min_cost])
                 min_move = moves[min_cost]
                 path.append(min_move)
-                i = min_move[0]
-                j = min_move[1]
+                i, j = min_move
         # reverse path and return
         path.reverse()
         return path
@@ -547,7 +551,7 @@ class DTWExact(object):
         #
         acc_matrix = numpy.zeros(cost_matrix.shape)
         n, m = acc_matrix.shape
-        self._log("n m: %d %d" % (n, m))
+        self._log(["n m: %d %d", n, m])
         acc_matrix[0][0] = cost_matrix[0][0]
         for j in range(1, m):
             acc_matrix[0][j] = acc_matrix[0][j-1] + cost_matrix[0][j]
@@ -565,7 +569,7 @@ class DTWExact(object):
     def compute_best_path(self, acc_matrix):
         # get dimensions
         n, m = acc_matrix.shape
-        self._log("n m: %d %d" % (n, m))
+        self._log(["n m: %d %d", n, m])
         i = n - 1
         j = m - 1
         path = [(i, j)]
@@ -589,11 +593,10 @@ class DTWExact(object):
                     (i-1, j-1)
                 ]
                 min_cost = numpy.argmin(costs)
-                #self._log("Selected min cost move %d" % min_cost)
+                #self._log(["Selected min cost move %d", min_cost])
                 min_move = moves[min_cost]
                 path.append(min_move)
-                i = min_move[0]
-                j = min_move[1]
+                i, j = min_move
         # reverse path and return
         path.reverse()
         return path
