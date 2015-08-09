@@ -23,7 +23,6 @@ import os
 
 import aeneas.globalconstants as gc
 import aeneas.globalfunctions as gf
-from aeneas.language import Language
 from aeneas.logger import Logger
 
 __author__ = "Alberto Pettarin"
@@ -32,7 +31,7 @@ __copyright__ = """
     Copyright 2013-2015, ReadBeyond Srl (www.readbeyond.it)
     """
 __license__ = "GNU AGPL v3"
-__version__ = "1.0.3"
+__version__ = "1.0.4"
 __email__ = "aeneas@readbeyond.it"
 __status__ = "Production"
 
@@ -104,14 +103,14 @@ class SyncMap(object):
         :type  parameters: dict
         :rtype: bool
         """
-        self._log("Output format: '%s'" % sync_map_format)
-        self._log("Output path: '%s'" % output_file_path)
-        self._log("Output parameters: '%s'" % parameters)
+        self._log(["Output format:     '%s'", sync_map_format])
+        self._log(["Output path:       '%s'", output_file_path])
+        self._log(["Output parameters: '%s'", parameters])
 
         # create dir hierarchy, if needed
         parent_directory = os.path.dirname(os.path.abspath(output_file_path))
         if not os.path.exists(parent_directory):
-            self._log("Creating directory '%s'" % parent_directory)
+            self._log(["Creating directory '%s'", parent_directory])
             os.makedirs(parent_directory)
 
         # check required parameters
@@ -132,21 +131,31 @@ class SyncMap(object):
 
             # output in the requested format
             if sync_map_format == SyncMapFormat.CSV:
-                self._output_csv(output_file)
+                self._output_csv(output_file, gf.time_to_ssmmm)
+            elif sync_map_format == SyncMapFormat.CSVH:
+                self._output_csv(output_file, gf.time_to_hhmmssmmm)
             elif sync_map_format == SyncMapFormat.JSON:
                 self._output_json(output_file)
             elif sync_map_format == SyncMapFormat.SMIL:
                 self._output_smil(output_file, parameters)
             elif sync_map_format == SyncMapFormat.SRT:
                 self._output_srt(output_file)
+            elif sync_map_format == SyncMapFormat.SSV:
+                self._output_ssv(output_file, gf.time_to_ssmmm)
+            elif sync_map_format == SyncMapFormat.SSVH:
+                self._output_ssv(output_file, gf.time_to_hhmmssmmm)
             elif sync_map_format == SyncMapFormat.TAB:
-                self._output_tsv(output_file)
+                self._output_tsv(output_file, gf.time_to_ssmmm)
             elif sync_map_format == SyncMapFormat.TSV:
-                self._output_tsv(output_file)
+                self._output_tsv(output_file, gf.time_to_ssmmm)
+            elif sync_map_format == SyncMapFormat.TSVH:
+                self._output_tsv(output_file, gf.time_to_hhmmssmmm)
             elif sync_map_format == SyncMapFormat.TTML:
                 self._output_ttml(output_file, parameters)
             elif sync_map_format == SyncMapFormat.TXT:
-                self._output_txt(output_file)
+                self._output_txt(output_file, gf.time_to_ssmmm)
+            elif sync_map_format == SyncMapFormat.TXTH:
+                self._output_txt(output_file, gf.time_to_hhmmssmmm)
             elif sync_map_format == SyncMapFormat.VTT:
                 self._output_vtt(output_file)
             elif sync_map_format == SyncMapFormat.XML:
@@ -161,7 +170,7 @@ class SyncMap(object):
         except:
             return False
 
-    def _output_csv(self, output_file):
+    def _output_csv(self, output_file, format_time):
         """
         Output to CSV
         """
@@ -169,8 +178,8 @@ class SyncMap(object):
             text = fragment.text_fragment
             output_file.write("%s,%s,%s,\"%s\"\n" % (
                 text.identifier,
-                gf.time_to_ssmmm(fragment.begin),
-                gf.time_to_ssmmm(fragment.end),
+                format_time(fragment.begin),
+                format_time(fragment.end),
                 text.text
             ))
 
@@ -205,7 +214,10 @@ class SyncMap(object):
         audio_ref = parameters[gc.PPN_TASK_OS_FILE_SMIL_AUDIO_REF]
         output_file.write("<smil xmlns=\"http://www.w3.org/ns/SMIL\" xmlns:epub=\"http://www.idpf.org/2007/ops\" version=\"3.0\">\n")
         output_file.write(" <body>\n")
-        output_file.write("  <seq id=\"s%s\" epub:textref=\"%s\">\n" % (str(1).zfill(6), text_ref))
+        output_file.write("  <seq id=\"s%s\" epub:textref=\"%s\">\n" % (
+            str(1).zfill(6),
+            text_ref
+        ))
         i = 1
         for fragment in self.fragments:
             text = fragment.text_fragment
@@ -237,19 +249,33 @@ class SyncMap(object):
                 gf.time_to_srt(fragment.begin),
                 gf.time_to_srt(fragment.end)
             ))
-            output_file.write("%s\n" % text.text)
+            for line in text.lines:
+                output_file.write("%s\n" % line)
             output_file.write("\n")
             i += 1
 
-    def _output_tsv(self, output_file):
+    def _output_ssv(self, output_file, format_time):
+        """
+        Output to SSV
+        """
+        for fragment in self.fragments:
+            text = fragment.text_fragment
+            output_file.write("%s %s %s \"%s\"\n" % (
+                format_time(fragment.begin),
+                format_time(fragment.end),
+                text.identifier,
+                text.text
+            ))
+
+    def _output_tsv(self, output_file, format_time):
         """
         Output to TSV
         """
         for fragment in self.fragments:
             text = fragment.text_fragment
             output_file.write("%s\t%s\t%s\n" % (
-                gf.time_to_ssmmm(fragment.begin),
-                gf.time_to_ssmmm(fragment.end),
+                format_time(fragment.begin),
+                format_time(fragment.end),
                 text.identifier
             ))
 
@@ -270,13 +296,13 @@ class SyncMap(object):
                 gf.time_to_ssmmm(fragment.begin),
                 gf.time_to_ssmmm(fragment.end)
             ))
-            output_file.write("    %s\n" % text.text)
+            output_file.write("    %s\n" % "<br/>\n    ".join(text.lines))
             output_file.write("   </p>\n")
         output_file.write("  </div>\n")
         output_file.write(" </body>\n")
         output_file.write("</tt>")
 
-    def _output_txt(self, output_file):
+    def _output_txt(self, output_file, format_time):
         """
         Output to TXT
         """
@@ -284,8 +310,8 @@ class SyncMap(object):
             text = fragment.text_fragment
             output_file.write("%s %s %s \"%s\"\n" % (
                 text.identifier,
-                gf.time_to_ssmmm(fragment.begin),
-                gf.time_to_ssmmm(fragment.end),
+                format_time(fragment.begin),
+                format_time(fragment.end),
                 text.text
             ))
 
@@ -302,7 +328,8 @@ class SyncMap(object):
                 gf.time_to_hhmmssmmm(fragment.begin),
                 gf.time_to_hhmmssmmm(fragment.end)
             ))
-            output_file.write("%s\n" % text.text)
+            for line in text.lines:
+                output_file.write("%s\n" % line)
             output_file.write("\n")
             i += 1
 
@@ -344,7 +371,11 @@ class SyncMapFragment(object):
         self.end = end
 
     def __str__(self):
-        return "%s %f %f" % (self.text_fragment.identifier, self.begin, self.end)
+        return "%s %f %f" % (
+            self.text_fragment.identifier,
+            self.begin,
+            self.end
+        )
 
     def __len__(self):
         return self.end - self.begin
@@ -374,7 +405,7 @@ class SyncMapFragment(object):
     @property
     def begin(self):
         """
-        The begin time of this sync map fragment. 
+        The begin time of this sync map fragment.
 
         :rtype: float
         """
@@ -386,7 +417,7 @@ class SyncMapFragment(object):
     @property
     def end(self):
         """
-        The end time of this sync map fragment. 
+        The end time of this sync map fragment.
 
         :rtype: float
         """
@@ -406,11 +437,24 @@ class SyncMapFormat(object):
     CSV = "csv"
     """
     Comma-separated values (CSV)::
-    
+
         f001,0.000,1.234,First fragment text
         f002,1.234,5.678,Second fragment text
         f003,5.678,7.890,Third fragment text
-    
+
+    """
+
+
+    CSVH = "csvh"
+    """
+    Comma-separated values (CSV),
+    with human-readable time values::
+
+        f001,00:00:00.000,00:00:01.234,First fragment text
+        f002,00:00:01.234,00:00:05.678,Second fragment text
+        f003,00:00:05.678,00:00:07.890,Third fragment text
+
+    .. versionadded:: 1.0.4
     """
 
     JSON = "json"
@@ -429,7 +473,7 @@ class SyncMapFormat(object):
           { "id": "f003", "begin": 5.678, "end": 7.890 }
          ]
         }
-    
+
     """
 
     SMIL = "smil"
@@ -475,17 +519,57 @@ class SyncMapFormat(object):
 
     """
 
+    SSV = "ssv"
+    """
+    Space-separated plain text::
+
+        0.000 1.234 f001 "First fragment text"
+        1.234 5.678 f002 "Second fragment text"
+        5.678 7.890 f003 "Third fragment text"
+
+    .. versionadded:: 1.0.4
+    """
+
+    SSVH = "ssvh"
+    """
+    Space-separated plain text,
+    with human-readable time values::
+
+        00:00:00.000 00:00:01.234 f001 "First fragment text"
+        00:00:01.234 00:00:05.678 f002 "Second fragment text"
+        00:00:05.678 00:00:07.890 f003 "Third fragment text"
+
+    .. versionadded:: 1.0.4
+    """
+
     TAB = "tab"
-    """ Deprecated, it will be removed in v2.0.0. Use TSV instead. """
+    """
+    Deprecated, it will be removed in v2.0.0. Use TSV instead.
+
+    .. deprecated:: 1.0.3
+    """
 
     TSV = "tsv"
     """
     Tab-separated plain text, compatible with ``Audacity``::
 
-        0.000   1.234   f001 
+        0.000   1.234   f001
         1.234   5.678   f002
         5.678   7.890   f003
 
+    .. versionadded:: 1.0.3
+    """
+
+    TSVH = "tsvh"
+    """
+    Tab-separated plain text,
+    with human-readable time values::
+
+        00:00:00.000   00:00:01.234   f001
+        00:00:01.234   00:00:05.678   f002
+        00:00:05.678   00:00:07.890   f003
+
+    .. versionadded:: 1.0.4
     """
 
     TTML = "ttml"
@@ -521,20 +605,32 @@ class SyncMapFormat(object):
 
     """
 
+    TXTH = "txth"
+    """
+    Space-separated plain text
+    with human-readable time values::
+
+        f001 00:00:00.000 00:00:01.234 "First fragment text"
+        f002 00:00:01.234 00:00:05.678 "Second fragment text"
+        f003 00:00:05.678 00:00:07.890 "Third fragment text"
+
+    .. versionadded:: 1.0.4
+    """
+
     VTT = "vtt"
     """
     WebVTT caption/subtitle format::
 
         WEBVTT
-        
+
         1
         00:00:00,000 --> 00:00:01,234
         First fragment text
-        
+
         2
         00:00:01,234 --> 00:00:05,678
         Second fragment text
-        
+
         3
         00:00:05,678 --> 00:00:07,890
         Third fragment text
@@ -566,7 +662,23 @@ class SyncMapFormat(object):
 
     """
 
-    ALLOWED_VALUES = [CSV, JSON, SMIL, SRT, TAB, TSV, TTML, TXT, VTT, XML]
+    ALLOWED_VALUES = [
+        CSV,
+        CSVH,
+        JSON,
+        SMIL,
+        SRT,
+        SSV,
+        SSVH,
+        TAB,
+        TSV,
+        TSVH,
+        TTML,
+        TXT,
+        TXTH,
+        VTT,
+        XML
+    ]
     """ List of all the allowed values """
 
 

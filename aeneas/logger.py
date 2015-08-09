@@ -13,7 +13,7 @@ __copyright__ = """
     Copyright 2013-2015, ReadBeyond Srl (www.readbeyond.it)
     """
 __license__ = "GNU AGPL v3"
-__version__ = "1.0.3"
+__version__ = "1.0.4"
 __email__ = "aeneas@readbeyond.it"
 __status__ = "Production"
 
@@ -89,7 +89,7 @@ class Logger(object):
         Add a given message to the log.
 
         :param message: the message to be added
-        :type  message: string
+        :type  message: string or list
         :param severity: the severity of the message
         :type  severity: string (from the :class:`aeneas.logger.Logger` enum)
         :param tag: the tag associated with the message;
@@ -101,11 +101,57 @@ class Logger(object):
             time=datetime.datetime.now(),
             tag=tag,
             indentation=self.indentation,
-            message=message
+            message=self._sanitize(message)
         )
         self.entries.append(entry)
         if self.tee:
             print self._pretty_print(entry)
+
+    def _sanitize(self, message):
+        """
+        Sanitize the given message,
+        dealing with unicode and/or multiple arguments,
+        and string formatting
+
+        :param message: the log message to be sanitized
+        :type  message: string, unicode or list
+
+        :rtype: string
+        """
+        sanitized = message
+        if type(sanitized) is list:
+            if len(sanitized) == 0:
+                sanitized = "Empty log message"
+            elif len(sanitized) == 1:
+                sanitized = sanitized[0]
+            else:
+                model = self._safe_unicode_to_str(sanitized[0])
+                args = tuple()
+                for arg in sanitized[1:]:
+                    if type(arg) in (unicode, str):
+                        args += (self._safe_unicode_to_str(arg),)
+                    else:
+                        args += (arg,)
+                sanitized = model % args
+        return self._safe_unicode_to_str(sanitized)
+
+    def _safe_unicode_to_str(self, value):
+        """
+        Safely convert a string or unicode value
+        to string.
+
+        :param value: the value to be converted
+        :type  value: string or unicode
+
+        :rtype: string
+        """
+        sanitized = value
+        if type(sanitized) is unicode:
+            try:
+                sanitized = sanitized.encode('utf-8')
+            except UnicodeError as e:
+                sanitized = sanitized.encode('ascii', 'replace')
+        return sanitized
 
     def clear(self):
         """

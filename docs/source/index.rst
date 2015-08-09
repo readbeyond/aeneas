@@ -37,7 +37,7 @@ for example:
 #. SMIL for EPUB 3 ebooks with Media Overlays,
 #. SRT/TTML/VTT for closed captioning,
 #. JS for consumption on the Web, and
-#. "raw" CSV/TSV/TXT/XML useful for further processing.
+#. "raw" CSV/SSV/TSV/TXT/XML useful for further processing.
 
 
 Quick Start
@@ -61,7 +61,7 @@ as **a single text file**
 (when using ``aeneas.tools.execute_task`` as a program).
 
 The text file, encoded in **UTF-8**,
-might have one of following three formats:
+must be one of the following four formats:
 
 #. **plain**: each text fragment is on a separated line of the file::
 
@@ -80,6 +80,49 @@ might have one of following three formats:
     And tender churl mak'st waste in niggarding:
     Pity the world, or else this glutton be,
     To eat the world's due, by the grave and thee.
+
+#. **subtitles**: each text fragment is contained in
+   one or more consecutive lines, separated by a blank line.
+   Use this format if you want to output to SRT/TTML/VTT
+   and you want to keep multilines in the output file::
+
+    1
+    
+    From fairest creatures
+    we desire increase,
+    
+    That thereby beauty's rose
+    might never die,
+    
+    But as the riper should by time decease,
+    
+    His tender heir might bear his memory:
+    
+    But thou contracted to thine own bright eyes,
+    
+    Feed'st thy light's flame
+    with self-substantial fuel,
+    
+    Making a famine
+    where abundance lies,
+    
+    Thy self thy foe, to thy sweet self
+    too cruel:
+    
+    Thou that art now the world's fresh ornament,
+    
+    And only herald
+    to the gaudy spring,
+    
+    Within thine own bud buriest thy content,
+    
+    And tender churl mak'st waste in niggarding:
+    
+    Pity the world,
+    or else this glutton be,
+    
+    To eat the world's due,
+    by the grave and thee.
 
 #. **parsed**: each line of the file contains the fragment identifier
    and the corresponding text, separated by a ``|`` character::
@@ -494,6 +537,7 @@ useful for debugging:
 #. ``aeneas.tools.ffprobe_wrapper`` (a wrapper around ``ffprobe``)
 #. ``aeneas.tools.read_audio`` (read the properties of an audio file)
 #. ``aeneas.tools.read_text`` (read a text file and show the extracted text fragments)
+#. ``aeneas.tools.run_vad`` (read an audio file and compute speech/nonspeech time intervals)
 #. ``aeneas.tools.validate`` (validate a job container or configuration strings/files)
 
 Run each program without arguments
@@ -567,6 +611,7 @@ The ``aeneas`` package contains the following modules:
 .. toctree::
     :maxdepth: 3
 
+    adjustboundaryalgorithm
     analyzecontainer
     audiofile
     container
@@ -585,9 +630,17 @@ The ``aeneas`` package contains the following modules:
     synthesizer
     task
     textfile
+    vad
     validator
     globalconstants
     globalfunctions
+
+
+
+Changelog
+---------
+
+See :doc:`changelog`
 
 
 

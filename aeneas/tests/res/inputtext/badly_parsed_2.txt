@@ -1,0 +1,3 @@
+f001|text|too many separators
+f002|text|too many separators
+f003|text|too many separators

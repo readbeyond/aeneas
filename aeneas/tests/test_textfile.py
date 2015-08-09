@@ -20,17 +20,81 @@ class TestTextFile(unittest.TestCase):
         tfl = TextFile()
         self.assertEqual(len(tfl), 0)
 
-    def test_read_plain(self):
+    def test_read_subtitles_1(self):
+        tfl = TextFile(get_abs_path("res/inputtext/sonnet_subtitles_no_end_newline.txt"), TextFileFormat.SUBTITLES)
+        self.assertEqual(len(tfl), 15)
+
+    def test_read_subtitles_2(self):
+        tfl = TextFile(get_abs_path("res/inputtext/sonnet_subtitles_with_end_newline.txt"), TextFileFormat.SUBTITLES)
+        self.assertEqual(len(tfl), 15)
+
+    def test_read_subtitles_3(self):
+        tfl = TextFile(get_abs_path("res/inputtext/sonnet_subtitles_multiple_blank.txt"), TextFileFormat.SUBTITLES)
+        self.assertEqual(len(tfl), 15)
+
+    def test_read_subtitles_4(self):
+        tfl = TextFile(get_abs_path("res/inputtext/sonnet_subtitles_multiple_rows.txt"), TextFileFormat.SUBTITLES)
+        self.assertEqual(len(tfl), 15)
+
+    def test_read_subtitles_5(self):
+        tfl = TextFile(get_abs_path("res/inputtext/empty.txt"), TextFileFormat.SUBTITLES)
+        self.assertEqual(len(tfl), 0)
+
+    def test_read_subtitles_6(self):
+        tfl = TextFile(get_abs_path("res/inputtext/blank.txt"), TextFileFormat.SUBTITLES)
+        self.assertEqual(len(tfl), 0)
+
+    def test_read_plain_1(self):
         tfl = TextFile(get_abs_path("res/inputtext/sonnet_plain.txt"), TextFileFormat.PLAIN)
         self.assertEqual(len(tfl), 15)
 
-    def test_read_parsed(self):
+    def test_read_plain_2(self):
+        tfl = TextFile(get_abs_path("res/inputtext/empty.txt"), TextFileFormat.PLAIN)
+        self.assertEqual(len(tfl), 0)
+
+    def test_read_plain_3(self):
+        tfl = TextFile(get_abs_path("res/inputtext/blank.txt"), TextFileFormat.PLAIN)
+        self.assertEqual(len(tfl), 5)
+
+    def test_read_parsed_1(self):
         tfl = TextFile(get_abs_path("res/inputtext/sonnet_parsed.txt"), TextFileFormat.PARSED)
         self.assertEqual(len(tfl), 15)
+
+    def test_read_parsed_2(self):
+        tfl = TextFile(get_abs_path("res/inputtext/empty.txt"), TextFileFormat.PARSED)
+        self.assertEqual(len(tfl), 0)
+
+    def test_read_parsed_3(self):
+        tfl = TextFile(get_abs_path("res/inputtext/blank.txt"), TextFileFormat.PARSED)
+        self.assertEqual(len(tfl), 0)
+
+    def test_read_parsed_4(self):
+        tfl = TextFile(get_abs_path("res/inputtext/badly_parsed_1.txt"), TextFileFormat.PARSED)
+        self.assertEqual(len(tfl), 0)
+
+    def test_read_parsed_5(self):
+        tfl = TextFile(get_abs_path("res/inputtext/badly_parsed_2.txt"), TextFileFormat.PARSED)
+        self.assertEqual(len(tfl), 0)
+
+    def test_read_parsed_6(self):
+        tfl = TextFile(get_abs_path("res/inputtext/badly_parsed_3.txt"), TextFileFormat.PARSED)
+        self.assertEqual(len(tfl), 0)
 
     def test_read_parsed_unicode(self):
         tfl = TextFile(get_abs_path("res/inputtext/de_utf8.txt"), TextFileFormat.PARSED)
         self.assertEqual(len(tfl), 24)
+
+    def test_read_unparsed_empty(self):
+        parameters = {}
+        parameters[PPN_JOB_IS_TEXT_UNPARSED_ID_REGEX] = "f[0-9]*"
+        tfl = TextFile(get_abs_path("res/inputtext/empty.txt"), TextFileFormat.UNPARSED, parameters)
+        self.assertEqual(len(tfl), 0)
+
+    def test_read_unparsed_blank(self):
+        parameters = {}
+        parameters[PPN_JOB_IS_TEXT_UNPARSED_ID_REGEX] = "f[0-9]*"
+        tfl = TextFile(get_abs_path("res/inputtext/blank.txt"), TextFileFormat.UNPARSED, parameters)
+        self.assertEqual(len(tfl), 0)
 
     def test_read_unparsed_soup_1(self):
         parameters = {}

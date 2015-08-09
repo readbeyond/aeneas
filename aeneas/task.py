@@ -12,6 +12,7 @@ import uuid
 
 import aeneas.globalconstants as gc
 import aeneas.globalfunctions as gf
+from aeneas.adjustboundaryalgorithm import AdjustBoundaryAlgorithm
 from aeneas.audiofile import AudioFile
 from aeneas.textfile import TextFile
 
@@ -21,7 +22,7 @@ __copyright__ = """
     Copyright 2013-2015, ReadBeyond Srl (www.readbeyond.it)
     """
 __license__ = "GNU AGPL v3"
-__version__ = "1.0.3"
+__version__ = "1.0.4"
 __email__ = "aeneas@readbeyond.it"
 __status__ = "Production"
 
@@ -195,6 +196,12 @@ class TaskConfiguration(object):
             gc.PPN_TASK_LANGUAGE,
             gc.PPN_TASK_CUSTOM_ID,
 
+            gc.PPN_TASK_ADJUST_BOUNDARY_ALGORITHM,
+            gc.PPN_TASK_ADJUST_BOUNDARY_PERCENT_VALUE,
+            gc.PPN_TASK_ADJUST_BOUNDARY_RATE_VALUE,
+            gc.PPN_TASK_ADJUST_BOUNDARY_AFTERCURRENT_VALUE,
+            gc.PPN_TASK_ADJUST_BOUNDARY_BEFORENEXT_VALUE,
+
             gc.PPN_TASK_IS_AUDIO_FILE_HEAD_LENGTH,
             gc.PPN_TASK_IS_AUDIO_FILE_PROCESS_LENGTH,
             gc.PPN_TASK_IS_TEXT_FILE_FORMAT,
@@ -266,9 +273,89 @@ class TaskConfiguration(object):
         self.fields[gc.PPN_TASK_CUSTOM_ID] = value
 
     @property
+    def adjust_boundary_algorithm(self):
+        """
+        The algorithm to be run to adjust the fragment boundaries.
+        If ``None``, keep the current boundaries.
+
+        .. versionadded:: 1.0.4
+
+        :rtype: string (from the :class:`aeneas.adjustboundaryalgorithm.AdjustBoundaryAlgorithm` enumeration)
+        """
+        return self.fields[gc.PPN_TASK_ADJUST_BOUNDARY_ALGORITHM]
+    @adjust_boundary_algorithm.setter
+    def adjust_boundary_algorithm(self, value):
+        self.fields[gc.PPN_TASK_ADJUST_BOUNDARY_ALGORITHM] = value
+
+    @property
+    def adjust_boundary_percent_value(self):
+        """
+        The new boundary between two consecutive fragments
+        will be set at this ``value`` percent
+        of the nonspeech interval between the two fragments.
+        The value must be between ``0`` and ``100``.
+
+        .. versionadded:: 1.0.4
+
+        :rtype: int
+        """
+        return self.fields[gc.PPN_TASK_ADJUST_BOUNDARY_PERCENT_VALUE]
+    @adjust_boundary_percent_value.setter
+    def adjust_boundary_percent_value(self, value):
+        self.fields[gc.PPN_TASK_ADJUST_BOUNDARY_PERCENT_VALUE] = value
+
+    @property
+    def adjust_boundary_rate_value(self):
+        """
+        The new boundary will be set trying to keep the rate
+        of all the fragments below this ``value`` characters/second.
+        The value must be greater than ``0``.
+
+        .. versionadded:: 1.0.4
+
+        :rtype: float 
+        """
+        return self.fields[gc.PPN_TASK_ADJUST_BOUNDARY_RATE_VALUE]
+    @adjust_boundary_rate_value.setter
+    def adjust_boundary_rate_value(self, value):
+        self.fields[gc.PPN_TASK_ADJUST_BOUNDARY_RATE_VALUE] = value
+
+    @property
+    def adjust_boundary_aftercurrent_value(self):
+        """
+        The new boundary between two consecutive fragments
+        will be set at ``value`` seconds
+        after the end of the first fragment.
+
+        .. versionadded:: 1.0.4
+
+        :rtype: float
+        """
+        return self.fields[gc.PPN_TASK_ADJUST_BOUNDARY_AFTERCURRENT_VALUE]
+    @adjust_boundary_aftercurrent_value.setter
+    def adjust_boundary_aftercurrent_value(self, value):
+        self.fields[gc.PPN_TASK_ADJUST_BOUNDARY_AFTERCURRENT_VALUE] = value
+
+    @property
+    def adjust_boundary_beforenext_value(self):
+        """
+        The new boundary between two consecutive fragments
+        will be set at ``value`` seconds
+        before the beginning of the second fragment.
+
+        .. versionadded:: 1.0.4
+
+        :rtype: float
+        """
+        return self.fields[gc.PPN_TASK_ADJUST_BOUNDARY_BEFORENEXT_VALUE]
+    @adjust_boundary_beforenext_value.setter
+    def adjust_boundary_beforenext_value(self, value):
+        self.fields[gc.PPN_TASK_ADJUST_BOUNDARY_BEFORENEXT_VALUE] = value
+
+    @property
     def is_text_file_format(self):
         """
-        The format of the input text file. 
+        The format of the input text file.
 
         :rtype: string (from the :class:`aeneas.textfile.TextFileFormat`)
         """
@@ -402,6 +489,11 @@ class TaskConfiguration(object):
 
     #@property
     #def xxx(self):
+    #    """
+    #    TBW
+    #
+    #    :rtype: string
+    #    """
     #    return self.fields[gc.KEY]
     #@xxx.setter
     #def xxx(self, value):

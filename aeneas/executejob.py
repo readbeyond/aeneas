@@ -25,7 +25,7 @@ __copyright__ = """
     Copyright 2013-2015, ReadBeyond Srl (www.readbeyond.it)
     """
 __license__ = "GNU AGPL v3"
-__version__ = "1.0.3"
+__version__ = "1.0.4"
 __email__ = "aeneas@readbeyond.it"
 __status__ = "Production"
 
@@ -126,7 +126,7 @@ class ExecuteJob(object):
             # create working directory where the input container
             # will be decompressed
             self.working_directory = tempfile.mkdtemp(dir=gf.custom_tmp_dir())
-            self._log("Created working directory '%s'" % self.working_directory)
+            self._log(["Created working directory '%s'", self.working_directory])
 
             # decompress
             self._log("Decompressing input container...")
@@ -199,38 +199,38 @@ class ExecuteJob(object):
             # this temporary directory will be compressed into
             # the output container
             self.tmp_directory = tempfile.mkdtemp(dir=gf.custom_tmp_dir())
-            self._log("Created temporary directory '%s'" % self.tmp_directory)
+            self._log(["Created temporary directory '%s'", self.tmp_directory])
 
             for task in self.job.tasks:
                 custom_id = task.configuration.custom_id
 
                 # check if the task has sync map and sync map file path
                 if task.sync_map_file_path == None:
-                    self._log("Task '%s' has sync_map_file_path not set" % custom_id)
+                    self._log(["Task '%s' has sync_map_file_path not set", custom_id])
                     return (False, None)
                 if task.sync_map == None:
-                    self._log("Task '%s' has sync_map not set" % custom_id)
+                    self._log(["Task '%s' has sync_map not set", custom_id])
                     return (False, None)
 
                 # output sync map
-                self._log("Outputting sync map for task '%s'..." % custom_id)
+                self._log(["Outputting sync map for task '%s'...", custom_id])
                 task.output_sync_map_file(self.tmp_directory)
-                self._log("Outputting sync map for task '%s'... done" % custom_id)
+                self._log(["Outputting sync map for task '%s'... done", custom_id])
 
             # get output container info
             output_container_format = self.job.configuration.os_container_format
-            self._log("Output container format: '%s'" % output_container_format)
+            self._log(["Output container format: '%s'", output_container_format])
             output_file_name = self.job.configuration.os_file_name
             if ((output_container_format != ContainerFormat.UNPACKED) and
                     (not output_file_name.endswith(output_container_format))):
                 self._log("Adding extension to output_file_name")
                 output_file_name += "." + output_container_format
-            self._log("Output file name: '%s'" % output_file_name)
+            self._log(["Output file name: '%s'", output_file_name])
             output_file_path = gf.norm_join(
                 output_directory_path,
                 output_file_name
             )
-            self._log("Output file path: '%s'" % output_file_path)
+            self._log(["Output file path: '%s'", output_file_path])
 
             # create output container
             self._log("Compressing...")
@@ -241,7 +241,7 @@ class ExecuteJob(object):
             )
             container.compress(self.tmp_directory)
             self._log("Compressing... done")
-            self._log("Created output file: '%s'" % output_file_path)
+            self._log(["Created output file: '%s'", output_file_path])
 
             # clean and return
             self.clean(False)
@@ -271,15 +271,15 @@ class ExecuteJob(object):
         if len(self.job) == 0:
             self._log("The job has no tasks")
             return False
-        self._log("Number of tasks: '%s'" % len(self.job))
+        self._log(["Number of tasks: '%d'", len(self.job)])
 
         # execute tasks
         for task in self.job.tasks:
             custom_id = task.configuration.custom_id
-            self._log("Executing task '%s'..." % custom_id)
+            self._log(["Executing task '%s'...", custom_id])
             executor = ExecuteTask(task, logger=self.logger)
             result = executor.execute()
-            self._log("Executing task '%s'... done" % custom_id)
+            self._log(["Executing task '%s'... done", custom_id])
             if not result:
                 self._log("Executing task: failed")
                 return False
@@ -319,7 +319,7 @@ class ExecuteJob(object):
         """
         if (path != None) and (os.path.isdir(path)):
             try:
-                self._log("Removing directory '%s'..." % path)
+                self._log(["Removing directory '%s'...", path])
                 shutil.rmtree(path)
                 self._log("Succeeded")
             except:

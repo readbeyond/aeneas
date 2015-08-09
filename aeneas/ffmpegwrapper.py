@@ -17,7 +17,7 @@ __copyright__ = """
     Copyright 2013-2015, ReadBeyond Srl (www.readbeyond.it)
     """
 __license__ = "GNU AGPL v3"
-__version__ = "1.0.3"
+__version__ = "1.0.4"
 __email__ = "aeneas@readbeyond.it"
 __status__ = "Production"
 
@@ -31,23 +31,14 @@ class FFMPEGWrapper(object):
 
     :param parameters: list of parameters (not counting input and output paths)
                        to be passed to ``ffmpeg``.
-                       If ``None``, ``FFMPEG_PARAMETERS`` will be used.
+                       Default: ``FFMPEG_PARAMETERS_DEFAULT``.
     :type  parameters: list of strings
     :param logger: the logger object
     :type  logger: :class:`aeneas.logger.Logger`
     """
 
-    FFMPEG_PARAMETERS_SAMPLE_NO_CHANGE = ["-ac", "1", "-y", "-f", "wav"]
-    """ Set of parameters for ``ffmpeg`` without changing the sampling rate """
-
-    FFMPEG_PARAMETERS_SAMPLE_22050 = ["-ac", "1", "-ar", "22050", "-y", "-f", "wav"]
-    """ Set of parameters for ``ffmpeg`` with 22050 Hz sampling """
-
-    FFMPEG_PARAMETERS_SAMPLE_44100 = ["-ac", "1", "-ar", "44100", "-y", "-f", "wav"]
-    """ Set of parameters for ``ffmpeg`` with 44100 Hz sampling """
-
-    FFMPEG_PARAMETERS = FFMPEG_PARAMETERS_SAMPLE_44100
-    """ Default set of parameters for ``ffmpeg`` """
+    FFMPEG_SAMPLE_16000 = ["-ar", "16000"]
+    """ Single parameter for ``ffmpeg``: 16000 Hz sampling """
 
     FFMPEG_SAMPLE_22050 = ["-ar", "22050"]
     """ Single parameter for ``ffmpeg``: 22050 Hz sampling """
@@ -69,14 +60,37 @@ class FFMPEGWrapper(object):
     (must be the second to last argument to ``ffmpeg``,
     just before path of the output file) """
 
+    FFMPEG_PARAMETERS_SAMPLE_KEEP = (
+        FFMPEG_MONO + FFMPEG_OVERWRITE + FFMPEG_FORMAT_WAV
+    )
+    """ Set of parameters for ``ffmpeg`` without changing the sampling rate """
+
+    FFMPEG_PARAMETERS_SAMPLE_16000 = (
+        FFMPEG_MONO + FFMPEG_SAMPLE_16000 + FFMPEG_OVERWRITE + FFMPEG_FORMAT_WAV
+    )
+    """ Set of parameters for ``ffmpeg`` with 16000 Hz sampling """
+
+    FFMPEG_PARAMETERS_SAMPLE_22050 = (
+        FFMPEG_MONO + FFMPEG_SAMPLE_22050 + FFMPEG_OVERWRITE + FFMPEG_FORMAT_WAV
+    )
+    """ Set of parameters for ``ffmpeg`` with 22050 Hz sampling """
+
+    FFMPEG_PARAMETERS_SAMPLE_44100 = (
+        FFMPEG_MONO + FFMPEG_SAMPLE_44100 + FFMPEG_OVERWRITE + FFMPEG_FORMAT_WAV
+    )
+    """ Set of parameters for ``ffmpeg`` with 44100 Hz sampling """
+
+    FFMPEG_PARAMETERS_DEFAULT = FFMPEG_PARAMETERS_SAMPLE_44100
+    """ Default set of parameters for ``ffmpeg`` """
+
     TAG = "FFMPEGWrapper"
 
-    def __init__(self, parameters=None, logger=None):
+    def __init__(self, parameters=FFMPEG_PARAMETERS_DEFAULT, logger=None):
         self.parameters = parameters
         self.logger = logger
         if self.logger == None:
             self.logger = Logger()
-        self._log("Initialized with parameters '%s'" % self.parameters)
+        self._log(["Initialized with parameters '%s'", self.parameters])
 
     def _log(self, message, severity=Logger.DEBUG):
         """ Log """
@@ -87,9 +101,6 @@ class FFMPEGWrapper(object):
         """
         The parameters to be passed to ffmpeg,
         not including ``-i input_file.mp3`` and ``output_file.wav``.
-
-        If this property is ``None``, the default ``FFMPEG_PARAMETERS``
-        will be used.
 
         :rtype: list of strings
         """
@@ -135,9 +146,8 @@ class FFMPEGWrapper(object):
         """
         # test if we can read the input file
         if not os.path.isfile(input_file_path):
-            msg = "Input file '%s' cannot be read" % input_file_path
-            self._log(msg, Logger.CRITICAL)
-            raise OSError(msg)
+            self._log(["Input file '%s' cannot be read", input_file_path], Logger.CRITICAL)
+            raise OSError("Inpuf file cannot be read")
 
         # call ffmpeg
         arguments = []
@@ -147,12 +157,9 @@ class FFMPEGWrapper(object):
             arguments += ["-ss", head_length]
         if process_length != None:
             arguments += ["-t", process_length]
-        if self.parameters == None:
-            arguments += self.FFMPEG_PARAMETERS
-        else:
-            arguments += self.parameters
+        arguments += self.parameters
         arguments += [output_file_path]
-        self._log("Calling with arguments '%s'" % str(arguments))
+        self._log(["Calling with arguments '%s'", arguments])
         proc = subprocess.Popen(
             arguments,
             stdout=subprocess.PIPE,
@@ -166,11 +173,10 @@ class FFMPEGWrapper(object):
 
         # check if the output file exists
         if not os.path.exists(output_file_path):
-            msg = "Output file '%s' cannot be read" % output_file_path
-            self._log(msg, Logger.CRITICAL)
-            raise OSError(msg)
+            self._log(["Output file '%s' cannot be written", output_file_path], Logger.CRITICAL)
+            raise OSError("Output file cannot be written")
         else:
-            self._log("Returning output file path '%s'" % output_file_path)
+            self._log(["Returning output file path '%s'", output_file_path])
             return output_file_path
 
 

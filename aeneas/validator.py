@@ -12,6 +12,7 @@ import aeneas.globalconstants as gc
 import aeneas.globalfunctions as gf
 from aeneas.analyzecontainer import AnalyzeContainer
 from aeneas.container import Container, ContainerFormat
+from aeneas.executetask import AdjustBoundaryAlgorithm
 from aeneas.hierarchytype import HierarchyType
 from aeneas.language import Language
 from aeneas.logger import Logger
@@ -24,7 +25,7 @@ __copyright__ = """
     Copyright 2013-2015, ReadBeyond Srl (www.readbeyond.it)
     """
 __license__ = "GNU AGPL v3"
-__version__ = "1.0.3"
+__version__ = "1.0.4"
 __email__ = "aeneas@readbeyond.it"
 __status__ = "Production"
 
@@ -77,7 +78,7 @@ class Validator(object):
         self._log("Checking for reserved characters")
         for char in gc.CONFIG_RESERVED_CHARACTERS:
             if char in string:
-                self._log("Failed because of character '%s'" % char)
+                self._log(["Failed because of character '%s'", char])
                 return False
         self._log("Passed")
         return True
@@ -96,7 +97,7 @@ class Validator(object):
         :param result: the object where to store validation messages
         :type  result: :class:`aeneas.validator.ValidatorResult`
         """
-        self._log("Checking allowed values for parameter '%s'" % key)
+        self._log(["Checking allowed values for parameter '%s'", key])
         if key in parameters:
             value = parameters[key]
             if (value == None) or (not value in allowed_values):
@@ -131,7 +132,7 @@ class Validator(object):
         :param result: the object where to store validation messages
         :type  result: :class:`aeneas.validator.ValidatorResult`
         """
-        self._log("Checking implied parameters by '%s'='%s'" % (key, value))
+        self._log(["Checking implied parameters by '%s'='%s'", key, value])
         if (key in parameters) and (parameters[key] == value):
             found = False
             for implied_key in implied_keys:
@@ -166,7 +167,8 @@ class Validator(object):
         :param result: the object where to store validation messages
         :type  result: :class:`aeneas.validator.ValidatorResult`
         """
-        self._log("Checking required parameters '%s'" % str(required_parameters))
+        self._log(["Checking required parameters '%s'", required_parameters])
+        self._log("Checking required parameters")
 
         # check that the input parameters are not empty
         self._log("Checking input parameters are not empty")
@@ -231,6 +233,12 @@ class Validator(object):
             SyncMapFormat.ALLOWED_VALUES,
             result
         )
+        self._check_allowed_value(
+            parameters,
+            gc.PPN_TASK_ADJUST_BOUNDARY_ALGORITHM,
+            AdjustBoundaryAlgorithm.ALLOWED_VALUES,
+            result
+        )
 
         # check all parameters implied by other_parameter=value are present
         self._log("Checking all implied parameters are present")
@@ -278,9 +286,41 @@ class Validator(object):
             [gc.PPN_TASK_OS_FILE_SMIL_PAGE_REF],
             result
         )
+        # task_adjust_boundary_algorithm=percent => task_adjust_boundary_percent_value
+        self._check_implied_parameter(
+            parameters,
+            gc.PPN_TASK_ADJUST_BOUNDARY_ALGORITHM,
+            AdjustBoundaryAlgorithm.PERCENT,
+            [gc.PPN_TASK_ADJUST_BOUNDARY_PERCENT_VALUE],
+            result
+        )
+        # task_adjust_boundary_algorithm=rate => task_adjust_boundary_rate_value
+        self._check_implied_parameter(
+            parameters,
+            gc.PPN_TASK_ADJUST_BOUNDARY_ALGORITHM,
+            AdjustBoundaryAlgorithm.RATE,
+            [gc.PPN_TASK_ADJUST_BOUNDARY_RATE_VALUE],
+            result
+        )
+        # task_adjust_boundary_algorithm=currentend => task_adjust_boundary_currentend_value
+        self._check_implied_parameter(
+            parameters,
+            gc.PPN_TASK_ADJUST_BOUNDARY_ALGORITHM,
+            AdjustBoundaryAlgorithm.AFTERCURRENT,
+            [gc.PPN_TASK_ADJUST_BOUNDARY_AFTERCURRENT_VALUE],
+            result
+        )
+        # task_adjust_boundary_algorithm=rate => task_adjust_boundary_nextstart_value
+        self._check_implied_parameter(
+            parameters,
+            gc.PPN_TASK_ADJUST_BOUNDARY_ALGORITHM,
+            AdjustBoundaryAlgorithm.BEFORENEXT,
+            [gc.PPN_TASK_ADJUST_BOUNDARY_BEFORENEXT_VALUE],
+            result
+        )
 
         # return result
-        self._log("Checking required parameters: returning %s" % result.passed)
+        self._log(["Checking required parameters: returning %s", result.passed])
         return result
 
     def check_file_encoding(self, input_file_path):
@@ -293,7 +333,7 @@ class Validator(object):
         """
         result = ValidatorResult()
         try:
-            self._log("Checking encoding of file '%s'" % input_file_path)
+            self._log(["Checking encoding of file '%s'", input_file_path])
             file_object = codecs.open(input_file_path, 'r', encoding="utf-8")
             file_object.readlines()
         except:
@@ -343,7 +383,7 @@ class Validator(object):
         :type  config_string: string
         :rtype: :class:`aeneas.validator.ValidatorResult`
         """
-        self._log("Checking job configuration '%s'" % config_string)
+        self._log(["Checking job configuration '%s'", config_string])
 
         # remove BOM, if any
         #self._log("Removing BOM")
@@ -367,7 +407,7 @@ class Validator(object):
         self._check_required_parameters(required_parameters, parameters, result)
 
         # return result
-        self._log("Checking job configuration: returning %s" % result.passed)
+        self._log(["Checking job configuration: returning %s", result.passed])
         return result
 
     def check_task_configuration(self, config_string):
@@ -379,7 +419,7 @@ class Validator(object):
         :type  config_string: string
         :rtype: :class:`aeneas.validator.ValidatorResult`
         """
-        self._log("Checking task configuration '%s'" % config_string)
+        self._log(["Checking task configuration '%s'", config_string])
 
         # remove BOM, if any
         #self._log("Removing BOM")
@@ -404,7 +444,7 @@ class Validator(object):
         self._check_required_parameters(required_parameters, parameters, result)
 
         # return result
-        self._log("Checking task configuration: returning %s" % result.passed)
+        self._log(["Checking task configuration: returning %s", result.passed])
         return result
 
     def check_container(self, container_path, container_format=None):
@@ -417,7 +457,7 @@ class Validator(object):
         :type  container_format: string (from ContainerFormat enumeration)
         :rtype: :class:`aeneas.validator.ValidatorResult`
         """
-        self._log("Checking container file '%s'" % container_path)
+        self._log(["Checking container file '%s'", container_path])
 
         result = ValidatorResult()
 
@@ -452,7 +492,7 @@ class Validator(object):
             self._log(msg)
 
         # return result
-        self._log("Checking container: returning %s" % result.passed)
+        self._log(["Checking container: returning %s", result.passed])
         return result
 
     def check_container_from_wizard(
@@ -512,6 +552,7 @@ class Validator(object):
             self._log("Config file found in container")
         else:
             self._log("Config string passed as parameter")
+            config_contents = config_string
             config_in_container = False
 
         # check the txt config contents or string
@@ -533,7 +574,7 @@ class Validator(object):
         self._check_analyzed_job(job, container, result)
 
         # return result
-        self._log("Checking container with TXT config file: returning %s" % result.passed)
+        self._log(["Checking container with TXT config file: returning %s", result.passed])
         return result
 
     def check_contents_txt_config_file(
@@ -595,7 +636,7 @@ class Validator(object):
         self._check_required_parameters(required_parameters, parameters, result)
 
         # return result
-        self._log("Checking contents TXT config file: returning %s" % result.passed)
+        self._log(["Checking contents TXT config file: returning %s", result.passed])
         return result
 
     def _check_container_with_xml_config(
@@ -639,7 +680,7 @@ class Validator(object):
         self._check_analyzed_job(job, container, result)
 
         # return result
-        self._log("Checking container: returning %s" % result.passed)
+        self._log(["Checking container: returning %s", result.passed])
         return result
 
     def check_contents_xml_config_file(self, config_contents):
@@ -703,7 +744,7 @@ class Validator(object):
             parse_job=False
         )
         for parameters in tasks_parameters:
-            self._log("Checking required parameters for task: '%s'" % str(parameters))
+            self._log(["Checking required parameters for task: '%s'", parameters])
             self._check_required_parameters(
                 required_parameters,
                 parameters,
@@ -714,7 +755,7 @@ class Validator(object):
                 return result
 
         # return result
-        self._log("Checking contents XML config file: returning %s" % result.passed)
+        self._log(["Checking contents XML config file: returning %s", result.passed])
         return result
 
     def _check_analyzed_job(self, job, container, result):
@@ -754,7 +795,7 @@ class Validator(object):
         # each Task text file must be well encoded
         self._log("Checking each Task text file is well encoded")
         for task in job.tasks:
-            self._log("Checking Task text file '%s'" % task.text_file_path)
+            self._log(["Checking Task text file '%s'", task.text_file_path])
             text_file_contents = container.read_entry(task.text_file_path)
             #self._log("Removing BOM")
             #text_file_contents = gf.remove_bom(text_file_contents)
@@ -766,7 +807,7 @@ class Validator(object):
                 result.add_error(msg)
                 self._log(msg)
                 return
-            self._log("Checking Task text file '%s': passed" % task.text_file_path)
+            self._log(["Checking Task text file '%s': passed", task.text_file_path])
         self._log("Checking each Task text file is well encoded: passed")
 
 

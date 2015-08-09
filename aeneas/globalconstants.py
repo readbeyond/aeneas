@@ -12,7 +12,7 @@ __copyright__ = """
     Copyright 2013-2015, ReadBeyond Srl (www.readbeyond.it)
     """
 __license__ = "GNU AGPL v3"
-__version__ = "1.0.3"
+__version__ = "1.0.4"
 __email__ = "aeneas@readbeyond.it"
 __status__ = "Production"
 
@@ -49,7 +49,7 @@ Default: ``60``, corresponding to ``60s`` ahead and behind
 ALIGNER_USE_EXACT_ALGO_WHEN_MARGIN_TOO_LARGE = True
 """ Use the exact DTW algorithm, instead of a striped algorithm,
 if the aligner margin is larger than the synthesized audio file.
-Default ``True``. """
+Default: ``True``. """
 
 CONFIG_TXT_FILE_NAME = "config.txt"
 """ File name for the TXT configuration file in containers """
@@ -400,6 +400,92 @@ Example::
 
 """
 
+PPN_TASK_ADJUST_BOUNDARY_ALGORITHM = "task_adjust_boundary_algorithm"
+"""
+Key for the algorithm to adjust the boundary point between two fragments
+
+Usage: config string, TXT config file, XML config file
+
+Values: listed in :class:`aeneas.adjustboundaryalgorithm.AdjustBoundaryAlgorithm`
+
+Example::
+
+    task_adjust_boundary_algorithm=auto
+    task_adjust_boundary_algorithm=percent
+    task_adjust_boundary_algorithm=rate
+    task_adjust_boundary_algorithm=aftercurrent
+    task_adjust_boundary_algorithm=beforenext
+
+.. versionadded:: 1.0.4
+"""
+
+PPN_TASK_ADJUST_BOUNDARY_PERCENT_VALUE = "task_adjust_boundary_percent_value"
+"""
+Key for the percentage associated
+with ``task_adjust_boundary_algorithm=percent``
+
+Usage: config string, TXT config file, XML config file
+
+Values: int
+
+Example::
+
+    task_adjust_boundary_percent_value=0 
+    task_adjust_boundary_percent_value=50
+    task_adjust_boundary_percent_value=75
+    task_adjust_boundary_percent_value=100
+
+.. versionadded:: 1.0.4
+"""
+
+PPN_TASK_ADJUST_BOUNDARY_RATE_VALUE = "task_adjust_boundary_rate_value"
+"""
+Key for the rate, in characters/second, associated
+with ``task_adjust_boundary_algorithm=rate``
+
+Usage: config string, TXT config file, XML config file
+
+Values: float
+
+Example::
+
+    task_adjust_boundary_rate_value=21.0
+
+.. versionadded:: 1.0.4
+"""
+
+PPN_TASK_ADJUST_BOUNDARY_AFTERCURRENT_VALUE = "task_adjust_boundary_aftercurrent_value"
+"""
+Key for the delay, in seconds, associated
+with ``task_adjust_boundary_algorithm=aftercurrent``
+
+Usage: config string, TXT config file, XML config file
+
+Values: float
+
+Example::
+
+    task_adjust_boundary_aftercurrent_value=0.150
+
+.. versionadded:: 1.0.4
+"""
+
+PPN_TASK_ADJUST_BOUNDARY_BEFORENEXT_VALUE = "task_adjust_boundary_beforenext_value"
+"""
+Key for the delay, in seconds, associated
+with ``task_adjust_boundary_algorithm=beforenext``
+
+Usage: config string, TXT config file, XML config file
+
+Values: float
+
+Example::
+
+    task_adjust_boundary_beforenext_value=0.200
+
+.. versionadded:: 1.0.4
+"""
+
 PPN_TASK_IS_AUDIO_FILE_HEAD_LENGTH = "is_audio_file_head_length"
 """
 Key for the number of seconds, from the beginning of the audio file
@@ -600,6 +686,53 @@ Example::
 
     os_task_file_name=$PREFIX.smil
 
+"""
+
+VAD_EXTEND_SPEECH_INTERVAL_AFTER = 0
+"""
+Extend to the right (after/future)
+a speech interval found by the VAD algorithm,
+by this many frames. Default: ``0``.
+
+.. versionadded:: 1.0.4
+"""
+
+VAD_EXTEND_SPEECH_INTERVAL_BEFORE = 0
+"""
+Extend to the left (before/past)
+a speech interval found by the VAD algorithm,
+by this many frames. Default: ``0``.
+
+.. versionadded:: 1.0.4
+"""
+
+VAD_FRAME_RATE = 25
+"""
+VAD MFCC frame rate, in steps per second.
+Default: ``25``, corresponding to steps of ``40ms`` length.
+
+.. versionadded:: 1.0.4
+"""
+
+VAD_LOG_ENERGY_THRESHOLD = 0.699
+"""
+Threshold for the VAD algorithm to decide
+that a given frame contains speech.
+Note that this is the log10 of the energy coefficient.
+Default: ``0.699`` = ``log10(5)``, that is, a frame must have
+an energy at least 5 times higher than the minimum
+to be considered a speech frame.
+
+.. versionadded:: 1.0.4
+"""
+
+VAD_MIN_NONSPEECH_LENGTH = 5
+"""
+Minimum number of nonspeech frames the VAD algorithm must encounter
+to create a nonspeech interval. Default: ``5``,
+corresponding to ``200ms`` at the default frame rate.
+
+.. versionadded:: 1.0.4
 """
 
 

@@ -19,7 +19,7 @@ __copyright__ = """
     Copyright 2013-2015, ReadBeyond Srl (www.readbeyond.it)
     """
 __license__ = "GNU AGPL 3"
-__version__ = "1.0.3"
+__version__ = "1.0.4"
 __email__ = "aeneas@readbeyond.it"
 __status__ = "Production"
 
@@ -31,7 +31,7 @@ def usage():
     config_string_2 = "task_language=en|os_task_file_format=smil|os_task_file_smil_audio_ref=p001.mp3|os_task_file_smil_page_ref=p001.xhtml|is_text_type=unparsed|is_text_unparsed_id_regex=f[0-9]+|is_text_unparsed_id_sort=numeric"
     print ""
     print "Usage:"
-    print "  $ python -m %s path/to/audio.mp3 path/to/text.txt config_string /path/to/output/file.smil" % name
+    print "  $ python -m %s path/to/audio.mp3 path/to/text.txt config_string /path/to/output/file.smil [-v]" % name
     print ""
     print "Example 1 (input: parsed text, output: SRT)"
     print "  $ DIR=\"%s\"" % dir_path_1
@@ -49,10 +49,12 @@ def main():
         usage()
         return
 
+    # TODO use argparse
     audio_file_path = sys.argv[1]
     text_file_path = sys.argv[2]
     config_string = sys.argv[3]
     sync_map_file_path = sys.argv[4]
+    verbose = (sys.argv[-1] == "-v")
 
     print "[INFO] Creating task..."
     task = Task(config_string)
@@ -62,7 +64,7 @@ def main():
     print "[INFO] Creating task... done"
 
     print "[INFO] Executing task..."
-    logger = Logger(tee=False)
+    logger = Logger(tee=verbose)
     executor = ExecuteTask(task=task, logger=logger)
     result = executor.execute()
     print "[INFO] Executing task... done"
@@ -71,9 +73,9 @@ def main():
         print "[ERRO] An error occurred while executing the task"
         return
 
-    print "[INFO] Creating output container..."
+    print "[INFO] Creating output sync map file..."
     path = task.output_sync_map_file()
-    print "[INFO] Creating output container... done"
+    print "[INFO] Creating output sync map file... done"
 
     if path != None:
         print "[INFO] Created %s" % path

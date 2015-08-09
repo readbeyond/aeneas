@@ -16,7 +16,7 @@ __copyright__ = """
     Copyright 2013-2015, ReadBeyond Srl (www.readbeyond.it)
     """
 __license__ = "GNU AGPL 3"
-__version__ = "1.0.3"
+__version__ = "1.0.4"
 __email__ = "aeneas@readbeyond.it"
 __status__ = "Production"
 
@@ -39,7 +39,7 @@ def main():
     output_file_path = sys.argv[2]
     converter = FFMPEGWrapper()
     converter.convert(input_file_path, output_file_path)
-    print "Converted '%s' into '%s'" % (input_file_path, output_file_path)
+    print "[INFO] Converted '%s' into '%s'" % (input_file_path, output_file_path)
 
 if __name__ == '__main__':
     main()

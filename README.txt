@@ -4,8 +4,8 @@ aeneas
 **aeneas** is a Python library and a set of tools to automagically
 synchronize audio and text.
 
--  Version: 1.0.3
--  Date: 2015-06-12
+-  Version: 1.0.4
+-  Date: 2015-08-09
 -  Developed by: `ReadBeyond <http://www.readbeyond.it/>`__
 -  Lead Developer: `Alberto Pettarin <http://www.albertopettarin.it/>`__
 -  License: the GNU Affero General Public License Version 3 (AGPL v3)
@@ -43,7 +43,7 @@ audio file <aeneas/tests/res/container/job/assets/p001.mp3>`__,
 
 Moreover, the map can be output in several formats: SMIL for EPUB 3,
 SRT/TTML/VTT for closed captioning, JS for Web usage, or raw
-CSV/TSV/TXT/XML for further processing.
+CSV/SSV/TSV/TXT/XML for further processing.
 
 System Requirements, Supported Platforms and Installation
 ---------------------------------------------------------
@@ -81,7 +81,8 @@ sure ``ffmpeg``, ``ffprobe`` and ``espeak`` are properly installed and
 callable by the ``subprocess`` Python module. A way to ensure the latter
 consists in adding the three executables to your ``$PATH``.
 Alternatively, you can use VirtualBox to run **aeneas** inside a
-virtualized Debian image.
+virtualized Debian image, for example using
+`aeneas-vagrant <https://github.com/readbeyond/aeneas-vagrant>`__.
 
 Installation
 ~~~~~~~~~~~~
@@ -96,6 +97,15 @@ Installation
 If the last command prints a success message, you have all the required
 dependencies installed and you can confidently run **aeneas** in
 production.
+
+If you get an error, try running the `provided
+``install_dependencies.sh`` script <install_dependencies.sh>`__
+
+.. code:: bash
+
+    $ sudo bash install_dependencies.sh
+
+and then try running ``check_dependencies.py`` again.
 
 Alternatively, consider using the `Vagrant
 box <http://www.vagrantup.com>`__ created by
@@ -165,10 +175,12 @@ Generated from the source (requires ``sphinx``):
 Tutorial: `A Practical Introduction To The aeneas
 Package <http://www.albertopettarin.it/blog/2015/05/21/a-practical-introduction-to-the-aeneas-package.html>`__
 
+Mailing list: https://groups.google.com/d/forum/aeneas-forced-alignment
+
 Supported Features
 ------------------
 
--  Input text files in plain, parsed or unparsed format
+-  Input text files in plain, parsed, subtitles, or unparsed format
 -  Text extraction from XML (e.g., XHTML) files using ``id`` and
    ``class`` attributes
 -  Arbitrary text fragment granularity (single word, subphrase, phrase,
@@ -183,6 +195,8 @@ Supported Features
    of words, background noise/sporadic spikes
 -  Code suitable for a Web app deployment (e.g., on-demand AWS
    instances)
+-  Adjustable splitting times, including a max character/second
+   constraint for CC applications
 
 Limitations and Missing Features
 --------------------------------
@@ -206,9 +220,8 @@ TODO List
 -  Improving (removing?) dependency from ``espeak``, ``ffmpeg``,
    ``ffprobe`` executables
 -  Multilevel sync map granularity (e.g., multilevel SMIL output)
--  Enforcing a max char/second constraint for CC applications
 -  Supporting input text encodings other than UTF-8
--  Adding more languages
+-  Adding (testing) more languages
 -  Better documentation
 -  Testing other approaches, like HMM
 -  Publishing the package on PyPI
@@ -264,6 +277,13 @@ No copy rights were harmed in the making of this project.
 
 Supporting and Contributing
 ---------------------------
+
+Sponsors
+~~~~~~~~
+
+-  **July 2015**: `Michele
+   Gianella <https://plus.google.com/+michelegianella/about>`__
+   generously supported the development of the boundary adjustment code
 
 Supporting
 ~~~~~~~~~~
