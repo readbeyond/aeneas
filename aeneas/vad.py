@@ -161,7 +161,7 @@ class VAD(object):
         Compute the time intervals containing speech and nonspeech,
         and store them internally in the corresponding properties.
         """
-        if (self.wave_mfcc != None) and (self.wave_len != None):
+        if (self.wave_mfcc is not None) and (self.wave_len is not None):
             self._log("Computing VAD for wave")
             self.speech, self.nonspeech = self._compute_vad()
         else:

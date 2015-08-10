@@ -158,7 +158,10 @@ class AdjustBoundaryAlgorithm(object):
                 ):
                 nsi_index += 1
             nsi = None
-            if current_boundary >= self.nonspeech[nsi_index][0] - 0.001:
+            if (
+                    (nsi_index < len(self.nonspeech)) and
+                    (current_boundary >= self.nonspeech[nsi_index][0] - 0.001)
+                ):
                 nsi = self.nonspeech[nsi_index]
                 nsi_index += 1
             if nsi:
