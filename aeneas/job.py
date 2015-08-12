@@ -14,10 +14,11 @@ import aeneas.globalfunctions as gf
 __author__ = "Alberto Pettarin"
 __copyright__ = """
     Copyright 2012-2013, Alberto Pettarin (www.albertopettarin.it)
-    Copyright 2013-2015, ReadBeyond Srl (www.readbeyond.it)
+    Copyright 2013-2015, ReadBeyond Srl   (www.readbeyond.it)
+    Copyright 2015,      Alberto Pettarin (www.albertopettarin.it)
     """
 __license__ = "GNU AGPL v3"
-__version__ = "1.0.4"
+__version__ = "1.1.0"
 __email__ = "aeneas@readbeyond.it"
 __status__ = "Production"
 
@@ -36,7 +37,7 @@ class Job(object):
         self.tasks = []
         self.identifier = str(uuid.uuid4()).lower()
         self.configuration = None
-        if config_string != None:
+        if config_string is not None:
             self.configuration = JobConfiguration(config_string)
 
     def add_task(self, task):
@@ -102,7 +103,7 @@ class JobConfiguration(object):
             self.fields[key] = None
 
         # populate values from config_string
-        if config_string != None:
+        if config_string is not None:
             properties = gf.config_string_to_dict(config_string)
             for key in properties:
                 if key in self.field_names:
@@ -118,7 +119,7 @@ class JobConfiguration(object):
 
         :rtype: string
         """
-        return (gc.CONFIG_STRING_SEPARATOR_SYMBOL).join(["%s%s%s" % (fn, gc.CONFIG_STRING_ASSIGNMENT_SYMBOL, self.fields[fn]) for fn in self.field_names if self.fields[fn] != None])
+        return (gc.CONFIG_STRING_SEPARATOR_SYMBOL).join(["%s%s%s" % (fn, gc.CONFIG_STRING_ASSIGNMENT_SYMBOL, self.fields[fn]) for fn in self.field_names if self.fields[fn] is not None])
 
     @property
     def description(self):
@@ -211,7 +212,7 @@ class JobConfiguration(object):
     @property
     def is_text_file_format(self):
         """
-        The text file format of the input file texts. 
+        The text file format of the input file texts.
 
         :rtype: string (from the :class:`aeneas.textfile.TextFileFormat`)
         """
@@ -283,7 +284,7 @@ class JobConfiguration(object):
     @is_text_unparsed_id_sort.setter
     def is_text_unparsed_id_sort(self, value):
         self.fields[gc.PPN_JOB_IS_TEXT_UNPARSED_ID_SORT] = value
-    
+
     @property
     def os_file_name(self):
         """

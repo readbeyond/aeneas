@@ -11,17 +11,17 @@ import os
 import re
 
 import aeneas.globalconstants as gc
-import aeneas.globalfunctions as gf
 from aeneas.idsortingalgorithm import IDSortingAlgorithm
 from aeneas.logger import Logger
 
 __author__ = "Alberto Pettarin"
 __copyright__ = """
     Copyright 2012-2013, Alberto Pettarin (www.albertopettarin.it)
-    Copyright 2013-2015, ReadBeyond Srl (www.readbeyond.it)
+    Copyright 2013-2015, ReadBeyond Srl   (www.readbeyond.it)
+    Copyright 2015,      Alberto Pettarin (www.albertopettarin.it)
     """
 __license__ = "GNU AGPL v3"
-__version__ = "1.0.4"
+__version__ = "1.1.0"
 __email__ = "aeneas@readbeyond.it"
 __status__ = "Production"
 
@@ -151,7 +151,7 @@ class TextFragment(object):
         """
         The identifier of the text fragment.
 
-        :rtype: unicode 
+        :rtype: unicode
         """
         return self.__identifier
     @identifier.setter
@@ -215,9 +215,9 @@ class TextFile(object):
         self.parameters = parameters
         self.fragments = []
         self.logger = Logger()
-        if logger != None:
+        if logger is not None:
             self.logger = logger
-        if (self.file_path != None) and (self.file_format != None):
+        if (self.file_path is not None) and (self.file_format is not None):
             self._read_from_file()
 
     def __len__(self):
@@ -227,6 +227,7 @@ class TextFile(object):
         return "\n".join([str(f) for f in self.fragments])
 
     def _log(self, message, severity=Logger.DEBUG):
+        """ Log """
         self.logger.log(message, severity, self.TAG)
 
     @property
@@ -410,13 +411,13 @@ class TextFile(object):
         attributes = dict()
         if gc.PPN_JOB_IS_TEXT_UNPARSED_CLASS_REGEX in parameters:
             class_regex_string = parameters[gc.PPN_JOB_IS_TEXT_UNPARSED_CLASS_REGEX]
-            if class_regex_string != None:
+            if class_regex_string is not None:
                 self._log(["Regex for class: '%s'", class_regex_string])
                 class_regex = re.compile(r".*\b" + class_regex_string + r"\b.*")
                 attributes['class'] = class_regex
         if gc.PPN_JOB_IS_TEXT_UNPARSED_ID_REGEX in parameters:
             id_regex_string = parameters[gc.PPN_JOB_IS_TEXT_UNPARSED_ID_REGEX]
-            if id_regex_string != None:
+            if id_regex_string is not None:
                 self._log(["Regex for id: '%s'", id_regex_string])
                 id_regex = re.compile(r".*\b" + id_regex_string + r"\b.*")
                 attributes['id'] = id_regex

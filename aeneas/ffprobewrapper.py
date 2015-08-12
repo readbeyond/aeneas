@@ -16,10 +16,11 @@ from aeneas.logger import Logger
 __author__ = "Alberto Pettarin"
 __copyright__ = """
     Copyright 2012-2013, Alberto Pettarin (www.albertopettarin.it)
-    Copyright 2013-2015, ReadBeyond Srl (www.readbeyond.it)
+    Copyright 2013-2015, ReadBeyond Srl   (www.readbeyond.it)
+    Copyright 2015,      Alberto Pettarin (www.albertopettarin.it)
     """
 __license__ = "GNU AGPL v3"
-__version__ = "1.0.4"
+__version__ = "1.1.0"
 __email__ = "aeneas@readbeyond.it"
 __status__ = "Production"
 
@@ -110,10 +111,11 @@ class FFPROBEWrapper(object):
 
     def __init__(self, logger=None):
         self.logger = logger
-        if logger == None:
+        if logger is None:
             self.logger = Logger()
 
     def _log(self, message, severity=Logger.DEBUG):
+        """ Log """
         self.logger.log(message, severity, self.TAG)
 
     def read_properties(self, audio_file_path):
@@ -190,7 +192,7 @@ class FFPROBEWrapper(object):
         self._log("Call completed")
 
         # if no output, raise error
-        if (stdoutdata == None) or (len(stderrdata) == 0):
+        if (stdoutdata is None) or (len(stderrdata) == 0):
             msg = "No output for '%s'" % audio_file_path
             self._log(msg, Logger.CRITICAL)
             raise Exception(msg)
@@ -199,7 +201,7 @@ class FFPROBEWrapper(object):
         results = dict()
 
         # scan the first audio stream the ffprobe stdout output
-        # TODO more robust parsing 
+        # TODO more robust parsing
         # TODO deal with multiple audio streams
         for line in stdoutdata.splitlines():
             if line == self.STDOUT_END_STREAM:
@@ -218,11 +220,11 @@ class FFPROBEWrapper(object):
 
         try:
             # if audio_length is still None, scan ffprobe stderr output
-            if results[self.STDOUT_DURATION] == None:
+            if results[self.STDOUT_DURATION] is None:
                 pattern = re.compile(self.STDERR_DURATION_REGEX)
                 for line in stderrdata.splitlines():
                     match = pattern.search(line)
-                    if match != None:
+                    if match is not None:
                         self._log(["Found matching line '%s'", line])
                         v_h = int(match.group(1))
                         v_m = int(match.group(2))

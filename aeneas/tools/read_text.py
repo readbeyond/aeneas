@@ -14,21 +14,23 @@ from aeneas.tools import get_rel_path
 __author__ = "Alberto Pettarin"
 __copyright__ = """
     Copyright 2012-2013, Alberto Pettarin (www.albertopettarin.it)
-    Copyright 2013-2015, ReadBeyond Srl (www.readbeyond.it)
+    Copyright 2013-2015, ReadBeyond Srl   (www.readbeyond.it)
+    Copyright 2015,      Alberto Pettarin (www.albertopettarin.it)
     """
 __license__ = "GNU AGPL 3"
-__version__ = "1.0.4"
+__version__ = "1.1.0"
 __email__ = "aeneas@readbeyond.it"
 __status__ = "Production"
 
 def usage():
+    """ Print usage message """
     name = "aeneas.tools.read_text"
     file_path_1 = get_rel_path("../tests/res/inputtext/sonnet_parsed.txt")
     file_path_2 = get_rel_path("../tests/res/inputtext/sonnet_plain.txt")
     file_path_3 = get_rel_path("../tests/res/inputtext/sonnet_unparsed_class_id.xhtml")
     print ""
     print "Usage:"
-    print "  $ python -m %s [list|parsed|plain|unparsed] /path/to/text_file [parameters]" % name 
+    print "  $ python -m %s [list|parsed|plain|unparsed] /path/to/text_file [parameters]" % name
     print ""
     print "Example:"
     print "  $ python -m %s list     'fragment 1|fragment 2|fragment 3'" % name
@@ -41,13 +43,12 @@ def usage():
     print ""
 
 def main():
+    """ Entry point """
     if len(sys.argv) < 3:
         usage()
         return
-
     text_format = sys.argv[1]
     file_path = sys.argv[2]
-
     parameters = {}
     for i in range(3, len(sys.argv)):
         key, value = sys.argv[i].split("=")

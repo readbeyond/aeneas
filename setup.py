@@ -1,14 +1,32 @@
 #!/usr/bin/env python
+# coding=utf-8
+
+"""
+Set aeneas package up
+"""
 
 try:
     from setuptools import setup
 except ImportError:
     from distutils.core import setup
 
+__author__ = "Alberto Pettarin"
+__copyright__ = """
+    Copyright 2012-2013, Alberto Pettarin (www.albertopettarin.it)
+    Copyright 2013-2015, ReadBeyond Srl   (www.readbeyond.it)
+    Copyright 2015,      Alberto Pettarin (www.albertopettarin.it)
+    """
+__license__ = "GNU AGPL 3"
+__version__ = "1.1.0"
+__email__ = "aeneas@readbeyond.it"
+__status__ = "Production"
+
+# TODO find out how to compile/install cdtw and cmfcc
+
 setup(
     name='aeneas',
     packages=['aeneas', 'aeneas.tests', 'aeneas.tools'],
-    version='1.0.4',
+    version='1.1.0',
     description='aeneas is a Python library and a set of tools to automagically synchronize audio and text',
     author='Alberto Pettarin',
     author_email='alberto@albertopettarin.it',

@@ -19,14 +19,16 @@ import aeneas.globalfunctions as gf
 __author__ = "Alberto Pettarin"
 __copyright__ = """
     Copyright 2012-2013, Alberto Pettarin (www.albertopettarin.it)
-    Copyright 2013-2015, ReadBeyond Srl (www.readbeyond.it)
+    Copyright 2013-2015, ReadBeyond Srl   (www.readbeyond.it)
+    Copyright 2015,      Alberto Pettarin (www.albertopettarin.it)
     """
 __license__ = "GNU AGPL 3"
-__version__ = "1.0.4"
+__version__ = "1.1.0"
 __email__ = "aeneas@readbeyond.it"
 __status__ = "Production"
 
 def usage():
+    """ Print usage message """
     name = "aeneas.tools.run_vad"
     dir_path = get_rel_path("../tests/res/example_jobs/example1/OEBPS/Resources")
     print ""
@@ -42,23 +44,23 @@ def usage():
     print ""
 
 def cleanup(handler, path):
-    if handler != None:
+    """ Remove temporary hadler/file """
+    if handler is not None:
         try:
             os.close(handler)
         except:
             pass
-    if path != None:
+    if path is not None:
         try:
             os.remove(path)
         except:
             pass
 
 def main():
+    """ Entry point """
     if len(sys.argv) < 4:
         usage()
         return
-
-    # TODO use argparse
     audio_file_path = sys.argv[1]
     tmp_handler, tmp_file_path = tempfile.mkstemp(
         suffix=".wav",
@@ -71,7 +73,7 @@ def main():
     if mode not in ["speech", "nonspeech", "both"]:
         usage()
         return
-    
+
     logger = Logger(tee=verbose)
 
     print "[INFO] Converting audio file to mono..."

@@ -533,6 +533,7 @@ The ``aeneas.tools`` package also contains other programs
 useful for debugging:
 
 #. ``aeneas.tools.espeak_wrapper`` (a wrapper around ``espeak``)
+#. ``aeneas.tools.extract_mfcc`` (extract MFCCs from a monoaural wav file)
 #. ``aeneas.tools.ffmpeg_wrapper`` (a wrapper around ``ffmpeg``)
 #. ``aeneas.tools.ffprobe_wrapper`` (a wrapper around ``ffprobe``)
 #. ``aeneas.tools.read_audio`` (read the properties of an audio file)

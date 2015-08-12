@@ -15,10 +15,11 @@ from aeneas.logger import Logger
 __author__ = "Alberto Pettarin"
 __copyright__ = """
     Copyright 2012-2013, Alberto Pettarin (www.albertopettarin.it)
-    Copyright 2013-2015, ReadBeyond Srl (www.readbeyond.it)
+    Copyright 2013-2015, ReadBeyond Srl   (www.readbeyond.it)
+    Copyright 2015,      Alberto Pettarin (www.albertopettarin.it)
     """
 __license__ = "GNU AGPL v3"
-__version__ = "1.0.4"
+__version__ = "1.1.0"
 __email__ = "aeneas@readbeyond.it"
 __status__ = "Production"
 
@@ -32,7 +33,7 @@ class AdjustBoundaryAlgorithm(object):
     :param text_map: a text map list [[start, end, id, text], ..., []]
     :type  text_map: list
     :param speech: a list of time intervals [[s_1, e_1,], ..., [s_k, e_k]]
-                   containing speech 
+                   containing speech
     :type  speech: list
     :param nonspeech: a list of time intervals [[s_1, e_1,], ..., [s_j, e_j]]
                       not containing speech
@@ -57,6 +58,12 @@ class AdjustBoundaryAlgorithm(object):
     """ Set the boundary at ``value`` seconds
     before the beginning of the next fragment """
 
+    OFFSET = "offset"
+    """ Offset the current boundaries by ``value`` seconds
+
+    .. versionadded:: 1.1.0
+    """
+
     PERCENT = "percent"
     """ Set the boundary at ``value`` percent of
     the nonspeech interval between the current and the next fragment """
@@ -65,21 +72,42 @@ class AdjustBoundaryAlgorithm(object):
     """ Adjust boundaries trying to respect the
     ``value`` characters/second constraint """
 
+    RATEAGGRESSIVE = "rateaggressive"
+    """ Adjust boundaries trying to respect the
+    ``value`` characters/second constraint (aggressive mode)
+
+    .. versionadded:: 1.1.0
+    """
+
     ALLOWED_VALUES = [
         AFTERCURRENT,
         AUTO,
         BEFORENEXT,
+        OFFSET,
         PERCENT,
-        RATE
+        RATE,
+        RATEAGGRESSIVE
     ]
     """ List of all the allowed values """
 
     DEFAULT_MAX_RATE = 21.0
-    """ Default max rate (used only when RATE algorithm is used) """
+    """ Default max rate (used only when RATE or RATEAGGRESSIVE
+    algorithms are used) """
+
+    TOLERANCE = 0.001
+    """ Tolerance when comparing floats """
 
     TAG = "AdjustBoundaryAlgorithm"
 
-    def __init__(self, algorithm, text_map, speech, nonspeech, value=None, logger=None):
+    def __init__(
+            self,
+            algorithm,
+            text_map,
+            speech,
+            nonspeech,
+            value=None,
+            logger=None
+        ):
         self.algorithm = algorithm
         self.text_map = copy.deepcopy(text_map)
         self.speech = speech
@@ -87,7 +115,7 @@ class AdjustBoundaryAlgorithm(object):
         self.value = value
         self.logger = logger
         self.max_rate = self.DEFAULT_MAX_RATE
-        if self.logger == None:
+        if self.logger is None:
             self.logger = Logger()
 
     def _log(self, message, severity=Logger.DEBUG):
@@ -100,19 +128,43 @@ class AdjustBoundaryAlgorithm(object):
 
         :rtype: list of intervals
         """
-        if self.text_map == None:
-            # TODO raise instead?
-            return None
+        if self.text_map is None:
+            raise AttributeError("Text map is None")
         if self.algorithm == self.AUTO:
-            return self.text_map
-        elif self.algorithm == self.RATE:
-            return self._adjust_rate()
-        elif self.algorithm == self.PERCENT:
-            return self._adjust_percent()
+            return self._adjust_auto()
         elif self.algorithm == self.AFTERCURRENT:
             return self._adjust_aftercurrent()
         elif self.algorithm == self.BEFORENEXT:
             return self._adjust_beforenext()
+        elif self.algorithm == self.OFFSET:
+            return self._adjust_offset()
+        elif self.algorithm == self.PERCENT:
+            return self._adjust_percent()
+        elif self.algorithm == self.RATE:
+            return self._adjust_rate(False)
+        elif self.algorithm == self.RATEAGGRESSIVE:
+            return self._adjust_rate(True)
+        return self.text_map
+
+    def _adjust_auto(self):
+        self._log("Called _adjust_auto: returning text_map unchanged")
+        return self.text_map
+
+    def _adjust_offset(self):
+        self._log("Called _adjust_offset")
+        try:
+            value = float(self.value)
+            for index in range(1, len(self.text_map)):
+                current = self.text_map[index]
+                previous = self.text_map[index - 1]
+                if value >= 0:
+                    offset = min(value, current[1] - current[0])
+                else:
+                    offset = -min(-value, previous[1] - previous[0])
+                previous[1] += offset
+                current[0] += offset
+        except:
+            self._log("Exception in _adjust_offset: returning text_map unchanged")
         return self.text_map
 
     def _adjust_percent(self):
@@ -151,16 +203,16 @@ class AdjustBoundaryAlgorithm(object):
         for index in range(len(self.text_map) - 1):
             current_boundary = self.text_map[index][1]
             self._log(["current_boundary: %.3f", current_boundary])
-            # the -/+ 0.001 tolerance comparison seems necessary
+            # the tolerance comparison seems necessary
             while (
                     (nsi_index < len(self.nonspeech)) and
-                    (self.nonspeech[nsi_index][1] + 0.001 <= current_boundary)
+                    (self.nonspeech[nsi_index][1] + self.TOLERANCE <= current_boundary)
                 ):
                 nsi_index += 1
             nsi = None
             if (
                     (nsi_index < len(self.nonspeech)) and
-                    (current_boundary >= self.nonspeech[nsi_index][0] - 0.001)
+                    (current_boundary >= self.nonspeech[nsi_index][0] - self.TOLERANCE)
                 ):
                 nsi = self.nonspeech[nsi_index]
                 nsi_index += 1
@@ -182,16 +234,18 @@ class AdjustBoundaryAlgorithm(object):
                 self._log("  no nonspeech interval found: no adjustment performed")
         return self.text_map
 
-    def _time_in_interval(self, time, start, end):
-        return (time >= start) and (time <= end)
-
     def _len(self, string):
-        # return the length of the string
-        # if more than 2 times the max_rate,
-        # one space will become a newline
-        # hence we do not count it
-        # e.g., max_rate = 21 => max 42 chars per line
-        #
+        """
+        Return the length of the given string.
+        If it is greater than 2 times the max_rate,
+        one space will become a newline,
+        and hence we do not count it
+        (e.g., max_rate = 21 => max 42 chars per line).
+
+        :param string: the string to be counted
+        :type  string: string
+        :rtype: int
+        """
         # TODO this should depend on the number of lines
         #      in the text fragment; current code assumes
         #      at most 2 lines of at most max_rate characters each
@@ -203,37 +257,114 @@ class AdjustBoundaryAlgorithm(object):
             length -= 1
         return length
 
+    def _time_in_interval(self, time, start, end):
+        """
+        Decides whether the given time is within the given interval.
+
+        :param time: a time value
+        :type  time: float
+        :param start: the start of the interval
+        :type  start: float
+        :param end: the end of the interval
+        :type  end: float
+        :rtype: bool
+        """
+        return (time >= start) and (time <= end)
+
     # TODO a more efficient search (e.g., binary) is possible
-    # the -/+ 0.001 tolerance comparison seems necessary
+    # the tolerance comparison seems necessary
     def _find_interval_containing(self, intervals, time):
+        """
+        Return the interval containing the given time,
+        or None if no such interval exists.
+
+        :param intervals: a list of time intervals
+                          [[s_1, e_1], ..., [s_k, e_k]]
+        :type  intervals: list of lists
+        :param time: a time value
+        :type  time: float
+        :rtype: a time interval ``[s, e]`` or ``None``
+        """
         for interval in intervals:
-            start = interval[0] - 0.001
-            end = interval[1] + 0.001
+            start = interval[0] - self.TOLERANCE
+            end = interval[1] + self.TOLERANCE
             if self._time_in_interval(time, start, end):
                 return interval
         return None
 
-    def _compute_rate(self, fragment=None, start=None, end=None, num=None):
-        if fragment:
-            start = fragment[0]
-            end = fragment[1]
-            num = self._len(fragment[3])
+    def _compute_rate_raw(self, start, end, length):
+        """
+        Compute the rate of a fragment, that is,
+        the number of characters per second.
+
+        :param start: the start time
+        :type  start: float
+        :param end: the end time
+        :type  end: float
+        :param length: the number of character (possibly adjusted) of the text
+        :type length: int
+        :rtype: float
+        """
         duration = end - start
         if duration > 0:
-            return num / (end - start)
+            return length / duration
         return 0
 
-    def _adjust_rate(self):
+    def _compute_rate(self, index):
+        """
+        Compute the rate of a fragment, that is,
+        the number of characters per second.
+
+        :param index: the index of the fragment in the text map
+        :type  index: int
+        :rtype: float
+        """
+        if (index < 0) or (index >= len(self.text_map)):
+            return 0
+        fragment = self.text_map[index]
+        start = fragment[0]
+        end = fragment[1]
+        length = self._len(fragment[3])
+        return self._compute_rate_raw(start, end, length)
+
+    def _compute_slack(self, index):
+        """
+        Return the slack of a fragment, that is,
+        the difference between the current duration
+        of the fragment and the duration it should have
+        if its rate was exactly self.max_rate
+
+        If the slack is positive, the fragment
+        can be shrinken; if the slack is negative,
+        the fragment should be stretched.
+
+        The returned value can be None,
+        in case the index is out of self.text_map bounds.
+
+        :param index: the index of the fragment in the text map
+        :type  index: int
+        :rtype: float
+        """
+        if (index < 0) or (index >= len(self.text_map)):
+            return None
+        fragment = self.text_map[index]
+        start = fragment[0]
+        end = fragment[1]
+        length = self._len(fragment[3])
+        duration = end - start
+        return duration - (length / self.max_rate)
+
+    def _adjust_rate(self, aggressive=False):
         try:
             self.max_rate = float(self.value)
         except:
-            pass 
+            pass
         faster = []
         # TODO numpy-fy this loop?
         for index in range(len(self.text_map)):
             fragment = self.text_map[index]
             self._log(["Fragment %d", index])
-            rate = self._compute_rate(fragment=fragment)
+            rate = self._compute_rate(index)
             self._log(["  %.3f %.3f => %.3f", fragment[0], fragment[1], rate])
             if rate > self.max_rate:
                 self._log("  too fast")
@@ -245,132 +376,202 @@ class AdjustBoundaryAlgorithm(object):
 
         if len(faster) == 0:
             self._log(["No fragment faster than max rate %.3f", self.max_rate])
-            #return text_map
+            return self.text_map
 
         # TODO numpy-fy this loop?
         # try fixing faster fragments
+        self._log("Fixing faster fragments...")
         for index in faster:
-            self._log(["Faster fragment %d", index])
-            # determine which direction we can expand the fragment
-            expand_back = True
-            expand_forward = True
-            if index == 0:
-                self._log("first fragment => only choice is expanding forward")
-                expand_back = False
-            if index == len(self.text_map) - 1:
-                self._log("last fragment => only choice is expanding backward")
-                expand_forward = False
-            if (index + 1) in faster:
-                self._log("the next one is also faster => only choice is expanding backward")
-                expand_forward = False
-            # try to fix the current faster fragment
-            succeeded = False
-            if expand_back:
-                # first, try expading backward, if possible
+            self._log(["Fixing faster fragment %d ...", index])
+            if aggressive:
                 try:
-                    self._log("  Trying to expand backward")
-                    succeeded = self._expand_backward(index)
+                    self._rateaggressive_fix_fragment(index)
                 except:
-                    self._log("Exception in _expand_backward")
-            if (not succeeded) and (expand_forward):
-                # if not succeeded, try expanding forward, if possible
+                    self._log("Exception in _rateaggressive_fix_fragment")
+            else:
                 try:
-                    self._log("  Trying to expand forward")
-                    succeeded = self._expand_forward(index)
+                    self._rate_fix_fragment(index)
                 except:
-                    self._log("Exception in _expand_forward")
-            if not succeeded:
-                self._log(["Not succeeded in fixing fragment %d", index])
-        
+                    self._log("Exception in _rate_fix_fragment")
+            self._log(["Fixing faster fragment %d ... done", index])
+        self._log("Fixing faster fragments... done")
         return self.text_map
 
-    # TODO unify with _expand_forward
-    def _expand_backward(self, index):
-        self._log(["Expanding backward fragment %d", index])
-        previous = self.text_map[index - 1]
-        previous_rate = self._compute_rate(fragment=previous)
-        self._log(["  previous: %.3f %.3f => %.3f", previous[0], previous[1], previous_rate])
+    def _rate_fix_fragment(self, index):
+        """
+        Fix index-th fragment using the rate algorithm (standard variant).
+        """
+        succeeded = False
         current = self.text_map[index]
-        current_rate = self._compute_rate(fragment=current)
-        self._log(["  current: %.3f %.3f => %.3f", current[0], current[1], current_rate])
-        nsi = self._find_interval_containing(self.nonspeech, current[0])
-        if nsi:
-            if nsi[0] > previous[0]:
-                self._log(["  found suitable nsi starting at %.3f", nsi[0]])
-                new_boundary = current[0]
-                satisfied = False
-                # TODO can we perform a direct computation
-                # to find the "optimal" boundary?
-                while (not satisfied) and (nsi[0] <= new_boundary):
-                    self._log(["   evaluating new_boundary at %.3f", new_boundary])
-                    if self._compute_rate(start=previous[0], end=new_boundary, num=len(previous[3])) <= self.max_rate:
-                        if self._compute_rate(start=new_boundary, end=current[1], num=len(current[3])) <= self.max_rate:
-                            self._log("   current rate satisfied")
-                            satisfied = True
-                        else:
-                            self._log("   current rate not satisfied")
-                            new_boundary -= 0.001
-                    else:
-                        self._log("   previous rate not satisfied")
-                        break
-                new_boundary = max(new_boundary, nsi[0])
-                self.text_map[index - 1][1] = new_boundary
-                self.text_map[index][0] = new_boundary
-                self._log(["   new boundary set at %.3f", new_boundary])
-                self._log(["   new previous rate   %.3f", self._compute_rate(fragment=self.text_map[index - 1])])
-                self._log(["   new current  rate   %.3f", self._compute_rate(fragment=self.text_map[index])])
-                self._log(["   current fragment fixed? %d", satisfied])
-                return satisfied
-            else:
-                self._log("  nsi found is not suitable")
-        else:
-            self._log("  no nsi found")
-        self._log("  current fragment not fixed")
-        return False
+        current_start = current[0]
+        current_end = current[1]
+        current_rate = self._compute_rate(index)
+        previous_slack = self._compute_slack(index - 1)
+        current_slack = self._compute_slack(index)
+        next_slack = self._compute_slack(index + 1)
+        if previous_slack is not None:
+            previous = self.text_map[index - 1]
+            self._log(["  previous:       %.3f %.3f => %.3f", previous[0], previous[1], self._compute_rate(index - 1)])
+            self._log(["  previous slack: %.3f", previous_slack])
+        if current_slack is not None:
+            self._log(["  current:        %.3f %.3f => %.3f", current_start, current_end, current_rate])
+            self._log(["  current  slack: %.3f", current_slack])
+        if next_slack is not None:
+            nextf = self.text_map[index]
+            self._log(["  next:           %.3f %.3f => %.3f", nextf[0], nextf[1], self._compute_rate(index + 1)])
+            self._log(["  next     slack: %.3f", next_slack])
 
-    # TODO unify with _expand_backward
-    def _expand_forward(self, index):
-        self._log(["Expanding forward fragment %d", index])
-        current = self.text_map[index]
-        current_rate = self._compute_rate(fragment=current)
-        self._log(["  current: %.3f %.3f => %.3f", current[0], current[1], current_rate])
-        nextf = self.text_map[index + 1]
-        nextf_rate = self._compute_rate(fragment=nextf)
-        self._log(["  next: %.3f %.3f => %.3f", nextf[0], nextf[1], nextf_rate])
-        nsi = self._find_interval_containing(self.nonspeech, current[1])
-        if nsi:
-            if nsi[1] < nextf[1]:
-                self._log(["  found suitable nsi ending at %.3f", nsi[1]])
-                new_boundary = current[1]
-                satisfied = False
-                # TODO can we perform a direct computation
-                # to find the "optimal" boundary?
-                while (not satisfied) and (new_boundary <= nsi[1]):
-                    self._log(["   evaluating new_boundary at %.3f", new_boundary])
-                    if self._compute_rate(start=new_boundary, end=nextf[1], num=len(nextf[3])) <= self.max_rate:
-                        if self._compute_rate(start=current[0], end=new_boundary, num=len(current[3])) <= self.max_rate:
-                            self._log("   current rate satisfied")
-                            satisfied = True
-                        else:
-                            self._log("   current rate not satisfied")
-                            new_boundary += 0.001
+        # try expanding into the previous fragment
+        new_start = current_start
+        new_end = current_end
+        if (previous_slack is not None) and (previous_slack > 0):
+            self._log("  can expand into previous")
+            nsi = self._find_interval_containing(self.nonspeech, current[0])
+            previous = self.text_map[index - 1]
+            if nsi is not None:
+                if nsi[0] > previous[0]:
+                    self._log(["  found suitable nsi: %.3f %.3f", nsi[0], nsi[1]])
+                    previous_slack = min(current[0] - nsi[0], previous_slack)
+                    self._log(["  previous slack after min: %.3f", previous_slack])
+                    if previous_slack + current_slack >= 0:
+                        self._log("  enough slack to completely fix")
+                        steal_from_previous = -current_slack
+                        succeeded = True
                     else:
-                        self._log("   next rate not satisfied")
-                        break
-                new_boundary = min(new_boundary, nsi[1])
-                self.text_map[index][1] = new_boundary
-                self.text_map[index + 1][0] = new_boundary
-                self._log(["   new boundary set at %.3f", new_boundary])
-                self._log(["   new current rate    %.3f", self._compute_rate(fragment=self.text_map[index])])
-                self._log(["   new next    rate    %.3f", self._compute_rate(fragment=self.text_map[index + 1])])
-                self._log(["   current fragment fixed? %d", satisfied])
-                return satisfied
+                        self._log("  not enough slack to completely fix")
+                        steal_from_previous = previous_slack
+                    new_start = current_start - steal_from_previous
+                    self.text_map[index - 1][1] = new_start
+                    self.text_map[index][0] = new_start
+                    new_rate = self._compute_rate(index)
+                    self._log(["    old: %.3f %.3f => %.3f", current_start, current_end, current_rate])
+                    self._log(["    new: %.3f %.3f => %.3f", new_start, new_end, new_rate])
+                else:
+                    self._log("  nsi found is not suitable")
             else:
-                self._log("  nsi found is not suitable")
+                self._log("  no nsi found")
         else:
-            self._log("  no nsi found")
-        self._log("  current fragment not fixed")
-        return False 
+            self._log("  cannot expand into previous")
+
+        if succeeded:
+            self._log("  succeeded: returning")
+            return
+
+        # recompute current fragment
+        current_rate = self._compute_rate(index)
+        current_slack = self._compute_slack(index)
+        current_rate = self._compute_rate(index)
+
+        # try expanding into the next fragment
+        new_start = current_start
+        new_end = current_end
+        if (next_slack is not None) and (next_slack > 0):
+            self._log("  can expand into next")
+            nsi = self._find_interval_containing(self.nonspeech, current[1])
+            previous = self.text_map[index - 1]
+            if nsi is not None:
+                if nsi[0] > previous[0]:
+                    self._log(["  found suitable nsi: %.3f %.3f", nsi[0], nsi[1]])
+                    next_slack = min(nsi[1] - current[1], next_slack)
+                    self._log(["  next slack after min: %.3f", next_slack])
+                    if next_slack + current_slack >= 0:
+                        self._log("  enough slack to completely fix")
+                        steal_from_next = -current_slack
+                        succeeded = True
+                    else:
+                        self._log("  not enough slack to completely fix")
+                        steal_from_next = next_slack
+                    new_end = current_end + steal_from_next
+                    self.text_map[index][1] = new_end
+                    self.text_map[index + 1][0] = new_end
+                    new_rate = self._compute_rate(index)
+                    self._log(["    old: %.3f %.3f => %.3f", current_start, current_end, current_rate])
+                    self._log(["    new: %.3f %.3f => %.3f", new_start, new_end, new_rate])
+                else:
+                    self._log("  nsi found is not suitable")
+            else:
+                self._log("  no nsi found")
+        else:
+            self._log("  cannot expand into next")
+
+        if succeeded:
+            self._log("  succeeded: returning")
+            return
+
+        self._log("  not succeeded, returning")
+
+    def _rateaggressive_fix_fragment(self, index):
+        """
+        Fix index-th fragment using the rate algorithm (aggressive variant).
+        """
+        current = self.text_map[index]
+        current_start = current[0]
+        current_end = current[1]
+        current_rate = self._compute_rate(index)
+        previous_slack = self._compute_slack(index - 1)
+        current_slack = self._compute_slack(index)
+        next_slack = self._compute_slack(index + 1)
+        if previous_slack is not None:
+            self._log(["  previous slack: %.3f", previous_slack])
+        if current_slack is not None:
+            self._log(["  current  slack: %.3f", current_slack])
+        if next_slack is not None:
+            self._log(["  next     slack: %.3f", next_slack])
+        steal_from_previous = 0
+        steal_from_next = 0
+        if (
+                (previous_slack is not None) and
+                (next_slack is not None) and
+                (previous_slack > 0) and
+                (next_slack > 0)
+            ):
+            self._log("  can expand into both previous and next")
+            total_slack = previous_slack + next_slack
+            self._log(["  total    slack: %.3f", total_slack])
+            if total_slack + current_slack >= 0:
+                self._log("  enough total slack to completely fix")
+                # partition the needed slack proportionally
+                previous_percentage = previous_slack / total_slack
+                self._log(["    previous percentage: %.3f", previous_percentage])
+                steal_from_previous = -current_slack * previous_percentage
+                steal_from_next = -current_slack - steal_from_previous
+            else:
+                self._log("  not enough total slack to completely fix")
+                # consume all the available slack
+                steal_from_previous = previous_slack
+                steal_from_next = next_slack
+        elif (previous_slack is not None) and (previous_slack > 0):
+            self._log("  can expand into previous only")
+            if previous_slack + current_slack >= 0:
+                self._log("  enough previous slack to completely fix")
+                steal_from_previous = -current_slack
+            else:
+                self._log("  not enough previous slack to completely fix")
+                steal_from_previous = previous_slack
+        elif (next_slack is not None) and (next_slack > 0):
+            self._log("  can expand into next only")
+            if next_slack + current_slack >= 0:
+                self._log("  enough next slack to completely fix")
+                steal_from_next = -current_slack
+            else:
+                self._log("  not enough next slack to completely fix")
+                steal_from_next = next_slack
+        else:
+            self._log(["  fragment %d cannot be fixed", index])
+
+        self._log(["    steal from previous: %.3f", steal_from_previous])
+        self._log(["    steal from next:     %.3f", steal_from_next])
+        new_start = current_start - steal_from_previous
+        new_end = current_end + steal_from_next
+        if index - 1 >= 0:
+            self.text_map[index - 1][1] = new_start
+        self.text_map[index][0] = new_start
+        self.text_map[index][1] = new_end
+        if index + 1 < len(self.text_map):
+            self.text_map[index + 1][0] = new_end
+        new_rate = self._compute_rate(index)
+        self._log(["    old: %.3f %.3f => %.3f", current_start, current_end, current_rate])
+        self._log(["    new: %.3f %.3f => %.3f", new_start, new_end, new_rate])
 
 
 

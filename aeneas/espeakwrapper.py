@@ -16,10 +16,11 @@ from aeneas.logger import Logger
 __author__ = "Alberto Pettarin"
 __copyright__ = """
     Copyright 2012-2013, Alberto Pettarin (www.albertopettarin.it)
-    Copyright 2013-2015, ReadBeyond Srl (www.readbeyond.it)
+    Copyright 2013-2015, ReadBeyond Srl   (www.readbeyond.it)
+    Copyright 2015,      Alberto Pettarin (www.albertopettarin.it)
     """
 __license__ = "GNU AGPL v3"
-__version__ = "1.0.4"
+__version__ = "1.1.0"
 __email__ = "aeneas@readbeyond.it"
 __status__ = "Production"
 
@@ -39,10 +40,11 @@ class ESPEAKWrapper(object):
 
     def __init__(self, logger=None):
         self.logger = logger
-        if self.logger == None:
+        if self.logger is None:
             self.logger = Logger()
 
     def _log(self, message, severity=Logger.DEBUG):
+        """ Log """
         self.logger.log(message, severity, self.TAG)
 
     def _replace_language(self, language):
@@ -81,7 +83,7 @@ class ESPEAKWrapper(object):
         self._log(["Synthesizing to file: '%s'", output_file_path])
 
         # return 0 if no text is given
-        if text == None or len(text) == 0:
+        if (text is None) or (len(text) == 0):
             return 0
 
         # replace language

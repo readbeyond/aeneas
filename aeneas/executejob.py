@@ -11,7 +11,6 @@ import os
 import shutil
 import tempfile
 
-import aeneas.globalconstants as gc
 import aeneas.globalfunctions as gf
 from aeneas.analyzecontainer import AnalyzeContainer
 from aeneas.container import Container, ContainerFormat
@@ -22,10 +21,11 @@ from aeneas.validator import Validator
 __author__ = "Alberto Pettarin"
 __copyright__ = """
     Copyright 2012-2013, Alberto Pettarin (www.albertopettarin.it)
-    Copyright 2013-2015, ReadBeyond Srl (www.readbeyond.it)
+    Copyright 2013-2015, ReadBeyond Srl   (www.readbeyond.it)
+    Copyright 2015,      Alberto Pettarin (www.albertopettarin.it)
     """
 __license__ = "GNU AGPL v3"
-__version__ = "1.0.4"
+__version__ = "1.1.0"
 __email__ = "aeneas@readbeyond.it"
 __status__ = "Production"
 
@@ -64,7 +64,7 @@ class ExecuteJob(object):
         self.working_directory = None
         self.tmp_directory = None
         self.logger = logger
-        if self.logger == None:
+        if self.logger is None:
             self.logger = Logger()
 
     def _log(self, message, severity=Logger.DEBUG):
@@ -109,7 +109,7 @@ class ExecuteJob(object):
         # validate container
         self._log("Validating container...")
         validator = Validator(logger=self.logger)
-        if config_string == None:
+        if config_string is None:
             validator_result = validator.check_container(container_path)
         else:
             validator_result = validator.check_container_from_wizard(
@@ -141,7 +141,7 @@ class ExecuteJob(object):
                 logger=self.logger
             )
             analyzer = AnalyzeContainer(working_container, logger=self.logger)
-            if config_string == None:
+            if config_string is None:
                 self.job = analyzer.analyze()
             else:
                 self.job = analyzer.analyze_from_wizard(config_string)
@@ -186,7 +186,7 @@ class ExecuteJob(object):
         self._log("Writing output container for this job")
 
         # check if the job has tasks
-        if self.job == None:
+        if self.job is None:
             self._log("job is None")
             return (False, None)
         if len(self.job) == 0:
@@ -205,10 +205,10 @@ class ExecuteJob(object):
                 custom_id = task.configuration.custom_id
 
                 # check if the task has sync map and sync map file path
-                if task.sync_map_file_path == None:
+                if task.sync_map_file_path is None:
                     self._log(["Task '%s' has sync_map_file_path not set", custom_id])
                     return (False, None)
-                if task.sync_map == None:
+                if task.sync_map is None:
                     self._log(["Task '%s' has sync_map not set", custom_id])
                     return (False, None)
 
@@ -265,7 +265,7 @@ class ExecuteJob(object):
         self._log("Executing job")
 
         # check if the job has tasks
-        if self.job == None:
+        if self.job is None:
             self._log("job is None")
             return False
         if len(self.job) == 0:
@@ -317,7 +317,7 @@ class ExecuteJob(object):
         :param path: the path of the directory to be removed
         :type  path: string (path)
         """
-        if (path != None) and (os.path.isdir(path)):
+        if (path is not None) and (os.path.isdir(path)):
             try:
                 self._log(["Removing directory '%s'...", path])
                 shutil.rmtree(path)

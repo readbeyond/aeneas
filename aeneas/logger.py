@@ -10,10 +10,11 @@ import datetime
 __author__ = "Alberto Pettarin"
 __copyright__ = """
     Copyright 2012-2013, Alberto Pettarin (www.albertopettarin.it)
-    Copyright 2013-2015, ReadBeyond Srl (www.readbeyond.it)
+    Copyright 2013-2015, ReadBeyond Srl   (www.readbeyond.it)
+    Copyright 2015,      Alberto Pettarin (www.albertopettarin.it)
     """
 __license__ = "GNU AGPL v3"
-__version__ = "1.0.4"
+__version__ = "1.1.0"
 __email__ = "aeneas@readbeyond.it"
 __status__ = "Production"
 
@@ -56,7 +57,7 @@ class Logger(object):
     #    """
     #    return self.__entries
     #@entries.setter
-    #def entries(self, entries): 
+    #def entries(self, entries):
     #    self.__entries = entries
 
     @property
@@ -68,7 +69,7 @@ class Logger(object):
         """
         return self.__tee
     @tee.setter
-    def tee(self, tee): 
+    def tee(self, tee):
         self.__tee = tee
 
     @property
@@ -81,7 +82,7 @@ class Logger(object):
         """
         return self.__indentation
     @indentation.setter
-    def indentation(self, indentation): 
+    def indentation(self, indentation):
         self.__indentation = indentation
 
     def log(self, message, severity=INFO, tag=""):
@@ -199,7 +200,7 @@ class _LogEntry(object):
         self.tag = tag
         self.indentation = indentation
         self.time = time
-    
+
     @property
     def message(self):
         """

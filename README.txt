@@ -4,8 +4,8 @@ aeneas
 **aeneas** is a Python library and a set of tools to automagically
 synchronize audio and text.
 
--  Version: 1.0.4
--  Date: 2015-08-09
+-  Version: 1.1.0
+-  Date: 2015-08-21
 -  Developed by: `ReadBeyond <http://www.readbeyond.it/>`__
 -  Lead Developer: `Alberto Pettarin <http://www.albertopettarin.it/>`__
 -  License: the GNU Affero General Public License Version 3 (AGPL v3)
@@ -92,6 +92,7 @@ Installation
     $ git clone https://github.com/readbeyond/aeneas.git
     $ cd aeneas
     $ pip install -r requirements.txt
+    $ bash compile_c_extensions.sh 
     $ python check_dependencies.py
 
 If the last command prints a success message, you have all the required
@@ -105,7 +106,12 @@ If you get an error, try running the `provided
 
     $ sudo bash install_dependencies.sh
 
-and then try running ``check_dependencies.py`` again.
+and then try running ``compile_c_extensions.sh`` and
+``check_dependencies.py`` again.
+
+If you are a Windows user, please read `these
+directions <https://groups.google.com/d/msg/aeneas-forced-alignment/p9cb1FA0X0I/8phzUgIqBAAJ>`__,
+written by Richard Margetts.
 
 Alternatively, consider using the `Vagrant
 box <http://www.vagrantup.com>`__ created by
@@ -120,6 +126,7 @@ Usage
 
        $ git clone https://github.com/readbeyond/aeneas.git
        $ cd aeneas
+       $ bash compile_c_extensions.sh     
 
 2. To compute a SMIL synchronization map ``map.smil`` for a pair
    (``audio.mp3``, ``text.txt``), you can run:
@@ -177,6 +184,8 @@ Package <http://www.albertopettarin.it/blog/2015/05/21/a-practical-introduction-
 
 Mailing list: https://groups.google.com/d/forum/aeneas-forced-alignment
 
+Changelog: http://www.readbeyond.it/aeneas/docs/changelog.html
+
 Supported Features
 ------------------
 
@@ -197,6 +206,8 @@ Supported Features
    instances)
 -  Adjustable splitting times, including a max character/second
    constraint for CC applications
+-  MFCC and DTW computed as Python C extensions to reduce the processing
+   time
 
 Limitations and Missing Features
 --------------------------------
@@ -204,14 +215,12 @@ Limitations and Missing Features
 -  Audio should match the text: large portions of spurious text or audio
    might produce a wrong sync map
 -  Audio is assumed to be spoken: not suitable/YMMV for song captioning
--  Offline (i.e., not real time/near real time) approach
 -  DTW computation is memory hungry
 -  No protection against memory trashing
 
 TODO List
 ---------
 
--  Improving the speed of the code, especially when Sakoe-Chiba kicks in
 -  Improving robustness against music in background
 -  Isolate non-speech intervals (music, prolonged silence)
 -  Automated text fragmentation based on audio analysis
@@ -221,7 +230,7 @@ TODO List
    ``ffprobe`` executables
 -  Multilevel sync map granularity (e.g., multilevel SMIL output)
 -  Supporting input text encodings other than UTF-8
--  Adding (testing) more languages
+-  Adding (i.e., testing) more languages
 -  Better documentation
 -  Testing other approaches, like HMM
 -  Publishing the package on PyPI
@@ -344,6 +353,9 @@ application
 **April 2015**: ReadBeyond Sync beta ended
 
 **May 2015**: release of this package on GitHub
+
+**August 2015**: release of v1.1.0, including Python C extensions to
+speed the computation of audio/text alignment up
 
 Acknowledgments
 ---------------

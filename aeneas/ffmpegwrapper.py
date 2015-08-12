@@ -14,10 +14,11 @@ from aeneas.logger import Logger
 __author__ = "Alberto Pettarin"
 __copyright__ = """
     Copyright 2012-2013, Alberto Pettarin (www.albertopettarin.it)
-    Copyright 2013-2015, ReadBeyond Srl (www.readbeyond.it)
+    Copyright 2013-2015, ReadBeyond Srl   (www.readbeyond.it)
+    Copyright 2015,      Alberto Pettarin (www.albertopettarin.it)
     """
 __license__ = "GNU AGPL v3"
-__version__ = "1.0.4"
+__version__ = "1.1.0"
 __email__ = "aeneas@readbeyond.it"
 __status__ = "Production"
 
@@ -88,7 +89,7 @@ class FFMPEGWrapper(object):
     def __init__(self, parameters=FFMPEG_PARAMETERS_DEFAULT, logger=None):
         self.parameters = parameters
         self.logger = logger
-        if self.logger == None:
+        if self.logger is None:
             self.logger = Logger()
         self._log(["Initialized with parameters '%s'", self.parameters])
 
@@ -153,9 +154,9 @@ class FFMPEGWrapper(object):
         arguments = []
         arguments += [gc.FFMPEG_PATH]
         arguments += ["-i", input_file_path]
-        if head_length != None:
+        if head_length is not None:
             arguments += ["-ss", head_length]
-        if process_length != None:
+        if process_length is not None:
             arguments += ["-t", process_length]
         arguments += self.parameters
         arguments += [output_file_path]

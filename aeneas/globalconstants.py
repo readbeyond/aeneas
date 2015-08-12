@@ -9,10 +9,11 @@ public parameter names, and executable paths.
 __author__ = "Alberto Pettarin"
 __copyright__ = """
     Copyright 2012-2013, Alberto Pettarin (www.albertopettarin.it)
-    Copyright 2013-2015, ReadBeyond Srl (www.readbeyond.it)
+    Copyright 2013-2015, ReadBeyond Srl   (www.readbeyond.it)
+    Copyright 2015,      Alberto Pettarin (www.albertopettarin.it)
     """
 __license__ = "GNU AGPL v3"
-__version__ = "1.0.4"
+__version__ = "1.1.0"
 __email__ = "aeneas@readbeyond.it"
 __status__ = "Production"
 
@@ -37,18 +38,19 @@ TMP_PATH = "/tmp/"
 
 ### CONSTANTS ###
 
-ALIGNER_FRAME_RATE = 25
-""" Aligner MFCC frame rate, in steps per second.
-Default: ``25``, corresponding to steps of ``40ms`` length. """
-
 ALIGNER_MARGIN = 60
 """ Aligner margin, in seconds, for striped algorithms.
 Default: ``60``, corresponding to ``60s`` ahead and behind
 (i.e., ``120s`` total margin). """
 
-ALIGNER_USE_EXACT_ALGO_WHEN_MARGIN_TOO_LARGE = True
+ALIGNER_USE_EXACT_ALGORITHM_WHEN_MARGIN_TOO_LARGE = True
 """ Use the exact DTW algorithm, instead of a striped algorithm,
 if the aligner margin is larger than the synthesized audio file.
+Default: ``True``. """
+
+ALIGNER_USE_IN_PLACE_ALGORITHMS = True
+""" Use the in place algorithm for computing the DTW accumulated cost matrix,
+effectively halving the memory used.
 Default: ``True``. """
 
 CONFIG_TXT_FILE_NAME = "config.txt"
@@ -71,6 +73,13 @@ CONFIG_STRING_SEPARATOR_SYMBOL = "|"
 
 CONFIG_STRING_ASSIGNMENT_SYMBOL = "="
 """ Assignment symbol in config string ``key=value`` pairs """
+
+MFCC_FRAME_RATE = 25
+""" MFCC frame rate, in steps per second.
+Default: ``25``, corresponding to steps of ``40ms`` length.
+
+.. versionadded:: 1.1.0
+"""
 
 PARSED_TEXT_SEPARATOR = "|"
 """ Separator for input text files in parsed format """
@@ -316,7 +325,7 @@ Example::
 
 PPN_JOB_OS_FILE_NAME = "os_job_file_name"
 """
-Key for the file name of the output container 
+Key for the file name of the output container
 
 Usage: config string, TXT config file, XML config file
 
@@ -410,46 +419,13 @@ Values: listed in :class:`aeneas.adjustboundaryalgorithm.AdjustBoundaryAlgorithm
 
 Example::
 
+    task_adjust_boundary_algorithm=aftercurrent
     task_adjust_boundary_algorithm=auto
+    task_adjust_boundary_algorithm=beforenext
+    task_adjust_boundary_algorithm=offset
     task_adjust_boundary_algorithm=percent
     task_adjust_boundary_algorithm=rate
-    task_adjust_boundary_algorithm=aftercurrent
-    task_adjust_boundary_algorithm=beforenext
-
-.. versionadded:: 1.0.4
-"""
-
-PPN_TASK_ADJUST_BOUNDARY_PERCENT_VALUE = "task_adjust_boundary_percent_value"
-"""
-Key for the percentage associated
-with ``task_adjust_boundary_algorithm=percent``
-
-Usage: config string, TXT config file, XML config file
-
-Values: int
-
-Example::
-
-    task_adjust_boundary_percent_value=0 
-    task_adjust_boundary_percent_value=50
-    task_adjust_boundary_percent_value=75
-    task_adjust_boundary_percent_value=100
-
-.. versionadded:: 1.0.4
-"""
-
-PPN_TASK_ADJUST_BOUNDARY_RATE_VALUE = "task_adjust_boundary_rate_value"
-"""
-Key for the rate, in characters/second, associated
-with ``task_adjust_boundary_algorithm=rate``
-
-Usage: config string, TXT config file, XML config file
-
-Values: float
-
-Example::
-
-    task_adjust_boundary_rate_value=21.0
+    task_adjust_boundary_algorithm=rateaggressive
 
 .. versionadded:: 1.0.4
 """
@@ -482,6 +458,59 @@ Values: float
 Example::
 
     task_adjust_boundary_beforenext_value=0.200
+
+.. versionadded:: 1.0.4
+"""
+
+PPN_TASK_ADJUST_BOUNDARY_OFFSET_VALUE = "task_adjust_boundary_offset_value"
+"""
+Key for the percentage associated
+with ``task_adjust_boundary_algorithm=offset``
+
+Usage: config string, TXT config file, XML config file
+
+Values: float
+
+Example::
+
+    task_adjust_boundary_offset_value=-0.200
+    task_adjust_boundary_offset_value=0.150
+
+.. versionadded:: 1.1.0
+"""
+
+PPN_TASK_ADJUST_BOUNDARY_PERCENT_VALUE = "task_adjust_boundary_percent_value"
+"""
+Key for the percentage associated
+with ``task_adjust_boundary_algorithm=percent``
+
+Usage: config string, TXT config file, XML config file
+
+Values: int
+
+Example::
+
+    task_adjust_boundary_percent_value=0
+    task_adjust_boundary_percent_value=50
+    task_adjust_boundary_percent_value=75
+    task_adjust_boundary_percent_value=100
+
+.. versionadded:: 1.0.4
+"""
+
+PPN_TASK_ADJUST_BOUNDARY_RATE_VALUE = "task_adjust_boundary_rate_value"
+"""
+Key for the rate, in characters/second, associated
+with ``task_adjust_boundary_algorithm=rate`` and
+``task_adjust_boundary_algorithm=rateaggressive``
+
+Usage: config string, TXT config file, XML config file
+
+Values: float
+
+Example::
+
+    task_adjust_boundary_rate_value=21.0
 
 .. versionadded:: 1.0.4
 """
@@ -688,6 +717,15 @@ Example::
 
 """
 
+USE_C_EXTENSIONS = True
+""" Try to use the C extensions instead of pure Python code.
+If the C extensions are not available, the pure Python code
+will be run instead.
+Default: ``True``.
+
+.. versionadded:: 1.1.0
+"""
+
 VAD_EXTEND_SPEECH_INTERVAL_AFTER = 0
 """
 Extend to the right (after/future)
@@ -702,14 +740,6 @@ VAD_EXTEND_SPEECH_INTERVAL_BEFORE = 0
 Extend to the left (before/past)
 a speech interval found by the VAD algorithm,
 by this many frames. Default: ``0``.
-
-.. versionadded:: 1.0.4
-"""
-
-VAD_FRAME_RATE = 25
-"""
-VAD MFCC frame rate, in steps per second.
-Default: ``25``, corresponding to steps of ``40ms`` length.
 
 .. versionadded:: 1.0.4
 """
