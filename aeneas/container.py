@@ -27,10 +27,11 @@ from aeneas.logger import Logger
 __author__ = "Alberto Pettarin"
 __copyright__ = """
     Copyright 2012-2013, Alberto Pettarin (www.albertopettarin.it)
-    Copyright 2013-2015, ReadBeyond Srl (www.readbeyond.it)
+    Copyright 2013-2015, ReadBeyond Srl   (www.readbeyond.it)
+    Copyright 2015,      Alberto Pettarin (www.albertopettarin.it)
     """
 __license__ = "GNU AGPL v3"
-__version__ = "1.0.4"
+__version__ = "1.1.0"
 __email__ = "aeneas@readbeyond.it"
 __status__ = "Production"
 
@@ -83,19 +84,20 @@ class Container(object):
         self.container_format = container_format
         self.actual_container = None
         self.logger = logger
-        if self.logger == None:
+        if self.logger is None:
             self.logger = Logger()
         self._log("Setting actual Container object")
         self._set_actual_container()
 
     def _log(self, message, severity=Logger.DEBUG):
+        """ Log """
         self.logger.log(message, severity, self.TAG)
 
     @property
     def file_path(self):
         """
         The path of this container.
-        
+
         :rtype: string (path)
         """
         return self.__file_path
@@ -123,7 +125,7 @@ class Container(object):
 
         :rtype: bool
         """
-        return self.find_entry(gc.CONFIG_XML_FILE_NAME, exact=False) != None
+        return self.find_entry(gc.CONFIG_XML_FILE_NAME, exact=False) is not None
 
     @property
     def entry_config_xml(self):
@@ -144,7 +146,7 @@ class Container(object):
 
         :rtype: bool
         """
-        return self.find_entry(gc.CONFIG_TXT_FILE_NAME, exact=False) != None
+        return self.find_entry(gc.CONFIG_TXT_FILE_NAME, exact=False) is not None
 
     @property
     def entry_config_txt(self):
@@ -197,7 +199,7 @@ class Container(object):
         :rtype: list of strings (path)
         """
         self._log("Getting entries")
-        if (self.actual_container != None) and (self.exists()):
+        if (self.actual_container is not None) and (self.exists()):
             try:
                 return self.actual_container.entries()
             except:
@@ -278,7 +280,7 @@ class Container(object):
         """
         self._log(["Decompressing the container into '%s'", output_path])
 
-        if self.actual_container == None:
+        if self.actual_container is None:
             self._log("Actual container not set, aborting")
             return
 
@@ -305,11 +307,11 @@ class Container(object):
         """
         self._log(["Compressing '%s' into this container", input_path])
 
-        if self.actual_container == None:
+        if self.actual_container is None:
             self._log("Actual container not set, aborting")
             return
 
-        if self.file_path == None:
+        if self.file_path is None:
             self._log("The container path is not set, aborting")
             return
 
@@ -330,7 +332,7 @@ class Container(object):
 
         :rtype: boolean
         """
-        return (self.file_path != None) and os.path.exists(self.file_path)
+        return (self.file_path is not None) and os.path.exists(self.file_path)
 
     def _set_actual_container(self):
         """
@@ -345,7 +347,7 @@ class Container(object):
         self._log("Setting actual container")
 
         # infer container format
-        if self.container_format == None:
+        if self.container_format is None:
             self._log("Inferring actual container format")
             path_lowercased = self.file_path.lower()
             self._log(["Lowercased file path: '%s'", path_lowercased])
@@ -384,7 +386,7 @@ class Container(object):
 
 class _ContainerTAR(object):
     """
-    A TAR container. 
+    A TAR container.
     """
 
     TAG = "ContainerTAR"
@@ -393,7 +395,7 @@ class _ContainerTAR(object):
         self.file_path = file_path
         self.variant = variant
         self.logger = logger
-        if self.logger == None:
+        if self.logger is None:
             self.logger = Logger()
 
     def entries(self):
@@ -432,7 +434,7 @@ class _ContainerTAR(object):
 
 class _ContainerZIP(object):
     """
-    A ZIP container. 
+    A ZIP container.
     """
 
     TAG = "ContainerZIP"
@@ -440,7 +442,7 @@ class _ContainerZIP(object):
     def __init__(self, file_path, logger=None):
         self.file_path = file_path
         self.logger = logger
-        if self.logger == None:
+        if self.logger is None:
             self.logger = Logger()
 
     def entries(self):
@@ -483,7 +485,7 @@ class _ContainerUnpacked(object):
     def __init__(self, file_path, logger=None):
         self.file_path = file_path
         self.logger = logger
-        if self.logger == None:
+        if self.logger is None:
             self.logger = Logger()
 
     def entries(self):

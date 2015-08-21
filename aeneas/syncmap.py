@@ -28,10 +28,11 @@ from aeneas.logger import Logger
 __author__ = "Alberto Pettarin"
 __copyright__ = """
     Copyright 2012-2013, Alberto Pettarin (www.albertopettarin.it)
-    Copyright 2013-2015, ReadBeyond Srl (www.readbeyond.it)
+    Copyright 2013-2015, ReadBeyond Srl   (www.readbeyond.it)
+    Copyright 2015,      Alberto Pettarin (www.albertopettarin.it)
     """
 __license__ = "GNU AGPL v3"
-__version__ = "1.0.4"
+__version__ = "1.1.0"
 __email__ = "aeneas@readbeyond.it"
 __status__ = "Production"
 
@@ -47,7 +48,7 @@ class SyncMap(object):
     def __init__(self, logger=None):
         self.fragments = []
         self.logger = Logger()
-        if logger != None:
+        if logger is not None:
             self.logger = logger
 
     def _log(self, message, severity=Logger.DEBUG):
@@ -121,7 +122,7 @@ class SyncMap(object):
                 return False
             text_ref = parameters[gc.PPN_TASK_OS_FILE_SMIL_PAGE_REF]
             audio_ref = parameters[gc.PPN_TASK_OS_FILE_SMIL_AUDIO_REF]
-            if (text_ref == None) or (audio_ref == None):
+            if (text_ref is None) or (audio_ref is None):
                 return False
 
         try:

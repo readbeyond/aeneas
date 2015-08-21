@@ -9,7 +9,6 @@ import numpy
 import os
 import tempfile
 
-import aeneas.globalconstants as gc
 import aeneas.globalfunctions as gf
 from aeneas.adjustboundaryalgorithm import AdjustBoundaryAlgorithm
 from aeneas.dtw import DTWAligner
@@ -17,16 +16,16 @@ from aeneas.ffmpegwrapper import FFMPEGWrapper
 from aeneas.logger import Logger
 from aeneas.syncmap import SyncMap, SyncMapFragment
 from aeneas.synthesizer import Synthesizer
-from aeneas.task import Task
 from aeneas.vad import VAD
 
 __author__ = "Alberto Pettarin"
 __copyright__ = """
     Copyright 2012-2013, Alberto Pettarin (www.albertopettarin.it)
-    Copyright 2013-2015, ReadBeyond Srl (www.readbeyond.it)
+    Copyright 2013-2015, ReadBeyond Srl   (www.readbeyond.it)
+    Copyright 2015,      Alberto Pettarin (www.albertopettarin.it)
     """
 __license__ = "GNU AGPL v3"
-__version__ = "1.0.4"
+__version__ = "1.1.0"
 __email__ = "aeneas@readbeyond.it"
 __status__ = "Production"
 
@@ -46,7 +45,7 @@ class ExecuteTask(object):
         self.task = task
         self.cleanup_info = []
         self.logger = logger
-        if self.logger == None:
+        if self.logger is None:
             self.logger = Logger()
 
     def _log(self, message, severity=Logger.DEBUG):
@@ -66,15 +65,18 @@ class ExecuteTask(object):
         self._log("Executing task")
 
         # check that we have the AudioFile object
-        if self.task.audio_file == None:
+        if self.task.audio_file is None:
             self._log("The task does not seem to have its audio file set", Logger.WARNING)
             return False
-        if (self.task.audio_file.audio_length == None) or (self.task.audio_file.audio_length <= 0):
+        if (
+                (self.task.audio_file.audio_length is None) or
+                (self.task.audio_file.audio_length <= 0)
+            ):
             self._log("The task seems to have an invalid audio file", Logger.WARNING)
             return False
 
         # check that we have the TextFile object
-        if self.task.text_file == None:
+        if self.task.text_file is None:
             self._log("The task does not seem to have its text file set", Logger.WARNING)
             return False
         if len(self.task.text_file) == 0:
@@ -106,7 +108,7 @@ class ExecuteTask(object):
 
         # STEP 3 : align waves
         self._log("STEP 3 BEGIN")
-        result, wave_map, wave_mfcc, wave_len = self._align_waves(real_path, synt_path)
+        result, wave_map, real_wave_full_mfcc, real_wave_length = self._align_waves(real_path, synt_path)
         if not result:
             self._log("STEP 3 FAILURE")
             self._cleanup()
@@ -126,8 +128,8 @@ class ExecuteTask(object):
         self._log("STEP 5 BEGIN")
         result, adjusted_map = self._adjust_boundaries(
             text_map,
-            wave_mfcc,
-            wave_len
+            real_wave_full_mfcc,
+            real_wave_length
         )
         if not result:
             self._log("STEP 5 FAILURE")
@@ -157,14 +159,14 @@ class ExecuteTask(object):
         """
         for info in self.cleanup_info:
             handler, path = info
-            if handler != None:
+            if handler is not None:
                 try:
                     self._log(["Closing handler '%s'...", handler])
                     os.close(handler)
                     self._log("Succeeded")
                 except:
                     self._log("Failed")
-            if path != None:
+            if path is not None:
                 try:
                     self._log(["Removing path '%s'...", path])
                     os.remove(path)
@@ -264,9 +266,8 @@ class ExecuteTask(object):
             self._log("Computing MFCC...")
             aligner.compute_mfcc()
             self._log("Computing MFCC... done")
-            # TODO rename
-            real_mfcc = aligner.wave_mfcc_1
-            real_len = aligner.wave_len_1
+            real_mfcc = aligner.real_wave_full_mfcc
+            real_len = aligner.real_wave_length
             self._log("Computing path...")
             aligner.compute_path()
             self._log("Computing path... done")
@@ -333,7 +334,12 @@ class ExecuteTask(object):
         except:
             return (False, None)
 
-    def _adjust_boundaries(self, text_map, wave_mfcc, wave_len):
+    def _adjust_boundaries(
+            self,
+            text_map,
+            real_wave_full_mfcc,
+            real_wave_length
+        ):
         """
         Adjust the boundaries between consecutive fragments.
 
@@ -346,7 +352,7 @@ class ExecuteTask(object):
         """
         algo = self.task.configuration.adjust_boundary_algorithm
         value = None
-        if algo == None:
+        if algo is None:
             self._log("No adjust boundary algorithm specified: returning")
             return (True, text_map)
         elif algo == AdjustBoundaryAlgorithm.AUTO:
@@ -356,17 +362,21 @@ class ExecuteTask(object):
             value = self.task.configuration.adjust_boundary_aftercurrent_value
         elif algo == AdjustBoundaryAlgorithm.BEFORENEXT:
             value = self.task.configuration.adjust_boundary_beforenext_value
+        elif algo == AdjustBoundaryAlgorithm.OFFSET:
+            value = self.task.configuration.adjust_boundary_offset_value
         elif algo == AdjustBoundaryAlgorithm.PERCENT:
             value = self.task.configuration.adjust_boundary_percent_value
         elif algo == AdjustBoundaryAlgorithm.RATE:
+            value = self.task.configuration.adjust_boundary_rate_value
+        elif algo == AdjustBoundaryAlgorithm.RATEAGGRESSIVE:
             value = self.task.configuration.adjust_boundary_rate_value
         self._log(["Requested algo %s and value %s", algo, value])
 
         try:
             self._log("Running VAD...")
             vad = VAD(logger=self.logger)
-            vad.wave_mfcc = wave_mfcc
-            vad.wave_len = wave_len
+            vad.wave_mfcc = real_wave_full_mfcc
+            vad.wave_len = real_wave_length
             vad.compute_vad()
             self._log("Running VAD... done")
         except:
@@ -401,7 +411,7 @@ class ExecuteTask(object):
             sync_map = SyncMap()
             i = 0
             head = 0
-            if self.task.configuration.is_audio_file_head_length != None:
+            if self.task.configuration.is_audio_file_head_length is not None:
                 head = gf.safe_float(self.task.configuration.is_audio_file_head_length, 0)
             for fragment in self.task.text_file.fragments:
                 start = head + text_map[i][0]

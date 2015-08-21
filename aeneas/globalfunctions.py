@@ -2,7 +2,7 @@
 # coding=utf-8
 
 """
-Global common functions. 
+Global common functions.
 """
 
 import math
@@ -16,10 +16,11 @@ import aeneas.globalconstants as gc
 __author__ = "Alberto Pettarin"
 __copyright__ = """
     Copyright 2012-2013, Alberto Pettarin (www.albertopettarin.it)
-    Copyright 2013-2015, ReadBeyond Srl (www.readbeyond.it)
+    Copyright 2013-2015, ReadBeyond Srl   (www.readbeyond.it)
+    Copyright 2015,      Alberto Pettarin (www.albertopettarin.it)
     """
 __license__ = "GNU AGPL v3"
-__version__ = "1.0.4"
+__version__ = "1.1.0"
 __email__ = "aeneas@readbeyond.it"
 __status__ = "Production"
 
@@ -54,7 +55,7 @@ def file_name_without_extension(path):
     :type  path: string (path)
     :rtype: string (path)
     """
-    if path == None:
+    if path is None:
         return None
     return os.path.splitext(os.path.basename(path))[0]
 
@@ -90,7 +91,7 @@ def safe_int(string, default=None):
     :type  default: int
     """
     value = safe_float(string, default)
-    if value != None:
+    if value is not None:
         value = int(value)
     return value
 
@@ -134,7 +135,7 @@ def config_txt_to_string(string):
     :type  string: string
     :rtype: string
     """
-    if string == None:
+    if string is None:
         return None
     pairs = [l for l in string.splitlines() if len(l) > 0]
     return gc.CONFIG_STRING_SEPARATOR_SYMBOL.join(pairs)
@@ -156,7 +157,7 @@ def config_string_to_dict(string, result=None):
     :type  string: string
     :rtype: dict
     """
-    if string == None:
+    if string is None:
         return dict()
     pairs = string.split(gc.CONFIG_STRING_SEPARATOR_SYMBOL)
     return pairs_to_dict(pairs, result)
@@ -184,7 +185,7 @@ def config_xml_to_dict(contents, result, parse_job=True):
         if parse_job:
             # parse job
             for elem in root:
-                if (elem.tag != gc.CONFIG_XML_TASKS_TAG) and (elem.text != None):
+                if (elem.tag != gc.CONFIG_XML_TASKS_TAG) and (elem.text is not None):
                     pairs.append("%s%s%s" % (
                         elem.tag,
                         gc.CONFIG_STRING_ASSIGNMENT_SYMBOL,
@@ -198,7 +199,7 @@ def config_xml_to_dict(contents, result, parse_job=True):
                 if task.tag == gc.CONFIG_XML_TASK_TAG:
                     pairs = []
                     for elem in task:
-                        if elem.text != None:
+                        if elem.text is not None:
                             pairs.append("%s%s%s" % (
                                 elem.tag,
                                 gc.CONFIG_STRING_ASSIGNMENT_SYMBOL,
@@ -262,7 +263,7 @@ def pairs_to_dict(pairs, result=None):
                     (len(tokens[0])) > 0 and
                     (len(tokens[1]) > 0)):
                 dictionary[tokens[0]] = tokens[1]
-            elif result != None:
+            elif result is not None:
                 result.add_warning("Invalid key=value string: '%s'" % pair)
     return dictionary
 
@@ -380,6 +381,38 @@ def time_to_srt(time_value):
     :rtype: string
     """
     return time_to_hhmmssmmm(time_value, ",")
+
+def can_run_c_extension(name=None):
+    """
+    Determine whether the given Python C extension loads correctly.
+
+    If ``name`` is ``None``, tests all Python C extensions,
+    and return ``True`` if and only if all load correctly.
+
+    :param name: the name of the Python C extension to test
+    :type  name: string
+    :rtype: bool
+    """
+
+    def can_run_cdtw():
+        try:
+            import aeneas.cdtw
+            return True
+        except:
+            return False
+    def can_run_cmfcc():
+        try:
+            import aeneas.cmfcc
+            return True
+        except:
+            return False
+
+    if name == "cdtw":
+        return can_run_cdtw()
+    elif name == "cmfcc":
+        return can_run_cmfcc()
+    else:
+        return can_run_cdtw() and can_run_cmfcc()
 
 
 

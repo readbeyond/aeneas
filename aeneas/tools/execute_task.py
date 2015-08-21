@@ -16,14 +16,16 @@ from aeneas.tools import get_rel_path
 __author__ = "Alberto Pettarin"
 __copyright__ = """
     Copyright 2012-2013, Alberto Pettarin (www.albertopettarin.it)
-    Copyright 2013-2015, ReadBeyond Srl (www.readbeyond.it)
+    Copyright 2013-2015, ReadBeyond Srl   (www.readbeyond.it)
+    Copyright 2015,      Alberto Pettarin (www.albertopettarin.it)
     """
 __license__ = "GNU AGPL 3"
-__version__ = "1.0.4"
+__version__ = "1.1.0"
 __email__ = "aeneas@readbeyond.it"
 __status__ = "Production"
 
 def usage():
+    """ Print usage message """
     name = "aeneas.tools.execute_task"
     dir_path_1 = get_rel_path("../tests/res/example_jobs/example1/OEBPS/Resources")
     config_string_1 = "task_language=en|os_task_file_format=srt|is_text_type=parsed"
@@ -45,11 +47,10 @@ def usage():
     print ""
 
 def main():
+    """ Entry point """
     if len(sys.argv) < 5:
         usage()
         return
-
-    # TODO use argparse
     audio_file_path = sys.argv[1]
     text_file_path = sys.argv[2]
     config_string = sys.argv[3]
@@ -77,7 +78,7 @@ def main():
     path = task.output_sync_map_file()
     print "[INFO] Creating output sync map file... done"
 
-    if path != None:
+    if path is not None:
         print "[INFO] Created %s" % path
     else:
         print "[ERRO] An error occurred while writing the output sync map file"

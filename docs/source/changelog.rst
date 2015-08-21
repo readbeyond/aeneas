@@ -1,6 +1,20 @@
 Changelog
 =========
 
+v1.1.0 (2015-08-29)
+-------------------
+
+#. Added ``cdtw`` C module for running the DTW much faster than in pure Python (falling back to Python if ``cdtw`` cannot be load)
+#. Added ``cmfcc`` C module for extracting the MFCCs much faster than in pure Python (falling back to Python if ``cmfcc`` cannot be load)
+#. Moved code for extracting MFCCs into ``AudioFile``, and rewritten ``dtw.py`` and ``vad.py`` accordingly
+#. Added ``aeneas.tools.extract_mfcc`` utility
+#. Rewritten the ``STRIPE`` and ``EXACT`` (Python) algorithms to compute the accumulated cost matrix in place
+#. Renamed ``ALIGNER_USE_EXACT_ALGO_WHEN_MARGIN_TOO_LARGE`` to ``ALIGNER_USE_EXACT_ALGORITHM_WHEN_MARGIN_TOO_LARGE``
+#. Removed ``STRIPE_NOT_OPTIMIZED`` algorithm from ``dtw.py``
+#. Added the ``OFFSET`` and ``RATEAGGRESSIVE`` boundary adjustment algorithms
+#. Cleaned the code for ``RATE`` boundary adjustment algorithm
+#. Other minor fixes and code/docs improvements
+
 v1.0.4 (2015-08-09)
 -------------------
 

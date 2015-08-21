@@ -10,22 +10,19 @@ import re
 
 import aeneas.globalconstants as gc
 import aeneas.globalfunctions as gf
-from aeneas.container import Container
 from aeneas.hierarchytype import HierarchyType
-from aeneas.job import Job, JobConfiguration
-from aeneas.language import Language
+from aeneas.job import Job
 from aeneas.logger import Logger
-from aeneas.syncmap import SyncMapFormat
-from aeneas.task import Task, TaskConfiguration
-from aeneas.textfile import TextFileFormat
+from aeneas.task import Task
 
 __author__ = "Alberto Pettarin"
 __copyright__ = """
     Copyright 2012-2013, Alberto Pettarin (www.albertopettarin.it)
-    Copyright 2013-2015, ReadBeyond Srl (www.readbeyond.it)
+    Copyright 2013-2015, ReadBeyond Srl   (www.readbeyond.it)
+    Copyright 2015,      Alberto Pettarin (www.albertopettarin.it)
     """
 __license__ = "GNU AGPL v3"
-__version__ = "1.0.4"
+__version__ = "1.1.0"
 __email__ = "aeneas@readbeyond.it"
 __status__ = "Production"
 
@@ -43,7 +40,7 @@ class AnalyzeContainer(object):
 
     def __init__(self, container, logger=None):
         self.logger = logger
-        if self.logger == None:
+        if self.logger is None:
             self.logger = Logger()
         self.container = container
 
@@ -98,7 +95,7 @@ class AnalyzeContainer(object):
         # TODO break this function down into smaller functions
         self._log("Analyzing container with TXT config string")
 
-        if config_string == None:
+        if config_string is None:
             self._log("Analyzing container with TXT config file")
             config_entry = self.container.entry_config_txt
             self._log(["Found TXT config entry '%s'", config_entry])
@@ -265,7 +262,7 @@ class AnalyzeContainer(object):
         # TODO break this function down into smaller functions
         self._log("Analyzing container with XML config string")
 
-        if config_contents == None:
+        if config_contents is None:
             self._log("Analyzing container with XML config file")
             config_entry = self.container.entry_config_xml
             self._log(["Found XML config entry '%s'", config_entry])
@@ -412,7 +409,7 @@ class AnalyzeContainer(object):
 
         :rtype: string
         """
-        if string == None:
+        if string is None:
             return None
         self._log(["Replacing '%s' with '%s' in '%s'", gc.PPV_OS_TASK_PREFIX, custom_id, string])
         return string.replace(gc.PPV_OS_TASK_PREFIX, custom_id)
@@ -463,7 +460,7 @@ class AnalyzeContainer(object):
         """
         self._log(["Finding files within root: '%s'", root])
         target = root
-        if relative_path != None:
+        if relative_path is not None:
             self._log(["Joining relative path: '%s'", relative_path])
             target = gf.norm_join(root, relative_path)
         self._log(["Finding files within target: '%s'", target])
@@ -474,7 +471,7 @@ class AnalyzeContainer(object):
                 self._log(["Examining entry: '%s'", entry])
                 entry_suffix = entry[target_len + 1:]
                 self._log(["Examining entry suffix: '%s'", entry_suffix])
-                if re.search(file_name_regex, entry_suffix) != None:
+                if re.search(file_name_regex, entry_suffix) is not None:
                     self._log(["Match: '%s'", entry])
                     files.append(entry)
                 else:
@@ -568,7 +565,7 @@ class AnalyzeContainer(object):
                 entry_splitted = entry.split(os.sep)
                 # match regex
                 if ((len(entry_splitted) >= 2) and
-                        (re.match(regex, entry_splitted[0]) != None)):
+                        (re.match(regex, entry_splitted[0]) is not None)):
                     directories.add(entry_splitted[0])
                     self._log(["Match: '%s'", entry_splitted[0]])
                 else:

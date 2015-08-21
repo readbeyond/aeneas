@@ -22,10 +22,11 @@ from aeneas.textfile import TextFileFormat
 __author__ = "Alberto Pettarin"
 __copyright__ = """
     Copyright 2012-2013, Alberto Pettarin (www.albertopettarin.it)
-    Copyright 2013-2015, ReadBeyond Srl (www.readbeyond.it)
+    Copyright 2013-2015, ReadBeyond Srl   (www.readbeyond.it)
+    Copyright 2015,      Alberto Pettarin (www.albertopettarin.it)
     """
 __license__ = "GNU AGPL v3"
-__version__ = "1.0.4"
+__version__ = "1.1.0"
 __email__ = "aeneas@readbeyond.it"
 __status__ = "Production"
 
@@ -38,7 +39,7 @@ class Validator(object):
 
     def __init__(self, logger=None):
         self.logger = logger
-        if self.logger == None:
+        if self.logger is None:
             self.logger = Logger()
 
     def _log(self, message, severity=Logger.DEBUG):
@@ -100,7 +101,7 @@ class Validator(object):
         self._log(["Checking allowed values for parameter '%s'", key])
         if key in parameters:
             value = parameters[key]
-            if (value == None) or (not value in allowed_values):
+            if (value is None) or (not value in allowed_values):
                 msg = "Parameter '%s' has value '%s' which is not allowed." % (key, value)
                 result.passed = False
                 result.add_error(msg)
@@ -172,7 +173,7 @@ class Validator(object):
 
         # check that the input parameters are not empty
         self._log("Checking input parameters are not empty")
-        if (parameters == None) or (len(parameters) == 0):
+        if (parameters is None) or (len(parameters) == 0):
             msg = "No parameters supplied."
             result.passed = False
             result.add_error(msg)
@@ -299,6 +300,14 @@ class Validator(object):
             parameters,
             gc.PPN_TASK_ADJUST_BOUNDARY_ALGORITHM,
             AdjustBoundaryAlgorithm.RATE,
+            [gc.PPN_TASK_ADJUST_BOUNDARY_RATE_VALUE],
+            result
+        )
+        # task_adjust_boundary_algorithm=rate_aggressive => task_adjust_boundary_rate_value
+        self._check_implied_parameter(
+            parameters,
+            gc.PPN_TASK_ADJUST_BOUNDARY_ALGORITHM,
+            AdjustBoundaryAlgorithm.RATEAGGRESSIVE,
             [gc.PPN_TASK_ADJUST_BOUNDARY_RATE_VALUE],
             result
         )
@@ -539,11 +548,11 @@ class Validator(object):
 
         result = ValidatorResult()
         # if no config string was passed, try to read it from container
-        if config_string == None:
+        if config_string is None:
             self._log("Trying to read config file from container")
             config_in_container = True
             config_contents = container.read_entry(container.entry_config_txt)
-            if config_contents == None:
+            if config_contents is None:
                 msg = "Unable to read the contents of TXT config file."
                 result.passed = False
                 result.add_error(msg)
@@ -657,10 +666,10 @@ class Validator(object):
 
         result = ValidatorResult()
         # if no config contents was passed, try to read them from container
-        if config_contents == None:
+        if config_contents is None:
             self._log("Trying to read config file from container")
             config_contents = container.read_entry(container.entry_config_xml)
-            if config_contents == None:
+            if config_contents is None:
                 msg = "Unable to read the contents of XML config file."
                 result.passed = False
                 result.add_error(msg)
@@ -776,7 +785,7 @@ class Validator(object):
 
         # we must have a valid Job object
         self._log("Checking the Job is not None")
-        if job == None:
+        if job is None:
             msg = "Unable to create a Job from the container."
             result.passed = False
             result.add_error(msg)
@@ -799,7 +808,7 @@ class Validator(object):
             text_file_contents = container.read_entry(task.text_file_path)
             #self._log("Removing BOM")
             #text_file_contents = gf.remove_bom(text_file_contents)
-            if ((text_file_contents == None) or
+            if ((text_file_contents is None) or
                     (len(text_file_contents) == 0) or
                     (not self._check_string_encoding(text_file_contents))):
                 msg = "Text file '%s' seems empty or it has a wrong encoding." % task.text_file_path

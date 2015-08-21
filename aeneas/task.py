@@ -12,17 +12,17 @@ import uuid
 
 import aeneas.globalconstants as gc
 import aeneas.globalfunctions as gf
-from aeneas.adjustboundaryalgorithm import AdjustBoundaryAlgorithm
 from aeneas.audiofile import AudioFile
 from aeneas.textfile import TextFile
 
 __author__ = "Alberto Pettarin"
 __copyright__ = """
     Copyright 2012-2013, Alberto Pettarin (www.albertopettarin.it)
-    Copyright 2013-2015, ReadBeyond Srl (www.readbeyond.it)
+    Copyright 2013-2015, ReadBeyond Srl   (www.readbeyond.it)
+    Copyright 2015,      Alberto Pettarin (www.albertopettarin.it)
     """
 __license__ = "GNU AGPL v3"
-__version__ = "1.0.4"
+__version__ = "1.1.0"
 __email__ = "aeneas@readbeyond.it"
 __status__ = "Production"
 
@@ -51,7 +51,7 @@ class Task(object):
         self.sync_map_file_path = None # relative to output container root
         self.sync_map_file_path_absolute = None # concrete path, file will be written to this!
         self.sync_map = None
-        if config_string != None:
+        if config_string is not None:
             self.configuration = TaskConfiguration(config_string)
 
     def __str__(self):
@@ -109,19 +109,20 @@ class Task(object):
         Create the ``self.audio_file`` object by reading
         the audio file at ``self.audio_file_path_absolute``.
         """
-        if self.audio_file_path_absolute != None:
+        if self.audio_file_path_absolute is not None:
             self.audio_file = AudioFile(
                 file_path=self.audio_file_path_absolute,
                 logger=None
             )
+            self.audio_file.read_properties()
 
     def _populate_text_file(self):
         """
         Create the ``self.text_file`` object by reading
         the text file at ``self.text_file_path_absolute``.
         """
-        if ((self.text_file_path_absolute != None) and
-                (self.configuration.language != None)):
+        if ((self.text_file_path_absolute is not None) and
+                (self.configuration.language is not None)):
             parameters = dict()
             parameters[gc.PPN_TASK_IS_TEXT_UNPARSED_CLASS_REGEX] = self.configuration.is_text_unparsed_class_regex
             parameters[gc.PPN_TASK_IS_TEXT_UNPARSED_ID_REGEX] = self.configuration.is_text_unparsed_id_regex
@@ -155,13 +156,13 @@ class Task(object):
         :type  container_root_path: string (path)
         :rtype: return the path of the sync map file created
         """
-        if self.sync_map == None:
+        if self.sync_map is None:
             return None
 
-        if (container_root_path != None) and (self.sync_map_file_path == None):
+        if (container_root_path is not None) and (self.sync_map_file_path is None):
             return None
 
-        if (container_root_path != None) and (self.sync_map_file_path != None):
+        if (container_root_path is not None) and (self.sync_map_file_path is not None):
             path = os.path.join(container_root_path, self.sync_map_file_path)
         elif self.sync_map_file_path_absolute:
             path = self.sync_map_file_path_absolute
@@ -197,10 +198,11 @@ class TaskConfiguration(object):
             gc.PPN_TASK_CUSTOM_ID,
 
             gc.PPN_TASK_ADJUST_BOUNDARY_ALGORITHM,
-            gc.PPN_TASK_ADJUST_BOUNDARY_PERCENT_VALUE,
-            gc.PPN_TASK_ADJUST_BOUNDARY_RATE_VALUE,
             gc.PPN_TASK_ADJUST_BOUNDARY_AFTERCURRENT_VALUE,
             gc.PPN_TASK_ADJUST_BOUNDARY_BEFORENEXT_VALUE,
+            gc.PPN_TASK_ADJUST_BOUNDARY_OFFSET_VALUE,
+            gc.PPN_TASK_ADJUST_BOUNDARY_PERCENT_VALUE,
+            gc.PPN_TASK_ADJUST_BOUNDARY_RATE_VALUE,
 
             gc.PPN_TASK_IS_AUDIO_FILE_HEAD_LENGTH,
             gc.PPN_TASK_IS_AUDIO_FILE_PROCESS_LENGTH,
@@ -219,7 +221,7 @@ class TaskConfiguration(object):
             self.fields[key] = None
 
         # populate values from config_string
-        if config_string != None:
+        if config_string is not None:
             properties = gf.config_string_to_dict(config_string)
             for key in properties:
                 if key in self.field_names:
@@ -234,7 +236,7 @@ class TaskConfiguration(object):
 
         :rtype: string
         """
-        return (gc.CONFIG_STRING_SEPARATOR_SYMBOL).join(["%s%s%s" % (fn, gc.CONFIG_STRING_ASSIGNMENT_SYMBOL, self.fields[fn]) for fn in self.field_names if self.fields[fn] != None])
+        return (gc.CONFIG_STRING_SEPARATOR_SYMBOL).join(["%s%s%s" % (fn, gc.CONFIG_STRING_ASSIGNMENT_SYMBOL, self.fields[fn]) for fn in self.field_names if self.fields[fn] is not None])
 
     @property
     def description(self):
@@ -288,39 +290,6 @@ class TaskConfiguration(object):
         self.fields[gc.PPN_TASK_ADJUST_BOUNDARY_ALGORITHM] = value
 
     @property
-    def adjust_boundary_percent_value(self):
-        """
-        The new boundary between two consecutive fragments
-        will be set at this ``value`` percent
-        of the nonspeech interval between the two fragments.
-        The value must be between ``0`` and ``100``.
-
-        .. versionadded:: 1.0.4
-
-        :rtype: int
-        """
-        return self.fields[gc.PPN_TASK_ADJUST_BOUNDARY_PERCENT_VALUE]
-    @adjust_boundary_percent_value.setter
-    def adjust_boundary_percent_value(self, value):
-        self.fields[gc.PPN_TASK_ADJUST_BOUNDARY_PERCENT_VALUE] = value
-
-    @property
-    def adjust_boundary_rate_value(self):
-        """
-        The new boundary will be set trying to keep the rate
-        of all the fragments below this ``value`` characters/second.
-        The value must be greater than ``0``.
-
-        .. versionadded:: 1.0.4
-
-        :rtype: float 
-        """
-        return self.fields[gc.PPN_TASK_ADJUST_BOUNDARY_RATE_VALUE]
-    @adjust_boundary_rate_value.setter
-    def adjust_boundary_rate_value(self, value):
-        self.fields[gc.PPN_TASK_ADJUST_BOUNDARY_RATE_VALUE] = value
-
-    @property
     def adjust_boundary_aftercurrent_value(self):
         """
         The new boundary between two consecutive fragments
@@ -351,6 +320,56 @@ class TaskConfiguration(object):
     @adjust_boundary_beforenext_value.setter
     def adjust_boundary_beforenext_value(self, value):
         self.fields[gc.PPN_TASK_ADJUST_BOUNDARY_BEFORENEXT_VALUE] = value
+
+    @property
+    def adjust_boundary_offset_value(self):
+        """
+        The new boundary between two consecutive fragments
+        will be set at ``value`` seconds from the current value.
+        A negative ``value`` will move the boundary back,
+        a positive ``value`` will move the boundary forward.
+
+        .. versionadded:: 1.1.0
+
+        :rtype: float
+        """
+        return self.fields[gc.PPN_TASK_ADJUST_BOUNDARY_OFFSET_VALUE]
+    @adjust_boundary_offset_value.setter
+    def adjust_boundary_offset_value(self, value):
+        self.fields[gc.PPN_TASK_ADJUST_BOUNDARY_OFFSET_VALUE] = value
+
+    @property
+    def adjust_boundary_percent_value(self):
+        """
+        The new boundary between two consecutive fragments
+        will be set at this ``value`` percent
+        of the nonspeech interval between the two fragments.
+        The value must be between ``0`` and ``100``.
+
+        .. versionadded:: 1.0.4
+
+        :rtype: int
+        """
+        return self.fields[gc.PPN_TASK_ADJUST_BOUNDARY_PERCENT_VALUE]
+    @adjust_boundary_percent_value.setter
+    def adjust_boundary_percent_value(self, value):
+        self.fields[gc.PPN_TASK_ADJUST_BOUNDARY_PERCENT_VALUE] = value
+
+    @property
+    def adjust_boundary_rate_value(self):
+        """
+        The new boundary will be set trying to keep the rate
+        of all the fragments below this ``value`` characters/second.
+        The value must be greater than ``0``.
+
+        .. versionadded:: 1.0.4
+
+        :rtype: float
+        """
+        return self.fields[gc.PPN_TASK_ADJUST_BOUNDARY_RATE_VALUE]
+    @adjust_boundary_rate_value.setter
+    def adjust_boundary_rate_value(self, value):
+        self.fields[gc.PPN_TASK_ADJUST_BOUNDARY_RATE_VALUE] = value
 
     @property
     def is_text_file_format(self):

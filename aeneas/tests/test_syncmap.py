@@ -17,7 +17,7 @@ class TestSyncMap(unittest.TestCase):
 
     def load(self, path=None, lines=None, fmt=TextFileFormat.PARSED):
         syn = SyncMap()
-        if path == None:
+        if path is None:
             path = "res/inputtext/sonnet_parsed.txt"
             lines = 15
         tfl = TextFile(get_abs_path(path), fmt)

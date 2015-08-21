@@ -459,6 +459,21 @@ class TestValidator(unittest.TestCase):
         result = validator.check_task_configuration(string)
         self.assertTrue(result.passed)
 
+    def test_check_task_configuration_34(self):
+        logger = Logger()
+        validator = Validator(logger=logger)
+        string = "task_language=it|is_text_type=plain|os_task_file_name=output.txt|os_task_file_format=txt|task_adjust_boundary_algorithm=rateagressive"
+        result = validator.check_task_configuration(string)
+        self.assertFalse(result.passed)
+        self.assertGreater(len(result.errors), 0)
+
+    def test_check_task_configuration_35(self):
+        logger = Logger()
+        validator = Validator(logger=logger)
+        string = "task_language=it|is_text_type=plain|os_task_file_name=output.txt|os_task_file_format=txt|task_adjust_boundary_algorithm=rateaggressive|task_adjust_boundary_rate_value=21"
+        result = validator.check_task_configuration(string)
+        self.assertTrue(result.passed)
+
     def test_check_container_txt_01(self):
         logger = Logger()
         validator = Validator(logger=logger)

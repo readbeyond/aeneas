@@ -117,7 +117,7 @@ class TestAdjustBoundaryAlgorithm(unittest.TestCase):
     ]
 
     def maps_are_equal(self, a, b):
-        if a == None or b == None:
+        if (a is None) or (b is None):
             return a == b
         if len(a) != len(b):
             return False
@@ -138,6 +138,8 @@ class TestAdjustBoundaryAlgorithm(unittest.TestCase):
         )
         adjusted_map = aba.adjust()
         return self.maps_are_equal(adjusted_map, self.TEXT_MAP)
+
+    # TODO smarter tests
 
     def test_aba_auto_01(self):
         self.assertEqual(self.run_aba(AdjustBoundaryAlgorithm.AUTO, None), True)
@@ -209,6 +211,43 @@ class TestAdjustBoundaryAlgorithm(unittest.TestCase):
         # defaults to 21
         self.assertEqual(self.run_aba(AdjustBoundaryAlgorithm.RATE, "foo"), False)
 
+    def test_aba_rateaggressive_01(self):
+        self.assertEqual(self.run_aba(AdjustBoundaryAlgorithm.RATEAGGRESSIVE, "15"), False)
+
+    def test_aba_rateaggressive_02(self):
+        self.assertEqual(self.run_aba(AdjustBoundaryAlgorithm.RATEAGGRESSIVE, "16"), False)
+
+    def test_aba_rateaggressive_03(self):
+        self.assertEqual(self.run_aba(AdjustBoundaryAlgorithm.RATEAGGRESSIVE, "17"), False)
+
+    def test_aba_rateaggressive_04(self):
+        self.assertEqual(self.run_aba(AdjustBoundaryAlgorithm.RATEAGGRESSIVE, "18"), False)
+
+    def test_aba_rateaggressive_05(self):
+        self.assertEqual(self.run_aba(AdjustBoundaryAlgorithm.RATEAGGRESSIVE, "19"), False)
+
+    def test_aba_rateaggressive_06(self):
+        self.assertEqual(self.run_aba(AdjustBoundaryAlgorithm.RATEAGGRESSIVE, "20"), False)
+
+    def test_aba_rateaggressive_07(self):
+        self.assertEqual(self.run_aba(AdjustBoundaryAlgorithm.RATEAGGRESSIVE, "21"), False)
+
+    def test_aba_rateaggressive_08(self):
+        self.assertEqual(self.run_aba(AdjustBoundaryAlgorithm.RATEAGGRESSIVE, "22"), False)
+
+    def test_aba_rateaggressive_09(self):
+        self.assertEqual(self.run_aba(AdjustBoundaryAlgorithm.RATEAGGRESSIVE, "23"), False)
+
+    def test_aba_rateaggressive_10(self):
+        self.assertEqual(self.run_aba(AdjustBoundaryAlgorithm.RATEAGGRESSIVE, "24"), True)
+
+    def test_aba_rateaggressive_11(self):
+        self.assertEqual(self.run_aba(AdjustBoundaryAlgorithm.RATEAGGRESSIVE, "25"), True)
+
+    def test_aba_rateaggressive_12(self):
+        # defaults to 21
+        self.assertEqual(self.run_aba(AdjustBoundaryAlgorithm.RATEAGGRESSIVE, "foo"), False)
+
     def test_aba_aftercurrent_01(self):
         self.assertEqual(self.run_aba(AdjustBoundaryAlgorithm.AFTERCURRENT, "0.000"), False)
 
@@ -253,6 +292,33 @@ class TestAdjustBoundaryAlgorithm(unittest.TestCase):
         # defaults to current boundary
         self.assertEqual(self.run_aba(AdjustBoundaryAlgorithm.BEFORENEXT, "foo"), True)
 
+    def test_aba_offset_01(self):
+        self.assertEqual(self.run_aba(AdjustBoundaryAlgorithm.OFFSET, "0.000"), True)
+
+    def test_aba_offset_02(self):
+        self.assertEqual(self.run_aba(AdjustBoundaryAlgorithm.OFFSET, "0.100"), False)
+
+    def test_aba_offset_03(self):
+        self.assertEqual(self.run_aba(AdjustBoundaryAlgorithm.OFFSET, "-0.200"), False)
+
+    def test_aba_offset_04(self):
+        self.assertEqual(self.run_aba(AdjustBoundaryAlgorithm.OFFSET, "0.500"), False)
+
+    def test_aba_offset_05(self):
+        self.assertEqual(self.run_aba(AdjustBoundaryAlgorithm.OFFSET, "-1.000"), False)
+
+    def test_aba_offset_06(self):
+        self.assertEqual(self.run_aba(AdjustBoundaryAlgorithm.OFFSET, "2.000"), False)
+
+    def test_aba_offset_07(self):
+        # defaults to current boundary
+        self.assertEqual(self.run_aba(AdjustBoundaryAlgorithm.OFFSET, "foo"), True)
+
+    def test_aba_offset_08(self):
+        self.assertEqual(self.run_aba(AdjustBoundaryAlgorithm.OFFSET, "-10.000"), False)
+
+    def test_aba_offset_09(self):
+        self.assertEqual(self.run_aba(AdjustBoundaryAlgorithm.OFFSET, "20.000"), False)
 
 if __name__ == '__main__':
     unittest.main()

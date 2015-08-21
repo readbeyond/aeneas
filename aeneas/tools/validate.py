@@ -14,20 +14,22 @@ Perform validation in one of the following modes:
 
 import sys
 
-from aeneas.validator import Validator, ValidatorResult
+from aeneas.validator import Validator
 from aeneas.tools import get_rel_path
 
 __author__ = "Alberto Pettarin"
 __copyright__ = """
     Copyright 2012-2013, Alberto Pettarin (www.albertopettarin.it)
-    Copyright 2013-2015, ReadBeyond Srl (www.readbeyond.it)
+    Copyright 2013-2015, ReadBeyond Srl   (www.readbeyond.it)
+    Copyright 2015,      Alberto Pettarin (www.albertopettarin.it)
     """
 __license__ = "GNU AGPL 3"
-__version__ = "1.0.4"
+__version__ = "1.1.0"
 __email__ = "aeneas@readbeyond.it"
 __status__ = "Production"
 
 def usage():
+    """ Print usage message """
     name = "aeneas.tools.validate"
     file_path_1 = get_rel_path("../tests/res/container/job.zip")
     file_path_2 = get_rel_path("../tests/res/container/job/config.txt")
@@ -48,6 +50,7 @@ def usage():
     print ""
 
 def main():
+    """ Entry point """
     if len(sys.argv) < 3:
         usage()
         return

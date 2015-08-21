@@ -1,8 +1,6 @@
 #!/usr/bin/env python
 # coding=utf-8
 
-import os
-import sys
 import unittest
 
 from . import get_abs_path
@@ -10,10 +8,11 @@ from . import get_abs_path
 from aeneas.audiofile import AudioFile
 
 class TestAudioFile(unittest.TestCase):
-
+    
     def test_read(self):
         file_path = get_abs_path("res/container/job/assets/p001.mp3")
         audiofile = AudioFile(file_path)
+        audiofile.read_properties()
         self.assertEqual(audiofile.file_size, 426735)
         self.assertEqual(audiofile.audio_sample_rate, 44100)
         self.assertEqual(audiofile.audio_channels, 2)
@@ -23,12 +22,46 @@ class TestAudioFile(unittest.TestCase):
     def test_precision(self):
         file_path = get_abs_path("res/container/job/assets/p001.mp3")
         audiofile = AudioFile(file_path)
+        audiofile.read_properties()
         self.assertEqual(audiofile.audio_length, 53.315918) # might fail?
 
     def test_cannotload(self):
         file_path = get_abs_path("res/this_file_does_not_exist.mp3")
         with self.assertRaises(OSError):
             audiofile = AudioFile(file_path)
+            audiofile.read_properties()
+
+    def test_load_data(self):
+        file_path = get_abs_path("res/cmfcc/audio.wav")
+        audiofile = AudioFile(file_path)
+        audiofile.load_data()
+        self.assertNotEqual(audiofile.audio_data, None) 
+        audiofile.clear_data()
+    
+    def test_clear_data(self):
+        file_path = get_abs_path("res/cmfcc/audio.wav")
+        audiofile = AudioFile(file_path)
+        audiofile.load_data()
+        audiofile.clear_data()
+        self.assertEqual(audiofile.audio_data, None) 
+    
+    def test_extract_mfcc(self):
+        file_path = get_abs_path("res/cmfcc/audio.wav")
+        audiofile = AudioFile(file_path)
+        audiofile.load_data()
+        audiofile.extract_mfcc()
+        audiofile.clear_data()
+        self.assertNotEqual(audiofile.audio_mfcc, None) 
+        self.assertEqual(audiofile.audio_mfcc.shape[0], 13)
+        self.assertEqual(audiofile.audio_mfcc.shape[1], 1332)
+
+    def test_length(self):
+        file_path = get_abs_path("res/cmfcc/audio.wav")
+        audiofile = AudioFile(file_path)
+        audiofile.load_data()
+        audiofile.clear_data()
+        self.assertTrue(audiofile.audio_length > 53.0)
+        self.assertTrue(audiofile.audio_length < 54.0)
 
 if __name__ == '__main__':
     unittest.main()

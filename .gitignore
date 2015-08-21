@@ -1,6 +1,8 @@
 *.py[cdo]
 *.swp
+*.so
 MANIFEST
+aeneas/build
 bak
 dist
 docs/build

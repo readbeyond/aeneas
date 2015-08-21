@@ -13,14 +13,16 @@ from aeneas.tools import get_rel_path
 __author__ = "Alberto Pettarin"
 __copyright__ = """
     Copyright 2012-2013, Alberto Pettarin (www.albertopettarin.it)
-    Copyright 2013-2015, ReadBeyond Srl (www.readbeyond.it)
+    Copyright 2013-2015, ReadBeyond Srl   (www.readbeyond.it)
+    Copyright 2015,      Alberto Pettarin (www.albertopettarin.it)
     """
 __license__ = "GNU AGPL 3"
-__version__ = "1.0.4"
+__version__ = "1.1.0"
 __email__ = "aeneas@readbeyond.it"
 __status__ = "Production"
 
 def usage():
+    """ Print usage message """
     name = "aeneas.tools.read_audio"
     file_path = get_rel_path("../tests/res/container/job/assets/p001.mp3")
     print ""
@@ -32,11 +34,13 @@ def usage():
     print ""
 
 def main():
+    """ Entry point """
     if len(sys.argv) < 2:
         usage()
         return
     file_path = sys.argv[1]
     audiofile = AudioFile(file_path)
+    audiofile.read_properties()
     print str(audiofile)
 
 if __name__ == '__main__':
