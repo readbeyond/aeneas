@@ -8,6 +8,7 @@ Probe the properties of a given audio file
 import numpy
 import sys
 
+import aeneas.globalfunctions as gf
 from aeneas.audiofile import AudioFile
 from aeneas.tools import get_rel_path
 
@@ -18,7 +19,7 @@ __copyright__ = """
     Copyright 2015,      Alberto Pettarin (www.albertopettarin.it)
     """
 __license__ = "GNU AGPL 3"
-__version__ = "1.1.0"
+__version__ = "1.1.1"
 __email__ = "aeneas@readbeyond.it"
 __status__ = "Production"
 
@@ -41,6 +42,12 @@ def main():
         return
     file_path = sys.argv[1]
     save_path = sys.argv[2]
+
+    if not gf.can_run_c_extension():
+        print "[WARN] Unable to load Python C Extensions"
+        print "[WARN] Running the slower pure Python code"
+        print "[WARN] See the README file for directions to compile the Python C Extensions"
+
     audiofile = AudioFile(file_path)
     audiofile.load_data()
     audiofile.extract_mfcc()

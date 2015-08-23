@@ -2,8 +2,8 @@
 
 **aeneas** is a Python library and a set of tools to automagically synchronize audio and text.
 
-* Version: 1.1.0
-* Date: 2015-08-21
+* Version: 1.1.1
+* Date: 2015-08-23
 * Developed by: [ReadBeyond](http://www.readbeyond.it/)
 * Lead Developer: [Alberto Pettarin](http://www.albertopettarin.it/)
 * License: the GNU Affero General Public License Version 3 (AGPL v3)
@@ -47,10 +47,11 @@ or raw CSV/SSV/TSV/TXT/XML for further processing.
 ### System Requirements
 
 1. 2 GB RAM (4 GB recommended), 2 GHz CPU (3 GHz 64bit recommended)
-2. `ffmpeg` and `ffprobe` executables installed (`apt-get install ffmpeg*` from `deb-multimedia`)
-3. `espeak` executable installed (`apt-get install espeak*`)
+2. `ffmpeg` and `ffprobe` executable available in your `$PATH` (`apt-get install ffmpeg*` from [`deb-multimedia`](http://www.deb-multimedia.org/))
+3. `espeak` executable available in your `$PATH` (`apt-get install espeak*`)
 4. Python 2.7.x
-5. Python optional modules ``BeautifulSoup``, ``lxml``, ``numpy``, and ``scikits.audiolab`` (``pip install ...``)
+5. Python optional modules `BeautifulSoup`, `lxml`, `numpy`, and `scikits.audiolab` (`pip install ...`)
+6. (Optional but strongly suggested) Python C headers to compile the Python C extensions (`apt-get install python-dev`)
 
 Depending on the format(s) of audio files you work with,
 you might need to install additional audio codecs for `ffmpeg`.
@@ -59,7 +60,7 @@ for `espeak`, depending on the language(s) you work on.
 (Installing _all_ the codecs and _all_ the voices available
 in the Debian repository might be a good idea.)
 
-If installing the above dependencies prove difficult on your OS,
+If installing the above dependencies proves difficult on your OS,
 consider using the [Vagrant box](http://www.vagrantup.com)
 created by [aeneas-vagrant](https://github.com/readbeyond/aeneas-vagrant).
 
@@ -85,7 +86,8 @@ for example using [aeneas-vagrant](https://github.com/readbeyond/aeneas-vagrant)
 $ git clone https://github.com/readbeyond/aeneas.git
 $ cd aeneas
 $ pip install -r requirements.txt
-$ bash compile_c_extensions.sh 
+$ bash compile_c_extensions.sh
+  (On Windows: $ compile_c_extensions.bat )
 $ python check_dependencies.py
 ```
 
@@ -93,20 +95,23 @@ If the last command prints a success message,
 you have all the required dependencies installed
 and you can confidently run **aeneas** in production.
 
-If you get an error, try running the
-[provided `install_dependencies.sh` script](install_dependencies.sh)
+If you are a user of a `deb`-based Linux distribution
+(e.g., Debian, Ubuntu),
+you can install all the dependencies by running
+[the provided `install_dependencies.sh` script](install_dependencies.sh)
 
 ```bash
 $ sudo bash install_dependencies.sh
 ```
 
-and then try running `compile_c_extensions.sh` and `check_dependencies.py` again.
+Then, run `compile_c_extensions.sh` and `check_dependencies.py` as above.
 
 If you are a Windows user, please read
 [these directions](https://groups.google.com/d/msg/aeneas-forced-alignment/p9cb1FA0X0I/8phzUgIqBAAJ),
 written by Richard Margetts.
 
-Alternatively, consider using the [Vagrant box](http://www.vagrantup.com)
+If installing natively proves difficult on your OS,
+consider using the [Vagrant box](http://www.vagrantup.com)
 created by [aeneas-vagrant](https://github.com/readbeyond/aeneas-vagrant).
 
 
@@ -116,11 +121,27 @@ created by [aeneas-vagrant](https://github.com/readbeyond/aeneas-vagrant).
 
     ```bash
     $ git clone https://github.com/readbeyond/aeneas.git
-    $ cd aeneas
-    $ bash compile_c_extensions.sh     
     ```
 
-2. To compute a SMIL synchronization map `map.smil` for a pair
+2. Enter the root directory:
+
+    ```bash
+    $ cd aeneas
+    ```
+
+3. (Optional, but strongly suggested) Compile the Python C extensions:
+
+    ```bash
+    $ bash compile_c_extensions.sh
+    ```
+
+    or, on Windows:
+
+    ```bash
+    $ compile_c_extensions.bat
+    ```
+
+4. To compute a SMIL synchronization map `map.smil` for a pair
 (`audio.mp3`, `text.txt`), you can run:
 
     ```bash
@@ -132,7 +153,7 @@ created by [aeneas-vagrant](https://github.com/readbeyond/aeneas-vagrant).
     format `map.smil` as desired.
     See the [documentation](http://www.readbeyond.it/aeneas/docs/) for details.
 
-3. If you have several tasks to run,
+5. If you have several tasks to run,
 you can create a job container and a configuration file,
 and run them all at once:
 
@@ -271,7 +292,7 @@ No copy rights were harmed in the making of this project.
 
 ### Sponsors 
 
-* **July 2015**: [Michele Gianella](https://plus.google.com/+michelegianella/about) generously supported the development of the boundary adjustment code
+* **July 2015**: [Michele Gianella](https://plus.google.com/+michelegianella/about) generously supported the development of the boundary adjustment code (v1.0.4)
 
 ### Supporting
 

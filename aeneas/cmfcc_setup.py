@@ -20,7 +20,7 @@ __copyright__ = """
     Copyright 2015,      Alberto Pettarin (www.albertopettarin.it)
     """
 __license__ = "GNU AGPL v3"
-__version__ = "1.1.0"
+__version__ = "1.1.1"
 __email__ = "aeneas@readbeyond.it"
 __status__ = "Production"
 
@@ -32,15 +32,15 @@ for compiled in ["cmfcc.so", "cmfcc.dylib", "cmfcc.dll"]:
         except:
             pass
 
-module = Extension("cmfcc", sources = ["cmfcc.c"])
+CMODULE = Extension("cmfcc", sources=["cmfcc.c"])
 
 setup(
-    name = "cmfcc",
-    version = "1.1.0",
-    description = """
+    name="cmfcc",
+    version="1.1.1",
+    description="""
     Python C Extension for computing the MFCCs as fast as your bare metal allows.
     """,
-    ext_modules = [module],
+    ext_modules=[CMODULE],
     include_dirs=misc_util.get_numpy_include_dirs()
 )
 

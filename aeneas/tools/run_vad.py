@@ -10,6 +10,7 @@ import os
 import sys
 import tempfile
 
+import aeneas.globalfunctions as gf
 from aeneas.ffmpegwrapper import FFMPEGWrapper
 from aeneas.logger import Logger
 from aeneas.tools import get_rel_path
@@ -23,7 +24,7 @@ __copyright__ = """
     Copyright 2015,      Alberto Pettarin (www.albertopettarin.it)
     """
 __license__ = "GNU AGPL 3"
-__version__ = "1.1.0"
+__version__ = "1.1.1"
 __email__ = "aeneas@readbeyond.it"
 __status__ = "Production"
 
@@ -73,6 +74,11 @@ def main():
     if mode not in ["speech", "nonspeech", "both"]:
         usage()
         return
+
+    if not gf.can_run_c_extension():
+        print "[WARN] Unable to load Python C Extensions"
+        print "[WARN] Running the slower pure Python code"
+        print "[WARN] See the README file for directions to compile the Python C Extensions"
 
     logger = Logger(tee=verbose)
 

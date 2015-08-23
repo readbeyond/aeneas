@@ -8,6 +8,7 @@ and a configuration string.
 
 import sys
 
+import aeneas.globalfunctions as gf
 from aeneas.executetask import ExecuteTask
 from aeneas.logger import Logger
 from aeneas.task import Task
@@ -20,7 +21,7 @@ __copyright__ = """
     Copyright 2015,      Alberto Pettarin (www.albertopettarin.it)
     """
 __license__ = "GNU AGPL 3"
-__version__ = "1.1.0"
+__version__ = "1.1.1"
 __email__ = "aeneas@readbeyond.it"
 __status__ = "Production"
 
@@ -56,6 +57,11 @@ def main():
     config_string = sys.argv[3]
     sync_map_file_path = sys.argv[4]
     verbose = (sys.argv[-1] == "-v")
+
+    if not gf.can_run_c_extension():
+        print "[WARN] Unable to load Python C Extensions"
+        print "[WARN] Running the slower pure Python code"
+        print "[WARN] See the README file for directions to compile the Python C Extensions"
 
     print "[INFO] Creating task..."
     task = Task(config_string)

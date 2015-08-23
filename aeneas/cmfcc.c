@@ -9,7 +9,7 @@ __copyright__ = """
     Copyright 2015,      Alberto Pettarin (www.albertopettarin.it)
     """
 __license__ = "GNU AGPL v3"
-__version__ = "1.1.0"
+__version__ = "1.1.1"
 __email__ = "aeneas@readbeyond.it"
 __status__ = "Production"
 
@@ -31,6 +31,14 @@ static int _min(int a, int b) {
         return a;
     }
     return b;
+}
+
+// round to the nearest integer
+static int _round(double x) {
+    if (x < 0) {
+        return (int)ceil(x - 0.5); 
+    }
+    return (int)floor(x + 0.5);
 }
 
 // precompute the sin table for the FFT/RFFT
@@ -266,7 +274,7 @@ static double *create_mel_filter_bank(
         double upper_frequency,
         double lower_frequency
     ) {
-    const double dfreq = 1.0 * sample_rate / fft_order; 
+    const double step_frequency = 1.0 * sample_rate / fft_order; 
     const double melmax = hz2mel(upper_frequency);
     const double melmin = hz2mel(lower_frequency);
     const double melstep = (melmax - melmin) / (filter_bank_size + 1);
@@ -287,34 +295,34 @@ static double *create_mel_filter_bank(
         filter_edges[k] = mel2hz(melmin + melstep * k);
     }
     for (k = 0; k < filter_bank_size; ++k) {
-        const int left_frequency = (int)round(filter_edges[k] / dfreq);
-        const int center_frequency = (int)round(filter_edges[k + 1] / dfreq);
-        const int right_frequency = (int)round(filter_edges[k + 2] / dfreq);
-        const double fwidth = (right_frequency - left_frequency) * dfreq;
-        const double height = 2.0 / fwidth;
-        double leftslope, rightslope;
-        int freq;
+        const int left_frequency = _round(filter_edges[k] / step_frequency);
+        const int center_frequency = _round(filter_edges[k + 1] / step_frequency);
+        const int right_frequency = _round(filter_edges[k + 2] / step_frequency);
+        const double width_frequency = (right_frequency - left_frequency) * step_frequency;
+        const double height_frequency = 2.0 / width_frequency;
+        double left_slope, right_slope;
+        int current_frequency;
         
-        leftslope = 0.0;
+        left_slope = 0.0;
         if (center_frequency != left_frequency) {
-            leftslope = height / (center_frequency - left_frequency);
+            left_slope = height_frequency / (center_frequency - left_frequency);
         }
-        freq = left_frequency + 1;
-        while (freq < center_frequency) {
-            filters[freq * filter_bank_size + k] = (freq - left_frequency) * leftslope;
-            ++freq;
+        current_frequency = left_frequency + 1;
+        while (current_frequency < center_frequency) {
+            filters[current_frequency * filter_bank_size + k] = (current_frequency - left_frequency) * left_slope;
+            ++current_frequency;
         }
-        if (freq == center_frequency) {
-            filters[freq * filter_bank_size + k] = height;
-            ++freq;
+        if (current_frequency == center_frequency) {
+            filters[current_frequency * filter_bank_size + k] = height_frequency;
+            ++current_frequency;
         }
-        rightslope = 0.0;
+        right_slope = 0.0;
         if (center_frequency != right_frequency) {
-            rightslope = height / (center_frequency - right_frequency);
+            right_slope = height_frequency / (center_frequency - right_frequency);
         }
-        while (freq < right_frequency) {
-            filters[freq * filter_bank_size + k] = (freq - right_frequency) * rightslope;
-            ++freq;
+        while (current_frequency < right_frequency) {
+            filters[current_frequency * filter_bank_size + k] = (current_frequency - right_frequency) * right_slope;
+            ++current_frequency;
         }
     }
     return filters;
@@ -328,12 +336,12 @@ static double *create_dct_matrix(int mfcc_size, int filter_bank_size) {
     
     s2dct = (double *)calloc(mfcc_size * filter_bank_size, sizeof(double));
     for (i = 0; i < mfcc_size; ++i) {
-        const double freq = PI * i / filter_bank_size;
+        const double frequency = PI * i / filter_bank_size;
         for (j = 0; j < filter_bank_size; ++j) {
             if (j == 0) {
-                s2dct[i * filter_bank_size + j] = cos(freq * (0.5 + j)) * 0.5;
+                s2dct[i * filter_bank_size + j] = cos(frequency * (0.5 + j)) * 0.5;
             } else {
-                s2dct[i * filter_bank_size + j] = cos(freq * (0.5 + j));
+                s2dct[i * filter_bank_size + j] = cos(frequency * (0.5 + j));
             }
         }
     }
@@ -450,7 +458,7 @@ static PyObject *cmfcc_compute_mfcc(PyObject *self, PyObject *args) {
         // TODO porting Python code "verbatim",
         //      but some code cleanup should be done here
         // copy frame values
-        frame_start = (int)round(frame_index * samples_per_frame);
+        frame_start = _round(frame_index * samples_per_frame);
         frame_end = _min(frame_start + frame_length, signal_length);
         // NOTE: using calloc => last frame is zero-padded, if (frame_end - frame_start) < frame_length
         memcpy(frame, signal_ptr + frame_start, (frame_end - frame_start) * sizeof(double));

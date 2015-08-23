@@ -1,7 +1,14 @@
 Changelog
 =========
 
-v1.1.0 (2015-08-29)
+v1.1.1 (2015-08-23)
+-------------------
+
+#. Added ``compile_c_extensions.bat`` and directions for Windows users (courtesy of Richard Margetts)
+#. Added warning to ``aeneas.tools.*`` when running without Python C Extensions compiled
+#. Improved ``README.md``
+
+v1.1.0 (2015-08-21)
 -------------------
 
 #. Added ``cdtw`` C module for running the DTW much faster than in pure Python (falling back to Python if ``cdtw`` cannot be load)
