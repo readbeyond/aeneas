@@ -294,6 +294,8 @@ No copy rights were harmed in the making of this project.
 
 * **July 2015**: [Michele Gianella](https://plus.google.com/+michelegianella/about) generously supported the development of the boundary adjustment code (v1.0.4)
 
+* **August 2015**: [Michele Gianella](https://plus.google.com/+michelegianella/about) partially sponsored the port of the MFCC/DTW code to C (v1.1.0)
+
 ### Supporting
 
 Would you like supporting the development of **aeneas**?

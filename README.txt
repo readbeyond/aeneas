@@ -317,6 +317,10 @@ Sponsors
    generously supported the development of the boundary adjustment code
    (v1.0.4)
 
+-  **August 2015**: `Michele
+   Gianella <https://plus.google.com/+michelegianella/about>`__
+   partially sponsored the port of the MFCC/DTW code to C (v1.1.0)
+
 Supporting
 ~~~~~~~~~~
 
