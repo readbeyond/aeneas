@@ -86,8 +86,7 @@ for example using [aeneas-vagrant](https://github.com/readbeyond/aeneas-vagrant)
 $ git clone https://github.com/readbeyond/aeneas.git
 $ cd aeneas
 $ pip install -r requirements.txt
-$ bash compile_c_extensions.sh
-  (On Windows: $ compile_c_extensions.bat )
+$ python setup.py build
 $ python check_dependencies.py
 ```
 
@@ -104,7 +103,7 @@ you can install all the dependencies by running
 $ sudo bash install_dependencies.sh
 ```
 
-Then, run `compile_c_extensions.sh` and `check_dependencies.py` as above.
+Then, run `python setup.py build` and `check_dependencies.py` as above.
 
 If you are a Windows user, please read
 [these directions](https://groups.google.com/d/msg/aeneas-forced-alignment/p9cb1FA0X0I/8phzUgIqBAAJ),
@@ -131,14 +130,9 @@ created by [aeneas-vagrant](https://github.com/readbeyond/aeneas-vagrant).
 
 3. (Optional, but strongly suggested) Compile the Python C extensions:
 
+Linux or Windows:
     ```bash
-    $ bash compile_c_extensions.sh
-    ```
-
-    or, on Windows:
-
-    ```bash
-    $ compile_c_extensions.bat
+    $ python setup.py build
     ```
 
 4. To compute a SMIL synchronization map `map.smil` for a pair

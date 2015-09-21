@@ -4,11 +4,8 @@
 """
 Set aeneas package up
 """
-
-try:
-    from setuptools import setup
-except ImportError:
-    from distutils.core import setup
+from numpy.distutils import misc_util
+from setuptools import setup, Extension
 
 __author__ = "Alberto Pettarin"
 __copyright__ = """
@@ -33,7 +30,16 @@ setup(
     url='https://github.com/readbeyond/aeneas',
     license='GNU Affero General Public License v3 (AGPL v3)',
     long_description=open('README.txt').read(),
-    keywords=['aeneas', 'ReadBeyond', 'audio/text alignment', 'forced alignment', 'sync', 'ReadBeyond Sync', 'synchronization', 'subtitles', 'smil', 'srt', 'ttml', 'vtt', 'ffmpeg', 'ffprobe', 'espeak', 'dtw', 'mfcc', 'dynamic time warping', 'Mel-frequency cepstral coefficients', 'epub 3 media overlay', 'epub', 'epub3', 'media overlay'],
+    keywords=[
+        'aeneas','ReadBeyond','audio/text alignment',
+        'forced alignment','sync', 'ReadBeyond Sync',
+        'synchronization', 'subtitles',
+        'smil', 'srt', 'ttml', 'vtt',
+        'ffmpeg', 'ffprobe', 'espeak',
+        'dtw', 'mfcc', 'dynamic time warping',
+        'Mel-frequency cepstral coefficients',
+        'epub 3 media overlay', 'epub', 'epub3', 'media overlay'
+    ],
     classifiers=[
         "Development Status :: 5 - Production/Stable",
         "Environment :: Console",
@@ -43,4 +49,9 @@ setup(
         "Programming Language :: Python",
         "Topic :: Software Development :: Libraries :: Python Modules"
     ],
+    ext_modules=[
+        Extension("aeneas.cdtw", ["aeneas/cdtw.c"]),
+        Extension('aeneas.cmfcc', ['aeneas/cmfcc.c'])
+    ],
+    include_dirs=misc_util.get_numpy_include_dirs()
 )
