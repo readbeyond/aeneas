@@ -1,6 +1,7 @@
 *.py[cdo]
 *.swp
 *.so
+*.pyd
 MANIFEST
 aeneas/build
 bak
@@ -11,3 +12,7 @@ tmp
 zzz_*.py
 zzz_*.sh
 
+# Eclipse / PyDev
+.project
+.pydevproject
+.settings
