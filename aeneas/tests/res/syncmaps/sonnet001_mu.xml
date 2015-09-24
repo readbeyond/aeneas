@@ -1,0 +1,60 @@
+<?xml version='1.0' encoding='ASCII'?>
+<map>
+  <fragment id="f000001" begin="0.000" end="2.680">
+    <line>I</line>
+  </fragment>
+  <fragment id="f000002" begin="2.680" end="5.520">
+    <line>From fairest creatures</line>
+    <line>we desire increase,</line>
+  </fragment>
+  <fragment id="f000003" begin="5.520" end="8.640">
+    <line>That thereby beauty&#8217;s rose</line>
+    <line>might never die,</line>
+  </fragment>
+  <fragment id="f000004" begin="8.640" end="11.640">
+    <line>But as the riper</line>
+    <line>should by time decease,</line>
+  </fragment>
+  <fragment id="f000005" begin="11.640" end="14.440">
+    <line>His tender heir</line>
+    <line>might bear his memory:</line>
+  </fragment>
+  <fragment id="f000006" begin="14.440" end="18.560">
+    <line>But thou contracted</line>
+    <line>to thine own bright eyes,</line>
+  </fragment>
+  <fragment id="f000007" begin="18.560" end="22.760">
+    <line>Feed&#8217;st thy light&#8217;s flame</line>
+    <line>with self-substantial fuel,</line>
+  </fragment>
+  <fragment id="f000008" begin="22.760" end="25.480">
+    <line>Making a famine</line>
+    <line>where abundance lies,</line>
+  </fragment>
+  <fragment id="f000009" begin="25.480" end="31.240">
+    <line>Thy self thy foe,</line>
+    <line>to thy sweet self too cruel:</line>
+  </fragment>
+  <fragment id="f000010" begin="31.240" end="34.400">
+    <line>Thou that art now</line>
+    <line>the world&#8217;s fresh ornament,</line>
+  </fragment>
+  <fragment id="f000011" begin="34.400" end="36.600">
+    <line>And only herald to the gaudy spring,</line>
+  </fragment>
+  <fragment id="f000012" begin="36.600" end="40.640">
+    <line>Within thine own bud</line>
+    <line>buriest thy content,</line>
+  </fragment>
+  <fragment id="f000013" begin="40.640" end="43.640">
+    <line>And tender churl mak&#8217;st waste in niggarding:</line>
+  </fragment>
+  <fragment id="f000014" begin="43.640" end="48.120">
+    <line>Pity the world,</line>
+    <line>or else this glutton be,</line>
+  </fragment>
+  <fragment id="f000015" begin="48.120" end="53.240">
+    <line>To eat the world&#8217;s due,</line>
+    <line>by the grave and thee.</line>
+  </fragment>
+</map>

@@ -42,7 +42,7 @@ __copyright__ = """
     Copyright 2015,      Alberto Pettarin (www.albertopettarin.it)
     """
 __license__ = "GNU AGPL v3"
-__version__ = "1.1.2"
+__version__ = "1.2.0"
 __email__ = "aeneas@readbeyond.it"
 __status__ = "Production"
 
@@ -195,9 +195,7 @@ class DTWAligner(object):
             ):
             self._log("Computing MFCCs for real wave...")
             wave = AudioFile(self.real_wave_path, logger=self.logger)
-            wave.load_data()
             wave.extract_mfcc(self.frame_rate)
-            wave.clear_data()
             self.real_wave_full_mfcc = wave.audio_mfcc
             self.real_wave_length = wave.audio_length
             self._log("Computing MFCCs for real wave... done")
@@ -211,9 +209,7 @@ class DTWAligner(object):
             ):
             self._log("Computing MFCCs for synt wave...")
             wave = AudioFile(self.synt_wave_path, logger=self.logger)
-            wave.load_data()
             wave.extract_mfcc(self.frame_rate)
-            wave.clear_data()
             self.synt_wave_full_mfcc = wave.audio_mfcc
             self.synt_wave_length = wave.audio_length
             self._log("Computing MFCCs for synt wave... done")
@@ -226,6 +222,26 @@ class DTWAligner(object):
         Compute the min cost path between the two waves,
         and store it interally.
         """
+        dtw = self._setup_dtw()
+        self._log("Computing path...")
+        self.computed_path = dtw.compute_path()
+        self._log("Computing path... done")
+
+    def compute_accumulated_cost_matrix(self):
+        """
+        Compute the accumulated cost matrix,
+        and return it.
+
+        :rtype: numpy 2D array
+
+        .. versionadded:: 1.2.0
+        """
+        dtw = self._setup_dtw()
+        self._log("Returning accumulated cost matrix")
+        return dtw.compute_accumulated_cost_matrix()
+
+    def _setup_dtw(self):
+        """ Setup DTW object """
         # setup
         dtw = None
         algorithm = self.algorithm
@@ -262,11 +278,7 @@ class DTWAligner(object):
                 self.synt_wave_full_mfcc,
                 self.logger
             )
-
-        # compute the map between the two waves
-        self._log("Computing path...")
-        self.computed_path = dtw.compute_path()
-        self._log("Computing path... done")
+        return dtw
 
     @property
     def computed_map(self):
@@ -305,6 +317,58 @@ class DTWStripe(object):
     def _log(self, message, severity=Logger.DEBUG):
         """ Log """
         self.logger.log(message, severity, self.TAG)
+
+    def compute_accumulated_cost_matrix(self):
+        if gc.USE_C_EXTENSIONS:
+            self._log("C extensions enabled in gc")
+            if gf.can_run_c_extension("cdtw"):
+                self._log("C extensions enabled in gc and cdtw can be loaded")
+                try:
+                    return self._compute_acm_c_extension()
+                except:
+                    self._log(
+                        "An error occurred running cdtw",
+                         severity=Logger.WARNING
+                    )
+            else:
+                self._log("C extensions enabled in gc, but cdtw cannot be loaded")
+        else:
+            self._log("C extensions disabled in gc")
+        self._log("Running the pure Python code")
+        return self._compute_acm_pure_python()
+
+    def _compute_acm_c_extension(self):
+        self._log("Computing acm using C extension...")
+        self._log("Importing cdtw...")
+        import aeneas.cdtw
+        self._log("Importing cdtw... done")
+        # discard first MFCC component
+        mfcc1 = self.m1[1:, :]
+        mfcc2 = self.m2[1:, :]
+        norm2_1 = numpy.sqrt(numpy.sum(mfcc1 ** 2, 0))
+        norm2_2 = numpy.sqrt(numpy.sum(mfcc2 ** 2, 0))
+        n = mfcc1.shape[1]
+        m = mfcc2.shape[1]
+        delta = self.delta
+        self._log(["n m delta: %d %d %d", n, m, delta])
+        if delta > m:
+            self._log("Limiting delta to m")
+            delta = m
+        cost_matrix, centers = aeneas.cdtw.cdtw_compute_cost_matrix_step(mfcc1, mfcc2, norm2_1, norm2_2, delta)
+        accumulated_cost_matrix = aeneas.cdtw.cdtw_compute_accumulated_cost_matrix_step(cost_matrix, centers)
+        self._log("Computing acm using C extension... done")
+        return accumulated_cost_matrix
+
+    def _compute_acm_pure_python(self):
+        self._log("Computing acm using pure Python code...")
+        self._log("Computing cost matrix...")
+        cost_matrix, centers = self._compute_cost_matrix()
+        self._log("Computing cost matrix... done")
+        self._log("Computing accumulated cost matrix...")
+        accumulated_cost_matrix = self._compute_accumulated_cost_matrix(cost_matrix, centers)
+        self._log("Computing accumulated cost matrix... done")
+        self._log("Computing acm using pure Python code... done")
+        return accumulated_cost_matrix
 
     def compute_path(self):
         if gc.USE_C_EXTENSIONS:
@@ -355,18 +419,18 @@ class DTWStripe(object):
     def _compute_path_pure_python(self):
         self._log("Computing path using pure Python code...")
         self._log("Computing cost matrix...")
-        cost_matrix, centers = self.compute_cost_matrix()
+        cost_matrix, centers = self._compute_cost_matrix()
         self._log("Computing cost matrix... done")
         self._log("Computing accumulated cost matrix...")
-        accumulated_cost_matrix = self.compute_accumulated_cost_matrix(cost_matrix, centers)
+        accumulated_cost_matrix = self._compute_accumulated_cost_matrix(cost_matrix, centers)
         self._log("Computing accumulated cost matrix... done")
         self._log("Computing best path...")
-        best_path = self.compute_best_path(accumulated_cost_matrix, centers)
+        best_path = self._compute_best_path(accumulated_cost_matrix, centers)
         self._log("Computing best path... done")
         self._log("Computing path using pure Python code... done")
         return best_path
 
-    def compute_cost_matrix(self):
+    def _compute_cost_matrix(self):
         # discard first MFCC component
         mfcc1 = self.m1[1:, :]
         mfcc2 = self.m2[1:, :]
@@ -398,7 +462,7 @@ class DTWStripe(object):
                 cost_matrix[i][j - range_start] = 1 - tmp
         return (cost_matrix, centers)
 
-    def compute_accumulated_cost_matrix(self, cost_matrix, centers):
+    def _compute_accumulated_cost_matrix(self, cost_matrix, centers):
         # create accumulated cost matrix
         #
         # a[i][j] = c[i][j] + min(c[i-1][j-1], c[i-1][j], c[i][j-1])
@@ -458,7 +522,7 @@ class DTWStripe(object):
                 acc_matrix[i][j] = cost_matrix[i][j] + min(cost0, cost1, cost2)
         return acc_matrix
 
-    def compute_best_path(self, acc_matrix, centers):
+    def _compute_best_path(self, acc_matrix, centers):
         # get dimensions
         n, delta = acc_matrix.shape
         self._log(["n delta: %d %d", n, delta])
@@ -519,21 +583,32 @@ class DTWExact(object):
         """ Log """
         self.logger.log(message, severity, self.TAG)
 
+    def compute_accumulated_cost_matrix(self):
+        self._log("Computing path using pure Python code...")
+        self._log("Computing cost matrix...")
+        cost_matrix = self._compute_cost_matrix()
+        self._log("Computing cost matrix... done")
+        self._log("Computing accumulated cost matrix...")
+        accumulated_cost_matrix = self._compute_accumulated_cost_matrix(cost_matrix)
+        self._log("Computing accumulated cost matrix... done")
+        self._log("Computing path using pure Python code... done")
+        return accumulated_cost_matrix
+
     def compute_path(self):
         self._log("Computing path using pure Python code...")
         self._log("Computing cost matrix...")
-        cost_matrix = self.compute_cost_matrix()
+        cost_matrix = self._compute_cost_matrix()
         self._log("Computing cost matrix... done")
         self._log("Computing accumulated cost matrix...")
-        accumulated_cost_matrix = self.compute_accumulated_cost_matrix(cost_matrix)
+        accumulated_cost_matrix = self._compute_accumulated_cost_matrix(cost_matrix)
         self._log("Computing accumulated cost matrix... done")
         self._log("Computing best path...")
-        best_path = self.compute_best_path(accumulated_cost_matrix)
+        best_path = self._compute_best_path(accumulated_cost_matrix)
         self._log("Computing best path... done")
         self._log("Computing path using pure Python code... done")
         return best_path
 
-    def compute_cost_matrix(self):
+    def _compute_cost_matrix(self):
         # discard first MFCC component
         mfcc1 = self.m1[1:, :]
         mfcc2 = self.m2[1:, :]
@@ -563,7 +638,7 @@ class DTWExact(object):
         self._log("Normalizing matrix... done")
         return cost_matrix
 
-    def compute_accumulated_cost_matrix(self, cost_matrix):
+    def _compute_accumulated_cost_matrix(self, cost_matrix):
         # create accumulated cost matrix
         #
         # a[i][j] = c[i][j] + min(c[i-1][j-1], c[i-1][j], c[i][j-1])
@@ -611,7 +686,7 @@ class DTWExact(object):
                 )
         return acc_matrix
 
-    def compute_best_path(self, acc_matrix):
+    def _compute_best_path(self, acc_matrix):
         # get dimensions
         n, m = acc_matrix.shape
         self._log(["n m: %d %d", n, m])

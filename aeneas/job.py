@@ -18,7 +18,7 @@ __copyright__ = """
     Copyright 2015,      Alberto Pettarin (www.albertopettarin.it)
     """
 __license__ = "GNU AGPL v3"
-__version__ = "1.1.2"
+__version__ = "1.2.0"
 __email__ = "aeneas@readbeyond.it"
 __status__ = "Production"
 
@@ -49,6 +49,12 @@ class Job(object):
         """
         self.tasks.append(task)
 
+    def delete_tasks(self):
+        """
+        Delete all the tasks of this job.
+        """
+        self.tasks = []
+
     def __len__(self):
         return len(self.tasks)
 
@@ -62,6 +68,18 @@ class Job(object):
             accumulator += "Task %d %s\n" % (i, task.identifier)
             i += 1
         return accumulator
+
+    @property
+    def identifier(self):
+        """
+        The identifier of the job.
+
+        :rtype: string
+        """
+        return self.__identifier
+    @identifier.setter
+    def identifier(self, value):
+        self.__identifier = value
 
 
 class JobConfiguration(object):

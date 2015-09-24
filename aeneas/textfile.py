@@ -21,7 +21,7 @@ __copyright__ = """
     Copyright 2015,      Alberto Pettarin (www.albertopettarin.it)
     """
 __license__ = "GNU AGPL v3"
-__version__ = "1.1.2"
+__version__ = "1.2.0"
 __email__ = "aeneas@readbeyond.it"
 __status__ = "Production"
 
@@ -143,6 +143,9 @@ class TextFragment(object):
         self.language = language
         self.lines = lines
 
+    def __len__(self):
+        return len(self.lines)
+
     def __str__(self):
         return ("%s %s" % (self.identifier, self.text)).encode('utf-8')
 
@@ -191,6 +194,14 @@ class TextFragment(object):
         """
         return u" ".join(self.lines)
 
+    @property
+    def characters(self):
+        """
+        The number of characters in this text fragment.
+
+        :rtype: int
+        """
+        return len(self.text)
 
 
 class TextFile(object):
@@ -231,6 +242,18 @@ class TextFile(object):
         self.logger.log(message, severity, self.TAG)
 
     @property
+    def characters(self):
+        """
+        The number of characters in this text.
+
+        :rtype: int
+        """
+        chars = 0
+        for fragment in self.fragments:
+            chars += fragment.characters
+        return chars
+
+    @property
     def fragments(self):
         """
         The current list of text fragments.
@@ -238,9 +261,44 @@ class TextFile(object):
         :rtype: list of :class:`aeneas.textfile.TextFragment`
         """
         return self.__fragments
+
     @fragments.setter
     def fragments(self, fragments):
         self.__fragments = fragments
+
+    def append_fragment(self, fragment):
+        """
+        Append the given text fragment to the current list.
+
+        :param fragment: the text fragment to be appended
+        :type  fragment: :class:`aeneas.textfile.TextFragment`
+        """
+        self.fragments.append(fragment)
+
+    def get_slice(self, start=None, end=None):
+        """
+        Return a new list of text fragments,
+        indexed from start (included) to end (excluded).
+
+        :param start: the start index
+        :type  start: int
+        :param end: the end index
+        :type  end: int
+        :rtype: :class:`aeneas.textfile.TextFile`
+        """
+        if start is not None:
+            start = min(max(0, start), len(self) - 1)
+        else:
+            start = 0
+        if end is not None:
+            end = min(max(0, end), len(self))
+            end = max(end, start + 1)
+        else:
+            end = len(self)
+        new_text = TextFile()
+        for fragment in self.fragments[start:end]:
+            new_text.append_fragment(fragment)
+        return new_text
 
     def set_language(self, language):
         """
@@ -466,7 +524,7 @@ class TextFile(object):
         self._log("Creating TextFragment objects")
         for pair in pairs:
             fragment = TextFragment(identifier=pair[0], lines=pair[1])
-            self.fragments.append(fragment)
+            self.append_fragment(fragment)
 
 
 

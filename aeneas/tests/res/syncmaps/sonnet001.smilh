@@ -1,0 +1,66 @@
+<smil xmlns:epub="http://www.idpf.org/2007/ops" xmlns="http://www.w3.org/ns/SMIL" version="3.0">
+  <body>
+    <seq id="s000001" epub:textref="sonnet001.xhtml">
+      <par id="p000001">
+        <text src="sonnet001.xhtml#f000001"/>
+        <audio src="sonnet001.mp3" clipBegin="00:00:00.000" clipEnd="00:00:02.680"/>
+      </par>
+      <par id="p000002">
+        <text src="sonnet001.xhtml#f000002"/>
+        <audio src="sonnet001.mp3" clipBegin="00:00:02.680" clipEnd="00:00:05.519"/>
+      </par>
+      <par id="p000003">
+        <text src="sonnet001.xhtml#f000003"/>
+        <audio src="sonnet001.mp3" clipBegin="00:00:05.519" clipEnd="00:00:08.640"/>
+      </par>
+      <par id="p000004">
+        <text src="sonnet001.xhtml#f000004"/>
+        <audio src="sonnet001.mp3" clipBegin="00:00:08.640" clipEnd="00:00:11.640"/>
+      </par>
+      <par id="p000005">
+        <text src="sonnet001.xhtml#f000005"/>
+        <audio src="sonnet001.mp3" clipBegin="00:00:11.640" clipEnd="00:00:14.439"/>
+      </par>
+      <par id="p000006">
+        <text src="sonnet001.xhtml#f000006"/>
+        <audio src="sonnet001.mp3" clipBegin="00:00:14.439" clipEnd="00:00:18.559"/>
+      </par>
+      <par id="p000007">
+        <text src="sonnet001.xhtml#f000007"/>
+        <audio src="sonnet001.mp3" clipBegin="00:00:18.559" clipEnd="00:00:22.760"/>
+      </par>
+      <par id="p000008">
+        <text src="sonnet001.xhtml#f000008"/>
+        <audio src="sonnet001.mp3" clipBegin="00:00:22.760" clipEnd="00:00:25.480"/>
+      </par>
+      <par id="p000009">
+        <text src="sonnet001.xhtml#f000009"/>
+        <audio src="sonnet001.mp3" clipBegin="00:00:25.480" clipEnd="00:00:31.239"/>
+      </par>
+      <par id="p000010">
+        <text src="sonnet001.xhtml#f000010"/>
+        <audio src="sonnet001.mp3" clipBegin="00:00:31.239" clipEnd="00:00:34.399"/>
+      </par>
+      <par id="p000011">
+        <text src="sonnet001.xhtml#f000011"/>
+        <audio src="sonnet001.mp3" clipBegin="00:00:34.399" clipEnd="00:00:36.600"/>
+      </par>
+      <par id="p000012">
+        <text src="sonnet001.xhtml#f000012"/>
+        <audio src="sonnet001.mp3" clipBegin="00:00:36.600" clipEnd="00:00:40.640"/>
+      </par>
+      <par id="p000013">
+        <text src="sonnet001.xhtml#f000013"/>
+        <audio src="sonnet001.mp3" clipBegin="00:00:40.640" clipEnd="00:00:43.640"/>
+      </par>
+      <par id="p000014">
+        <text src="sonnet001.xhtml#f000014"/>
+        <audio src="sonnet001.mp3" clipBegin="00:00:43.640" clipEnd="00:00:48.119"/>
+      </par>
+      <par id="p000015">
+        <text src="sonnet001.xhtml#f000015"/>
+        <audio src="sonnet001.mp3" clipBegin="00:00:48.119" clipEnd="00:00:53.240"/>
+      </par>
+    </seq>
+  </body>
+</smil>

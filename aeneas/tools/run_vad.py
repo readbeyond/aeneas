@@ -24,7 +24,7 @@ __copyright__ = """
     Copyright 2015,      Alberto Pettarin (www.albertopettarin.it)
     """
 __license__ = "GNU AGPL 3"
-__version__ = "1.1.2"
+__version__ = "1.2.0"
 __email__ = "aeneas@readbeyond.it"
 __status__ = "Production"
 
@@ -38,7 +38,7 @@ def usage():
     print "  $ python -m %s path/to/audio.mp3 nonspeech /path/to/nonspeech.txt [-v]" % name
     print "  $ python -m %s path/to/audio.mp3 both      /path/to/both.txt      [-v]" % name
     print ""
-    print "Example:"
+    print "Examples:"
     print "  $ python -m %s %s/sonnet001.mp3 speech    /tmp/speech.txt" % (name, dir_path)
     print "  $ python -m %s %s/sonnet001.mp3 nonspeech /tmp/nonspeech.txt" % (name, dir_path)
     print "  $ python -m %s %s/sonnet001.mp3 both      /tmp/both.txt" % (name, dir_path)

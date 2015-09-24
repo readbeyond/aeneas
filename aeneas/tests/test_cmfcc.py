@@ -14,7 +14,7 @@ class TestCMFCC(unittest.TestCase):
     MFCC_PRE_C = get_abs_path("res/cmfcc/mfcc_c")
 
     def compare_with_tolerance(self, a, b, tolerance=1E-6):
-        return not (((a - b) > tolerance).any())
+        return not ((a - b) > tolerance).any()
 
     def test_compute_mfcc(self):
         try:

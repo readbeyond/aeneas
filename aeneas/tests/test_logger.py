@@ -1,9 +1,6 @@
 #!/usr/bin/env python
 # coding=utf-8
 
-import os
-import sys
-import tempfile
 import unittest
 
 from aeneas.logger import Logger

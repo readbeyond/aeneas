@@ -2,8 +2,6 @@
 # coding=utf-8
 
 import numpy
-import os
-import sys
 import unittest
 
 from . import get_abs_path

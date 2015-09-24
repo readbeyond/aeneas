@@ -20,7 +20,7 @@ __copyright__ = """
     Copyright 2015,      Alberto Pettarin (www.albertopettarin.it)
     """
 __license__ = "GNU AGPL v3"
-__version__ = "1.1.2"
+__version__ = "1.2.0"
 __email__ = "aeneas@readbeyond.it"
 __status__ = "Production"
 

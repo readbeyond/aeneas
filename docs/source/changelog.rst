@@ -1,6 +1,33 @@
 Changelog
 =========
 
+v1.2.0 (2015-09-27)
+-------------------
+
+#. Added ``sd.py`` to automatically detect the head/tail/interval of an audio file
+#. Added the corresponding ``aeneas.tools.run_sd`` utility
+#. Added the corresponding Task configuration parameters: ``is_audio_file_detect_head_min``, ``is_audio_file_detect_head_max``, ``is_audio_file_detect_tail_min``, ``is_audio_file_detect_tail_max``, and ``os_task_file_head_tail_format``
+#. Added ``SMILH`` and ``SMILM`` sync map output formats (``SMIL`` becoming an alias of ``SMILH``)
+#. Added ``CSVM``, ``SSVM``, ``TSVM``, and ``TXTM`` formats (``CSV``, ``SSV``, ``TSV``, and ``TXT`` becoming their aliases)
+#. Renamed the previous ``JSON`` sync map output format to ``RBSE``
+#. Added a new ``JSON`` format
+#. Renamed the previous ``XML`` sync map output format to ``XML_LEGACY``
+#. Changed ``JSON`` (and ``RBSE``) write function, now using the ``json`` library
+#. Added a new ``XML`` format
+#. Changed ``SMIL``, ``TTML``, and ``XML`` write functions, now using the ``lxml`` library
+#. Added functions to read sync map files
+#. Added the ``aeneas.tools.convert_syncmap`` utility to convert sync maps
+#. Added ``reverse``, ``trim``, and ``write`` functions to ``AudioFile``
+#. Added all the languages that espeak v1.48.03 supports to the ``Language`` enumeration (those not tested yet are marked as such)
+#. Marked Persian (``fa``) and Swahili (``sw``) languages as tested
+#. Added the ``aeneas.tools.synthesize_text`` utility to synthesize multiple fragments into a single wave file
+#. Changed ``FFMPEG_PARAMETERS_DEFAULT`` in ``ffmpeg.py`` to ``FFMPEG_PARAMETERS_SAMPLE_22050`` (i.e., from 44100 Hz to 22050 Hz)
+#. Fixed the ``TTML`` output
+#. Fixed a ``KeyError`` bug in ``ffprobewrapper.py`` when probing a file not recognized as audio file
+#. Fixed a bug in ``cdtw.c``: int overflow when computing the ``centers`` array on long (>30 minutes) audio files
+#. Many unit tests have been rewritten, extended, or refactored
+#. Other minor fixes and code/documentation improvements
+
 v1.1.2 (2015-09-24)
 -------------------
 

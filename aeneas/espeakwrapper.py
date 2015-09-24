@@ -20,7 +20,7 @@ __copyright__ = """
     Copyright 2015,      Alberto Pettarin (www.albertopettarin.it)
     """
 __license__ = "GNU AGPL v3"
-__version__ = "1.1.2"
+__version__ = "1.2.0"
 __email__ = "aeneas@readbeyond.it"
 __status__ = "Production"
 
@@ -84,7 +84,15 @@ class ESPEAKWrapper(object):
 
         # return 0 if no text is given
         if (text is None) or (len(text) == 0):
+            self._log("Text is None or it has zero length")
             return 0
+
+        # return 0 if the requested language is not listed in language.py
+        # NOTE disabling this check to allow testing new languages
+        # TODO put it back, add an option in gc to allow unlisted languages
+        #if language not in Language.ALLOWED_VALUES:
+        #    self._log(["Language %s is not allowed", language])
+        #    return 0
 
         # replace language
         language = self._replace_language(language)
@@ -116,9 +124,14 @@ class ESPEAKWrapper(object):
 
         # return the duration of the output file
         self._log(["Calling wavread to analyze file '%s'", output_file_path])
-        data, sample_frequency, encoding = wavread(output_file_path)
-        duration = len(data) / float(sample_frequency)
-        self._log(["Duration of '%s': %f", output_file_path, duration])
+        duration = 0
+        try:
+            data, sample_frequency, encoding = wavread(output_file_path)
+            duration = len(data) / float(sample_frequency)
+            self._log(["Duration of '%s': %f", output_file_path, duration])
+        except IOError as e:
+            self._log("IOError while trying reading the generated file")
+            self._log(["Message: %s", e])
         return duration
 
 

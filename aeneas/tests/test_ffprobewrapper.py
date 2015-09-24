@@ -1,8 +1,6 @@
 #!/usr/bin/env python
 # coding=utf-8
 
-import os
-import sys
 import unittest
 
 from . import get_abs_path
@@ -11,75 +9,60 @@ from aeneas.ffprobewrapper import FFPROBEWrapper
 
 class TestFFPROBEWrapper(unittest.TestCase):
 
-    def test_read(self):
-        file_path = get_abs_path("res/container/job/assets/p001.mp3")
-        prober = FFPROBEWrapper()
-        properties = prober.read_properties(file_path)
-        self.assertEqual(properties['bit_rate'], '64000')
-        self.assertEqual(properties['channels'], '2')
-        self.assertEqual(properties['codec_name'], 'mp3')
-        self.assertEqual(int(properties['duration']), 53) # '53.315918'
-        self.assertEqual(properties['sample_rate'], '44100')
+    FILES = [
+        {
+            "path": "res/audioformats/p001.aac",
+        },
+        {
+            "path": "res/audioformats/p001.aiff",
+        },
+        {
+            "path": "res/audioformats/p001.flac",
+        },
+        {
+            "path": "res/audioformats/p001.mp3",
+        },
+        {
+            "path": "res/audioformats/p001.mp4",
+        },
+        {
+            "path": "res/audioformats/p001.ogg",
+        },
+        {
+            "path": "res/audioformats/p001.wav",
+        },
+        {
+            "path": "res/audioformats/p001.webm",
+        },
+    ]
 
-    def test_precision(self):
-        file_path = get_abs_path("res/container/job/assets/p001.mp3")
-        prober = FFPROBEWrapper()
-        properties = prober.read_properties(file_path)
-        self.assertEqual(properties['duration'], 53.315918) # might fail?
+    NOT_EXISTING_PATH = "this_file_does_not_exist.mp3"
+    EMPTY_FILE_PATH = "res/audioformats/p001.empty"
 
-    def test_cannotload(self):
-        file_path = get_abs_path("res/this_file_does_not_exist.mp3")
+    def load(self, input_file_path):
         prober = FFPROBEWrapper()
+        return prober.read_properties(get_abs_path(input_file_path))
+
+    def test_mp3_properties(self):
+        properties = self.load("res/audioformats/p001.mp3")
+        self.assertNotEqual(properties['bit_rate'], None)
+        self.assertNotEqual(properties['channels'], None)
+        self.assertNotEqual(properties['codec_name'], None)
+        self.assertNotEqual(properties['duration'], None)
+        self.assertNotEqual(properties['sample_rate'], None)
+
+    def test_not_existing(self):
         with self.assertRaises(OSError):
-            properties = prober.read_properties(file_path)
+            self.load(self.NOT_EXISTING_PATH)
 
-    def test_format_wav(self):
-        file_path = get_abs_path("res/audioformats/p001.wav")
-        prober = FFPROBEWrapper()
-        properties = prober.read_properties(file_path)
-        self.assertNotEqual(properties['duration'], None)
+    def test_empty(self):
+        with self.assertRaises(ValueError):
+            self.load(self.EMPTY_FILE_PATH)
 
-    def test_format_mp3(self):
-        file_path = get_abs_path("res/audioformats/p001.mp3")
-        prober = FFPROBEWrapper()
-        properties = prober.read_properties(file_path)
-        self.assertNotEqual(properties['duration'], None)
-
-    def test_format_mp4(self):
-        file_path = get_abs_path("res/audioformats/p001.mp4")
-        prober = FFPROBEWrapper()
-        properties = prober.read_properties(file_path)
-        self.assertNotEqual(properties['duration'], None)
-
-    def test_format_flac(self):
-        file_path = get_abs_path("res/audioformats/p001.flac")
-        prober = FFPROBEWrapper()
-        properties = prober.read_properties(file_path)
-        self.assertNotEqual(properties['duration'], None)
-
-    def test_format_ogg(self):
-        file_path = get_abs_path("res/audioformats/p001.ogg")
-        prober = FFPROBEWrapper()
-        properties = prober.read_properties(file_path)
-        self.assertNotEqual(properties['duration'], None)
-
-    def test_format_aac(self):
-        file_path = get_abs_path("res/audioformats/p001.aac")
-        prober = FFPROBEWrapper()
-        properties = prober.read_properties(file_path)
-        self.assertNotEqual(properties['duration'], None)
-
-    def test_format_webm(self):
-        file_path = get_abs_path("res/audioformats/p001.webm")
-        prober = FFPROBEWrapper()
-        properties = prober.read_properties(file_path)
-        self.assertNotEqual(properties['duration'], None)
-
-    def test_format_aiff(self):
-        file_path = get_abs_path("res/audioformats/p001.aiff")
-        prober = FFPROBEWrapper()
-        properties = prober.read_properties(file_path)
-        self.assertNotEqual(properties['duration'], None)
+    def test_formats(self):
+        for f in self.FILES:
+            properties = self.load(f["path"])
+            self.assertNotEqual(properties['duration'], None)
 
 if __name__ == '__main__':
     unittest.main()

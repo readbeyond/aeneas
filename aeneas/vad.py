@@ -6,7 +6,7 @@ This module contains the implementation
 of a simple Voice Activity Detector (VAD),
 based on the energy of the first MFCC component.
 
-Given an audio file, it will computer
+Given an audio file, it will compute
 a list of non-overlapping
 time intervals where speech has been detected,
 and its complementary list,
@@ -29,7 +29,7 @@ __copyright__ = """
     Copyright 2015,      Alberto Pettarin (www.albertopettarin.it)
     """
 __license__ = "GNU AGPL v3"
-__version__ = "1.1.2"
+__version__ = "1.2.0"
 __email__ = "aeneas@readbeyond.it"
 __status__ = "Production"
 
@@ -100,12 +100,15 @@ class VAD(object):
         """
         if (self.wave_path is not None) and (os.path.isfile(self.wave_path)):
             self._log("Computing MFCCs for wave...")
-            wave = AudioFile(self.wave_path, logger=self.logger)
-            wave.load_data()
-            wave.extract_mfcc(self.frame_rate)
-            wave.clear_data()
-            self.wave_mfcc = wave.audio_mfcc
-            self.wave_len = wave.audio_length
+            try:
+                wave = AudioFile(self.wave_path, logger=self.logger)
+                wave.extract_mfcc(self.frame_rate)
+                self.wave_mfcc = wave.audio_mfcc
+                self.wave_len = wave.audio_length
+            except IOError as e:
+                self._log("IOError", Logger.CRITICAL)
+                self._log(["Message: %s", e])
+                raise e
             self._log("Computing MFCCs for wave... done")
         else:
             self._log(["Input file '%s' cannot be read", self.wave_path], Logger.CRITICAL)

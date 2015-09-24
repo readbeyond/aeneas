@@ -9,7 +9,7 @@ __copyright__ = """
     Copyright 2015,      Alberto Pettarin (www.albertopettarin.it)
     """
 __license__ = "GNU AGPL v3"
-__version__ = "1.1.2"
+__version__ = "1.2.0"
 __email__ = "aeneas@readbeyond.it"
 __status__ = "Production"
 
@@ -79,7 +79,7 @@ static void _compute_cost_matrix(
     int center_j, range_start, range_end;
     int i, j, k;
     for (i = 0; i < n; ++i) {
-        center_j = (m * i) / n;
+        center_j = (int)floor(m * (1.0 * i / n));
         range_start = _max(0, center_j - (delta / 2));
         range_end = range_start + delta;
         if (range_end > m) {

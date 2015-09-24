@@ -13,7 +13,7 @@ __copyright__ = """
     Copyright 2015,      Alberto Pettarin (www.albertopettarin.it)
     """
 __license__ = "GNU AGPL v3"
-__version__ = "1.1.2"
+__version__ = "1.2.0"
 __email__ = "aeneas@readbeyond.it"
 __status__ = "Production"
 
@@ -367,6 +367,20 @@ Example::
 
 """
 
+PPN_SYNCMAP_LANGUAGE = "language"
+"""
+Key for specifying the syncmap language
+
+Values: listed in :class:`aeneas.language.Language`
+
+Example::
+
+    language=en
+    language=it
+
+.. versionadded:: 1.2.0
+"""
+
 PPN_TASK_CUSTOM_ID = "task_custom_id"
 """
 Key for the custom identifier of a task
@@ -513,6 +527,70 @@ Example::
     task_adjust_boundary_rate_value=21.0
 
 .. versionadded:: 1.0.4
+"""
+
+PPN_TASK_IS_AUDIO_FILE_DETECT_HEAD_MAX = "is_audio_file_detect_head_max"
+"""
+Detect the head length of the audio file,
+using the provided value as an upper bound
+
+Usage: config string, XML config file
+
+Values: float
+
+Example::
+
+    is_audio_file_detect_head_max=10.0
+
+.. versionadded:: 1.2.0
+"""
+
+PPN_TASK_IS_AUDIO_FILE_DETECT_HEAD_MIN = "is_audio_file_detect_head_min"
+"""
+Detect the head length of the audio file,
+using the provided value as a lower bound
+
+Usage: config string, XML config file
+
+Values: float
+
+Example::
+
+    is_audio_file_detect_head_min=3.0
+
+.. versionadded:: 1.2.0
+"""
+
+PPN_TASK_IS_AUDIO_FILE_DETECT_TAIL_MAX = "is_audio_file_detect_tail_max"
+"""
+Detect the tail length of the audio file,
+using the provided value as an upper bound
+
+Usage: config string, XML config file
+
+Values: float
+
+Example::
+
+    is_audio_file_detect_tail_max=10.0
+
+.. versionadded:: 1.2.0
+"""
+
+PPN_TASK_IS_AUDIO_FILE_DETECT_TAIL_MIN = "is_audio_file_detect_tail_min"
+"""
+Detect the tail length of the audio file,
+using the provided value as an upper bound
+
+Usage: config string, XML config file
+
+Values: float
+
+Example::
+
+    is_audio_file_detect_tail_min=0.0
+
+.. versionadded:: 1.2.0
 """
 
 PPN_TASK_IS_AUDIO_FILE_HEAD_LENGTH = "is_audio_file_head_length"
@@ -674,6 +752,23 @@ Example::
 
 """
 
+PPN_TASK_OS_FILE_HEAD_TAIL_FORMAT = "os_task_file_head_tail_format"
+"""
+Key for the format of the head/tail in the sync map output file
+
+Usage: config string, TXT config file, XML config file
+
+Values: listed in :class:`aeneas.syncmap.SyncMapHeadTailFormat`
+
+Example::
+
+    os_task_file_head_tail_format=add
+    os_task_file_head_tail_format=hidden
+    os_task_file_head_tail_format=stretch
+
+.. versionadded:: 1.2.0
+"""
+
 PPN_TASK_IS_TEXT_FILE_XML = "is_text_file"
 """
 Key for the path, relative to the XML config file,
@@ -717,8 +812,41 @@ Example::
 
 """
 
+SD_MAX_HEAD_LENGTH = 10.0
+"""
+Try detecting audio heads up to this many seconds.
+Default: ``10.0``.
+
+.. versionadded:: 1.2.0
+"""
+
+SD_MIN_HEAD_LENGTH = 0.0
+"""
+Try detecting audio heads of at least this many seconds.
+Default: ``0.0``.
+
+.. versionadded:: 1.2.0
+"""
+
+SD_MAX_TAIL_LENGTH = 10.0
+"""
+Try detecting audio tails up to this many seconds.
+Default: ``10.0``.
+
+.. versionadded:: 1.2.0
+"""
+
+SD_MIN_TAIL_LENGTH = 0.0
+"""
+Try detecting audio tails of at least this many seconds.
+Default: ``0.0``.
+
+.. versionadded:: 1.2.0
+"""
+
 USE_C_EXTENSIONS = True
-""" Try to use the C extensions instead of pure Python code.
+"""
+Try to use the C extensions instead of pure Python code.
 If the C extensions are not available, the pure Python code
 will be run instead.
 Default: ``True``.
