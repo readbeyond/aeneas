@@ -4,8 +4,8 @@ aeneas
 **aeneas** is a Python library and a set of tools to automagically
 synchronize audio and text.
 
--  Version: 1.1.1
--  Date: 2015-08-23
+-  Version: 1.1.2
+-  Date: 2015-09-24
 -  Developed by: `ReadBeyond <http://www.readbeyond.it/>`__
 -  Lead Developer: `Alberto Pettarin <http://www.albertopettarin.it/>`__
 -  License: the GNU Affero General Public License Version 3 (AGPL v3)
@@ -96,8 +96,7 @@ Installation
     $ git clone https://github.com/readbeyond/aeneas.git
     $ cd aeneas
     $ pip install -r requirements.txt
-    $ bash compile_c_extensions.sh
-      (On Windows: $ compile_c_extensions.bat )
+    $ python setup.py build_ext --inplace
     $ python check_dependencies.py
 
 If the last command prints a success message, you have all the required
@@ -112,10 +111,13 @@ Ubuntu), you can install all the dependencies by running `the provided
 
     $ sudo bash install_dependencies.sh
 
-Then, run ``compile_c_extensions.sh`` and ``check_dependencies.py`` as
-above.
+Then, run ``python setup.py build_ext --inplace`` and
+``python check_dependencies.py`` as above.
 
-If you are a Windows user, please read `these
+If you are a Windows user, please read the installation instructions
+contained in the `"Using aeneas for Audio-Text Synchronization"
+PDF <http://software.sil.org/scriptureappbuilder/resources/>`__ based on
+`these
 directions <https://groups.google.com/d/msg/aeneas-forced-alignment/p9cb1FA0X0I/8phzUgIqBAAJ>`__,
 written by Richard Margetts.
 
@@ -142,13 +144,7 @@ Usage
 
    .. code:: bash
 
-       $ bash compile_c_extensions.sh
-
-   or, on Windows:
-
-   .. code:: bash
-
-       $ compile_c_extensions.bat
+       $ python setup.py build_ext --inplace
 
 4. To compute a SMIL synchronization map ``map.smil`` for a pair
    (``audio.mp3``, ``text.txt``), you can run:
@@ -394,3 +390,8 @@ text.
 **Paolo Bertasi**, who developed the APIs and Web application for
 ReadBeyond Sync, helped shaping the structure of this package for its
 asynchronous usage.
+
+All the mighty `GitHub
+contributors <https://github.com/readbeyond/aeneas/graphs/contributors>`__,
+and the members of the `Google
+Group <https://groups.google.com/d/forum/aeneas-forced-alignment>`__.

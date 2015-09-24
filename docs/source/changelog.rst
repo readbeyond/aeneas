@@ -1,6 +1,11 @@
 Changelog
 =========
 
+v1.1.2 (2015-09-24)
+-------------------
+
+#. Better ``setup.py``, especially for Windows users (courtesy of David Smith)
+
 v1.1.1 (2015-08-23)
 -------------------
 

@@ -2,8 +2,8 @@
 
 **aeneas** is a Python library and a set of tools to automagically synchronize audio and text.
 
-* Version: 1.1.1
-* Date: 2015-08-23
+* Version: 1.1.2
+* Date: 2015-09-24
 * Developed by: [ReadBeyond](http://www.readbeyond.it/)
 * Lead Developer: [Alberto Pettarin](http://www.albertopettarin.it/)
 * License: the GNU Affero General Public License Version 3 (AGPL v3)
@@ -86,7 +86,7 @@ for example using [aeneas-vagrant](https://github.com/readbeyond/aeneas-vagrant)
 $ git clone https://github.com/readbeyond/aeneas.git
 $ cd aeneas
 $ pip install -r requirements.txt
-$ python setup.py build
+$ python setup.py build_ext --inplace
 $ python check_dependencies.py
 ```
 
@@ -103,9 +103,12 @@ you can install all the dependencies by running
 $ sudo bash install_dependencies.sh
 ```
 
-Then, run `python setup.py build` and `check_dependencies.py` as above.
+Then, run `python setup.py build_ext --inplace` and `python check_dependencies.py` as above.
 
-If you are a Windows user, please read
+If you are a Windows user, please read the installation instructions
+contained in the
+["Using aeneas for Audio-Text Synchronization" PDF](http://software.sil.org/scriptureappbuilder/resources/)
+based on
 [these directions](https://groups.google.com/d/msg/aeneas-forced-alignment/p9cb1FA0X0I/8phzUgIqBAAJ),
 written by Richard Margetts.
 
@@ -130,9 +133,8 @@ created by [aeneas-vagrant](https://github.com/readbeyond/aeneas-vagrant).
 
 3. (Optional, but strongly suggested) Compile the Python C extensions:
 
-Linux or Windows:
     ```bash
-    $ python setup.py build
+    $ python setup.py build_ext --inplace
     ```
 
 4. To compute a SMIL synchronization map `map.smil` for a pair
@@ -376,5 +378,6 @@ APIs and Web application for ReadBeyond Sync,
 helped shaping the structure of this package
 for its asynchronous usage.
 
-
+All the mighty [GitHub contributors](https://github.com/readbeyond/aeneas/graphs/contributors),
+and the members of the [Google Group](https://groups.google.com/d/forum/aeneas-forced-alignment).
 

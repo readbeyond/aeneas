@@ -11,8 +11,20 @@
 # __email__ = "aeneas@readbeyond.it"
 # __status__ = "Production"
 
-echo "[INFO] Running all unit tests..."
+cd aeneas
 
-python -m unittest discover
+echo "[WARN] This script is deprecated. Instead, please use"
+echo "[WARN] python setup.py build_ext --inplace"
+echo "[WARN] See the README for details"
+echo ""
 
-echo "[INFO] Running all unit tests... done"
+echo "[INFO] Compiling cdtw..."
+python cdtw_setup.py build_ext --inplace
+echo "[INFO] Compiling cdtw... done"
+
+echo "[INFO] Compiling cmfcc..."
+python cmfcc_setup.py build_ext --inplace
+echo "[INFO] Compiling cmfcc... done"
+
+cd ..
+
