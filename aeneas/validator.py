@@ -16,7 +16,7 @@ from aeneas.executetask import AdjustBoundaryAlgorithm
 from aeneas.hierarchytype import HierarchyType
 from aeneas.language import Language
 from aeneas.logger import Logger
-from aeneas.syncmap import SyncMapFormat
+from aeneas.syncmap import SyncMapFormat, SyncMapHeadTailFormat
 from aeneas.textfile import TextFileFormat
 
 __author__ = "Alberto Pettarin"
@@ -26,7 +26,7 @@ __copyright__ = """
     Copyright 2015,      Alberto Pettarin (www.albertopettarin.it)
     """
 __license__ = "GNU AGPL v3"
-__version__ = "1.1.2"
+__version__ = "1.2.0"
 __email__ = "aeneas@readbeyond.it"
 __status__ = "Production"
 
@@ -113,37 +113,39 @@ class Validator(object):
             self,
             parameters,
             key,
-            value,
+            values,
             implied_keys,
             result
         ):
         """
-        Check whether at least one of the keys in implied_keys is in parameters,
-        when a given ``key=value`` is present in parameters.
+        Check whether at least one of the keys in implied_keys
+        is in parameters,
+        when a given ``key=value`` is present in parameters,
+        for some value in values.
         Log messages into result.
 
         :param parameters: the given parameters
         :type  parameters: dict
         :param key: the key name
         :type  key: string
-        :param value: the value for parameter key
-        :type  value: string
+        :param value: the values for parameter key
+        :type  value: list of string
         :param implied_keys: the list of keys implied by ``key=value``
         :type  implied_keys: list of strings
         :param result: the object where to store validation messages
         :type  result: :class:`aeneas.validator.ValidatorResult`
         """
-        self._log(["Checking implied parameters by '%s'='%s'", key, value])
-        if (key in parameters) and (parameters[key] == value):
+        self._log(["Checking implied parameters by '%s'='%s'", key, values])
+        if (key in parameters) and (parameters[key] in values):
             found = False
             for implied_key in implied_keys:
                 if implied_key in parameters:
                     found = True
             if not found:
                 if len(implied_keys) == 1:
-                    msg = "Parameter '%s' is required when '%s'='%s'." % (implied_keys[0], key, value)
+                    msg = "Parameter '%s' is required when '%s'='%s'." % (implied_keys[0], key, parameters[key])
                 else:
-                    msg = "At least one of [%s] is required when '%s'='%s'." % (",".join(implied_keys), key, value)
+                    msg = "At least one of [%s] is required when '%s'='%s'." % (",".join(implied_keys), key, parameters[key])
                 result.passed = False
                 result.add_error(msg)
                 self._log(msg)
@@ -240,6 +242,12 @@ class Validator(object):
             AdjustBoundaryAlgorithm.ALLOWED_VALUES,
             result
         )
+        self._check_allowed_value(
+            parameters,
+            gc.PPN_TASK_OS_FILE_HEAD_TAIL_FORMAT,
+            SyncMapHeadTailFormat.ALLOWED_VALUES,
+            result
+        )
 
         # check all parameters implied by other_parameter=value are present
         self._log("Checking all implied parameters are present")
@@ -247,7 +255,7 @@ class Validator(object):
         self._check_implied_parameter(
             parameters,
             gc.PPN_JOB_IS_HIERARCHY_TYPE,
-            HierarchyType.PAGED,
+            [HierarchyType.PAGED],
             [gc.PPN_JOB_IS_TASK_DIRECTORY_NAME_REGEX],
             result
         )
@@ -255,7 +263,7 @@ class Validator(object):
         self._check_implied_parameter(
             parameters,
             gc.PPN_JOB_IS_TEXT_FILE_FORMAT,
-            TextFileFormat.UNPARSED,
+            [TextFileFormat.UNPARSED],
             [gc.PPN_JOB_IS_TEXT_UNPARSED_ID_SORT],
             result
         )
@@ -264,26 +272,30 @@ class Validator(object):
         self._check_implied_parameter(
             parameters,
             gc.PPN_JOB_IS_TEXT_FILE_FORMAT,
-            TextFileFormat.UNPARSED,
+            [TextFileFormat.UNPARSED],
             [
                 gc.PPN_JOB_IS_TEXT_UNPARSED_CLASS_REGEX,
                 gc.PPN_JOB_IS_TEXT_UNPARSED_ID_REGEX
             ],
             result
         )
-        # os_task_file_format=smil => os_task_file_smil_audio_ref
+        # os_task_file_format=smil  => os_task_file_smil_audio_ref
+        # os_task_file_format=smilh => os_task_file_smil_audio_ref
+        # os_task_file_format=smilm => os_task_file_smil_audio_ref
         self._check_implied_parameter(
             parameters,
             gc.PPN_TASK_OS_FILE_FORMAT,
-            SyncMapFormat.SMIL,
+            [SyncMapFormat.SMIL, SyncMapFormat.SMILH, SyncMapFormat.SMILM],
             [gc.PPN_TASK_OS_FILE_SMIL_AUDIO_REF],
             result
         )
-        # os_task_file_format=smil => os_task_file_smil_page_ref
+        # os_task_file_format=smil  => os_task_file_smil_page_ref
+        # os_task_file_format=smilh => os_task_file_smil_page_ref
+        # os_task_file_format=smilm => os_task_file_smil_page_ref
         self._check_implied_parameter(
             parameters,
             gc.PPN_TASK_OS_FILE_FORMAT,
-            SyncMapFormat.SMIL,
+            [SyncMapFormat.SMIL, SyncMapFormat.SMILH, SyncMapFormat.SMILM],
             [gc.PPN_TASK_OS_FILE_SMIL_PAGE_REF],
             result
         )
@@ -291,7 +303,7 @@ class Validator(object):
         self._check_implied_parameter(
             parameters,
             gc.PPN_TASK_ADJUST_BOUNDARY_ALGORITHM,
-            AdjustBoundaryAlgorithm.PERCENT,
+            [AdjustBoundaryAlgorithm.PERCENT],
             [gc.PPN_TASK_ADJUST_BOUNDARY_PERCENT_VALUE],
             result
         )
@@ -299,7 +311,7 @@ class Validator(object):
         self._check_implied_parameter(
             parameters,
             gc.PPN_TASK_ADJUST_BOUNDARY_ALGORITHM,
-            AdjustBoundaryAlgorithm.RATE,
+            [AdjustBoundaryAlgorithm.RATE],
             [gc.PPN_TASK_ADJUST_BOUNDARY_RATE_VALUE],
             result
         )
@@ -307,7 +319,7 @@ class Validator(object):
         self._check_implied_parameter(
             parameters,
             gc.PPN_TASK_ADJUST_BOUNDARY_ALGORITHM,
-            AdjustBoundaryAlgorithm.RATEAGGRESSIVE,
+            [AdjustBoundaryAlgorithm.RATEAGGRESSIVE],
             [gc.PPN_TASK_ADJUST_BOUNDARY_RATE_VALUE],
             result
         )
@@ -315,7 +327,7 @@ class Validator(object):
         self._check_implied_parameter(
             parameters,
             gc.PPN_TASK_ADJUST_BOUNDARY_ALGORITHM,
-            AdjustBoundaryAlgorithm.AFTERCURRENT,
+            [AdjustBoundaryAlgorithm.AFTERCURRENT],
             [gc.PPN_TASK_ADJUST_BOUNDARY_AFTERCURRENT_VALUE],
             result
         )
@@ -323,8 +335,16 @@ class Validator(object):
         self._check_implied_parameter(
             parameters,
             gc.PPN_TASK_ADJUST_BOUNDARY_ALGORITHM,
-            AdjustBoundaryAlgorithm.BEFORENEXT,
+            [AdjustBoundaryAlgorithm.BEFORENEXT],
             [gc.PPN_TASK_ADJUST_BOUNDARY_BEFORENEXT_VALUE],
+            result
+        )
+        # task_adjust_boundary_algorithm=offset => task_adjust_boundary_offset_value
+        self._check_implied_parameter(
+            parameters,
+            gc.PPN_TASK_ADJUST_BOUNDARY_ALGORITHM,
+            [AdjustBoundaryAlgorithm.OFFSET],
+            [gc.PPN_TASK_ADJUST_BOUNDARY_OFFSET_VALUE],
             result
         )
 

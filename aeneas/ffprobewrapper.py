@@ -20,7 +20,7 @@ __copyright__ = """
     Copyright 2015,      Alberto Pettarin (www.albertopettarin.it)
     """
 __license__ = "GNU AGPL v3"
-__version__ = "1.1.2"
+__version__ = "1.2.0"
 __email__ = "aeneas@readbeyond.it"
 __status__ = "Production"
 
@@ -199,6 +199,10 @@ class FFPROBEWrapper(object):
 
         # dictionary for the results
         results = dict()
+        results[self.STDOUT_CHANNELS] = None
+        results[self.STDOUT_CODEC_NAME] = None
+        results[self.STDOUT_DURATION] = None
+        results[self.STDOUT_SAMPLE_RATE] = None
 
         # scan the first audio stream the ffprobe stdout output
         # TODO more robust parsing
@@ -213,13 +217,17 @@ class FFPROBEWrapper(object):
                 self._log(["Found property '%s'='%s'", key, value])
 
         # convert duration to float
-        results[self.STDOUT_DURATION] = gf.safe_float(
-            results[self.STDOUT_DURATION],
-            None
-        )
+        if self.STDOUT_DURATION in results:
+            self._log(["Found duration: '%s'", results[self.STDOUT_DURATION]])
+            results[self.STDOUT_DURATION] = gf.safe_float(
+                results[self.STDOUT_DURATION],
+                None
+            )
+        else:
+            self._log("No duration found in stdout")
 
+        # if audio_length is still None, try scanning ffprobe stderr output
         try:
-            # if audio_length is still None, scan ffprobe stderr output
             if results[self.STDOUT_DURATION] is None:
                 pattern = re.compile(self.STDERR_DURATION_REGEX)
                 for line in stderrdata.splitlines():
@@ -235,12 +243,16 @@ class FFPROBEWrapper(object):
                         self._log(["Extracted duration '%f'", v_length])
                         break
         except ValueError:
-            self._log("ValueError exception")
+            self._log("ValueError exception while parsing stderr")
         except TypeError:
-            self._log("TypeError exception")
+            self._log("TypeError exception while parsing stderr")
+
+        if results[self.STDOUT_DURATION] is None:
+            self._log("No duration found in stdout or stderr", Logger.CRITICAL)
+            raise ValueError("Cannot determine duration of the input file")
 
         # return dictionary
-        self.logger.log("Returning dict", Logger.DEBUG, self.TAG)
+        self._log("Returning dict")
         return results
 
 

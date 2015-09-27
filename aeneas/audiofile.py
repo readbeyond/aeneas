@@ -7,6 +7,7 @@ A class representing an audio file.
 
 import os
 from scikits.audiolab import wavread
+from scikits.audiolab import wavwrite
 
 import aeneas.globalconstants as gc
 import aeneas.globalfunctions as gf
@@ -21,7 +22,7 @@ __copyright__ = """
     Copyright 2015,      Alberto Pettarin (www.albertopettarin.it)
     """
 __license__ = "GNU AGPL v3"
-__version__ = "1.1.2"
+__version__ = "1.2.0"
 __email__ = "aeneas@readbeyond.it"
 __status__ = "Production"
 
@@ -202,7 +203,9 @@ class AudioFile(object):
 
     def load_data(self):
         """
-        Load the audio file data (works only for mono wav files)
+        Load the audio file data.
+
+        This function works only for mono wav files!
         """
         self._log("Loading audio data")
 
@@ -225,16 +228,28 @@ class AudioFile(object):
         """
         Extract MFCCs from the given audio file.
 
+        If audio data is not loaded, load it, extract MFCCs,
+        and then clear it.
+
+        This function works only for mono wav files!
+
         :param frame_rate: the MFCC frame rate, in frames per second. Default:
                            :class:`aeneas.globalconstants.MFCC_FRAME_RATE`
         :type  frame_rate: int
         """
+        # remember if we have audio data
+        had_audio_data = (self.audio_data is not None)
+        if not had_audio_data:
+            self.load_data()
+
         if gc.USE_C_EXTENSIONS:
             self._log("C extensions enabled in gc")
             if gf.can_run_c_extension("cmfcc"):
                 self._log("C extensions enabled in gc and cmfcc can be loaded")
                 try:
                     self._compute_mfcc_c_extension(frame_rate)
+                    if not had_audio_data:
+                        self.clear_data()
                     return
                 except:
                     self._log(
@@ -253,6 +268,85 @@ class AudioFile(object):
                 "An error occurred running _compute_mfcc_pure_python",
                 severity=Logger.WARNING
             )
+        if not had_audio_data:
+            self.clear_data()
+
+    def reverse(self):
+        """
+        Reverse the audio data.
+
+        If audio data is not loaded, load it and then reverse it.
+
+        This function works only for mono wav files!
+
+        .. versionadded:: 1.2.0
+        """
+        if self.audio_data is None:
+            self._log("No audio data: loading it")
+            self.load_data()
+        self._log("Reversing audio data...")
+        self.audio_data = self.audio_data[::-1]
+        self._log("Reversing audio data... done")
+
+    def trim(self, begin=None, length=None):
+        """
+        Get a slice of the audio data of ``length`` seconds,
+        starting from ``begin`` seconds.
+
+        If audio data is not loaded, load it and then slice it.
+
+        This function works only for mono wav files!
+
+        :param begin: the start position, in seconds
+        :type  begin: float
+        :param length: the  position, in seconds
+        :type  length: float
+        """
+        if (begin is None) and (length is None):
+            # nothing to do
+            return
+
+        if self.audio_data is None:
+            self._log("No audio data: loading it")
+            self.load_data()
+
+        self._log(["audio_length is %.3f", self.audio_length])
+
+        if begin is None:
+            begin = 0
+            self._log(["begin was None, now set to %.3f", begin])
+        begin = min(max(0, begin), self.audio_length)
+        self._log(["begin is %.3f", begin])
+        if length is None:
+            length = self.audio_length - begin
+            self._log(["length was None, now set to %.3f", length])
+        length = min(max(0, length), self.audio_length - begin)
+        self._log(["length is %.3f", length])
+        begin_index = int(begin * self.audio_sample_rate)
+        end_index = int((begin + length) * self.audio_sample_rate)
+        self.audio_data = self.audio_data[begin_index:end_index]
+        self.audio_length = (float(len(self.audio_data)) / self.audio_sample_rate)
+
+    def write(self, file_path):
+        """
+        Write the audio data to file.
+        Return ``True`` on success, or ``False`` otherwise.
+
+        This function works only for mono wav files!
+
+        :param file_path: the path of the output file to be written
+        :type  file_path: string (path)
+        :rtype: bool
+
+        .. versionadded:: 1.2.0
+        """
+        self._log(["Writing audio file '%s'...", file_path])
+        try:
+            wavwrite(self.audio_data, file_path, self.audio_sample_rate, self.audio_format)
+        except:
+            self._log("Error writing audio file", severity=Logger.CRITICAL)
+            return False
+        return True
 
     def clear_data(self):
         """

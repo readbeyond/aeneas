@@ -1,0 +1,22 @@
+<?xml version='1.0' encoding='ASCII'?>
+<tt xmlns="http://www.w3.org/ns/ttml" xml:lang="en">
+  <body>
+    <div>
+      <p xml:id="f000001" begin="0.000s" end="2.680s">I</p>
+      <p xml:id="f000002" begin="2.680s" end="5.520s">From fairest creatures<br/>we desire increase,</p>
+      <p xml:id="f000003" begin="5.520s" end="8.640s">That thereby beauty&#8217;s rose<br/>might never die,</p>
+      <p xml:id="f000004" begin="8.640s" end="11.640s">But as the riper<br/>should by time decease,</p>
+      <p xml:id="f000005" begin="11.640s" end="14.440s">His tender heir<br/>might bear his memory:</p>
+      <p xml:id="f000006" begin="14.440s" end="18.560s">But thou contracted<br/>to thine own bright eyes,</p>
+      <p xml:id="f000007" begin="18.560s" end="22.760s">Feed&#8217;st thy light&#8217;s flame<br/>with self-substantial fuel,</p>
+      <p xml:id="f000008" begin="22.760s" end="25.480s">Making a famine<br/>where abundance lies,</p>
+      <p xml:id="f000009" begin="25.480s" end="31.240s">Thy self thy foe,<br/>to thy sweet self too cruel:</p>
+      <p xml:id="f000010" begin="31.240s" end="34.400s">Thou that art now<br/>the world&#8217;s fresh ornament,</p>
+      <p xml:id="f000011" begin="34.400s" end="36.600s">And only herald to the gaudy spring,</p>
+      <p xml:id="f000012" begin="36.600s" end="40.640s">Within thine own bud<br/>buriest thy content,</p>
+      <p xml:id="f000013" begin="40.640s" end="43.640s">And tender churl mak&#8217;st waste in niggarding:</p>
+      <p xml:id="f000014" begin="43.640s" end="48.120s">Pity the world,<br/>or else this glutton be,</p>
+      <p xml:id="f000015" begin="48.120s" end="53.240s">To eat the world&#8217;s due,<br/>by the grave and thee.</p>
+    </div>
+  </body>
+</tt>

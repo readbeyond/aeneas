@@ -19,7 +19,7 @@ __copyright__ = """
     Copyright 2015,      Alberto Pettarin (www.albertopettarin.it)
     """
 __license__ = "GNU AGPL v3"
-__version__ = "1.1.2"
+__version__ = "1.2.0"
 __email__ = "aeneas@readbeyond.it"
 __status__ = "Production"
 
@@ -182,6 +182,8 @@ class AdjustBoundaryAlgorithm(object):
             duration = nsi[1] - nsi[0]
             try:
                 delay = max(min(float(self.value), duration), 0)
+                if delay == 0:
+                    return current_boundary
                 return nsi[0] + delay
             except:
                 return current_boundary
@@ -192,6 +194,8 @@ class AdjustBoundaryAlgorithm(object):
             duration = nsi[1] - nsi[0]
             try:
                 delay = max(min(float(self.value), duration), 0)
+                if delay == 0:
+                    return current_boundary
                 return nsi[1] - delay
             except:
                 return current_boundary
@@ -359,7 +363,10 @@ class AdjustBoundaryAlgorithm(object):
             self.max_rate = float(self.value)
         except:
             pass
+        if self.max_rate <= 0:
+            self.max_rate = self.DEFAULT_MAX_RATE
         faster = []
+
         # TODO numpy-fy this loop?
         for index in range(len(self.text_map)):
             fragment = self.text_map[index]

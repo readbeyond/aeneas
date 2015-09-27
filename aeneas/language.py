@@ -12,7 +12,7 @@ __copyright__ = """
     Copyright 2015,      Alberto Pettarin (www.albertopettarin.it)
     """
 __license__ = "GNU AGPL v3"
-__version__ = "1.1.2"
+__version__ = "1.2.0"
 __email__ = "aeneas@readbeyond.it"
 __status__ = "Production"
 
@@ -24,11 +24,23 @@ class Language(object):
     which is the same as the language code accepted by ``espeak``.
     """
 
+    AF = "af"
+    """ Afrikaans (not tested) """
+
+    AN = "an"
+    """ Aragonese (not tested) """
+
     BG = "bg"
     """ Bulgarian """
 
+    BS = "bs"
+    """ Bosnian (not tested) """
+
     CA = "ca"
     """ Catalan """
+
+    CS = "cs"
+    """ Czech (not tested) """
 
     CY = "cy"
     """ Welsh """
@@ -45,11 +57,17 @@ class Language(object):
     EN = "en"
     """ English """
 
+    EO = "eo"
+    """ Esperanto (not tested) """
+
     ES = "es"
     """ Spanish (Castillan) """
 
     ET = "et"
     """ Estonian """
+
+    FA = "fa"
+    """ Persian """
 
     FI = "fi"
     """ Finnish """
@@ -63,11 +81,20 @@ class Language(object):
     GRC = "grc"
     """ Greek (Ancient) """
 
+    HI = "hi"
+    """ Hindi (not tested) """
+
     HR = "hr"
     """ Croatian """
 
     HU = "hu"
     """ Hungarian """
+
+    HY = "hy"
+    """ Armenian (not tested) """
+
+    ID = "id"
+    """ Indonesian (not tested) """
 
     IS = "is"
     """ Icelandic """
@@ -75,8 +102,23 @@ class Language(object):
     IT = "it"
     """ Italian """
 
+    JBO = "jbo"
+    """ Lojban (not tested) """
+
+    KA = "ka"
+    """ Georgian (not tested) """
+
+    KN = "kn"
+    """ Kannada (not tested) """
+
+    KU = "ku"
+    """ Kurdish (not tested) """
+
     LA = "la"
     """ Latin """
+
+    LFN = "lfn"
+    """ Lingua Franca Nova (not tested) """
 
     LT = "lt"
     """ Lithuanian """
@@ -84,11 +126,32 @@ class Language(object):
     LV = "lv"
     """ Latvian """
 
+    MK = "mk"
+    """ Macedonian (not tested) """
+
+    ML = "ml"
+    """ Malayalam (not tested) """
+
+    MS = "ms"
+    """ Malay (not tested) """
+
+    NE = "ne"
+    """ Nepali (not tested) """
+
     NL = "nl"
     """ Dutch """
 
     NO = "no"
     """ Norwegian """
+
+    PA = "pa"
+    """ Punjabi (not tested) """
+
+    PL = "pl"
+    """ Polish """
+
+    PT = "pt"
+    """ Portuguese """
 
     RO = "ro"
     """ Romanian """
@@ -96,11 +159,8 @@ class Language(object):
     RU = "ru"
     """ Russian """
 
-    PL = "pl"
-    """ Polish """
-
-    PT = "pt"
-    """ Portuguese """
+    SQ = "sq"
+    """ Albanian (not tested) """
 
     SK = "sk"
     """ Slovakian"""
@@ -111,44 +171,80 @@ class Language(object):
     SV = "sv"
     """ Swedish """
 
+    SW = "sw"
+    """ Swahili """
+
+    TA = "ta"
+    """ Tamil (not tested) """
+
     TR = "tr"
     """ Turkish """
 
     UK = "uk"
     """ Ukrainian """
 
+    VI = "vi"
+    """ Vietnam (not tested) """
+
+    ZH = "zh"
+    """ Mandarin (not tested) """
+
     ALLOWED_VALUES = [
+        AF,
+        AN,
         BG,
+        BS,
         CA,
+        CS,
         CY,
         DA,
         DE,
         EL,
         EN,
+        EO,
         ES,
         ET,
+        FA,
         FI,
         FR,
         GA,
         GRC,
+        HI,
         HR,
         HU,
+        HY,
+        ID,
         IS,
         IT,
+        JBO,
+        KA,
+        KN,
+        KU,
         LA,
+        LFN,
         LT,
         LV,
+        MK,
+        ML,
+        MS,
+        NE,
         NL,
         NO,
-        RO,
-        RU,
+        PA,
         PL,
         PT,
+        RO,
+        RU,
         SK,
+        SQ,
         SR,
         SV,
+        SW,
+        TA,
         TR,
-        UK
+        UK,
+        VI,
+        ZH
     ]
     """ List of all the allowed values """
 

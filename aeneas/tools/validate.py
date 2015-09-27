@@ -24,7 +24,7 @@ __copyright__ = """
     Copyright 2015,      Alberto Pettarin (www.albertopettarin.it)
     """
 __license__ = "GNU AGPL 3"
-__version__ = "1.1.2"
+__version__ = "1.2.0"
 __email__ = "aeneas@readbeyond.it"
 __status__ = "Production"
 
@@ -41,7 +41,7 @@ def usage():
     print "  $ python -m %s [job|task] config_string" % name
     print "  $ python -m %s wizard /path/to/container config_string" % name
     print ""
-    print "Example:"
+    print "Examples:"
     print "  $ python -m %s config %s" % (name, file_path_2)
     print "  $ python -m %s container %s" % (name, file_path_1)
     print "  $ python -m %s job \"job_language=it|os_job_file_name=output.zip|os_job_file_container=zip|is_hierarchy_type=flat\"" % name

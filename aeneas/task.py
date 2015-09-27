@@ -22,7 +22,7 @@ __copyright__ = """
     Copyright 2015,      Alberto Pettarin (www.albertopettarin.it)
     """
 __license__ = "GNU AGPL v3"
-__version__ = "1.1.2"
+__version__ = "1.2.0"
 __email__ = "aeneas@readbeyond.it"
 __status__ = "Production"
 
@@ -65,6 +65,18 @@ class Task(object):
         accumulator += "Sync map file path: %s\n" % self.sync_map_file_path
         accumulator += "Sync map file path (absolute): %s\n" % self.sync_map_file_path_absolute
         return accumulator
+
+    @property
+    def identifier(self):
+        """
+        The identifier of the task.
+
+        :rtype: string
+        """
+        return self.__identifier
+    @identifier.setter
+    def identifier(self, value):
+        self.__identifier = value
 
     @property
     def audio_file_path_absolute(self):
@@ -171,7 +183,7 @@ class Task(object):
         parameters = dict()
         parameters[gc.PPN_TASK_OS_FILE_SMIL_PAGE_REF] = self.configuration.os_file_smil_page_ref
         parameters[gc.PPN_TASK_OS_FILE_SMIL_AUDIO_REF] = self.configuration.os_file_smil_audio_ref
-        result = self.sync_map.output(sync_map_format, path, parameters)
+        result = self.sync_map.write(sync_map_format, path, parameters)
         if not result:
             return None
         return path
@@ -204,6 +216,10 @@ class TaskConfiguration(object):
             gc.PPN_TASK_ADJUST_BOUNDARY_PERCENT_VALUE,
             gc.PPN_TASK_ADJUST_BOUNDARY_RATE_VALUE,
 
+            gc.PPN_TASK_IS_AUDIO_FILE_DETECT_HEAD_MIN,
+            gc.PPN_TASK_IS_AUDIO_FILE_DETECT_HEAD_MAX,
+            gc.PPN_TASK_IS_AUDIO_FILE_DETECT_TAIL_MIN,
+            gc.PPN_TASK_IS_AUDIO_FILE_DETECT_TAIL_MAX,
             gc.PPN_TASK_IS_AUDIO_FILE_HEAD_LENGTH,
             gc.PPN_TASK_IS_AUDIO_FILE_PROCESS_LENGTH,
             gc.PPN_TASK_IS_TEXT_FILE_FORMAT,
@@ -214,7 +230,8 @@ class TaskConfiguration(object):
             gc.PPN_TASK_OS_FILE_FORMAT,
             gc.PPN_TASK_OS_FILE_NAME,
             gc.PPN_TASK_OS_FILE_SMIL_AUDIO_REF,
-            gc.PPN_TASK_OS_FILE_SMIL_PAGE_REF
+            gc.PPN_TASK_OS_FILE_SMIL_PAGE_REF,
+            gc.PPN_TASK_OS_FILE_HEAD_TAIL_FORMAT
         ]
         self.fields = dict()
         for key in self.field_names:
@@ -423,6 +440,90 @@ class TaskConfiguration(object):
         self.fields[gc.PPN_TASK_IS_TEXT_UNPARSED_ID_SORT] = value
 
     @property
+    def is_audio_file_detect_head_min(self):
+        """
+        When synchronizing, auto detect the head of the audio file,
+        using the provided value as a lower bound, and disregard
+        these many seconds from the beginning of the audio file.
+
+        If the ``is_audio_file_head_length`` parameter is also provided,
+        the auto detection will not take place.
+
+        NOTE: This is an experimental feature, use with caution.
+
+        :rtype: float
+
+        .. versionadded:: 1.2.0
+        """
+        return self.fields[gc.PPN_TASK_IS_AUDIO_FILE_DETECT_HEAD_MIN]
+    @is_audio_file_detect_head_min.setter
+    def is_audio_file_detect_head_min(self, value):
+        self.fields[gc.PPN_TASK_IS_AUDIO_FILE_DETECT_HEAD_MIN] = value
+
+    @property
+    def is_audio_file_detect_head_max(self):
+        """
+        When synchronizing, auto detect the head of the audio file,
+        using the provided value as an upper bound, and disregard
+        these many seconds from the beginning of the audio file.
+
+        If the ``is_audio_file_head_length`` parameter is also provided,
+        the auto detection will not take place.
+
+        NOTE: This is an experimental feature, use with caution.
+
+        :rtype: float
+
+        .. versionadded:: 1.2.0
+        """
+        return self.fields[gc.PPN_TASK_IS_AUDIO_FILE_DETECT_HEAD_MAX]
+    @is_audio_file_detect_head_max.setter
+    def is_audio_file_detect_head_max(self, value):
+        self.fields[gc.PPN_TASK_IS_AUDIO_FILE_DETECT_HEAD_MAX] = value
+
+    @property
+    def is_audio_file_detect_tail_min(self):
+        """
+        When synchronizing, auto detect the tail of the audio file,
+        using the provided value as a lower bound, and disregard
+        these many seconds from the end of the audio file.
+
+        If the ``is_audio_file_process_length`` parameter is also provided,
+        the auto detection will not take place.
+
+        NOTE: This is an experimental feature, use with caution.
+
+        :rtype: float
+
+        .. versionadded:: 1.2.0
+        """
+        return self.fields[gc.PPN_TASK_IS_AUDIO_FILE_DETECT_TAIL_MIN]
+    @is_audio_file_detect_tail_min.setter
+    def is_audio_file_detect_tail_min(self, value):
+        self.fields[gc.PPN_TASK_IS_AUDIO_FILE_DETECT_TAIL_MIN] = value
+
+    @property
+    def is_audio_file_detect_tail_max(self):
+        """
+        When synchronizing, auto detect the tail of the audio file,
+        using the provided value as an upper bound, and disregard
+        these many seconds from the end of the audio file.
+
+        If the ``is_audio_file_process_length`` parameter is also provided,
+        the auto detection will not take place.
+
+        NOTE: This is an experimental feature, use with caution.
+
+        :rtype: float
+
+        .. versionadded:: 1.2.0
+        """
+        return self.fields[gc.PPN_TASK_IS_AUDIO_FILE_DETECT_TAIL_MAX]
+    @is_audio_file_detect_tail_max.setter
+    def is_audio_file_detect_tail_max(self, value):
+        self.fields[gc.PPN_TASK_IS_AUDIO_FILE_DETECT_TAIL_MAX] = value
+
+    @property
     def is_audio_file_head_length(self):
         """
         When synchronizing, disregard
@@ -505,6 +606,18 @@ class TaskConfiguration(object):
     @os_file_smil_page_ref.setter
     def os_file_smil_page_ref(self, value):
         self.fields[gc.PPN_TASK_OS_FILE_SMIL_PAGE_REF] = value
+
+    @property
+    def os_file_head_tail_format(self):
+        """
+        The format of the head and tail of the sync map output for the task.
+
+        :rtype: string (from :class:`aeneas.syncmap.SyncMapHeadTailFormat`)
+        """
+        return self.fields[gc.PPN_TASK_OS_FILE_HEAD_TAIL_FORMAT]
+    @os_file_head_tail_format.setter
+    def os_file_head_tail_format(self, value):
+        self.fields[gc.PPN_TASK_OS_FILE_HEAD_TAIL_FORMAT] = value
 
     #@property
     #def xxx(self):

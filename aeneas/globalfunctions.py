@@ -7,6 +7,7 @@ Global common functions.
 
 import math
 import os
+import re
 import shutil
 import sys
 from lxml import etree
@@ -20,9 +21,12 @@ __copyright__ = """
     Copyright 2015,      Alberto Pettarin (www.albertopettarin.it)
     """
 __license__ = "GNU AGPL v3"
-__version__ = "1.1.2"
+__version__ = "1.2.0"
 __email__ = "aeneas@readbeyond.it"
 __status__ = "Production"
+
+HHMMSS_MMM_PATTERN = re.compile(r"([0-9]*):([0-9]*):([0-9]*)\.([0-9]*)")
+HHMMSS_MMM_PATTERN_COMMA = re.compile(r"([0-9]*):([0-9]*):([0-9]*),([0-9]*)")
 
 def custom_tmp_dir():
     """
@@ -40,6 +44,26 @@ def custom_tmp_dir():
     if sys.platform in ["linux", "linux2", "darwin"]:
         return gc.TMP_PATH
     return None
+
+def file_extension(path):
+    """
+    Return the file extension.
+
+    Examples: ::
+
+        /foo/bar.baz => baz
+        None         => None
+
+    :param path: the file path
+    :type  path: string (path)
+    :rtype: string (path)
+    """
+    if path is None:
+        return None
+    ext = os.path.splitext(os.path.basename(path))[1]
+    if ext.startswith("."):
+        ext = ext[1:]
+    return ext
 
 def file_name_without_extension(path):
     """
@@ -122,6 +146,12 @@ def norm_join(prefix, suffix):
     :type  suffix: string (path)
     :rtype: string (path)
     """
+    if (prefix is None) and (suffix is None):
+        return "."
+    if prefix is None:
+        return os.path.normpath(suffix)
+    if suffix is None:
+        return os.path.normpath(prefix)
     return os.path.normpath(os.path.join(prefix, suffix))
 
 def config_txt_to_string(string):
@@ -304,6 +334,54 @@ def copytree(source_directory, destination_directory, ignore=None):
     else:
         shutil.copyfile(source_directory, destination_directory)
 
+def time_from_ttml(string):
+    """
+    Parse the given ``SS.mmms`` string
+    (TTML values have an "s" suffix, e.g. ``1.234s``)
+    and return a float time value.
+
+    :param string: the string to be parsed
+    :type  string: unicode
+    :rtype: float
+    """
+    if (string is None) or (len(string) < 2):
+        return 0
+    # strips "s" at the end
+    string = string[:-1]
+    return time_from_ssmmm(string)
+
+def time_to_ttml(time_value):
+    """
+    Format the given time value into a ``SS.mmms`` string
+    (TTML values have an "s" suffix, e.g. ``1.234s``).
+
+    Examples: ::
+
+        12        => 12.000s
+        12.345    => 12.345s
+        12.345432 => 12.345s
+        12.345678 => 12.346s
+
+    :param time_value: a time value, in seconds
+    :type  time_value: float
+    :rtype: string
+    """
+    if time_value is None:
+        time_value = 0
+    return "%ss" % time_to_ssmmm(time_value)
+
+def time_from_ssmmm(string):
+    """
+    Parse the given ``SS.mmm`` string and return a float time value.
+
+    :param string: the string to be parsed
+    :type  string: unicode
+    :rtype: float
+    """
+    if (string is None) or (len(string) < 1):
+        return 0.000
+    return float(string)
+
 def time_to_ssmmm(time_value):
     """
     Format the given time value into a ``SS.mmm`` string.
@@ -319,7 +397,33 @@ def time_to_ssmmm(time_value):
     :type  time_value: float
     :rtype: string
     """
+    if time_value is None:
+        time_value = 0
     return "%.3f" % (time_value)
+
+def time_from_hhmmssmmm(string, decimal_separator="."):
+    """
+    Parse the given ``HH:MM:SS.mmm`` string and return a float time value.
+
+    :param string: the string to be parsed
+    :type  string: unicode
+    :rtype: float
+    """
+    v_length = 0.000
+    try:
+        if decimal_separator == ",":
+            match = HHMMSS_MMM_PATTERN_COMMA.search(string)
+        else:
+            match = HHMMSS_MMM_PATTERN.search(string)
+        if match is not None:
+            v_h = int(match.group(1))
+            v_m = int(match.group(2))
+            v_s = int(match.group(3))
+            v_f = float("0." + match.group(4))
+            v_length = v_h * 3600 + v_m * 60 + v_s + v_f
+    except:
+        pass
+    return v_length
 
 def time_to_hhmmssmmm(time_value, decimal_separator="."):
     """
@@ -343,14 +447,16 @@ def time_to_hhmmssmmm(time_value, decimal_separator="."):
     :type  decimal_separator: char
     :rtype: string
     """
+    if time_value is None:
+        time_value = 0
     tmp = time_value
-    hours = math.floor(tmp / 3600)
+    hours = int(math.floor(tmp / 3600))
     tmp -= (hours * 3600)
-    minutes = math.floor(tmp / 60)
+    minutes = int(math.floor(tmp / 60))
     tmp -= minutes * 60
-    seconds = math.floor(tmp)
+    seconds = int(math.floor(tmp))
     tmp -= seconds
-    milliseconds = math.floor(tmp * 1000)
+    milliseconds = int(math.floor(tmp * 1000))
     return "%02d:%02d:%02d%s%03d" % (
         hours,
         minutes,
@@ -381,6 +487,25 @@ def time_to_srt(time_value):
     :rtype: string
     """
     return time_to_hhmmssmmm(time_value, ",")
+
+def split_url(url):
+    """
+    Split the given URL base#anchor into [base, anchor],
+    or [base, None] if no anchor is present.
+
+    :param url: the url
+    :type  url: str
+    :rtype: list of str
+    """
+    if url is None:
+        return [None, None]
+    array = url.split("#")
+    if len(array) == 1:
+        array.append(None)
+    elif len(array) > 2:
+        # TODO raise an exception?
+        array = array[0:2]
+    return array
 
 def can_run_c_extension(name=None):
     """

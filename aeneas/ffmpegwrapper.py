@@ -18,7 +18,7 @@ __copyright__ = """
     Copyright 2015,      Alberto Pettarin (www.albertopettarin.it)
     """
 __license__ = "GNU AGPL v3"
-__version__ = "1.1.2"
+__version__ = "1.2.0"
 __email__ = "aeneas@readbeyond.it"
 __status__ = "Production"
 
@@ -81,7 +81,7 @@ class FFMPEGWrapper(object):
     )
     """ Set of parameters for ``ffmpeg`` with 44100 Hz sampling """
 
-    FFMPEG_PARAMETERS_DEFAULT = FFMPEG_PARAMETERS_SAMPLE_44100
+    FFMPEG_PARAMETERS_DEFAULT = FFMPEG_PARAMETERS_SAMPLE_22050
     """ Default set of parameters for ``ffmpeg`` """
 
     TAG = "FFMPEGWrapper"

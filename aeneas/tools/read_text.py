@@ -18,7 +18,7 @@ __copyright__ = """
     Copyright 2015,      Alberto Pettarin (www.albertopettarin.it)
     """
 __license__ = "GNU AGPL 3"
-__version__ = "1.1.2"
+__version__ = "1.2.0"
 __email__ = "aeneas@readbeyond.it"
 __status__ = "Production"
 
@@ -28,18 +28,21 @@ def usage():
     file_path_1 = get_rel_path("../tests/res/inputtext/sonnet_parsed.txt")
     file_path_2 = get_rel_path("../tests/res/inputtext/sonnet_plain.txt")
     file_path_3 = get_rel_path("../tests/res/inputtext/sonnet_unparsed_class_id.xhtml")
+    file_path_4 = get_rel_path("../tests/res/inputtext/sonnet_subtitles.txt")
     print ""
     print "Usage:"
-    print "  $ python -m %s [list|parsed|plain|unparsed] /path/to/text_file [parameters]" % name
+    print "  $ python -m %s 'fragment 1|fragment 2|...|fragment N' list" % name
+    print "  $ python -m %s /path/to/text_file [parsed|plain|subtitles|unparsed] [parameters]" % name
     print ""
-    print "Example:"
-    print "  $ python -m %s list     'fragment 1|fragment 2|fragment 3'" % name
-    print "  $ python -m %s parsed   %s" % (name, file_path_1)
-    print "  $ python -m %s plain    %s" % (name, file_path_2)
-    print "  $ python -m %s unparsed %s id_regex=f[0-9]*" % (name, file_path_3)
-    print "  $ python -m %s unparsed %s class_regex=ra   sort=unsorted" % (name, file_path_3)
-    print "  $ python -m %s unparsed %s id_regex=f[0-9]* sort=numeric" % (name, file_path_3)
-    print "  $ python -m %s unparsed %s id_regex=f[0-9]* sort=lexicographic" % (name, file_path_3)
+    print "Examples:"
+    print "  $ python -m %s 'From fairest creatures|we desire|increase' list" % name
+    print "  $ python -m %s %s parsed" % (name, file_path_1)
+    print "  $ python -m %s %s plain" % (name, file_path_2)
+    print "  $ python -m %s %s subtitles" % (name, file_path_4)
+    print "  $ python -m %s %s unparsed id_regex=f[0-9]*" % (name, file_path_3)
+    print "  $ python -m %s %s unparsed class_regex=ra   sort=unsorted" % (name, file_path_3)
+    print "  $ python -m %s %s unparsed id_regex=f[0-9]* sort=numeric" % (name, file_path_3)
+    print "  $ python -m %s %s unparsed id_regex=f[0-9]* sort=lexicographic" % (name, file_path_3)
     print ""
 
 def main():
@@ -47,17 +50,19 @@ def main():
     if len(sys.argv) < 3:
         usage()
         return
-    text_format = sys.argv[1]
-    file_path = sys.argv[2]
+    file_path = sys.argv[1]
+    text_format = sys.argv[2]
     parameters = {}
     for i in range(3, len(sys.argv)):
-        key, value = sys.argv[i].split("=")
-        if key == "id_regex":
-            parameters[gc.PPN_JOB_IS_TEXT_UNPARSED_ID_REGEX] = value
-        if key == "class_regex":
-            parameters[gc.PPN_JOB_IS_TEXT_UNPARSED_CLASS_REGEX] = value
-        if key == "sort":
-            parameters[gc.PPN_JOB_IS_TEXT_UNPARSED_ID_SORT] = value
+        args = sys.argv[i].split("=")
+        if len(args) == 2:
+            key, value = args
+            if key == "id_regex":
+                parameters[gc.PPN_JOB_IS_TEXT_UNPARSED_ID_REGEX] = value
+            if key == "class_regex":
+                parameters[gc.PPN_JOB_IS_TEXT_UNPARSED_CLASS_REGEX] = value
+            if key == "sort":
+                parameters[gc.PPN_JOB_IS_TEXT_UNPARSED_ID_SORT] = value
 
     if text_format == "list":
         text_file = TextFile()

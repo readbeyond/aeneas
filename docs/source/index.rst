@@ -36,7 +36,7 @@ for example:
 
 #. SMIL for EPUB 3 ebooks with Media Overlays,
 #. SRT/TTML/VTT for closed captioning,
-#. JS for consumption on the Web, and
+#. JSON for consumption on the Web, and
 #. "raw" CSV/SSV/TSV/TXT/XML useful for further processing.
 
 
@@ -532,14 +532,17 @@ This package contains the two main tools:
 The ``aeneas.tools`` package also contains other programs
 useful for debugging:
 
-#. ``aeneas.tools.espeak_wrapper`` (a wrapper around ``espeak``)
-#. ``aeneas.tools.extract_mfcc`` (extract MFCCs from a monoaural wav file)
-#. ``aeneas.tools.ffmpeg_wrapper`` (a wrapper around ``ffmpeg``)
-#. ``aeneas.tools.ffprobe_wrapper`` (a wrapper around ``ffprobe``)
-#. ``aeneas.tools.read_audio`` (read the properties of an audio file)
-#. ``aeneas.tools.read_text`` (read a text file and show the extracted text fragments)
-#. ``aeneas.tools.run_vad`` (read an audio file and compute speech/nonspeech time intervals)
-#. ``aeneas.tools.validate`` (validate a job container or configuration strings/files)
+#. ``aeneas.tools.convert_syncmap``: convert a sync map from a format to another
+#. ``aeneas.tools.espeak_wrapper``: a wrapper around ``espeak``
+#. ``aeneas.tools.extract_mfcc``: extract MFCCs from a monoaural wav file
+#. ``aeneas.tools.ffmpeg_wrapper``: a wrapper around ``ffmpeg``
+#. ``aeneas.tools.ffprobe_wrapper``: a wrapper around ``ffprobe``
+#. ``aeneas.tools.read_audio``: read the properties of an audio file
+#. ``aeneas.tools.read_text``: read a text file and show the extracted text fragments
+#. ``aeneas.tools.run_sd``: read an audio file and the corresponding text file and detect the audio head/tail
+#. ``aeneas.tools.run_vad``: read an audio file and compute speech/nonspeech time intervals
+#. ``aeneas.tools.synthesize_text``: synthesize several text fragments read from file into a single wav file
+#. ``aeneas.tools.validate``: validate a job container or configuration strings/files
 
 Run each program without arguments
 to get its help manual and usage examples.
@@ -627,6 +630,7 @@ The ``aeneas`` package contains the following modules:
     job
     language
     logger
+    sd
     syncmap
     synthesizer
     task

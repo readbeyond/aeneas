@@ -16,7 +16,7 @@ __copyright__ = """
     Copyright 2015,      Alberto Pettarin (www.albertopettarin.it)
     """
 __license__ = "GNU AGPL 3"
-__version__ = "1.1.2"
+__version__ = "1.2.0"
 __email__ = "aeneas@readbeyond.it"
 __status__ = "Production"
 
@@ -39,9 +39,9 @@ def main():
     text = sys.argv[1]
     language = sys.argv[2]
     output_file_path = sys.argv[3]
-    synth = ESPEAKWrapper()
-    synth.synthesize(text, language, output_file_path)
-    print "Created file '%s'" % output_file_path
+    synt = ESPEAKWrapper()
+    synt.synthesize(text, language, output_file_path)
+    print "[INFO] Created file '%s'" % output_file_path
 
 if __name__ == '__main__':
     main()
