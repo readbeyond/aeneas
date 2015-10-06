@@ -4,12 +4,12 @@
 import numpy
 import unittest
 
-from . import get_abs_path
+import aeneas.tests as at
 
 class TestCDTW(unittest.TestCase):
 
-    MFCC1 = get_abs_path("res/cdtw/mfcc1_53")
-    MFCC2 = get_abs_path("res/cdtw/mfcc2_53")
+    MFCC1 = at.get_abs_path("res/cdtw/mfcc1_53")
+    MFCC2 = at.get_abs_path("res/cdtw/mfcc2_53")
 
     def test_compute_path(self):
         try:
@@ -33,7 +33,7 @@ class TestCDTW(unittest.TestCase):
             self.assertEqual(len(best_path), 1418)
             self.assertEqual(best_path[0], (0, 0))
             self.assertEqual(best_path[-1], (n-1, m-1))
-        except ImportError as e:
+        except ImportError:
             pass
 
 if __name__ == '__main__':

@@ -8,21 +8,21 @@
  <fragment>
   <identifier>f000002</identifier>
   <start>2.680</start>
-  <end>5.520</end>
+  <end>5.880</end>
  </fragment>
  <fragment>
   <identifier>f000003</identifier>
-  <start>5.520</start>
-  <end>8.640</end>
+  <start>5.880</start>
+  <end>9.240</end>
  </fragment>
  <fragment>
   <identifier>f000004</identifier>
-  <start>8.640</start>
-  <end>11.640</end>
+  <start>9.240</start>
+  <end>11.760</end>
  </fragment>
  <fragment>
   <identifier>f000005</identifier>
-  <start>11.640</start>
+  <start>11.760</start>
   <end>14.440</end>
  </fragment>
  <fragment>
@@ -33,31 +33,31 @@
  <fragment>
   <identifier>f000007</identifier>
   <start>18.560</start>
-  <end>22.760</end>
+  <end>22.280</end>
  </fragment>
  <fragment>
   <identifier>f000008</identifier>
-  <start>22.760</start>
+  <start>22.280</start>
   <end>25.480</end>
  </fragment>
  <fragment>
   <identifier>f000009</identifier>
   <start>25.480</start>
-  <end>31.240</end>
+  <end>31.200</end>
  </fragment>
  <fragment>
   <identifier>f000010</identifier>
-  <start>31.240</start>
+  <start>31.200</start>
   <end>34.400</end>
  </fragment>
  <fragment>
   <identifier>f000011</identifier>
   <start>34.400</start>
-  <end>36.600</end>
+  <end>36.960</end>
  </fragment>
  <fragment>
   <identifier>f000012</identifier>
-  <start>36.600</start>
+  <start>36.960</start>
   <end>40.640</end>
  </fragment>
  <fragment>

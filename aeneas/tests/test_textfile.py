@@ -3,15 +3,18 @@
 
 import unittest
 
-from . import get_abs_path
-
-import aeneas.globalconstants as gc
 from aeneas.idsortingalgorithm import IDSortingAlgorithm
 from aeneas.language import Language
-from aeneas.textfile import TextFile, TextFileFormat, TextFragment
+from aeneas.textfile import TextFile
+from aeneas.textfile import TextFileFormat
+from aeneas.textfile import TextFragment
+import aeneas.globalconstants as gc
+import aeneas.tests as at
 
 class TestTextFile(unittest.TestCase):
 
+    NOT_EXISTING_PATH = at.get_abs_path("not_existing.txt")
+    NOT_WRITEABLE_PATH = at.get_abs_path("x/y/z/not_writeable.txt")
     EMPTY_FILE_PATH = "res/inputtext/empty.txt"
     BLANK_FILE_PATH = "res/inputtext/blank.txt"
     PLAIN_FILE_PATH = "res/inputtext/sonnet_plain.txt"
@@ -22,7 +25,7 @@ class TestTextFile(unittest.TestCase):
     }
 
     def load(self, input_file_path=PLAIN_FILE_PATH, fmt=TextFileFormat.PLAIN, expected_length=15, parameters=None):
-        tfl = TextFile(get_abs_path(input_file_path), fmt, parameters)
+        tfl = TextFile(at.get_abs_path(input_file_path), fmt, parameters)
         self.assertEqual(len(tfl), expected_length)
         return tfl
 
@@ -40,10 +43,82 @@ class TestTextFile(unittest.TestCase):
         tfl = self.load()
         sli = tfl.get_slice(start, end)
         self.assertEqual(len(sli), expected)
+        return sli
+
+    def test_tf_identifier_str(self):
+        with self.assertRaises(TypeError):
+            tf = TextFragment(identifier="foo")
+
+    def test_tf_identifier_unicode(self):
+        tf = TextFragment(identifier=u"foo")
+        self.assertEqual(len(tf), 0)
+
+    def test_tf_lines_invalid(self):
+        with self.assertRaises(TypeError):
+            tf = TextFragment(lines="foo")
+
+    def test_tf_lines_invalid_none(self):
+        with self.assertRaises(TypeError):
+            tf = TextFragment(lines=[None])
+
+    def test_tf_lines_invalid_none_mixed(self):
+        with self.assertRaises(TypeError):
+            tf = TextFragment(lines=[u"foo", None, u"bar"])
+
+    def test_tf_lines_invalid_str(self):
+        with self.assertRaises(TypeError):
+            tf = TextFragment(lines=["foo"])
+
+    def test_tf_lines_invalid_str_mixed(self):
+        with self.assertRaises(TypeError):
+            tf = TextFragment(lines=[u"foo", "bar", u"baz"])
+
+    def test_tf_lines_unicode(self):
+        tf = TextFragment(lines=[u"foo"])
+        self.assertEqual(len(tf), 1)
+
+    def test_tf_lines_unicode_multiple(self):
+        tf = TextFragment(lines=[u"foo", u"bar", u"baz"])
+        self.assertEqual(len(tf), 3)
+
+    def test_tf_lines_unicode_empty_string(self):
+        tf = TextFragment(lines=[u""])
+        self.assertEqual(len(tf), 1)
+
+    def test_tf_lines_unicode_empty_string_multiple(self):
+        tf = TextFragment(lines=[u"", u"", u""])
+        self.assertEqual(len(tf), 3)
 
     def test_constructor(self):
         tfl = TextFile()
         self.assertEqual(len(tfl), 0)
+
+    def test_file_path_not_existing(self):
+        with self.assertRaises(IOError):
+            tfl = TextFile(file_path=self.NOT_EXISTING_PATH)
+
+    def test_invalid_format(self):
+        with self.assertRaises(ValueError):
+            tfl = TextFile(file_format="foo")
+
+    def test_invalid_parameters(self):
+        with self.assertRaises(TypeError):
+            tfl = TextFile(parameters=["foo"])
+
+    def test_invalid_fragments(self):
+        tfl = TextFile()
+        with self.assertRaises(TypeError):
+            tfl.fragments = "foo"
+
+    def test_empty_fragments(self):
+        tfl = TextFile()
+        tfl.fragments = []
+        self.assertEqual(len(tfl), 0)
+    
+    def test_invalid_fragment(self):
+        tfl = TextFile()
+        with self.assertRaises(TypeError):
+            tfl.fragments = ["foo"]
 
     def test_read_empty(self):
         for fmt in TextFileFormat.ALLOWED_VALUES:
@@ -88,26 +163,26 @@ class TestTextFile(unittest.TestCase):
                     "path": "res/inputtext/sonnet_unparsed_soup_1.txt",
                     "parameters": {
                         gc.PPN_JOB_IS_TEXT_UNPARSED_ID_REGEX : "f[0-9]*"
-                        }
+                    }
                 },
                 {
                     "path": "res/inputtext/sonnet_unparsed_soup_2.txt",
                     "parameters": {
                         gc.PPN_JOB_IS_TEXT_UNPARSED_ID_REGEX : "f[0-9]*",
                         gc.PPN_JOB_IS_TEXT_UNPARSED_CLASS_REGEX : "ra"
-                        }
+                    }
                 },
                 {
                     "path": "res/inputtext/sonnet_unparsed_soup_3.txt",
                     "parameters": {
                         gc.PPN_JOB_IS_TEXT_UNPARSED_CLASS_REGEX : "ra"
-                        }
+                    }
                 },
                 {
                     "path": "res/inputtext/sonnet_unparsed.xhtml",
                     "parameters": {
                         gc.PPN_JOB_IS_TEXT_UNPARSED_ID_REGEX : "f[0-9]*"
-                        }
+                    }
                 },
         ]:
             self.load(case["path"], TextFileFormat.UNPARSED, 15, case["parameters"])
@@ -117,7 +192,7 @@ class TestTextFile(unittest.TestCase):
             "res/inputtext/sonnet_unparsed_order_1.txt",
             "f[0-9]*",
             IDSortingAlgorithm.UNSORTED,
-            ["f001", "f003", "f005", "f004", "f002"]
+            [u"f001", u"f003", u"f005", u"f004", u"f002"]
         )
 
     def test_read_unparsed_numeric(self):
@@ -125,7 +200,7 @@ class TestTextFile(unittest.TestCase):
             "res/inputtext/sonnet_unparsed_order_2.txt",
             "f[0-9]*",
             IDSortingAlgorithm.NUMERIC,
-            ["f001", "f2", "f003", "f4", "f050"]
+            [u"f001", u"f2", u"f003", u"f4", u"f050"]
         )
 
     def test_read_unparsed_numeric_2(self):
@@ -133,7 +208,7 @@ class TestTextFile(unittest.TestCase):
             "res/inputtext/sonnet_unparsed_order_3.txt",
             "f[0-9]*",
             IDSortingAlgorithm.NUMERIC,
-            ["f001", "f2", "f003", "f4", "f050"]
+            [u"f001", u"f2", u"f003", u"f4", u"f050"]
         )
 
     def test_read_unparsed_lexicographic(self):
@@ -141,7 +216,7 @@ class TestTextFile(unittest.TestCase):
             "res/inputtext/sonnet_unparsed_order_4.txt",
             "[a-z][0-9]*",
             IDSortingAlgorithm.LEXICOGRAPHIC,
-            ["a005", "b002", "c004", "d001", "e003"]
+            [u"a005", u"b002", u"c004", u"d001", u"e003"]
         )
 
     def test_read_unparsed_numeric_3(self):
@@ -149,7 +224,7 @@ class TestTextFile(unittest.TestCase):
             "res/inputtext/sonnet_unparsed_order_5.txt",
             "[a-z][0-9]*",
             IDSortingAlgorithm.NUMERIC,
-            ["d001", "b002", "e003", "c004", "a005"]
+            [u"d001", u"b002", u"e003", u"c004", u"a005"]
         )
 
     def test_set_language(self):
@@ -166,72 +241,85 @@ class TestTextFile(unittest.TestCase):
         self.assertEqual(len(tfl), 0)
         tfl.set_language(Language.EN)
         self.assertEqual(len(tfl), 0)
+        self.assertEqual(tfl.chars, 0)
 
     def test_read_from_list(self):
         tfl = TextFile()
         text_list = [
-            "fragment 1",
-            "fragment 2",
-            "fragment 3",
-            "fragment 4",
-            "fragment 5"
+            u"fragment 1",
+            u"fragment 2",
+            u"fragment 3",
+            u"fragment 4",
+            u"fragment 5"
         ]
         tfl.read_from_list(text_list)
         self.assertEqual(len(tfl), 5)
+        self.assertEqual(tfl.chars, 50)
 
     def test_read_from_list_with_ids(self):
         tfl = TextFile()
         text_list = [
-            ["a1", "fragment 1"],
-            ["b2", "fragment 2"],
-            ["c3", "fragment 3"],
-            ["d4", "fragment 4"],
-            ["e5", "fragment 5"]
+            [u"a1", u"fragment 1"],
+            [u"b2", u"fragment 2"],
+            [u"c3", u"fragment 3"],
+            [u"d4", u"fragment 4"],
+            [u"e5", u"fragment 5"]
         ]
         tfl.read_from_list_with_ids(text_list)
         self.assertEqual(len(tfl), 5)
+        self.assertEqual(tfl.chars, 50)
 
     def test_append_fragment(self):
         tfl = TextFile()
         self.assertEqual(len(tfl), 0)
-        tfl.append_fragment(TextFragment("a1", Language.EN, "fragment 1"))
+        tfl.append_fragment(TextFragment(u"a1", Language.EN, [u"fragment 1"]))
         self.assertEqual(len(tfl), 1)
+        self.assertEqual(tfl.chars, 10)
 
     def test_append_fragment_multiple(self):
         tfl = TextFile()
         self.assertEqual(len(tfl), 0)
-        tfl.append_fragment(TextFragment("a1", Language.EN, "fragment 1"))
+        tfl.append_fragment(TextFragment(u"a1", Language.EN, [u"fragment 1"]))
         self.assertEqual(len(tfl), 1)
-        tfl.append_fragment(TextFragment("a2", Language.EN, "fragment 2"))
+        tfl.append_fragment(TextFragment(u"a2", Language.EN, [u"fragment 2"]))
         self.assertEqual(len(tfl), 2)
-        tfl.append_fragment(TextFragment("a3", Language.EN, "fragment 3"))
+        tfl.append_fragment(TextFragment(u"a3", Language.EN, [u"fragment 3"]))
         self.assertEqual(len(tfl), 3)
+        self.assertEqual(tfl.chars, 30)
 
     def test_get_slice_no_args(self):
         tfl = self.load()
         sli = tfl.get_slice()
         self.assertEqual(len(sli), 15)
+        self.assertEqual(sli.chars, 597)
 
     def test_get_slice_only_start(self):
-        self.load_and_slice(10, 5)
+        sli = self.load_and_slice(10, 5)
+        self.assertEqual(sli.chars, 433)
 
     def test_get_slice_start_and_end(self):
-        self.load_and_slice(5, 5, 10)
+        sli = self.load_and_slice(5, 5, 10)
+        self.assertEqual(sli.chars, 226)
 
     def test_get_slice_start_greater_than_length(self):
-        self.load_and_slice(1, 100)
+        sli = self.load_and_slice(1, 100)
+        self.assertEqual(sli.chars, 46)
 
     def test_get_slice_start_less_than_zero(self):
-        self.load_and_slice(15, -1)
+        sli = self.load_and_slice(15, -1)
+        self.assertEqual(sli.chars, 597)
 
     def test_get_slice_end_greater_then_length(self):
-        self.load_and_slice(15, 0, 100)
+        sli = self.load_and_slice(15, 0, 100)
+        self.assertEqual(sli.chars, 597)
 
     def test_get_slice_end_less_than_zero(self):
-        self.load_and_slice(1, 0, -1)
+        sli = self.load_and_slice(1, 0, -1)
+        self.assertEqual(sli.chars, 1)
 
     def test_get_slice_end_less_than_start(self):
-        self.load_and_slice(1, 10, 5)
+        sli = self.load_and_slice(1, 10, 5)
+        self.assertEqual(sli.chars, 36)
 
 if __name__ == '__main__':
     unittest.main()

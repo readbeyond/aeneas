@@ -5,11 +5,22 @@ import os
 import tempfile
 import unittest
 
-from . import get_abs_path, delete_file, delete_directory
-
-from aeneas.container import Container, ContainerFormat
+from aeneas.container import Container
+from aeneas.container import ContainerFormat
+import aeneas.globalfunctions as gf
+import aeneas.tests as at
 
 class TestContainer(unittest.TestCase):
+
+    NOT_EXISTING = at.get_abs_path("not_existing.zip")
+    EMPTY_DIRECTORY = at.get_abs_path("res/container/empty_dir")
+    EMPTY_FILES = [
+        at.get_abs_path("res/container/empty_file.epub"),
+        at.get_abs_path("res/container/empty_file.tar"),
+        at.get_abs_path("res/container/empty_file.tar.bz2"),
+        at.get_abs_path("res/container/empty_file.tar.gz"),
+        at.get_abs_path("res/container/empty_file.zip")
+    ]
 
     EXPECTED_ENTRIES = [
         "assets/p001.mp3",
@@ -23,41 +34,49 @@ class TestContainer(unittest.TestCase):
 
     FILES = {
         "epub": {
-            "path": get_abs_path("res/container/job.epub"),
+            "path": at.get_abs_path("res/container/job.epub"),
             "format": ContainerFormat.EPUB,
             "config_size": 599
          },
         "tar": {
-            "path": get_abs_path("res/container/job.tar"),
+            "path": at.get_abs_path("res/container/job.tar"),
             "format": ContainerFormat.TAR,
             "config_size": 599
          },
         "tar_bz2": {
-            "path": get_abs_path("res/container/job.tar.bz2"),
+            "path": at.get_abs_path("res/container/job.tar.bz2"),
             "format": ContainerFormat.TAR_BZ2,
             "config_size": 599
          },
         "tar": {
-            "path": get_abs_path("res/container/job.tar.gz"),
+            "path": at.get_abs_path("res/container/job.tar.gz"),
             "format": ContainerFormat.TAR_GZ,
             "config_size": 599
          },
         "unpacked": {
-            "path": get_abs_path("res/container/job"),
+            "path": at.get_abs_path("res/container/job"),
             "format": ContainerFormat.UNPACKED,
             "config_size": 599
          },
         "zip": {
-            "path": get_abs_path("res/container/job.zip"),
+            "path": at.get_abs_path("res/container/job.zip"),
             "format": ContainerFormat.ZIP,
             "config_size": 599
          },
         "zip_utf8": {
-            "path": get_abs_path("res/container/job_utf8.zip"),
+            "path": at.get_abs_path("res/container/job_utf8.zip"),
             "format": ContainerFormat.ZIP,
             "config_size": 633
          },
     }
+
+    def test_path_none(self):
+        with self.assertRaises(TypeError):
+            cont = Container(file_path=None)
+
+    def test_invalid_container_format(self):
+        with self.assertRaises(ValueError):
+            con = Container(file_path=self.EMPTY_DIRECTORY, container_format="foo")
 
     def test_constructor(self):
         for key in self.FILES:
@@ -74,6 +93,34 @@ class TestContainer(unittest.TestCase):
             cont = Container(f["path"])
             self.assertEqual(cont.container_format, f["format"])
 
+    def test_exists_file_not_existing(self):
+        cont = Container(self.NOT_EXISTING)
+        self.assertFalse(cont.exists())
+
+    def test_exists_empty_file(self):
+        for f in self.EMPTY_FILES:
+            cont = Container(f)
+            self.assertTrue(cont.exists())
+
+    def test_exists_empty_directory(self):
+        cont = Container(self.EMPTY_DIRECTORY)
+        self.assertTrue(cont.exists())
+
+    def test_entries_file_not_existing(self):
+        cont = Container(self.NOT_EXISTING)
+        with self.assertRaises(TypeError):
+            entries = cont.entries()
+
+    def test_entries_empty_file(self):
+        for f in self.EMPTY_FILES:
+            cont = Container(f)
+            with self.assertRaises(IOError):
+                self.assertEqual(len(cont.entries()), 0)
+
+    def test_entries_empty_directory(self):
+        cont = Container(self.EMPTY_DIRECTORY)
+        self.assertEqual(len(cont.entries()), 0)
+
     def test_entries(self):
         for key in self.FILES:
             f = self.FILES[key]
@@ -89,6 +136,21 @@ class TestContainer(unittest.TestCase):
         f = self.FILES["unpacked"]
         cont = Container(os.path.abspath(f["path"]))
         self.assertEqual(cont.entries(), self.EXPECTED_ENTRIES)
+
+    def test_is_safe_not_existing(self):
+        cont = Container(self.NOT_EXISTING)
+        with self.assertRaises(TypeError):
+            self.assertTrue(cont.is_safe)
+
+    def test_is_safe_empty_file(self):
+        for f in self.EMPTY_FILES:
+            cont = Container(f)
+            with self.assertRaises(IOError):
+                self.assertTrue(cont.is_safe)
+
+    def test_is_safe_empty_directory(self):
+        cont = Container(self.EMPTY_DIRECTORY)
+        self.assertTrue(cont.is_safe)
 
     def test_is_safe(self):
         for key in self.FILES:
@@ -120,6 +182,21 @@ class TestContainer(unittest.TestCase):
             ]:
             self.assertTrue(cont.is_entry_safe(entry))
 
+    def test_read_entry_not_existing(self):
+        cont = Container(self.NOT_EXISTING)
+        with self.assertRaises(TypeError):
+            self.assertEqual(cont.read_entry(self.EXPECTED_ENTRIES[0]), None)
+
+    def test_read_entry_empty_file(self):
+        for f in self.EMPTY_FILES:
+            cont = Container(f)
+            with self.assertRaises(IOError):
+                self.assertEqual(cont.read_entry(self.EXPECTED_ENTRIES[0]), None)
+
+    def test_read_entry_empty_directory(self):
+        cont = Container(self.EMPTY_DIRECTORY)
+        self.assertEqual(cont.read_entry(self.EXPECTED_ENTRIES[0]), None)
+
     def test_read_entry_existing(self):
         entry = "config.txt"
         for key in self.FILES:
@@ -128,6 +205,21 @@ class TestContainer(unittest.TestCase):
             result = cont.read_entry(entry)
             self.assertNotEqual(result, None)
             self.assertEqual(len(result), f["config_size"])
+
+    def test_find_entry_not_existing(self):
+        cont = Container(self.NOT_EXISTING)
+        with self.assertRaises(TypeError):
+            self.assertEqual(cont.find_entry(self.EXPECTED_ENTRIES[0]), None)
+
+    def test_find_entry_empty_file(self):
+        for f in self.EMPTY_FILES:
+            cont = Container(f)
+            with self.assertRaises(IOError):
+                self.assertEqual(cont.find_entry(self.EXPECTED_ENTRIES[0]), None)
+
+    def test_find_entry_empty_directory(self):
+        cont = Container(self.EMPTY_DIRECTORY)
+        self.assertEqual(cont.find_entry(self.EXPECTED_ENTRIES[0]), None)
 
     def test_find_entry_existing(self):
         entry = "config.txt"
@@ -162,14 +254,14 @@ class TestContainer(unittest.TestCase):
             self.assertFalse(cont.find_entry(entry, exact=False))
 
     def test_decompress(self):
-        output_path = tempfile.mkdtemp()
         for key in self.FILES:
+            output_path = tempfile.mkdtemp()
             f = self.FILES[key]
             cont = Container(f["path"])
             cont.decompress(output_path)
             copy = Container(output_path, ContainerFormat.UNPACKED)
             self.assertEqual(copy.entries(), self.EXPECTED_ENTRIES)
-            delete_directory(output_path)
+            gf.delete_directory(output_path)
 
     def test_compress_unpacked(self):
         input_path = self.FILES["unpacked"]["path"]
@@ -179,7 +271,7 @@ class TestContainer(unittest.TestCase):
         self.assertFalse(os.path.isfile(output_path))
         copy = Container(output_path, ContainerFormat.UNPACKED)
         self.assertEqual(copy.entries(), self.EXPECTED_ENTRIES)
-        delete_directory(output_path)
+        gf.delete_directory(output_path)
 
     def test_compress_file(self):
         input_path = self.FILES["unpacked"]["path"]
@@ -192,7 +284,7 @@ class TestContainer(unittest.TestCase):
                 self.assertTrue(os.path.isfile(output_path))
                 copy = Container(output_path, fmt)
                 self.assertEqual(copy.entries(), self.EXPECTED_ENTRIES)
-                delete_file(handler, output_path)
+                gf.delete_file(handler, output_path)
 
 if __name__ == '__main__':
     unittest.main()

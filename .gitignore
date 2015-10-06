@@ -1,7 +1,8 @@
-*.py[cdo]
+*.pyc
+*.pyd
+*.pyo
 *.swp
 *.so
-*.pyd
 MANIFEST
 aeneas/build
 bak
@@ -10,10 +11,12 @@ dist
 docs/build
 tmp
 
+# service scripts
 zzz_*.py
 zzz_*.sh
 
-# Eclipse / PyDev
+# Eclipse/PyDev
 .project
 .pydevproject
 .settings
+

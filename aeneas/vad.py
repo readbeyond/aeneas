@@ -18,9 +18,9 @@ that is a list of non-overlapping nonspeech time intervals.
 import numpy
 import os
 
-import aeneas.globalconstants as gc
-from aeneas.audiofile import AudioFile
+from aeneas.audiofile import AudioFileMonoWAV
 from aeneas.logger import Logger
+import aeneas.globalconstants as gc
 
 __author__ = "Alberto Pettarin"
 __copyright__ = """
@@ -29,7 +29,7 @@ __copyright__ = """
     Copyright 2015,      Alberto Pettarin (www.albertopettarin.it)
     """
 __license__ = "GNU AGPL v3"
-__version__ = "1.2.0"
+__version__ = "1.2.1"
 __email__ = "aeneas@readbeyond.it"
 __status__ = "Production"
 
@@ -37,8 +37,10 @@ class VAD(object):
     """
     The VAD extractor.
 
-    :param wave_path: the path to the wav file (must be mono!)
-    :type  wave_path: string (path)
+    :param wave_mfcc: the MFCCs of the audio file
+    :type  wave_mfcc: numpy 2D array
+    :param wave_len: the duration of the audio file
+    :type  wave_len: float
     :param frame_rate: the MFCC frame rate, in frames per second. Default:
                        :class:`aeneas.globalconstants.MFCC_FRAME_RATE`
     :type  frame_rate: int
@@ -67,7 +69,8 @@ class VAD(object):
 
     def __init__(
             self,
-            wave_path=None,
+            wave_mfcc,
+            wave_len,
             frame_rate=gc.MFCC_FRAME_RATE,
             energy_threshold=gc.VAD_LOG_ENERGY_THRESHOLD,
             min_nonspeech_length=gc.VAD_MIN_NONSPEECH_LENGTH,
@@ -78,41 +81,19 @@ class VAD(object):
         self.logger = logger
         if self.logger is None:
             self.logger = Logger()
-        self.wave_path = wave_path
+        self.wave_mfcc = wave_mfcc
+        self.wave_len = wave_len
         self.frame_rate = frame_rate
         self.energy_threshold = energy_threshold
         self.min_nonspeech_length = min_nonspeech_length
         self.extend_after = extend_after
         self.extend_before = extend_before
-        self.wave_mfcc = None
-        self.wave_len = None
         self.speech = None
         self.nonspeech = None
 
     def _log(self, message, severity=Logger.DEBUG):
         """ Log """
         self.logger.log(message, severity, self.TAG)
-
-    def compute_mfcc(self):
-        """
-        Compute the MFCCs of the wave,
-        and store them internally.
-        """
-        if (self.wave_path is not None) and (os.path.isfile(self.wave_path)):
-            self._log("Computing MFCCs for wave...")
-            try:
-                wave = AudioFile(self.wave_path, logger=self.logger)
-                wave.extract_mfcc(self.frame_rate)
-                self.wave_mfcc = wave.audio_mfcc
-                self.wave_len = wave.audio_length
-            except IOError as e:
-                self._log("IOError", Logger.CRITICAL)
-                self._log(["Message: %s", e])
-                raise e
-            self._log("Computing MFCCs for wave... done")
-        else:
-            self._log(["Input file '%s' cannot be read", self.wave_path], Logger.CRITICAL)
-            raise OSError("Input file cannot be read")
 
     @property
     def speech(self):
@@ -157,12 +138,8 @@ class VAD(object):
         Compute the time intervals containing speech and nonspeech,
         and store them internally in the corresponding properties.
         """
-        if (self.wave_mfcc is not None) and (self.wave_len is not None):
-            self._log("Computing VAD for wave")
-            self.speech, self.nonspeech = self._compute_vad()
-        else:
-            # TODO raise
-            pass
+        self._log("Computing VAD for wave")
+        self.speech, self.nonspeech = self._compute_vad()
 
     def _compute_vad(self):
         labels = []

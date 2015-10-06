@@ -10,10 +10,11 @@ to be synchronized.
 import os
 import uuid
 
+from aeneas.audiofile import AudioFile
+from aeneas.logger import Logger
+from aeneas.textfile import TextFile
 import aeneas.globalconstants as gc
 import aeneas.globalfunctions as gf
-from aeneas.audiofile import AudioFile
-from aeneas.textfile import TextFile
 
 __author__ = "Alberto Pettarin"
 __copyright__ = """
@@ -22,7 +23,7 @@ __copyright__ = """
     Copyright 2015,      Alberto Pettarin (www.albertopettarin.it)
     """
 __license__ = "GNU AGPL v3"
-__version__ = "1.2.0"
+__version__ = "1.2.1"
 __email__ = "aeneas@readbeyond.it"
 __status__ = "Production"
 
@@ -34,12 +35,16 @@ class Task(object):
 
     :param config_string: the task configuration string
     :type  config_string: string
+
+    :raises TypeError: if ``config_string`` is not ``None`` and not an instance of ``str`` or ``unicode``
     """
 
     TAG = "Task"
 
-    def __init__(self, config_string=None):
-        # task properties
+    def __init__(self, config_string=None, logger=None):
+        self.logger = logger
+        if self.logger is None:
+            self.logger = Logger()
         self.identifier = str(uuid.uuid4()).lower()
         self.configuration = None
         self.audio_file_path = None # relative to input container root
@@ -53,6 +58,10 @@ class Task(object):
         self.sync_map = None
         if config_string is not None:
             self.configuration = TaskConfiguration(config_string)
+
+    def _log(self, message, severity=Logger.DEBUG):
+        """ Log """
+        self.logger.log(message, severity, self.TAG)
 
     def __str__(self):
         accumulator = ""
@@ -116,37 +125,6 @@ class Task(object):
     def sync_map_file_path_absolute(self, sync_map_file_path_absolute):
         self.__sync_map_file_path_absolute = sync_map_file_path_absolute
 
-    def _populate_audio_file(self):
-        """
-        Create the ``self.audio_file`` object by reading
-        the audio file at ``self.audio_file_path_absolute``.
-        """
-        if self.audio_file_path_absolute is not None:
-            self.audio_file = AudioFile(
-                file_path=self.audio_file_path_absolute,
-                logger=None
-            )
-            self.audio_file.read_properties()
-
-    def _populate_text_file(self):
-        """
-        Create the ``self.text_file`` object by reading
-        the text file at ``self.text_file_path_absolute``.
-        """
-        if ((self.text_file_path_absolute is not None) and
-                (self.configuration.language is not None)):
-            parameters = dict()
-            parameters[gc.PPN_TASK_IS_TEXT_UNPARSED_CLASS_REGEX] = self.configuration.is_text_unparsed_class_regex
-            parameters[gc.PPN_TASK_IS_TEXT_UNPARSED_ID_REGEX] = self.configuration.is_text_unparsed_id_regex
-            parameters[gc.PPN_TASK_IS_TEXT_UNPARSED_ID_SORT] = self.configuration.is_text_unparsed_id_sort
-            self.text_file = TextFile(
-                file_path=self.text_file_path_absolute,
-                file_format=self.configuration.is_text_file_format,
-                parameters=parameters,
-                logger=None
-            )
-            self.text_file.set_language(self.configuration.language)
-
     def output_sync_map_file(self, container_root_path=None):
         """
         Output the sync map file for this task.
@@ -166,28 +144,88 @@ class Task(object):
         :param container_root_path: the path to the root directory
                                     for the output container
         :type  container_root_path: string (path)
-        :rtype: return the path of the sync map file created
+        :rtype: string (path)
         """
         if self.sync_map is None:
-            return None
+            self._log("sync_map is None", Logger.CRITICAL)
+            raise TypeError("sync_map object has not been set")
 
-        if (container_root_path is not None) and (self.sync_map_file_path is None):
-            return None
+        if (
+                (container_root_path is not None) and
+                (self.sync_map_file_path is None)
+            ):
+            self._log("The (internal) path of the sync map has been set", Logger.CRITICAL)
+            raise TypeError("The (internal) path of the sync map has been set")
+
+        self._log(["container_root_path is %s", container_root_path])
+        self._log(["self.sync_map_file_path is %s", self.sync_map_file_path])
+        self._log(["self.sync_map_file_path_absolute is %s", self.sync_map_file_path_absolute])
 
         if (container_root_path is not None) and (self.sync_map_file_path is not None):
             path = os.path.join(container_root_path, self.sync_map_file_path)
         elif self.sync_map_file_path_absolute:
             path = self.sync_map_file_path_absolute
+        gf.ensure_parent_directory(path)
+        self._log(["Output sync map to %s", path])
 
         sync_map_format = self.configuration.os_file_format
+        page_ref = self.configuration.os_file_smil_page_ref
+        audio_ref = self.configuration.os_file_smil_audio_ref
+
+        self._log(["sync_map_format is %s", sync_map_format])
+        self._log(["page_ref is %s", page_ref])
+        self._log(["audio_ref is %s", audio_ref])
+
+        self._log("Calling sync_map.write...")
         parameters = dict()
-        parameters[gc.PPN_TASK_OS_FILE_SMIL_PAGE_REF] = self.configuration.os_file_smil_page_ref
-        parameters[gc.PPN_TASK_OS_FILE_SMIL_AUDIO_REF] = self.configuration.os_file_smil_audio_ref
-        result = self.sync_map.write(sync_map_format, path, parameters)
-        if not result:
-            return None
+        parameters[gc.PPN_TASK_OS_FILE_SMIL_PAGE_REF] = page_ref
+        parameters[gc.PPN_TASK_OS_FILE_SMIL_AUDIO_REF] = audio_ref
+        self.sync_map.write(sync_map_format, path, parameters)
+        self._log("Calling sync_map.write... done")
         return path
 
+    def _populate_audio_file(self):
+        """
+        Create the ``self.audio_file`` object by reading
+        the audio file at ``self.audio_file_path_absolute``.
+        """
+        self._log("Populate audio file...")
+        if self.audio_file_path_absolute is not None:
+            self._log(["audio_file_path_absolute is '%s'", self.audio_file_path_absolute])
+            self.audio_file = AudioFile(
+                file_path=self.audio_file_path_absolute,
+                logger=self.logger
+            )
+            self.audio_file.read_properties()
+        else:
+            self._log("audio_file_path_absolute is None")
+        self._log("Populate audio file... done")
+
+    def _populate_text_file(self):
+        """
+        Create the ``self.text_file`` object by reading
+        the text file at ``self.text_file_path_absolute``.
+        """
+        self._log("Populate text file...")
+        if (
+                (self.text_file_path_absolute is not None) and
+                (self.configuration.language is not None)
+            ):
+            parameters = dict()
+            # the following might be None
+            parameters[gc.PPN_TASK_IS_TEXT_UNPARSED_CLASS_REGEX] = self.configuration.is_text_unparsed_class_regex
+            parameters[gc.PPN_TASK_IS_TEXT_UNPARSED_ID_REGEX] = self.configuration.is_text_unparsed_id_regex
+            parameters[gc.PPN_TASK_IS_TEXT_UNPARSED_ID_SORT] = self.configuration.is_text_unparsed_id_sort
+            self.text_file = TextFile(
+                file_path=self.text_file_path_absolute,
+                file_format=self.configuration.is_text_file_format,
+                parameters=parameters,
+                logger=self.logger
+            )
+            self.text_file.set_language(self.configuration.language)
+        else:
+            self._log("text_file_path_absolute and/or language is None")
+        self._log("Populate text file... done")
 
 
 
@@ -198,11 +236,19 @@ class TaskConfiguration(object):
 
     :param config_string: the task configuration string
     :type  config_string: string
+
+    :raises TypeError: if ``config_string`` is not ``None`` and not an instance of ``str`` or ``unicode``
     """
 
     TAG = "TaskConfiguration"
 
     def __init__(self, config_string=None):
+        if (
+                (config_string is not None) and
+                (not isinstance(config_string, str)) and
+                (not isinstance(config_string, unicode))
+        ):
+            raise TypeError("config_string is not an instance of str or unicode")
         # task fields
         self.field_names = [
             gc.PPN_TASK_DESCRIPTION,
@@ -222,6 +268,7 @@ class TaskConfiguration(object):
             gc.PPN_TASK_IS_AUDIO_FILE_DETECT_TAIL_MAX,
             gc.PPN_TASK_IS_AUDIO_FILE_HEAD_LENGTH,
             gc.PPN_TASK_IS_AUDIO_FILE_PROCESS_LENGTH,
+            gc.PPN_TASK_IS_AUDIO_FILE_TAIL_LENGTH,
             gc.PPN_TASK_IS_TEXT_FILE_FORMAT,
             gc.PPN_TASK_IS_TEXT_UNPARSED_CLASS_REGEX,
             gc.PPN_TASK_IS_TEXT_UNPARSED_ID_REGEX,
@@ -488,7 +535,9 @@ class TaskConfiguration(object):
         using the provided value as a lower bound, and disregard
         these many seconds from the end of the audio file.
 
-        If the ``is_audio_file_process_length`` parameter is also provided,
+        If the ``is_audio_file_process_length`` parameter or
+        the ``is_audio_file_tail_length`` parameter
+        are also provided,
         the auto detection will not take place.
 
         NOTE: This is an experimental feature, use with caution.
@@ -509,7 +558,9 @@ class TaskConfiguration(object):
         using the provided value as an upper bound, and disregard
         these many seconds from the end of the audio file.
 
-        If the ``is_audio_file_process_length`` parameter is also provided,
+        If the ``is_audio_file_process_length`` parameter or
+        the ``is_audio_file_tail_length`` parameter
+        are also provided,
         the auto detection will not take place.
 
         NOTE: This is an experimental feature, use with caution.
@@ -529,9 +580,6 @@ class TaskConfiguration(object):
         When synchronizing, disregard
         these many seconds from the beginning of the audio file.
 
-        NOTE: At the moment, no sanity check is performed on this value.
-        Use with caution.
-
         :rtype: float
         """
         return self.fields[gc.PPN_TASK_IS_AUDIO_FILE_HEAD_LENGTH]
@@ -545,15 +593,31 @@ class TaskConfiguration(object):
         When synchronizing, process only these many seconds
         from the audio file.
 
-        NOTE: At the moment, no sanity check is performed on this value.
-        Use with caution.
-
         :rtype: float
         """
         return self.fields[gc.PPN_TASK_IS_AUDIO_FILE_PROCESS_LENGTH]
     @is_audio_file_process_length.setter
     def is_audio_file_process_length(self, value):
         self.fields[gc.PPN_TASK_IS_AUDIO_FILE_PROCESS_LENGTH] = value
+
+    @property
+    def is_audio_file_tail_length(self):
+        """
+        When synchronizing, disregard
+        these many seconds from the end of the audio file.
+
+        Note that if the ``is_audio_file_process_length`` parameter
+        is also provided, only the latter will be taken into account,
+        and ``is_audio_file_tail_length`` will be ignored.
+
+        :rtype: float
+
+        .. versionadded:: 1.2.1
+        """
+        return self.fields[gc.PPN_TASK_IS_AUDIO_FILE_TAIL_LENGTH]
+    @is_audio_file_tail_length.setter
+    def is_audio_file_tail_length(self, value):
+        self.fields[gc.PPN_TASK_IS_AUDIO_FILE_TAIL_LENGTH] = value
 
     @property
     def os_file_format(self):

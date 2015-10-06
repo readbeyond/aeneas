@@ -8,41 +8,41 @@
  <fragment>
   <identifier>f000002</identifier>
   <start>2.680</start>
-  <end>5.520</end>
+  <end>5.880</end>
  </fragment>
  <fragment>
   <identifier>f000003</identifier>
-  <start>5.520</start>
-  <end>8.640</end>
+  <start>5.880</start>
+  <end>9.200</end>
  </fragment>
  <fragment>
   <identifier>f000004</identifier>
-  <start>8.640</start>
-  <end>11.640</end>
+  <start>9.200</start>
+  <end>11.960</end>
  </fragment>
  <fragment>
   <identifier>f000005</identifier>
-  <start>11.640</start>
-  <end>14.440</end>
+  <start>11.960</start>
+  <end>15.240</end>
  </fragment>
  <fragment>
   <identifier>f000006</identifier>
-  <start>14.440</start>
-  <end>18.560</end>
+  <start>15.240</start>
+  <end>18.520</end>
  </fragment>
  <fragment>
   <identifier>f000007</identifier>
-  <start>18.560</start>
+  <start>18.520</start>
   <end>22.760</end>
  </fragment>
  <fragment>
   <identifier>f000008</identifier>
   <start>22.760</start>
-  <end>25.480</end>
+  <end>25.680</end>
  </fragment>
  <fragment>
   <identifier>f000009</identifier>
-  <start>25.480</start>
+  <start>25.680</start>
   <end>31.240</end>
  </fragment>
  <fragment>
@@ -53,11 +53,11 @@
  <fragment>
   <identifier>f000011</identifier>
   <start>34.400</start>
-  <end>36.600</end>
+  <end>36.640</end>
  </fragment>
  <fragment>
   <identifier>f000012</identifier>
-  <start>36.600</start>
+  <start>36.640</start>
   <end>40.640</end>
  </fragment>
  <fragment>
@@ -68,11 +68,11 @@
  <fragment>
   <identifier>f000014</identifier>
   <start>43.640</start>
-  <end>48.120</end>
+  <end>48.080</end>
  </fragment>
  <fragment>
   <identifier>f000015</identifier>
-  <start>48.120</start>
+  <start>48.080</start>
   <end>53.240</end>
  </fragment>
 </map>

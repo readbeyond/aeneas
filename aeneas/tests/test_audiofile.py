@@ -5,14 +5,17 @@ import os
 import tempfile
 import unittest
 
-from . import get_abs_path, delete_file
-
 from aeneas.audiofile import AudioFile
+from aeneas.audiofile import AudioFileMonoWAV
+from aeneas.audiofile import AudioFileUnsupportedFormatError
+import aeneas.globalfunctions as gf
+import aeneas.tests as at
 
 class TestAudioFile(unittest.TestCase):
 
     AUDIO_FILE_PATH_MFCC = "res/cmfcc/audio.wav"
-
+    AUDIO_FILE_EMPTY = "res/audioformats/p001.empty"
+    AUDIO_FILE_NOT_WAVE = "res/audioformats/p001.mp3"
     FILES = [
         {
             "path": "res/audioformats/p001.aac",
@@ -81,11 +84,21 @@ class TestAudioFile(unittest.TestCase):
     ]
 
     def load(self, path):
-        return AudioFile(get_abs_path(path))
+        return AudioFile(at.get_abs_path(path))
 
-    def test_cannot_load(self):
-        audiofile = self.load("this_file_does_not_exist.mp3")
-        with self.assertRaises(OSError):
+    def test_read_on_none(self):
+        audiofile = self.load(None) 
+        with self.assertRaises(IOError):
+            audiofile.read_properties()
+
+    def test_read_on_non_existing_path(self):
+        audiofile = self.load("not_existing.mp3")
+        with self.assertRaises(IOError):
+            audiofile.read_properties()
+
+    def test_read_on_empty(self):
+        audiofile = self.load(self.AUDIO_FILE_EMPTY)
+        with self.assertRaises(AudioFileUnsupportedFormatError):
             audiofile.read_properties()
 
     def test_read(self):
@@ -97,6 +110,38 @@ class TestAudioFile(unittest.TestCase):
             self.assertEqual(audiofile.audio_channels, f["channels"])
             self.assertEqual(audiofile.audio_format, f["format"])
             self.assertAlmostEqual(audiofile.audio_length, f["length"], places=1)
+
+
+
+class TestAudioFileMonoWAV(unittest.TestCase):
+
+    AUDIO_FILE_PATH_MFCC = "res/cmfcc/audio.wav"
+    AUDIO_FILE_EMPTY = "res/audioformats/p001.empty"
+    AUDIO_FILE_NOT_WAVE = "res/audioformats/p001.mp3"
+    NOT_EXISTING_FILE = "res/audioformats/x/y/z/not_existing.wav"
+
+    def load(self, path):
+        return AudioFileMonoWAV(at.get_abs_path(path))
+
+    def test_load_on_none(self):
+        audiofile = self.load(None)
+        with self.assertRaises(IOError):
+            audiofile.load_data()
+
+    def test_load_on_non_existing_path(self):
+        audiofile = self.load(self.NOT_EXISTING_FILE)
+        with self.assertRaises(IOError):
+            audiofile.load_data()
+
+    def test_load_on_empty(self):
+        audiofile = self.load(self.AUDIO_FILE_EMPTY)
+        with self.assertRaises(AudioFileUnsupportedFormatError):
+            audiofile.load_data()
+
+    def test_load_not_wave_file(self):
+        audiofile = self.load(self.AUDIO_FILE_NOT_WAVE)
+        with self.assertRaises(AudioFileUnsupportedFormatError):
+            audiofile.load_data()
 
     def test_load_data(self):
         audiofile = self.load(self.AUDIO_FILE_PATH_MFCC)
@@ -125,11 +170,34 @@ class TestAudioFile(unittest.TestCase):
         audiofile.clear_data()
         self.assertAlmostEqual(audiofile.audio_length, 53.3, places=1) # 53.315918
 
+    def test_append_data(self):
+        audiofile = self.load(self.AUDIO_FILE_PATH_MFCC)
+        audiofile.load_data()
+        data = audiofile.audio_data
+        old_length = audiofile.audio_length
+        audiofile.append_data(data)
+        new_length = audiofile.audio_length
+        self.assertAlmostEqual(new_length, 2 * old_length, places=1)
+
+    def test_prepend_data(self):
+        audiofile = self.load(self.AUDIO_FILE_PATH_MFCC)
+        audiofile.load_data()
+        data = audiofile.audio_data
+        old_length = audiofile.audio_length
+        audiofile.prepend_data(data)
+        new_length = audiofile.audio_length
+        self.assertAlmostEqual(new_length, 2 * old_length, places=1)
+
     def test_reverse(self):
         audiofile = self.load(self.AUDIO_FILE_PATH_MFCC)
         audiofile.load_data()
+        data = audiofile.audio_data
         audiofile.reverse()
-        self.assertAlmostEqual(audiofile.audio_length, 53.3, places=1) # 53.315918
+        rev1 = audiofile.audio_data
+        self.assertFalse((data == rev1).all())
+        audiofile.reverse()
+        rev2 = audiofile.audio_data
+        self.assertTrue((data == rev2).all())
         audiofile.clear_data()
 
     def test_trim(self):
@@ -152,16 +220,24 @@ class TestAudioFile(unittest.TestCase):
             self.assertAlmostEqual(audiofile.audio_length, interval[2], places=1) # 53.315918
             audiofile.clear_data()
 
+    def test_write_not_existing_path(self):
+        output_file_path = at.get_abs_path(self.NOT_EXISTING_FILE)
+        audiofile = self.load(self.AUDIO_FILE_PATH_MFCC)
+        audiofile.load_data()
+        with self.assertRaises(IOError):
+            audiofile.write(output_file_path)
+
     def test_write(self):
         audiofile = self.load(self.AUDIO_FILE_PATH_MFCC)
         audiofile.load_data()
+        data = audiofile.audio_data
         handler, output_file_path = tempfile.mkstemp(suffix=".wav")
         audiofile.write(output_file_path)
-        self.assertTrue(os.path.isfile(output_file_path))
         audiocopy = self.load(output_file_path)
         audiocopy.load_data()
-        self.assertEqual(audiofile.audio_length, audiocopy.audio_length)
-        delete_file(handler, output_file_path)
+        datacopy = audiocopy.audio_data
+        self.assertTrue((datacopy == data).all())
+        gf.delete_file(handler, output_file_path)
 
 if __name__ == '__main__':
     unittest.main()

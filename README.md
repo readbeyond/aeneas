@@ -2,8 +2,8 @@
 
 **aeneas** is a Python library and a set of tools to automagically synchronize audio and text.
 
-* Version: 1.2.0
-* Date: 2015-09-27
+* Version: 1.2.1
+* Date: 2015-10-XX
 * Developed by: [ReadBeyond](http://www.readbeyond.it/)
 * Lead Developer: [Alberto Pettarin](http://www.albertopettarin.it/)
 * License: the GNU Affero General Public License Version 3 (AGPL v3)
@@ -50,7 +50,7 @@ or raw CSV/SSV/TSV/TXT/XML for further processing.
 2. `ffmpeg` and `ffprobe` executables available in your `$PATH`
 3. `espeak` executable available in your `$PATH`
 4. Python 2.7.x
-5. Python modules `BeautifulSoup`, `lxml`, `numpy`, and `scikits.audiolab`
+5. Python modules `BeautifulSoup`, `lxml`, and `numpy`
 6. (Optional but strongly suggested) Python C headers to compile the Python C extensions
 
 Depending on the format(s) of audio files you work with,
@@ -274,6 +274,17 @@ The code for computing the MFCCs
 [`aeneas/mfcc.py`](aeneas/mfcc.py)
 is a verbatim copy from the
 [CMU Sphinx III project](http://cmusphinx.sourceforge.net/).
+
+The code for reading and writing WAVE files 
+[`aeneas/wavfile.py`](aeneas/wavfile.py)
+is a verbatim copy from the
+[scipy project](https://github.com/scipy/scipy/),
+included here verbatim to avoid the dependency
+on the whole `scipy` package, while replacing `scikits.audiolab`.
+
+The C header [`speak_lib.h`](aeneas/speak_lib.h) for `espeak`
+is a verbatim copy from the
+[espeak project](http://espeak.sourceforge.net/).
 
 Audio files contained in the unit tests `aeneas/tests/res/` directory
 are adapted from recordings produced by

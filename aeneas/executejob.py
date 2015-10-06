@@ -7,16 +7,16 @@ and generate the output container
 holding the generated sync maps.
 """
 
-import os
-import shutil
 import tempfile
 
-import aeneas.globalfunctions as gf
 from aeneas.analyzecontainer import AnalyzeContainer
-from aeneas.container import Container, ContainerFormat
+from aeneas.container import Container
+from aeneas.container import ContainerFormat
 from aeneas.executetask import ExecuteTask
+from aeneas.job import Job
 from aeneas.logger import Logger
 from aeneas.validator import Validator
+import aeneas.globalfunctions as gf
 
 __author__ = "Alberto Pettarin"
 __copyright__ = """
@@ -25,9 +25,33 @@ __copyright__ = """
     Copyright 2015,      Alberto Pettarin (www.albertopettarin.it)
     """
 __license__ = "GNU AGPL v3"
-__version__ = "1.2.0"
+__version__ = "1.2.1"
 __email__ = "aeneas@readbeyond.it"
 __status__ = "Production"
+
+class ExecuteJobInputError(Exception):
+    """
+    Error raised when the input parameters of the job are invalid or missing.
+    """
+    pass
+
+
+
+class ExecuteJobExecutionError(Exception):
+    """
+    Error raised when the execution of the job fails for internal reasons.
+    """
+    pass
+
+
+
+class ExecuteJobOutputError(Exception):
+    """
+    Error raised when the creation of the output container failed.
+    """
+    pass
+
+
 
 class ExecuteJob(object):
     """
@@ -55,6 +79,8 @@ class ExecuteJob(object):
     :type  job: :class:`aeneas.job.Job`
     :param logger: the logger object
     :type  logger: :class:`aeneas.logger.Logger`
+
+    :raise ExecuteJobInputError: if ``job`` is not an instance of ``Job``
     """
 
     TAG = "ExecuteJob"
@@ -66,6 +92,8 @@ class ExecuteJob(object):
         self.logger = logger
         if self.logger is None:
             self.logger = Logger()
+        if job is not None:
+            self.load_job(self.job)
 
     def _log(self, message, severity=Logger.DEBUG):
         """ Log """
@@ -73,68 +101,50 @@ class ExecuteJob(object):
 
     def load_job(self, job):
         """
-        Load the given job.
-
-        NOTE: no sanity check is perfomed by this call,
-        and it will always return ``True``.
+        Load the job from the given ``Job`` object.
 
         :param job: the job to load
         :type  job: :class:`aeneas.job.Job`
-        :rtype: bool
+
+        :raise ExecuteJobInputError: if ``job`` is not an instance of ``Job``
         """
+        if not isinstance(job, Job):
+            self._failed("job is not an instance of Job", "input")
         self.job = job
-        return True
 
     def load_job_from_container(self, container_path, config_string=None):
         """
-        Validate the given container, and, if it is well formed,
-        load the job from it.
+        Load the job from the given ``Container`` object.
 
         If ``config_string`` is ``None``,
         the container must contain a configuration file;
         otherwise use the provided config string
         (i.e., the wizard case).
 
-        Return ``True`` if the job has been loaded successfully,
-        ``False`` otherwise.
-
         :param container_path: the path to the input container
         :type  container_path: string (path)
         :param config_string: the configuration string (from wizard)
         :type  config_string: string
-        :rtype: bool
+
+        :raise ExecuteJobInputError: if the given container does not contain a valid ``Job``
         """
         self._log("Loading job from container...")
 
-        # validate container
-        self._log("Validating container...")
-        validator = Validator(logger=self.logger)
-        if config_string is None:
-            validator_result = validator.check_container(container_path)
-        else:
-            validator_result = validator.check_container_from_wizard(
-                container_path,
-                config_string
-            )
-        if not validator_result.passed:
-            self._log("Validating container: failed")
-            self._log("Loading job from container: failed")
-            return False
-        self._log("Validating container: succeeded")
+        # create working directory where the input container
+        # will be decompressed
+        self.working_directory = tempfile.mkdtemp(dir=gf.custom_tmp_dir())
+        self._log(["Created working directory '%s'", self.working_directory])
 
         try:
-            # create working directory where the input container
-            # will be decompressed
-            self.working_directory = tempfile.mkdtemp(dir=gf.custom_tmp_dir())
-            self._log(["Created working directory '%s'", self.working_directory])
-
-            # decompress
             self._log("Decompressing input container...")
             input_container = Container(container_path, logger=self.logger)
             input_container.decompress(self.working_directory)
             self._log("Decompressing input container... done")
+        except Exception as exc:
+            self.clean()
+            self._failed("Unable to decompress container '%s': %s" % (container_path, str(exc)), "input")
 
-            # create job from the working directory
+        try:
             self._log("Creating job from working directory...")
             working_container = Container(
                 self.working_directory,
@@ -146,7 +156,14 @@ class ExecuteJob(object):
             else:
                 self.job = analyzer.analyze_from_wizard(config_string)
             self._log("Creating job from working directory... done")
+        except Exception as exc:
+            self.clean()
+            self._failed("Unable to analyze container '%s': %s" % (container_path, str(exc)), "input")
 
+        if self.job is None:
+            self._failed("The container '%s' does not contain a valid Job" % container_path, "input")
+
+        try:
             # set absolute path for text file and audio file
             # for each task in the job
             self._log("Setting absolute paths for tasks...")
@@ -161,78 +178,100 @@ class ExecuteJob(object):
                 )
             self._log("Setting absolute paths for tasks... done")
 
-            # return
             self._log("Loading job from container: succeeded")
-            return True
-        except:
-            # failure: clean and return
+        except Exception as exc:
             self.clean()
-            self._log("Loading job from container: failed")
-            return False
+            self._failed("Error while setting absolute paths for tasks: %s" % str(exc), "input")
+
+    def execute(self):
+        """
+        Execute the job, that is, execute all of its tasks.
+
+        Each produced sync map will be stored
+        inside the corresponding task object.
+
+        :raise ExecuteJobExecutionError: if there is a problem during the job execution
+        """
+        self._log("Executing job")
+
+        if self.job is None:
+            self._failed("The job object is None", "execution")
+        if len(self.job) == 0:
+            self._failed("The job has no tasks", "execution")
+        self._log(["Number of tasks: '%d'", len(self.job)])
+
+        for task in self.job.tasks:
+            try:
+                custom_id = task.configuration.custom_id
+                self._log(["Executing task '%s'...", custom_id])
+                executor = ExecuteTask(task, logger=self.logger)
+                executor.execute()
+                self._log(["Executing task '%s'... done", custom_id])
+            except Exception as exc:
+                self._failed("Error while executing task '%s': %s" % (custom_id, str(exc)), "execution")
+            self._log("Executing task: succeeded")
+
+        self._log("Executing job: succeeded")
 
     def write_output_container(self, output_directory_path):
         """
         Write the output container for this job.
 
-        Return a pair ``(bool, string)``, where the bool
-        indicates whether the execution succeeded,
-        and the string is the path to output container.
+        Return the path to output container.
 
         :param output_directory_path: the path to a directory where
                                       the output container must be created
         :type  output_directory_path: string (path)
-        :rtype: (bool, string)
+        :rtype: string
         """
         self._log("Writing output container for this job")
 
-        # check if the job has tasks
         if self.job is None:
-            self._log("job is None")
-            return (False, None)
+            self._failed("The job object is None", "output")
         if len(self.job) == 0:
-            self._log("The job has no tasks")
-            return (False, None)
+            self._failed("The job has no tasks", "output")
+        self._log(["Number of tasks: '%d'", len(self.job)])
 
-        try:
-            # create temporary directory where the sync map files
-            # will be created
-            # this temporary directory will be compressed into
-            # the output container
-            self.tmp_directory = tempfile.mkdtemp(dir=gf.custom_tmp_dir())
-            self._log(["Created temporary directory '%s'", self.tmp_directory])
+        # create temporary directory where the sync map files
+        # will be created
+        # this temporary directory will be compressed into
+        # the output container
+        self.tmp_directory = tempfile.mkdtemp(dir=gf.custom_tmp_dir())
+        self._log(["Created temporary directory '%s'", self.tmp_directory])
 
-            for task in self.job.tasks:
-                custom_id = task.configuration.custom_id
+        for task in self.job.tasks:
+            custom_id = task.configuration.custom_id
 
-                # check if the task has sync map and sync map file path
-                if task.sync_map_file_path is None:
-                    self._log(["Task '%s' has sync_map_file_path not set", custom_id])
-                    return (False, None)
-                if task.sync_map is None:
-                    self._log(["Task '%s' has sync_map not set", custom_id])
-                    return (False, None)
+            # check if the task has sync map and sync map file path
+            if task.sync_map_file_path is None:
+                self._failed("Task '%s' has sync_map_file_path not set" % custom_id, "output")
+            if task.sync_map is None:
+                self._failed("Task '%s' has sync_map not set" % custom_id, "output")
 
+            try:
                 # output sync map
                 self._log(["Outputting sync map for task '%s'...", custom_id])
                 task.output_sync_map_file(self.tmp_directory)
                 self._log(["Outputting sync map for task '%s'... done", custom_id])
+            except Exception as exc:
+                self._failed("Error while outputting sync map for task '%s': %s" % (custom_id, str(exc)), "output")
 
-            # get output container info
-            output_container_format = self.job.configuration.os_container_format
-            self._log(["Output container format: '%s'", output_container_format])
-            output_file_name = self.job.configuration.os_file_name
-            if ((output_container_format != ContainerFormat.UNPACKED) and
-                    (not output_file_name.endswith(output_container_format))):
-                self._log("Adding extension to output_file_name")
-                output_file_name += "." + output_container_format
-            self._log(["Output file name: '%s'", output_file_name])
-            output_file_path = gf.norm_join(
-                output_directory_path,
-                output_file_name
-            )
-            self._log(["Output file path: '%s'", output_file_path])
+        # get output container info
+        output_container_format = self.job.configuration.os_container_format
+        self._log(["Output container format: '%s'", output_container_format])
+        output_file_name = self.job.configuration.os_file_name
+        if ((output_container_format != ContainerFormat.UNPACKED) and
+                (not output_file_name.endswith(output_container_format))):
+            self._log("Adding extension to output_file_name")
+            output_file_name += "." + output_container_format
+        self._log(["Output file name: '%s'", output_file_name])
+        output_file_path = gf.norm_join(
+            output_directory_path,
+            output_file_name
+        )
+        self._log(["Output file path: '%s'", output_file_path])
 
-            # create output container
+        try:
             self._log("Compressing...")
             container = Container(
                 output_file_path,
@@ -242,52 +281,13 @@ class ExecuteJob(object):
             container.compress(self.tmp_directory)
             self._log("Compressing... done")
             self._log(["Created output file: '%s'", output_file_path])
-
-            # clean and return
+            self._log("Writing output container for this job: succeeded")
             self.clean(False)
-            return (True, output_file_path)
-        except:
+            return output_file_path
+        except Exception as exc:
             self.clean(False)
-            return (False, None)
-
-    def execute(self):
-        """
-        Execute the job, that is, execute all of its tasks.
-
-        Each produced sync map will be stored
-        inside the corresponding task object.
-
-        Return ``True`` if the execution succeeded,
-        ``False`` otherwise.
-
-        :rtype: bool
-        """
-        self._log("Executing job")
-
-        # check if the job has tasks
-        if self.job is None:
-            self._log("job is None")
-            return False
-        if len(self.job) == 0:
-            self._log("The job has no tasks")
-            return False
-        self._log(["Number of tasks: '%d'", len(self.job)])
-
-        # execute tasks
-        for task in self.job.tasks:
-            custom_id = task.configuration.custom_id
-            self._log(["Executing task '%s'...", custom_id])
-            executor = ExecuteTask(task, logger=self.logger)
-            result = executor.execute()
-            self._log(["Executing task '%s'... done", custom_id])
-            if not result:
-                self._log("Executing task: failed")
-                return False
-            self._log("Executing task: succeeded")
-
-        # return
-        self._log("Executing job: succeeded")
-        return True
+            self._failed(str(exc), "output")
+            return None
 
     def clean(self, remove_working_directory=True):
         """
@@ -300,30 +300,27 @@ class ExecuteJob(object):
                                          the working directory as well
         :type  remove_working_directory: bool
         """
-        if remove_working_directory:
+        if remove_working_directory is not None:
             self._log("Removing working directory... ")
-            self._clean(self.working_directory)
+            gf.delete_directory(self.working_directory)
             self.working_directory = None
             self._log("Removing working directory... done")
         self._log("Removing temporary directory... ")
-        self._clean(self.tmp_directory)
+        gf.delete_directory(self.tmp_directory)
         self.tmp_directory = None
         self._log("Removing temporary directory... done")
 
-    def _clean(self, path):
-        """
-        Remove the directory ``path``.
-
-        :param path: the path of the directory to be removed
-        :type  path: string (path)
-        """
-        if (path is not None) and (os.path.isdir(path)):
-            try:
-                self._log(["Removing directory '%s'...", path])
-                shutil.rmtree(path)
-                self._log("Succeeded")
-            except:
-                self._log("Failed")
+    def _failed(self, msg, during="execution"):
+        """ Bubble exception up """
+        if during == "input":
+            self._log(msg, Logger.CRITICAL)
+            raise ExecuteJobInputError(msg)
+        elif during == "output":
+            self._log(msg, Logger.CRITICAL)
+            raise ExecuteJobOutputError(msg)
+        else:
+            self._log(msg, Logger.CRITICAL)
+            raise ExecuteJobExecutionError(msg)
 
 
 
