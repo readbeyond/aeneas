@@ -7,15 +7,10 @@ a single ``wav`` file,
 along with the corresponding time anchors.
 """
 
-import numpy
-import os
-import tempfile
-from scikits.audiolab import wavread
-from scikits.audiolab import wavwrite
-
-import aeneas.globalfunctions as gf
 from aeneas.espeakwrapper import ESPEAKWrapper
 from aeneas.logger import Logger
+from aeneas.textfile import TextFile
+import aeneas.globalfunctions as gf
 
 __author__ = "Alberto Pettarin"
 __copyright__ = """
@@ -24,7 +19,7 @@ __copyright__ = """
     Copyright 2015,      Alberto Pettarin (www.albertopettarin.it)
     """
 __license__ = "GNU AGPL v3"
-__version__ = "1.2.0"
+__version__ = "1.2.1"
 __email__ = "aeneas@readbeyond.it"
 __status__ = "Production"
 
@@ -49,7 +44,14 @@ class Synthesizer(object):
         """ Log """
         self.logger.log(message, severity, self.TAG)
 
-    def synthesize(self, text_file, audio_file_path, quit_after=None, backwards=False):
+    def synthesize(
+            self,
+            text_file,
+            audio_file_path,
+            quit_after=None,
+            backwards=False,
+            force_pure_python=False
+    ):
         """
         Synthesize the text contained in the given fragment list
         into a ``wav`` file.
@@ -63,94 +65,35 @@ class Synthesizer(object):
         :type  quit_after: float
         :param backwards: synthesizing from the end of the text file
         :type  backwards: bool
+        :param force_pure_python: force using the pure Python version
+        :type  force_pure_python: bool
+
+        :raise TypeError: if ``text_file`` is ``None`` or not an instance of ``TextFile``
+        :raise IOError: if ``audio_file_path`` cannot be written
         """
+        if text_file is None:
+            raise TypeError("text_file is None")
+        if not isinstance(text_file, TextFile):
+            raise TypeError("text_file is not an instance of TextFile")
+        if not gf.file_can_be_written(audio_file_path):
+            raise IOError("audio_file_path cannot be written")
 
-        # time anchors
-        anchors = []
-
-        # initialize time
-        current_time = 0.0
-
-        # waves is used to concatenate all the fragments WAV files
-        waves = numpy.array([])
-
-        # espeak wrapper
+        # at the moment only espeak TTS is supported
+        self._log("Synthesizing using espeak...")
         espeak = ESPEAKWrapper(logger=self.logger)
+        result = espeak.synthesize_multiple(
+            text_file=text_file,
+            output_file_path=audio_file_path,
+            quit_after=quit_after,
+            backwards=backwards,
+            force_pure_python=force_pure_python
+        )
+        self._log("Synthesizing using espeak... done")
 
-        if quit_after is not None:
-            self._log(["Quit after reaching %.3f", quit_after])
-        if backwards:
-            self._log("Synthesizing backwards")
+        if not gf.file_exists(audio_file_path):
+            raise IOError("audio_file_path was not written")
 
-        # for each fragment, synthesize it and concatenate it
-        num = 0
-        num_chars = 0
-        fragments = text_file.fragments
-        if backwards:
-            fragments = fragments[::-1]
-        for fragment in fragments:
-
-            # synthesize and get the duration of the output file
-            self._log(["Synthesizing fragment %d", num])
-            handler, tmp_destination = tempfile.mkstemp(
-                suffix=".wav",
-                dir=gf.custom_tmp_dir()
-            )
-            duration = espeak.synthesize(
-                text=fragment.text,
-                language=fragment.language,
-                output_file_path=tmp_destination
-            )
-
-            # store for later output
-            anchors.append([current_time, fragment.identifier, fragment.text])
-
-            # increase the character counter
-            num_chars += fragment.characters
-
-            # concatenate to buffer
-            self._log(["Fragment %d starts at: %f", num, current_time])
-            if duration > 0:
-                self._log(["Fragment %d duration: %f", num, duration])
-                current_time += duration
-                data, sample_frequency, encoding = wavread(tmp_destination)
-                #
-                # TODO this might result in memory swapping
-                # if we have a large number of fragments
-                # is there a better way?
-                #
-                # NOTE since append cannot be in place,
-                # it seems that the only alternative is pre-allocating
-                # the destination array,
-                # possibly truncating or extending it as needed
-                #
-                if backwards:
-                    waves = numpy.append(data, waves)
-                else:
-                    waves = numpy.append(waves, data)
-            else:
-                self._log(["Fragment %d has zero duration", num])
-
-            # remove temporary file
-            self._log(["Removing temporary file '%s'", tmp_destination])
-            os.close(handler)
-            os.remove(tmp_destination)
-            num += 1
-
-            if (quit_after is not None) and (current_time > quit_after):
-                self._log(["Quitting after reached duration %.3f", current_time])
-                break
-
-        # output WAV file, concatenation of synthesized fragments
-        self._log(["Writing audio file '%s'", audio_file_path])
-        wavwrite(waves, audio_file_path, sample_frequency, encoding)
-
-        # return the time anchors
-        # TODO anchors do not make sense if backwards == True
-        self._log(["Returning %d time anchors", len(anchors)])
-        self._log(["Current time %.3f", current_time])
-        self._log(["Synthesized %d characters", num_chars])
-        return (anchors, current_time, num_chars)
+        return result
 
 
 

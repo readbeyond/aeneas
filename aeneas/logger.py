@@ -14,7 +14,7 @@ __copyright__ = """
     Copyright 2015,      Alberto Pettarin (www.albertopettarin.it)
     """
 __license__ = "GNU AGPL v3"
-__version__ = "1.2.0"
+__version__ = "1.2.1"
 __email__ = "aeneas@readbeyond.it"
 __status__ = "Production"
 
@@ -120,7 +120,7 @@ class Logger(object):
         :rtype: string
         """
         sanitized = message
-        if type(sanitized) is list:
+        if isinstance(sanitized, list):
             if len(sanitized) == 0:
                 sanitized = "Empty log message"
             elif len(sanitized) == 1:
@@ -129,7 +129,7 @@ class Logger(object):
                 model = self._safe_unicode_to_str(sanitized[0])
                 args = tuple()
                 for arg in sanitized[1:]:
-                    if type(arg) in (unicode, str):
+                    if isinstance(arg, unicode) or isinstance(arg, str):
                         args += (self._safe_unicode_to_str(arg),)
                     else:
                         args += (arg,)
@@ -147,11 +147,11 @@ class Logger(object):
         :rtype: string
         """
         sanitized = value
-        if type(sanitized) is unicode:
+        if isinstance(sanitized, unicode):
             try:
-                sanitized = sanitized.encode('utf-8')
-            except UnicodeError as e:
-                sanitized = sanitized.encode('ascii', 'replace')
+                sanitized = sanitized.encode("utf-8")
+            except UnicodeError:
+                sanitized = sanitized.encode("ascii", "replace")
         return sanitized
 
     def clear(self):

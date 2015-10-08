@@ -3,9 +3,9 @@
 
 import unittest
 
-from . import get_abs_path
-
+from aeneas.ffprobewrapper import FFPROBEUnsupportedFormatError
 from aeneas.ffprobewrapper import FFPROBEWrapper
+import aeneas.tests as at
 
 class TestFFPROBEWrapper(unittest.TestCase):
 
@@ -41,7 +41,7 @@ class TestFFPROBEWrapper(unittest.TestCase):
 
     def load(self, input_file_path):
         prober = FFPROBEWrapper()
-        return prober.read_properties(get_abs_path(input_file_path))
+        return prober.read_properties(at.get_abs_path(input_file_path))
 
     def test_mp3_properties(self):
         properties = self.load("res/audioformats/p001.mp3")
@@ -51,12 +51,16 @@ class TestFFPROBEWrapper(unittest.TestCase):
         self.assertNotEqual(properties['duration'], None)
         self.assertNotEqual(properties['sample_rate'], None)
 
-    def test_not_existing(self):
-        with self.assertRaises(OSError):
+    def test_path_none(self):
+        with self.assertRaises(TypeError):
+            self.load(None)
+
+    def test_path_not_existing(self):
+        with self.assertRaises(IOError):
             self.load(self.NOT_EXISTING_PATH)
 
-    def test_empty(self):
-        with self.assertRaises(ValueError):
+    def test_file_empty(self):
+        with self.assertRaises(FFPROBEUnsupportedFormatError):
             self.load(self.EMPTY_FILE_PATH)
 
     def test_formats(self):

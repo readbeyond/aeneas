@@ -3,16 +3,20 @@
 
 import unittest
 
-from . import get_abs_path
-
 from aeneas.logger import Logger
 from aeneas.validator import Validator
+import aeneas.tests as at
 
 class TestValidator(unittest.TestCase):
 
+    def string_well_encoded(self, string, expected):
+        validator = Validator()
+        validator.check_string_well_encoded(string)
+        self.assertEqual(validator.result.passed, expected)
+
     def file_encoding(self, path, expected):
         validator = Validator()
-        result = validator.check_file_encoding(get_abs_path(path))
+        result = validator.check_file_encoding(at.get_abs_path(path))
         self.assertEqual(result.passed, expected)
 
     def jc(self, string, expected):
@@ -35,22 +39,36 @@ class TestValidator(unittest.TestCase):
 
     def container(self, path, expected):
         validator = Validator()
-        result = validator.check_container(get_abs_path(path))
+        result = validator.check_container(at.get_abs_path(path))
         self.assertEqual(result.passed, expected)
         if expected:
             self.assertEqual(len(result.errors), 0)
         else:
             self.assertGreater(len(result.errors), 0)
 
-    def test_check_string_encoding(self):
-        validator = Validator()
-        self.assertFalse(validator._check_string_encoding(u"abcdé".encode("latin-1")))
-        self.assertTrue(validator._check_string_encoding(u"abcdé".encode("utf-8")))
+    def test_string_well_encoded_none(self):
+        self.string_well_encoded(None, False)
 
-    def test_check_reserved_characters(self):
-        validator = Validator()
-        self.assertFalse(validator._check_reserved_characters("string with ~ reserved char"))
-        self.assertTrue(validator._check_reserved_characters("string without reserved char"))
+    def test_string_well_encoded_zero_length(self):
+        self.string_well_encoded("", False)
+
+    def test_string_well_encoded_latin(self):
+        self.string_well_encoded(u"abcdé".encode("latin-1"), False)
+
+    def test_string_well_encoded_uft8(self):
+        self.string_well_encoded(u"abcdé".encode("utf-8"), True)
+
+    def test_string_reserved_character_yes(self):
+        self.string_well_encoded("string with ~ reserved char", False)
+
+    def test_string_reserved_character_no(self):
+        self.string_well_encoded("string without reserved char", True)
+
+    def test_check_file_none(self):
+        self.file_encoding(None, False)
+
+    def test_check_file_empty(self):
+        self.file_encoding("res/validator/empty.txt", True)
 
     def test_check_file_encoding_iso8859(self):
         self.file_encoding("res/validator/encoding_iso8859.txt", False)
@@ -77,39 +95,42 @@ class TestValidator(unittest.TestCase):
         self.jc("=malformed", False)
 
     def test_check_jc_no_value(self):
-        self.jc("=malformed", False)
+        self.jc("malformed=", False)
 
     def test_check_jc_invalid_keys(self):
         self.jc("not=relevant|config=string", False)
 
-    def test_check_jc_missing_required_01(self):
-        self.jc("job_language=it|missing=other", False)
-
-    def test_check_jc_missing_required_02(self):
-        self.jc("job_language=it|os_job_file_name=output.zip", False)
-
     def test_check_jc_valid(self):
         self.jc("job_language=it|os_job_file_name=output.zip|os_job_file_container=zip", True)
 
-    def test_check_jc_invalid_value_01(self):
+    def test_check_jc_missing_required_job_language(self):
+        self.jc("os_job_file_name=output.zip|os_job_file_container=zip", False)
+
+    def test_check_jc_missing_required_os_job_file_container(self):
+        self.jc("job_language=it|os_job_file_name=output.zip", False)
+
+    def test_check_jc_missing_required_os_job_file_name(self):
+        self.jc("job_language=it|os_job_file_container=zip", False)
+
+    def test_check_jc_invalid_value_job_language(self):
         self.jc("job_language=zzzz|os_job_file_name=output.zip|os_job_file_container=zip", False)
 
-    def test_check_jc_invalid_value_02(self):
+    def test_check_jc_invalid_value_os_job_file_container(self):
         self.jc("job_language=it|os_job_file_name=output.zip|os_job_file_container=zzzzzz", False)
 
-    def test_check_jc_invalid_value_03(self):
+    def test_check_jc_invalid_value_is_hierarchy_type(self):
         self.jc("job_language=it|os_job_file_name=output.zip|os_job_file_container=zip|is_hierarchy_type=zzzzzz", False)
 
     def test_check_jc_valid_flat(self):
         self.jc("job_language=it|os_job_file_name=output.zip|os_job_file_container=zip|is_hierarchy_type=flat", True)
 
-    def test_check_jc_missing_paged_required(self):
-        self.jc("job_language=it|os_job_file_name=output.zip|os_job_file_container=zip|is_hierarchy_type=paged", False)
-
     def test_check_jc_valid_paged_with_required(self):
         self.jc("job_language=it|os_job_file_name=output.zip|os_job_file_container=zip|is_hierarchy_type=paged|is_task_dir_name_regex=[0-9]*", True)
 
-    def test_check_jc_invalid_value_04(self):
+    def test_check_jc_missing_paged_required_is_task_dir_name_regex(self):
+        self.jc("job_language=it|os_job_file_name=output.zip|os_job_file_container=zip|is_hierarchy_type=paged", False)
+
+    def test_check_jc_invalid_value_os_job_file_hierarchy_type(self):
         self.jc("job_language=it|os_job_file_name=output.zip|os_job_file_container=zip|os_job_file_hierarchy_type=zzzzzz", False)
 
     def test_check_jc_valid_os_flat(self):
@@ -136,100 +157,103 @@ class TestValidator(unittest.TestCase):
     def test_check_tc_invalid_keys(self):
         self.tc("not=relevant|config=string", False)
 
-    def test_check_tc_missing_required_01(self):
-        self.tc("task_language=it|missing=other", False)
-
-    def test_check_tc_missing_required_02(self):
-        self.tc("task_language=it|is_text_type=plain|missing=other", False)
-
-    def test_check_tc_missing_required_03(self):
-        self.tc("task_language=it|is_text_type=plain|os_task_file_name=output.txt|missing=other", False)
-
     def test_check_tc_valid(self):
         self.tc("task_language=it|is_text_type=plain|os_task_file_name=output.txt|os_task_file_format=txt", True)
 
-    def test_check_tc_invalid_value_01(self):
+    def test_check_tc_missing_required_task_language(self):
+        self.tc("is_text_type=plain|os_task_file_name=output.txt|os_task_file_format=txt", False)
+
+    def test_check_tc_missing_required_is_text_type(self):
+        self.tc("task_language=it|os_task_file_name=output.txt|os_task_file_format=txt", False)
+
+    def test_check_tc_missing_required_os_task_file_name(self):
+        self.tc("task_language=it|is_text_type=plain|os_task_file_format=txt", False)
+
+    def test_check_tc_missing_required_os_task_file_format(self):
+        self.tc("task_language=it|is_text_type=plain|os_task_file_name=output.txt", False)
+
+    def test_check_tc_invalid_value_task_language(self):
         self.tc("task_language=zzzz|is_text_type=plain|os_task_file_name=output.txt|os_task_file_format=txt", False)
 
-    def test_check_tc_invalid_value_02(self):
+    def test_check_tc_invalid_value_is_text_type(self):
         self.tc("task_language=it|is_text_type=zzzzzz|os_task_file_name=output.txt|os_task_file_format=txt", False)
 
-    def test_check_tc_invalid_value_03(self):
+    def test_check_tc_invalid_value_os_task_file_format(self):
         self.tc("task_language=it|is_text_type=plain|os_task_file_name=output.txt|os_task_file_format=zzzzzz", False)
 
-    def test_check_tc_missing_required_04(self):
+    def test_check_tc_missing_unparsed_required_is_text_unparsed_class_regex(self):
         self.tc("task_language=it|is_text_type=unparsed|os_task_file_name=output.txt|os_task_file_format=txt", False)
 
-    def test_check_tc_valid_with_optional(self):
+    def test_check_tc_valid_unparsed_is_text_unparsed_class_regex(self):
         self.tc("task_language=it|is_text_type=unparsed|is_text_unparsed_class_regex=ra|is_text_unparsed_id_sort=numeric|os_task_file_name=output.txt|os_task_file_format=txt", True)
 
-    def test_check_tc_valid_with_optional_ignored_01(self):
+    def test_check_tc_valid_unparsed_is_text_unparsed_id_regex(self):
         self.tc("task_language=it|is_text_type=unparsed|is_text_unparsed_id_regex=f[0-9]*|is_text_unparsed_id_sort=numeric|os_task_file_name=output.txt|os_task_file_format=txt", True)
 
-    def test_check_tc_valid_with_optional_ignored_02(self):
+    def test_check_tc_valid_unparsed_both(self):
         self.tc("task_language=it|is_text_type=unparsed|is_text_unparsed_class_regex=ra|is_text_unparsed_id_regex=f[0-9]*|is_text_unparsed_id_sort=numeric|os_task_file_name=output.txt|os_task_file_format=txt", True)
 
-    def test_check_tc_missing_required_05(self):
-        self.tc("task_language=it|is_text_type=unparsed|is_text_unparsed_id_sort=numeric|os_task_file_name=output.txt|os_task_file_format=txt", False)
+    def test_check_tc_invalid_value_is_text_unparsed_id_sort(self):
+        self.tc("task_language=it|is_text_type=unparsed|is_text_unparsed_class_regex=ra|is_text_unparsed_id_regex=f[0-9]*|is_text_unparsed_id_sort=foo|os_task_file_name=output.txt|os_task_file_format=txt", False)
 
-    def test_check_tc_missing_required_06(self):
+    def test_check_tc_missing_required_is_text_unparsed_id_sort(self):
         self.tc("task_language=it|is_text_type=unparsed|is_text_unparsed_class_regex=ra|is_text_unparsed_id_regex=f[0-9]*|os_task_file_name=output.txt|os_task_file_format=txt", False)
 
     def test_check_tc_valid_smil(self):
         self.tc("task_language=it|is_text_type=plain|os_task_file_name=output.txt|os_task_file_format=smil|os_task_file_smil_page_ref=page.xhtml|os_task_file_smil_audio_ref=../Audio/audio.mp3", True)
 
-    def test_check_tc_missing_required_07(self):
+    def test_check_tc_missing_smil_required_os_task_file_smil_audio_ref(self):
         self.tc("task_language=it|is_text_type=plain|os_task_file_name=output.txt|os_task_file_format=smil|os_task_file_smil_page_ref=page.xhtml", False)
 
-    def test_check_tc_missing_required_08(self):
+    def test_check_tc_missing_smil_required_os_task_file_smil_page_ref(self):
         self.tc("task_language=it|is_text_type=plain|os_task_file_name=output.txt|os_task_file_format=smil|os_task_file_smil_audio_ref=../Audio/audio.mp3", False)
 
-    def test_check_tc_missing_required_09(self):
+    def test_check_tc_missing_smil_required_both(self):
         self.tc("task_language=it|is_text_type=plain|os_task_file_name=output.txt|os_task_file_format=smil", False)
 
     def test_check_tc_valid_aba_auto(self):
         self.tc("task_language=it|is_text_type=plain|os_task_file_name=output.txt|os_task_file_format=txt|task_adjust_boundary_algorithm=auto", True)
 
-    def test_check_tc_invalid_value_04(self):
+    def test_check_tc_invalid_aba_value_task_adjust_boundary_algorithm(self):
         self.tc("task_language=it|is_text_type=plain|os_task_file_name=output.txt|os_task_file_format=txt|task_adjust_boundary_algorithm=foo", False)
 
-    def test_check_tc_missing_required_10(self):
+    def test_check_tc_missing_aba_rate_required_task_adjust_boundary_rate_value(self):
         self.tc("task_language=it|is_text_type=plain|os_task_file_name=output.txt|os_task_file_format=txt|task_adjust_boundary_algorithm=rate", False)
 
     def test_check_tc_valid_aba_rate(self):
         self.tc("task_language=it|is_text_type=plain|os_task_file_name=output.txt|os_task_file_format=txt|task_adjust_boundary_algorithm=rate|task_adjust_boundary_rate_value=21", True)
 
-    def test_check_tc_missing_required_11(self):
+    def test_check_tc_missing_aba_percent_required_task_adjust_boundary_percent_value(self):
         self.tc("task_language=it|is_text_type=plain|os_task_file_name=output.txt|os_task_file_format=txt|task_adjust_boundary_algorithm=percent", False)
 
     def test_check_tc_valid_aba_percent(self):
         self.tc("task_language=it|is_text_type=plain|os_task_file_name=output.txt|os_task_file_format=txt|task_adjust_boundary_algorithm=percent|task_adjust_boundary_percent_value=50", True)
 
-    def test_check_tc_missing_required_12(self):
+    def test_check_tc_missing_aba_aftercurrent_required_task_adjust_boundary_aftercurrent_value(self):
         self.tc("task_language=it|is_text_type=plain|os_task_file_name=output.txt|os_task_file_format=txt|task_adjust_boundary_algorithm=aftercurrent", False)
 
     def test_check_tc_valid_aba_aftercurrent(self):
         self.tc("task_language=it|is_text_type=plain|os_task_file_name=output.txt|os_task_file_format=txt|task_adjust_boundary_algorithm=aftercurrent|task_adjust_boundary_aftercurrent_value=0.200", True)
 
-    def test_check_tc_missing_required_13(self):
+    def test_check_tc_missing_aba_beforenext_required_task_adjust_boundary_beforenext_value(self):
         self.tc("task_language=it|is_text_type=plain|os_task_file_name=output.txt|os_task_file_format=txt|task_adjust_boundary_algorithm=beforenext", False)
 
     def test_check_tc_valid_aba_beforenext(self):
         self.tc("task_language=it|is_text_type=plain|os_task_file_name=output.txt|os_task_file_format=txt|task_adjust_boundary_algorithm=beforenext|task_adjust_boundary_beforenext_value=0.200", True)
 
-    def test_check_tc_missing_required_14(self):
+    def test_check_tc_missing_aba_rateaggressive_required_task_adjust_boundary_rate_value(self):
         self.tc("task_language=it|is_text_type=plain|os_task_file_name=output.txt|os_task_file_format=txt|task_adjust_boundary_algorithm=rateagressive", False)
 
     def test_check_tc_valid_aba_rateaggressive(self):
         self.tc("task_language=it|is_text_type=plain|os_task_file_name=output.txt|os_task_file_format=txt|task_adjust_boundary_algorithm=rateaggressive|task_adjust_boundary_rate_value=21", True)
 
-    def test_check_tc_missing_required_15(self):
+    def test_check_tc_missing_aba_offset_required_task_adjust_boundary_offset_value(self):
         self.tc("task_language=it|is_text_type=plain|os_task_file_name=output.txt|os_task_file_format=txt|task_adjust_boundary_algorithm=offset", False)
 
     def test_check_tc_valid_aba_offset(self):
         self.tc("task_language=it|is_text_type=plain|os_task_file_name=output.txt|os_task_file_format=txt|task_adjust_boundary_algorithm=offset|task_adjust_boundary_offset_value=0.200", True)
 
-    def test_check_tc_invalid_value_05(self):
+    def test_check_tc_invalid_value_os_task_file_head_tail_format(self):
         self.tc("task_language=it|is_text_type=plain|os_task_file_name=output.txt|os_task_file_format=txt|os_task_file_head_tail_format=foo", False)
 
     def test_check_tc_valid_head_tail_format(self):
@@ -237,6 +261,18 @@ class TestValidator(unittest.TestCase):
 
     def test_check_container_txt_valid(self):
         self.container("res/validator/job_txt_config", True)
+
+    def test_check_container_none(self):
+        self.container(None, False)
+
+    def test_check_container_not_existing(self):
+        self.container("res/validator/x/y/z/not_existing", False)
+
+    def test_check_container_empty(self):
+        self.container("res/validator/job_empty", False)
+
+    def test_check_container_empty_zip(self):
+        self.container("res/validator/empty.zip", False)
 
     def test_check_container_txt_no_config(self):
         self.container("res/validator/job_no_config", False)

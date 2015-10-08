@@ -8,10 +8,10 @@ as a container + configuration string (wizard case).
 
 import sys
 
-import aeneas.globalfunctions as gf
 from aeneas.executejob import ExecuteJob
 from aeneas.logger import Logger
-from aeneas.tools import get_rel_path
+from aeneas.validator import Validator
+import aeneas.globalfunctions as gf
 
 __author__ = "Alberto Pettarin"
 __copyright__ = """
@@ -20,72 +20,104 @@ __copyright__ = """
     Copyright 2015,      Alberto Pettarin (www.albertopettarin.it)
     """
 __license__ = "GNU AGPL 3"
-__version__ = "1.2.0"
+__version__ = "1.2.1"
 __email__ = "aeneas@readbeyond.it"
 __status__ = "Production"
 
+NAME = "aeneas.tools.execute_job"
+
+INPUT_FILE = gf.get_rel_path("res/job.zip")
+OUTPUT_DIRECTORY = "output/"
+
 def usage():
     """ Print usage message """
-    name = "aeneas.tools.execute_job"
-    file_path = get_rel_path("../tests/res/container/job.zip")
     print ""
     print "Usage:"
-    print "  $ python -m %s /path/to/container [config_string] /path/to/output/dir [-v]" % name
+    print "  $ python -m %s /path/to/container /path/to/output/dir [CONFIG_STRING] [options]" % NAME
+    print ""
+    print "Options:"
+    print "  -v               : verbose output"
+    print "  --skip-validator : do not validate"
     print ""
     print "Example:"
-    print "  $ python -m %s %s /tmp/" % (name, file_path)
+    print "  $ python -m %s %s %s" % (NAME, INPUT_FILE, OUTPUT_DIRECTORY)
     print ""
+    sys.exit(2)
 
 def main():
     """ Entry point """
     if len(sys.argv) < 3:
         usage()
-        return
     container_path = sys.argv[1]
+    output_dir = sys.argv[2]
     config_string = None
-    verbose = (sys.argv[-1] == "-v")
-    number_of_arguments = 4
-    if verbose:
-        number_of_arguments += 1
-    if len(sys.argv) >= number_of_arguments:
-        config_string = sys.argv[2]
-        output_dir = sys.argv[3]
-    else:
-        output_dir = sys.argv[2]
-
-    logger = Logger(tee=verbose)
-    executor = ExecuteJob(logger=logger)
+    verbose = False
+    validate = True
+    for i in range(3, len(sys.argv)):
+        arg = sys.argv[i]
+        if arg == "-v":
+            verbose = True
+        elif arg == "--skip-validator":
+            validate = False
+        elif (i == 3):
+            config_string = arg
 
     if not gf.can_run_c_extension():
         print "[WARN] Unable to load Python C Extensions"
         print "[WARN] Running the slower pure Python code"
         print "[WARN] See the README file for directions to compile the Python C Extensions"
 
-    print "[INFO] Loading job from container..."
-    result = executor.load_job_from_container(container_path, config_string)
-    print "[INFO] Loading job from container... done"
-    if not result:
-        print "[ERRO] The job cannot be loaded from the specified container"
-        return
+    logger = Logger(tee=verbose)
 
-    print "[INFO] Executing..."
-    result = executor.execute()
-    print "[INFO] Executing... done"
+    if validate:
+        try:
+            print "[INFO] Validating the container (specify --skip-validator to bypass)..."
+            validator = Validator()
+            if config_string is None:
+                result = validator.check_container(container_path)
+            else:
+                result = validator.check_container_from_wizard(container_path, config_string)
+            if not result.passed:
+                print "[ERRO] The given container is not valid:"
+                print result.pretty_print()
+                sys.exit(1)
+            print "[INFO] Validating the container... done"
+        except Exception as exc:
+            print "[ERRO] The following error occurred while validating the container:"
+            print "[ERRO] %s" % str(exc)
+            sys.exit(1)
 
-    if not result:
-        print "[ERRO] An error occurred while executing the job"
-        return
+    try:
+        print "[INFO] Loading job from container..."
+        executor = ExecuteJob(logger=logger)
+        executor.load_job_from_container(container_path, config_string)
+        print "[INFO] Loading job from container... done"
+    except Exception as exc:
+        print "[ERRO] The following error occurred while loading the job:"
+        print "[ERRO] %s" % str(exc)
+        sys.exit(1)
 
-    print "[INFO] Creating output container..."
-    result, path = executor.write_output_container(output_dir)
-    print "[INFO] Creating output container... done"
+    try:
+        print "[INFO] Executing..."
+        executor.execute()
+        print "[INFO] Executing... done"
+    except Exception as exc:
+        print "[ERRO] The following error occurred while executing the job:"
+        print "[ERRO] %s" % str(exc)
+        sys.exit(1)
 
-    if result:
+    try:
+        print "[INFO] Creating output container..."
+        path = executor.write_output_container(output_dir)
+        print "[INFO] Creating output container... done"
         print "[INFO] Created %s" % path
-    else:
-        print "[ERRO] An error occurred while writing the output container"
+        executor.clean(True)
+    except Exception as exc:
+        print "[ERRO] The following error occurred while writing the output container:"
+        print "[ERRO] %s" % str(exc)
+        sys.exit(1)
 
-    executor.clean(True)
+    sys.exit(0)
 
 if __name__ == '__main__':
     main()

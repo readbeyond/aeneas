@@ -1,6 +1,18 @@
 Changelog
 =========
 
+v1.2.1 (2015-10-XX)
+-------------------
+
+#. Added ``cew`` C module for synthesizing text with ``espeak`` much faster than in pure Python (falling back to Python if ``cew`` cannot be load)
+#. Added ``wavfile.py`` from ``scipy.io`` to replace ``scikits.audiolab``
+#. Added ``AudioFileMonoWAV``, containing all the mono WAV functions previously in ``AudioFile``
+#. Added ``is_audio_file_tail_length`` parameter
+#. Added exception handling, especially in ``aeneas.tools.*``
+#. Added ``Downloader`` to download files from Web sources (currently, audio from YouTube using ``pafy``)
+#. Unified the I/O of ``aeneas.tools.*`` 
+#. Better and more unit tests
+
 v1.2.0 (2015-09-27)
 -------------------
 

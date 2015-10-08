@@ -1,4 +1,3 @@
 lxml
 BeautifulSoup
 numpy
-scikits.audiolab

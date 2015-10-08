@@ -3,9 +3,10 @@
 
 import unittest
 
-from . import get_abs_path
-
+from aeneas.audiofile import AudioFileMonoWAV
+from aeneas.audiofile import AudioFileUnsupportedFormatError
 from aeneas.vad import VAD
+import aeneas.tests as at
 
 class TestVAD(unittest.TestCase):
 
@@ -51,8 +52,9 @@ class TestVAD(unittest.TestCase):
     EMPTY_FILE_PATH = "res/audioformats/p001.empty"
 
     def perform(self, input_file_path, speech_length, nonspeech_length):
-        vad = VAD(get_abs_path(input_file_path))
-        vad.compute_mfcc()
+        audiofile = AudioFileMonoWAV(at.get_abs_path(input_file_path))
+        audiofile.extract_mfcc()
+        vad = VAD(audiofile.audio_mfcc, audiofile.audio_length)
         vad.compute_vad()
         self.assertEqual(len(vad.speech), speech_length)
         self.assertEqual(len(vad.nonspeech), nonspeech_length)
@@ -62,11 +64,11 @@ class TestVAD(unittest.TestCase):
             self.perform(f["path"], f["speech_length"], f["nonspeech_length"])
 
     def test_not_existing(self):
-        with self.assertRaises(OSError):
+        with self.assertRaises(IOError):
             self.perform(self.NOT_EXISTING_PATH, 0, 0)
 
     def test_empty(self):
-        with self.assertRaises(IOError):
+        with self.assertRaises(AudioFileUnsupportedFormatError):
             self.perform(self.EMPTY_FILE_PATH, 0, 0)
 
 if __name__ == '__main__':

@@ -27,7 +27,6 @@ class TestAdjustBoundaryAlgorithm(unittest.TestCase):
         [49.400, 53.840, u"f000017", u"xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"],
         [53.840, 56.120, u"f000018", u"xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"]
     ]
-
     SPEECH = [
         [0.120, 2.240],
         [2.440, 2.560],
@@ -113,6 +112,15 @@ class TestAdjustBoundaryAlgorithm(unittest.TestCase):
         [54.520, 54.920],
         [55.400, 56.160]
     ]
+    ALGORITHM_VALUE_MAP = [
+        [AdjustBoundaryAlgorithm.AUTO, None],
+        [AdjustBoundaryAlgorithm.AFTERCURRENT, 0.200],
+        [AdjustBoundaryAlgorithm.BEFORENEXT, 0.200],
+        [AdjustBoundaryAlgorithm.OFFSET, 0.200],
+        [AdjustBoundaryAlgorithm.PERCENT, 50],
+        [AdjustBoundaryAlgorithm.RATE, 21.0],
+        [AdjustBoundaryAlgorithm.RATEAGGRESSIVE, 21.0]
+    ]
 
     def maps_are_equal(self, a, b):
         if (a is None) or (b is None):
@@ -137,10 +145,70 @@ class TestAdjustBoundaryAlgorithm(unittest.TestCase):
         adjusted_map = aba.adjust()
         self.assertEqual(self.maps_are_equal(adjusted_map, self.TEXT_MAP), expected)
 
+    def test_algorithm_value_not_allowed(self):
+        with self.assertRaises(ValueError):
+            aba = AdjustBoundaryAlgorithm(
+                "foo",
+                self.TEXT_MAP,
+                self.SPEECH,
+                self.NONSPEECH
+            )
+
+    def test_text_map_is_none(self):
+        with self.assertRaises(ValueError):
+            aba = AdjustBoundaryAlgorithm(
+                AdjustBoundaryAlgorithm.AUTO,
+                None,
+                self.SPEECH,
+                self.NONSPEECH
+            )
+
+    def test_speech_is_none(self):
+        with self.assertRaises(ValueError):
+            aba = AdjustBoundaryAlgorithm(
+                AdjustBoundaryAlgorithm.AUTO,
+                self.TEXT_MAP,
+                None,
+                self.NONSPEECH
+            )
+
+    def test_speech_is_empty(self):
+        for tup in self.ALGORITHM_VALUE_MAP:
+            aba = AdjustBoundaryAlgorithm(
+                tup[0],
+                self.TEXT_MAP,
+                [],
+                self.NONSPEECH,
+                tup[1]
+            )
+            aba.adjust()
+
+    def test_nonspeech_is_none(self):
+        with self.assertRaises(ValueError):
+            aba = AdjustBoundaryAlgorithm(
+                AdjustBoundaryAlgorithm.AUTO,
+                self.TEXT_MAP,
+                self.SPEECH,
+                None
+            )
+
+    def test_nonspeech_is_empty(self):
+        for tup in self.ALGORITHM_VALUE_MAP:
+            aba = AdjustBoundaryAlgorithm(
+                tup[0],
+                self.TEXT_MAP,
+                self.SPEECH,
+                [],
+                tup[1]
+            )
+            aba.adjust()
+
     def test_auto(self):
         tests = [
             [None, True],
-            ["foo", True]
+            [1, True],    # ignored
+            [1.0, True],  # ignored
+            ["foo", True] # ignored
         ]
         for test in tests:
             self.run_aba(AdjustBoundaryAlgorithm.AUTO, test[0], test[1])

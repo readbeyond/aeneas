@@ -4,25 +4,30 @@
 import tempfile
 import unittest
 
-from . import get_abs_path, delete_file
-
 from aeneas.adjustboundaryalgorithm import AdjustBoundaryAlgorithm
 from aeneas.idsortingalgorithm import IDSortingAlgorithm
 from aeneas.language import Language
-from aeneas.syncmap import SyncMap, SyncMapFormat, SyncMapFragment, SyncMapHeadTailFormat
-from aeneas.task import Task, TaskConfiguration
-from aeneas.textfile import TextFileFormat, TextFragment
+from aeneas.syncmap import SyncMap
+from aeneas.syncmap import SyncMapFormat
+from aeneas.syncmap import SyncMapFragment
+from aeneas.syncmap import SyncMapHeadTailFormat
+from aeneas.task import Task
+from aeneas.task import TaskConfiguration
+from aeneas.textfile import TextFileFormat
+from aeneas.textfile import TextFragment
+import aeneas.globalfunctions as gf
+import aeneas.tests as at
 
 class TestTask(unittest.TestCase):
 
     def dummy_sync_map(self):
         sync_map = SyncMap()
-        frag = TextFragment("f001", Language.EN, "Fragment 1")
-        sync_map.append(SyncMapFragment(frag, 0, 12.345))
-        frag = TextFragment("f002", Language.EN, "Fragment 2")
-        sync_map.append(SyncMapFragment(frag, 12.345, 23.456))
-        frag = TextFragment("f003", Language.EN, "Fragment 3")
-        sync_map.append(SyncMapFragment(frag, 23.456, 34.567))
+        frag = TextFragment(u"f001", Language.EN, [u"Fragment 1"])
+        sync_map.append_fragment(SyncMapFragment(frag, 0, 12.345))
+        frag = TextFragment(u"f002", Language.EN, [u"Fragment 2"])
+        sync_map.append_fragment(SyncMapFragment(frag, 12.345, 23.456))
+        frag = TextFragment(u"f003", Language.EN, [u"Fragment 3"])
+        sync_map.append_fragment(SyncMapFragment(frag, 23.456, 34.567))
         return sync_map
 
     def setter(self, attribute, value):
@@ -41,7 +46,7 @@ class TestTask(unittest.TestCase):
             task.configuration.is_text_unparsed_class_regex = class_regex
         if id_sort is not None:
             task.configuration.is_text_unparsed_id_sort = id_sort
-        task.text_file_path_absolute = get_abs_path(path)
+        task.text_file_path_absolute = at.get_abs_path(path)
         self.assertNotEqual(task.text_file, None)
         self.assertEqual(len(task.text_file), expected)
 
@@ -65,8 +70,16 @@ class TestTask(unittest.TestCase):
         task = Task()
         self.assertEqual(task.configuration, None)
 
-    def test_task_string_configuration(self):
+    def test_task_string_configuration_invalid(self):
+        with self.assertRaises(TypeError):
+            task = Task(1)
+
+    def test_task_string_configuration_str(self):
         task = Task("task_language=en")
+        self.assertNotEqual(task.configuration, None)
+
+    def test_task_string_configuration_unicode(self):
+        task = Task(u"task_language=en")
         self.assertNotEqual(task.configuration, None)
 
     def test_task_set_configuration(self):
@@ -90,15 +103,15 @@ class TestTask(unittest.TestCase):
 
     def test_set_audio_file_path_absolute(self):
         task = Task()
-        task.audio_file_path_absolute = get_abs_path("res/container/job/assets/p001.mp3")
+        task.audio_file_path_absolute = at.get_abs_path("res/container/job/assets/p001.mp3")
         self.assertNotEqual(task.audio_file, None)
         self.assertEqual(task.audio_file.file_size, 426735)
         self.assertAlmostEqual(task.audio_file.audio_length, 53.3, places=1)
 
     def test_set_audio_file_path_absolute_error(self):
         task = Task()
-        with self.assertRaises(OSError):
-            task.audio_file_path_absolute = get_abs_path("not_existing.mp3")
+        with self.assertRaises(IOError):
+            task.audio_file_path_absolute = at.get_abs_path("not_existing.mp3")
 
     def test_set_text_file_unparsed_id(self):
         self.set_text_file(
@@ -174,7 +187,7 @@ class TestTask(unittest.TestCase):
         path = task.output_sync_map_file()
         self.assertNotEqual(path, None)
         self.assertEqual(path, output_file_path)
-        delete_file(handler, output_file_path)
+        gf.delete_file(handler, output_file_path)
 
     def test_tc_language(self):
         # NOTE the string parameter is "task_language"

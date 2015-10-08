@@ -10,9 +10,11 @@ import codecs
 import os
 import re
 
-import aeneas.globalconstants as gc
 from aeneas.idsortingalgorithm import IDSortingAlgorithm
+from aeneas.language import Language
 from aeneas.logger import Logger
+import aeneas.globalconstants as gc
+import aeneas.globalfunctions as gf
 
 __author__ = "Alberto Pettarin"
 __copyright__ = """
@@ -21,7 +23,7 @@ __copyright__ = """
     Copyright 2015,      Alberto Pettarin (www.albertopettarin.it)
     """
 __license__ = "GNU AGPL v3"
-__version__ = "1.2.0"
+__version__ = "1.2.1"
 __email__ = "aeneas@readbeyond.it"
 __status__ = "Production"
 
@@ -128,12 +130,17 @@ class TextFragment(object):
     """
     A text fragment.
 
+    Note: internally, all the text objects are ``unicode`` strings.
+
     :param identifier: the identifier of the fragment
     :type  identifier: unicode
     :param language: the language of the text of the fragment
     :type  language: string (from :class:`aeneas.language.Language` enumeration)
     :param lines: the lines in which text is split up
     :type  lines: list of unicode
+
+    :raise TypeError: if ``identifier`` is not an instance of ``unicode``
+    :raise TypeError: if ``lines`` is not an instance of ``list`` or it contains an element which is not an instance of ``unicode``
     """
 
     TAG = "TextFragment"
@@ -144,10 +151,25 @@ class TextFragment(object):
         self.lines = lines
 
     def __len__(self):
+        if self.lines is None:
+            return 0
         return len(self.lines)
 
     def __str__(self):
         return ("%s %s" % (self.identifier, self.text)).encode('utf-8')
+
+    @property
+    def chars(self):
+        """
+        Return the number of characters of the text fragment,
+        not including the line separators.
+
+        :rtype: int
+        """
+        chars = 0
+        for line in self.lines:
+            chars += len(line)
+        return chars
 
     @property
     def identifier(self):
@@ -159,6 +181,8 @@ class TextFragment(object):
         return self.__identifier
     @identifier.setter
     def identifier(self, identifier):
+        if (identifier is not None) and (not isinstance(identifier, unicode)):
+            raise TypeError("identifier is not an instance of unicode")
         self.__identifier = identifier
 
     @property
@@ -171,6 +195,10 @@ class TextFragment(object):
         return self.__language
     @language.setter
     def language(self, language):
+        # NOTE disabling this check to allow for language codes
+        #      not listed in Language
+        #if (language is not None) and (language not in Language.ALLOWED_VALUES):
+        #    raise ValueError("language value is not allowed")
         self.__language = language
 
     @property
@@ -183,6 +211,12 @@ class TextFragment(object):
         return self.__lines
     @lines.setter
     def lines(self, lines):
+        if lines is not None:
+            if not isinstance(lines, list):
+                raise TypeError("lines is not an instance of list")
+            for line in lines:
+                if not isinstance(line, unicode):
+                    raise TypeError("lines contains an element which is not an instance of unicode")
         self.__lines = lines
 
     @property
@@ -208,8 +242,20 @@ class TextFile(object):
     """
     A list of text fragments.
 
+    Note: internally, all the text objects are ``unicode`` strings.
+
+    :param file_path: the path to the text file. If not ``None`` (and also ``file_format`` is not ``None``), the file will be read immediately.
+    :type  file_path: string (path)
+    :param file_format: the format of the text file
+    :type  file_format: string (from :class:`aeneas.textfile.TextFileFormat`)
+    :param parameters: additional parameters used to parse the text file
+    :type  parameters: dict
     :param logger: the logger object
     :type  logger: :class:`aeneas.logger.Logger`
+
+    :raise IOError: if ``file_path`` cannot be read
+    :raise TypeError: if ``parameters`` is not an instance of ``dict``
+    :raise ValueError: if ``file_format`` value is not allowed
     """
 
     TAG = "TextFile"
@@ -242,6 +288,61 @@ class TextFile(object):
         self.logger.log(message, severity, self.TAG)
 
     @property
+    def chars(self):
+        """
+        Return the number of characters of the text file,
+        not counting line or fragment separators.
+
+        :rtype: int
+        """
+        chars = 0
+        for fragment in self.fragments:
+            chars += fragment.chars
+        return chars
+
+    @property
+    def file_path(self):
+        """
+        The path of the text file.
+
+        :rtype: string (path)
+        """
+        return self.__file_path
+    @file_path.setter
+    def file_path(self, file_path):
+        if (file_path is not None) and (not gf.file_exists(file_path)):
+            raise IOError("Text file '%s' does not exist" % file_path)
+        self.__file_path = file_path
+
+    @property
+    def file_format(self):
+        """
+        The format of the text file.
+
+        :rtype: string (from :class:`aeneas.textfile.TextFileFormat`)
+        """
+        return self.__file_format
+    @file_format.setter
+    def file_format(self, file_format):
+        if (file_format is not None) and (file_format not in TextFileFormat.ALLOWED_VALUES):
+            raise ValueError("Text file format '%s' is not allowed" % file_format)
+        self.__file_format = file_format
+
+    @property
+    def parameters(self):
+        """
+        Additional parameters used to parse the text file.
+
+        :rtype: dict 
+        """
+        return self.__parameters
+    @parameters.setter
+    def parameters(self, parameters):
+        if (parameters is not None) and (not isinstance(parameters, dict)):
+            raise TypeError("parameters is not an instance of dict")
+        self.__parameters = parameters
+
+    @property
     def characters(self):
         """
         The number of characters in this text.
@@ -261,9 +362,14 @@ class TextFile(object):
         :rtype: list of :class:`aeneas.textfile.TextFragment`
         """
         return self.__fragments
-
     @fragments.setter
     def fragments(self, fragments):
+        if fragments is not None:
+            if not isinstance(fragments, list):
+                raise TypeError("fragments is not an instance of list")
+            for fragment in fragments:
+                if not isinstance(fragment, TextFragment):
+                    raise TypeError("fragments contains an element which is not an instance of TextFragment")
         self.__fragments = fragments
 
     def append_fragment(self, fragment):
@@ -353,7 +459,7 @@ class TextFile(object):
         # test if we can read the given file
         if not os.path.isfile(self.file_path):
             self._log(["File '%s' cannot be read", self.file_path], Logger.CRITICAL)
-            raise OSError("Input file cannot be read")
+            raise IOError("Input file cannot be read")
 
         if self.file_format not in TextFileFormat.ALLOWED_VALUES:
             self._log(["Text file format '%s' is not supported.", self.file_format], Logger.CRITICAL)
@@ -405,7 +511,7 @@ class TextFile(object):
                 while (following < len(lines) and (len(lines[following]) > 0)):
                     fragment_lines.append(lines[following])
                     following += 1
-                identifier = "f" + str(i).zfill(6)
+                identifier = u"f" + str(i).zfill(6)
                 pairs.append([identifier, fragment_lines])
                 current = following
                 i += 1
@@ -442,7 +548,7 @@ class TextFile(object):
         pairs = []
         i = 1
         for line in lines:
-            identifier = "f" + str(i).zfill(6)
+            identifier = u"f" + str(i).zfill(6)
             text = line.strip()
             pairs.append([identifier, [text]])
             i += 1

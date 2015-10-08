@@ -8,7 +8,8 @@ Use the wrapper around ``ffmpeg``
 import sys
 
 from aeneas.ffmpegwrapper import FFMPEGWrapper
-from aeneas.tools import get_rel_path
+from aeneas.logger import Logger
+import aeneas.globalfunctions as gf
 
 __author__ = "Alberto Pettarin"
 __copyright__ = """
@@ -17,32 +18,52 @@ __copyright__ = """
     Copyright 2015,      Alberto Pettarin (www.albertopettarin.it)
     """
 __license__ = "GNU AGPL 3"
-__version__ = "1.2.0"
+__version__ = "1.2.1"
 __email__ = "aeneas@readbeyond.it"
 __status__ = "Production"
 
+NAME = "aeneas.tools.ffmpeg_wrapper"
+
+INPUT_FILE = gf.get_rel_path("res/audio.mp3")
+OUTPUT_FILE = "output/audio.wav"
+
 def usage():
     """ Print usage message """
-    name = "aeneas.tools.ffmpeg_wrapper"
-    file_path = get_rel_path("../tests/res/container/job/assets/p001.mp3")
     print ""
     print "Usage:"
-    print "  $ python -m %s /path/to/input_file /path/to/output_file" % name
+    print "  $ python -m %s /path/to/input_file /path/to/output_file [-v]" % NAME
+    print ""
+    print "Options:"
+    print "  -v : verbose output"
     print ""
     print "Example:"
-    print "  $ python -m %s %s /tmp/p001.wav" % (name, file_path)
+    print "  $ python -m %s %s %s" % (NAME, INPUT_FILE, OUTPUT_FILE)
     print ""
+    sys.exit(2)
 
 def main():
     """ Entry point """
     if len(sys.argv) < 3:
         usage()
-        return
     input_file_path = sys.argv[1]
     output_file_path = sys.argv[2]
-    converter = FFMPEGWrapper()
-    converter.convert(input_file_path, output_file_path)
-    print "[INFO] Converted '%s' into '%s'" % (input_file_path, output_file_path)
+    verbose = False
+    for i in range(3, len(sys.argv)):
+        arg = sys.argv[i]
+        if arg == "-v":
+            verbose = True
+
+    logger = Logger(tee=verbose)
+    try:
+        converter = FFMPEGWrapper(logger=logger)
+        converter.convert(input_file_path, output_file_path)
+        print "[INFO] Converted '%s' into '%s'" % (input_file_path, output_file_path)
+    except IOError:
+        print "[ERRO] Cannot convert file '%s' into '%s'" % (input_file_path, output_file_path)
+        print "[ERRO] Make sure the input file has a format supported by ffmpeg and that its path is written/escaped correctly"
+        print "[ERRO] Make sure the output file path is written/escaped correctly and that you have write permission on it"
+        sys.exit(1)
+    sys.exit(0)
 
 if __name__ == '__main__':
     main()

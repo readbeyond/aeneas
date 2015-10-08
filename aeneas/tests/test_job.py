@@ -6,7 +6,8 @@ import unittest
 from aeneas.container import ContainerFormat
 from aeneas.hierarchytype import HierarchyType
 from aeneas.idsortingalgorithm import IDSortingAlgorithm
-from aeneas.job import Job, JobConfiguration
+from aeneas.job import Job
+from aeneas.job import JobConfiguration
 from aeneas.language import Language
 from aeneas.task import Task
 from aeneas.textfile import TextFileFormat
@@ -30,8 +31,16 @@ class TestJob(unittest.TestCase):
         job = Job()
         self.assertEqual(job.configuration, None)
 
-    def test_job_string_configuration(self):
+    def test_job_string_configuration_invalid(self):
+        with self.assertRaises(TypeError):
+            job = Job(1)
+
+    def test_job_string_configuration_str(self):
         job = Job("job_language=en")
+        self.assertNotEqual(job.configuration, None)
+
+    def test_job_string_configuration_unicode(self):
+        job = Job(u"job_language=en")
         self.assertNotEqual(job.configuration, None)
 
     def test_job_set_configuration(self):
@@ -40,25 +49,25 @@ class TestJob(unittest.TestCase):
         job.configuration = jobconf
         self.assertNotEqual(job.configuration, None)
 
-    def test_job_add_task(self):
+    def test_job_append_task(self):
         job = Job()
         self.assertEqual(len(job), 0)
         task1 = Task()
-        job.add_task(task1)
+        job.append_task(task1)
         self.assertEqual(len(job), 1)
         task2 = Task()
-        job.add_task(task2)
+        job.append_task(task2)
         self.assertEqual(len(job), 2)
         task3 = Task()
-        job.add_task(task3)
+        job.append_task(task3)
         self.assertEqual(len(job), 3)
 
-    def test_job_delete_tasks(self):
+    def test_job_clear_tasks(self):
         job = Job()
         task1 = Task()
         job.tasks.append(task1)
         self.assertEqual(len(job), 1)
-        job.delete_tasks()
+        job.clear_tasks()
         self.assertEqual(len(job), 0)
 
     def test_jc_language(self):

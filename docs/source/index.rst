@@ -619,6 +619,7 @@ The ``aeneas`` package contains the following modules:
     analyzecontainer
     audiofile
     container
+    downloader
     dtw
     espeakwrapper
     executejob
