@@ -12,6 +12,7 @@ import sys
 
 from distutils.core import Extension
 from distutils.core import setup
+from numpy import get_include
 from numpy.distutils import misc_util
 
 __author__ = "Alberto Pettarin"
@@ -21,7 +22,7 @@ __copyright__ = """
     Copyright 2015,      Alberto Pettarin (www.albertopettarin.it)
     """
 __license__ = "GNU AGPL v3"
-__version__ = "1.2.1"
+__version__ = "1.3.0"
 __email__ = "aeneas@readbeyond.it"
 __status__ = "Production"
 
@@ -33,16 +34,16 @@ for compiled in ["cdtw.so", "cdtw.dylib", "cdtw.pyd"]:
         except:
             pass
 
-CMODULE = Extension("cdtw", sources=["cdtw.c"])
+CMODULE = Extension("cdtw", sources=["cdtw.c"], include_dirs=[get_include()])
 
 setup(
     name="cdtw",
-    version="1.2.1",
+    version="1.3.0",
     description="""
     Python C Extension for computing the DTW as fast as your bare metal allows.
     """,
     ext_modules=[CMODULE],
-    include_dirs=misc_util.get_numpy_include_dirs()
+    include_dirs=[misc_util.get_numpy_include_dirs()]
 )
 
 print "\n[INFO] Module cdtw successfully compiled\n"
