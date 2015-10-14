@@ -584,7 +584,7 @@ def can_run_c_extension(name=None):
     elif name == "cew":
         return can_run_cew()
     else:
-        if os.uname()[0] == "Linux":
+        if (os.name == "posix") and (os.uname()[0] == "Linux"):
             # Linux
             return can_run_cdtw() and can_run_cmfcc() and can_run_cew()
         else:

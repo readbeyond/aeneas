@@ -143,7 +143,7 @@ def stepC2():
 
 def stepC3():
     on_info("Test 7/7 (cew)...")
-    if os.uname()[0] != "Linux":
+    if not ((os.name == "posix") and (os.uname()[0] == "Linux")):
         on_info("  Python C Extension cew is not available for your OS")
         on_info("  You can still run aeneas, but it will be a bit slower than Linux")
         return True 

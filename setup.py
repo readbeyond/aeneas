@@ -25,7 +25,7 @@ EXTENSION_CEW = Extension("aeneas.cew", ["aeneas/cew.c"], libraries=["espeak"])
 EXTENSION_CMFCC = Extension("aeneas.cmfcc", ["aeneas/cmfcc.c"], include_dirs=[get_include()])
 
 EXTENSIONS = [EXTENSION_CDTW, EXTENSION_CMFCC]
-if os.uname()[0] == "Linux":
+if (os.name == "posix") and (os.uname()[0] == "Linux"):
     # cew is available only for Linux at the moment
     EXTENSIONS.append(EXTENSION_CEW)
 
