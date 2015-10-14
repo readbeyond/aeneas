@@ -10,7 +10,7 @@
 :     Copyright 2015,      Alberto Pettarin (www.albertopettarin.it)
 :
 : Licence: GNU AGPL 3
-: Version: 1.2.1
+: Version: 1.3.0
 : Email:   aeneas@readbeyond.it
 : Status:  Production
 
@@ -40,11 +40,6 @@ echo "[INFO] Compiling cdtw... done"
 echo "[INFO] Compiling cmfcc..."
 python cmfcc_setup.py build_ext --inplace
 echo "[INFO] Compiling cmfcc... done"
-
-: not working on windows
-: echo "[INFO] Compiling cew..."
-: python cew_setup.py build_ext --inplace
-: echo "[INFO] Compiling cew... done"
 
 cd ..
 

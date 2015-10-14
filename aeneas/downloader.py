@@ -17,7 +17,7 @@ __copyright__ = """
     Copyright 2015,      Alberto Pettarin (www.albertopettarin.it)
     """
 __license__ = "GNU AGPL v3"
-__version__ = "1.2.1"
+__version__ = "1.3.0"
 __email__ = "aeneas@readbeyond.it"
 __status__ = "Production"
 
@@ -44,14 +44,16 @@ class Downloader(object):
             self,
             source_url,
             output_file_path=None,
-            best_audio=True
+            best_audio=True,
+            preferred_format=None,
+            download=True
     ):
         """
         Download an audio stream from a YouTube video,
         and save it to file.
 
-        You need to have installed the Python module ``pafy``
-        (``$ pip install pafy``).
+        If ``download`` is ``False``, return the list
+        of available audiostreams but do not download.
 
         Return the path of the created file.
 
@@ -63,7 +65,13 @@ class Downloader(object):
         :param output_file_path: the path where the downloaded audio should be saved;
                                  if ``None``, create a temporary file
         :type  output_file_path: string (path)
-        :rtype: string (path)
+        :param preferred_format: preferably download this audio format
+        :type  preferred_format: string
+        :param download: if ``True``, download the audio stream
+                         best matching ``preferred_format`` and ``best_audio``;
+                         if ``False``, return the list of available audio streams
+        :type  download: bool
+        :rtype: string or list
 
         :raise ImportError: if ``pafy`` is not installed
         :raise IOError: if ``output_file_path`` cannot be written
@@ -87,32 +95,58 @@ class Downloader(object):
                 raise IOError("Path '%s' cannot be written (wrong permissions?)" % output_path)
 
         video = pafy.new(source_url)
-        (audiostream, extension) = self._select_audiostream(
-            video.audiostreams,
-            best_audio
-        )
-        if output_file_path is None:
-            gf.delete_file(handler, output_path)
-            output_path += "." + extension
 
-        self._log(["output_path is '%s'", output_path])
-        self._log("Downloading...")
-        audiostream.download(filepath=output_path, quiet=True)
-        self._log("Downloading... done")
+        if download:
+            (audiostream, extension) = self._select_audiostream(
+                video.audiostreams,
+                best_audio=best_audio,
+                preferred_format=preferred_format
+            )
+            if output_file_path is None:
+                gf.delete_file(handler, output_path)
+                output_path += "." + extension
 
-        return output_path
+            self._log(["output_path is '%s'", output_path])
+            self._log("Downloading...")
+            audiostream.download(filepath=output_path, quiet=True)
+            self._log("Downloading... done")
+            return output_path
+        else:
+            self._log("Returning the ...")
+            return video.audiostreams
 
-    def _select_audiostream(self, audiostreams, best_audio=True):
+    def _select_audiostream(
+            self,
+            audiostreams,
+            best_audio=True,
+            preferred_format=None
+    ):
         """ Select the largest or the smallest audiostream """
-        tmp = []
+        all_streams = []
+        preferred_streams = []
         i = 0
         for audio in audiostreams:
-            tmp.append([audio.get_filesize(), audio.bitrate, audio.extension, i])
+            info = [audio.get_filesize(), audio.bitrate, audio.extension, i]
+            all_streams.append(info)
+            if audio.extension == preferred_format:
+                preferred_streams.append(info)
             i += 1
-        tmp = sorted(tmp)
-        self._log("Audiostreams:")
-        for audio in tmp:
+        all_streams = sorted(all_streams)
+        self._log("All audiostreams:")
+        for audio in all_streams:
             self._log("  " + str(audio))
+        preferred_streams = sorted(preferred_streams)
+        self._log("Preferred audiostreams:")
+        for audio in preferred_streams:
+            self._log("  " + str(audio))
+        tmp = all_streams
+        if preferred_format is not None:
+            self._log(["Preferred format: %s", preferred_format])
+            if len(preferred_streams) > 0:
+                self._log("At least one audio stream with preferred format")
+                tmp = preferred_streams
+            else:
+                self._log("No audio stream with preferred format")
         if best_audio:
             self._log("Selecting largest audiostream")
             selected = tmp[-1]

@@ -1,3 +1,4 @@
-lxml
 BeautifulSoup
+lxml
 numpy
+pafy

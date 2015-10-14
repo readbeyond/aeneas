@@ -21,7 +21,7 @@ __copyright__ = """
     Copyright 2015,      Alberto Pettarin (www.albertopettarin.it)
     """
 __license__ = "GNU AGPL v3"
-__version__ = "1.2.1"
+__version__ = "1.3.0"
 __email__ = "aeneas@readbeyond.it"
 __status__ = "Production"
 
@@ -584,11 +584,11 @@ def can_run_c_extension(name=None):
     elif name == "cew":
         return can_run_cew()
     else:
-        if os.name == "posix":
-            # Linux and Mac OS X
+        if os.uname()[0] == "Linux":
+            # Linux
             return can_run_cdtw() and can_run_cmfcc() and can_run_cew()
         else:
-            # no cew for non-POSIX OSes
+            # no cew for other OSes
             return can_run_cdtw() and can_run_cmfcc()
 
 def file_can_be_written(path):
@@ -681,6 +681,23 @@ def get_rel_path(path):
     current_directory = os.path.dirname(os.path.realpath(sys.argv[0]))
     target = os.path.join(current_directory, path)
     return os.path.relpath(target)
+
+def human_readable_number(number, suffix=""):
+    """
+    Format the given number into a human-readable string.
+
+    :param number: the number
+    :type  number: int or float
+    :param suffix: the unit of the number
+    :type  suffix: str
+
+    Code adapted from http://stackoverflow.com/a/1094933
+    """
+    for unit in ["", "K", "M", "G", "T", "P", "E", "Z"]:
+        if abs(number) < 1024.0:
+            return "%3.1f%s%s" % (number, unit, suffix)
+        number /= 1024.0
+    return "%.1f%s%s" % (number, "Y", suffix)
 
 
 
