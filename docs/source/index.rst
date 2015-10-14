@@ -9,35 +9,36 @@ Goal
 **aeneas** automatically generates a **synchronization map**
 between a list of text fragments
 and an audio file containing the narration of the (same) text.
+In computer science this task is known as (automatically computing a) **forced alignment**.
 
 For example, given the verses and a ``53.280s``-long audio recording
 of *Sonnet I* by William Shakespeare,
 **aeneas** might compute a map like the following::
 
-    [00:00:00.000, 00:00:02.680] <=> 1                                                      
-    [00:00:02.680, 00:00:05.480] <=> From fairest creatures we desire increase,            
-    [00:00:05.480, 00:00:08.640] <=> That thereby beauty's rose might never die,           
-    [00:00:08.640, 00:00:11.960] <=> But as the riper should by time decease,              
-    [00:00:11.960, 00:00:15.279] <=> His tender heir might bear his memory:                
-    [00:00:15.279, 00:00:18.519] <=> But thou contracted to thine own bright eyes,         
-    [00:00:18.519, 00:00:22.760] <=> Feed'st thy light's flame with self-substantial fuel, 
-    [00:00:22.760, 00:00:25.719] <=> Making a famine where abundance lies,                 
-    [00:00:25.719, 00:00:31.239] <=> Thy self thy foe, to thy sweet self too cruel:        
-    [00:00:31.239, 00:00:34.280] <=> Thou that art now the world's fresh ornament,         
-    [00:00:34.280, 00:00:36.960] <=> And only herald to the gaudy spring,                  
-    [00:00:36.960, 00:00:40.640] <=> Within thine own bud buriest thy content,             
-    [00:00:40.640, 00:00:43.600] <=> And tender churl mak'st waste in niggarding:          
-    [00:00:43.600, 00:00:48.000] <=> Pity the world, or else this glutton be,              
-    [00:00:48.000, 00:00:53.280] <=> To eat the world's due, by the grave and thee.  
+    1                                                     => [00:00:00.000, 00:00:02.680]
+    From fairest creatures we desire increase,            => [00:00:02.680, 00:00:05.480]
+    That thereby beauty's rose might never die,           => [00:00:05.480, 00:00:08.640]
+    But as the riper should by time decease,              => [00:00:08.640, 00:00:11.960]
+    His tender heir might bear his memory:                => [00:00:11.960, 00:00:15.280]
+    But thou contracted to thine own bright eyes,         => [00:00:15.280, 00:00:18.520]
+    Feed'st thy light's flame with self-substantial fuel, => [00:00:18.520, 00:00:22.760]
+    Making a famine where abundance lies,                 => [00:00:22.760, 00:00:25.720]
+    Thy self thy foe, to thy sweet self too cruel:        => [00:00:25.720, 00:00:31.240]
+    Thou that art now the world's fresh ornament,         => [00:00:31.240, 00:00:34.280]
+    And only herald to the gaudy spring,                  => [00:00:34.280, 00:00:36.960]
+    Within thine own bud buriest thy content,             => [00:00:36.960, 00:00:40.640]
+    And tender churl mak'st waste in niggarding:          => [00:00:40.640, 00:00:43.600]
+    Pity the world, or else this glutton be,              => [00:00:43.600, 00:00:48.000]
+    To eat the world's due, by the grave and thee.        => [00:00:48.000, 00:00:53.280]
 
 The above map is just an abstract representation of a sync map.
-In practice, the sync map will be output to a file with a precise syntax,
-for example:
+In practice, the sync map will be output to a file with a precise syntax.
+Currently, the following formats are supported:
 
 #. SMIL for EPUB 3 ebooks with Media Overlays,
 #. SRT/TTML/VTT for closed captioning,
 #. JSON for consumption on the Web, and
-#. "raw" CSV/SSV/TSV/TXT/XML useful for further processing.
+#. "raw" CSV/SSV/TSV/TXT/XML for further processing.
 
 
 Quick Start
@@ -246,11 +247,11 @@ The resulting sync map will be::
        </par>
        <par id="p000006">
         <text src="p001.xhtml#f006"/>
-        <audio clipBegin="00:00:14.320" clipEnd="00:00:18.839" src="p001.mp3"/>
+        <audio clipBegin="00:00:14.320" clipEnd="00:00:18.840" src="p001.mp3"/>
        </par>
        <par id="p000007">
         <text src="p001.xhtml#f007"/>
-        <audio clipBegin="00:00:18.839" clipEnd="00:00:22.760" src="p001.mp3"/>
+        <audio clipBegin="00:00:18.840" clipEnd="00:00:22.760" src="p001.mp3"/>
        </par>
        <par id="p000008">
         <text src="p001.xhtml#f008"/>
@@ -258,19 +259,19 @@ The resulting sync map will be::
        </par>
        <par id="p000009">
         <text src="p001.xhtml#f009"/>
-        <audio clipBegin="00:00:25.320" clipEnd="00:00:31.239" src="p001.mp3"/>
+        <audio clipBegin="00:00:25.320" clipEnd="00:00:31.240" src="p001.mp3"/>
        </par>
        <par id="p000010">
         <text src="p001.xhtml#f010"/>
-        <audio clipBegin="00:00:31.239" clipEnd="00:00:34.280" src="p001.mp3"/>
+        <audio clipBegin="00:00:31.240" clipEnd="00:00:34.280" src="p001.mp3"/>
        </par>
        <par id="p000011">
         <text src="p001.xhtml#f011"/>
-        <audio clipBegin="00:00:34.280" clipEnd="00:00:36.479" src="p001.mp3"/>
+        <audio clipBegin="00:00:34.280" clipEnd="00:00:36.480" src="p001.mp3"/>
        </par>
        <par id="p000012">
         <text src="p001.xhtml#f012"/>
-        <audio clipBegin="00:00:36.479" clipEnd="00:00:40.640" src="p001.mp3"/>
+        <audio clipBegin="00:00:36.480" clipEnd="00:00:40.640" src="p001.mp3"/>
        </par>
        <par id="p000013">
         <text src="p001.xhtml#f013"/>
@@ -315,11 +316,11 @@ which yields::
     His tender heir might bear his memory:
 
     6
-    00:00:14,320 --> 00:00:18,559
+    00:00:14,320 --> 00:00:18,560
     But thou contracted to thine own bright eyes,
 
     7
-    00:00:18,559 --> 00:00:22,760
+    00:00:18,560 --> 00:00:22,760
     Feed'st thy light's flame with self-substantial fuel,
 
     8
@@ -327,19 +328,19 @@ which yields::
     Making a famine where abundance lies,
 
     9
-    00:00:25,320 --> 00:00:31,239
+    00:00:25,320 --> 00:00:31,240
     Thy self thy foe, to thy sweet self too cruel:
 
     10
-    00:00:31,239 --> 00:00:34,280
+    00:00:31,240 --> 00:00:34,280
     Thou that art now the world's fresh ornament,
 
     11
-    00:00:34,280 --> 00:00:36,479
+    00:00:34,280 --> 00:00:36,480
     And only herald to the gaudy spring,
 
     12
-    00:00:36,479 --> 00:00:40,640
+    00:00:36,480 --> 00:00:40,640
     Within thine own bud buriest thy content,
 
     13
@@ -533,6 +534,7 @@ The ``aeneas.tools`` package also contains other programs
 useful for debugging:
 
 #. ``aeneas.tools.convert_syncmap``: convert a sync map from a format to another
+#. ``aeneas.tools.download``: download a file from a Web resource (currently, audio from a YouTube video)
 #. ``aeneas.tools.espeak_wrapper``: a wrapper around ``espeak``
 #. ``aeneas.tools.extract_mfcc``: extract MFCCs from a monoaural wav file
 #. ``aeneas.tools.ffmpeg_wrapper``: a wrapper around ``ffmpeg``
@@ -619,6 +621,7 @@ The ``aeneas`` package contains the following modules:
     analyzecontainer
     audiofile
     container
+    downloader
     dtw
     espeakwrapper
     executejob

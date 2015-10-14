@@ -1,4 +1,4 @@
-lxml
 BeautifulSoup
+lxml
 numpy
-scikits.audiolab
+pafy

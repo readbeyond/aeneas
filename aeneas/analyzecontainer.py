@@ -8,12 +8,13 @@ Analyze a given container and build the corresponding job.
 import os
 import re
 
-import aeneas.globalconstants as gc
-import aeneas.globalfunctions as gf
+from aeneas.container import Container
 from aeneas.hierarchytype import HierarchyType
 from aeneas.job import Job
 from aeneas.logger import Logger
 from aeneas.task import Task
+import aeneas.globalconstants as gc
+import aeneas.globalfunctions as gf
 
 __author__ = "Alberto Pettarin"
 __copyright__ = """
@@ -22,7 +23,7 @@ __copyright__ = """
     Copyright 2015,      Alberto Pettarin (www.albertopettarin.it)
     """
 __license__ = "GNU AGPL v3"
-__version__ = "1.2.0"
+__version__ = "1.3.0"
 __email__ = "aeneas@readbeyond.it"
 __status__ = "Production"
 
@@ -34,15 +35,25 @@ class AnalyzeContainer(object):
     :type  container: :class:`aeneas.container.Container`
     :param logger: the logger object
     :type  logger: :class:`aeneas.logger.Logger`
+
+    :raise TypeError: if ``container`` is ``None`` or not an instance of ``Container``
     """
 
     TAG = "AnalyzeContainer"
 
     def __init__(self, container, logger=None):
+        if container is None:
+            raise TypeError("container is None")
+        if not isinstance(container, Container):
+            raise TypeError("container is not an instance of Container")
         self.logger = logger
         if self.logger is None:
             self.logger = Logger()
         self.container = container
+
+    def _log(self, message, severity=Logger.DEBUG):
+        """ Log """
+        self.logger.log(message, severity, self.TAG)
 
     def analyze(self):
         """
@@ -53,15 +64,19 @@ class AnalyzeContainer(object):
 
         :rtype: :class:`aeneas.job.Job`
         """
-        if self.container.has_config_xml:
-            self._log("Analyzing container with XML config file")
-            return self._analyze_xml_config(config_contents=None)
-        elif self.container.has_config_txt:
-            self._log("Analyzing container with TXT config file")
-            return self._analyze_txt_config(config_string=None)
-        else:
-            self._log("No configuration file in this container, returning None")
-            return None
+        try:
+            if self.container.has_config_xml:
+                self._log("Analyzing container with XML config file")
+                return self._analyze_xml_config(config_contents=None)
+            elif self.container.has_config_txt:
+                self._log("Analyzing container with TXT config file")
+                return self._analyze_txt_config(config_string=None)
+            else:
+                self._log("No configuration file in this container, returning None")
+        except (IOError, KeyError, TypeError) as exc:
+            self._log("Error in analyze", Logger.CRITICAL)
+            self._log(["Message: %s", exc], Logger.CRITICAL)
+        return None
 
     def analyze_from_wizard(self, config_string):
         """
@@ -75,11 +90,15 @@ class AnalyzeContainer(object):
         :rtype: :class:`aeneas.job.Job`
         """
         self._log("Analyzing container with config string from wizard")
-        return self._analyze_txt_config(config_string=config_string)
-
-    def _log(self, message, severity=Logger.DEBUG):
-        """ Log """
-        self.logger.log(message, severity, self.TAG)
+        if config_string is None:
+            self._log("config_string is None: returning None")
+            return None
+        try:
+            return self._analyze_txt_config(config_string=config_string)
+        except (IOError, KeyError, TypeError) as exc:
+            self._log("Error in analyze", Logger.CRITICAL)
+            self._log(["Message: %s", exc], Logger.CRITICAL)
+        return None
 
     def _analyze_txt_config(self, config_string=None):
         """
@@ -103,29 +122,21 @@ class AnalyzeContainer(object):
             self._log(["Directory of TXT config entry: '%s'", config_dir])
             self._log(["Reading TXT config entry: '%s'", config_entry])
             config_contents = self.container.read_entry(config_entry)
-            #self._log("Removing BOM")
-            #config_contents = gf.remove_bom(config_contents)
             self._log("Converting config contents to config string")
             config_string = gf.config_txt_to_string(config_contents)
         else:
             self._log(["Analyzing container with TXT config string '%s'", config_string])
             config_dir = ""
-            #self._log("Removing BOM")
-            #config_string = gf.remove_bom(config_string)
 
-        # create the Job object to be returned
         self._log("Creating the Job object")
         job = Job(config_string)
 
-        # get the entries in this container
         self._log("Getting entries")
         entries = self.container.entries()
 
-        # convert the config string to dict
         self._log("Converting config string into config dict")
         parameters = gf.config_string_to_dict(config_string)
 
-        # compute the root directory for the task assets
         self._log("Calculating the path of the tasks root directory")
         tasks_root_directory = gf.norm_join(
             config_dir,
@@ -133,7 +144,6 @@ class AnalyzeContainer(object):
         )
         self._log(["Path of the tasks root directory: '%s'", tasks_root_directory])
 
-        # compute the root directory for the sync map files
         self._log("Calculating the path of the sync map root directory")
         sync_map_root_directory = gf.norm_join(
             config_dir,
@@ -142,7 +152,6 @@ class AnalyzeContainer(object):
         job_os_hierarchy_type = parameters[gc.PPN_JOB_OS_HIERARCHY_TYPE]
         self._log(["Path of the sync map root directory: '%s'", sync_map_root_directory])
 
-        # prepare relative path and file name regex for text and audio files
         text_file_relative_path = parameters[gc.PPN_JOB_IS_TEXT_FILE_RELATIVE_PATH]
         self._log(["Relative path for text file: '%s'", text_file_relative_path])
         text_file_name_regex = re.compile(r"" + parameters[gc.PPN_JOB_IS_TEXT_FILE_NAME_REGEX])
@@ -152,7 +161,6 @@ class AnalyzeContainer(object):
         audio_file_name_regex = re.compile(r"" + parameters[gc.PPN_JOB_IS_AUDIO_FILE_NAME_REGEX])
         self._log(["Regex for audio file: '%s'", parameters[gc.PPN_JOB_IS_AUDIO_FILE_NAME_REGEX]])
 
-        # flat hierarchy
         if parameters[gc.PPN_JOB_IS_HIERARCHY_TYPE] == HierarchyType.FLAT:
             self._log("Looking for text/audio pairs in flat hierarchy")
             text_files = self._find_files(
@@ -185,9 +193,8 @@ class AnalyzeContainer(object):
                     sync_map_root_directory,
                     job_os_hierarchy_type
                 )
-                job.add_task(task)
+                job.append_task(task)
 
-        # paged hierarchy
         if parameters[gc.PPN_JOB_IS_HIERARCHY_TYPE] == HierarchyType.PAGED:
             self._log("Looking for text/audio pairs in paged hierarchy")
             # find all subdirectories of tasks_root_directory
@@ -237,7 +244,7 @@ class AnalyzeContainer(object):
                         sync_map_root_directory,
                         job_os_hierarchy_type
                     )
-                    job.add_task(task)
+                    job.append_task(task)
                 elif len(text_files) > 1:
                     self._log(["More than one text file in '%s'", matched_directory])
                 elif len(audio_files) > 1:
@@ -245,7 +252,6 @@ class AnalyzeContainer(object):
                 else:
                     self._log(["No text nor audio file in '%s'", matched_directory])
 
-        # return the Job
         return job
 
     def _analyze_xml_config(self, config_contents=None):
@@ -274,11 +280,6 @@ class AnalyzeContainer(object):
             self._log("Analyzing container with XML config contents")
             config_dir = ""
 
-        # remove BOM
-        #self._log("Removing BOM")
-        #config_contents = gf.remove_bom(config_contents)
-
-        # get the job parameters and tasks parameters
         self._log("Converting config contents into job config dict")
         job_parameters = gf.config_xml_to_dict(
             config_contents,
@@ -292,7 +293,6 @@ class AnalyzeContainer(object):
             parse_job=False
         )
 
-        # compute the root directory for the sync map files
         self._log("Calculating the path of the sync map root directory")
         sync_map_root_directory = gf.norm_join(
             config_dir,
@@ -301,12 +301,10 @@ class AnalyzeContainer(object):
         job_os_hierarchy_type = job_parameters[gc.PPN_JOB_OS_HIERARCHY_TYPE]
         self._log(["Path of the sync map root directory: '%s'", sync_map_root_directory])
 
-        # create the Job object to be returned
         self._log("Converting job config dict into job config string")
         config_string = gf.config_dict_to_string(job_parameters)
         job = Job(config_string)
 
-        # create the Task objects
         for task_parameters in tasks_parameters:
             self._log("Converting task config dict into task config string")
             config_string = gf.config_dict_to_string(task_parameters)
@@ -333,9 +331,8 @@ class AnalyzeContainer(object):
                 sync_map_root_directory,
                 job_os_hierarchy_type
             )
-            job.add_task(task)
+            job.append_task(task)
 
-        # return the Job
         return job
 
     def _create_task(
@@ -364,7 +361,7 @@ class AnalyzeContainer(object):
         self._log("Converting config string to config dict")
         parameters = gf.config_string_to_dict(config_string)
         self._log("Creating task")
-        task = Task(config_string)
+        task = Task(config_string, logger=self.logger)
         task.configuration.description = "Task %s" % task_info[0]
         self._log(["Task description: %s", task.configuration.description])
         try:

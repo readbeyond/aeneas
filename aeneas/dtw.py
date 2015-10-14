@@ -30,10 +30,10 @@ To align two wave files:
 import numpy
 import os
 
+from aeneas.audiofile import AudioFileMonoWAV
+from aeneas.logger import Logger
 import aeneas.globalconstants as gc
 import aeneas.globalfunctions as gf
-from aeneas.audiofile import AudioFile
-from aeneas.logger import Logger
 
 __author__ = "Alberto Pettarin"
 __copyright__ = """
@@ -42,7 +42,7 @@ __copyright__ = """
     Copyright 2015,      Alberto Pettarin (www.albertopettarin.it)
     """
 __license__ = "GNU AGPL v3"
-__version__ = "1.2.0"
+__version__ = "1.3.0"
 __email__ = "aeneas@readbeyond.it"
 __status__ = "Production"
 
@@ -93,19 +93,27 @@ class DTWAligner(object):
     :type  algorithm: :class:`aeneas.dtw.DTWAlgorithm`
     :param logger: the logger object
     :type  logger: :class:`aeneas.logger.Logger`
+
+    :raise ValueError: if ``real_wave_path`` or ``synt_wave_path`` is ``None`` or it does not exist, or if ``algorithm`` is not an allowed value
     """
 
     TAG = "DTWAligner"
 
     def __init__(
             self,
-            real_wave_path,
-            synt_wave_path,
+            real_wave_path=None,
+            synt_wave_path=None,
             frame_rate=gc.MFCC_FRAME_RATE,
             margin=gc.ALIGNER_MARGIN,
             algorithm=DTWAlgorithm.STRIPE,
             logger=None
         ):
+        if (real_wave_path is not None) and (not gf.file_exists(real_wave_path)):
+            raise ValueError("Real wave path does not exist")
+        if (synt_wave_path is not None) and (not gf.file_exists(synt_wave_path)):
+            raise ValueError("Synt wave path does not exist")
+        if algorithm not in DTWAlgorithm.ALLOWED_VALUES:
+            raise ValueError("Algorithm value not allowed")
         self.logger = logger
         if self.logger is None:
             self.logger = Logger()
@@ -188,34 +196,28 @@ class DTWAligner(object):
         """
         Compute the MFCCs of the two waves,
         and store them internally.
-        """
-        if (
-                (self.real_wave_path is not None) and
-                (os.path.isfile(self.real_wave_path))
-            ):
-            self._log("Computing MFCCs for real wave...")
-            wave = AudioFile(self.real_wave_path, logger=self.logger)
-            wave.extract_mfcc(self.frame_rate)
-            self.real_wave_full_mfcc = wave.audio_mfcc
-            self.real_wave_length = wave.audio_length
-            self._log("Computing MFCCs for real wave... done")
-        else:
-            self._log(["Input file '%s' cannot be read", self.real_wave_path], Logger.CRITICAL)
-            raise OSError("Input file cannot be read")
 
-        if (
-                (self.synt_wave_path is not None) and
-                (os.path.isfile(self.synt_wave_path))
-            ):
-            self._log("Computing MFCCs for synt wave...")
-            wave = AudioFile(self.synt_wave_path, logger=self.logger)
-            wave.extract_mfcc(self.frame_rate)
-            self.synt_wave_full_mfcc = wave.audio_mfcc
-            self.synt_wave_length = wave.audio_length
-            self._log("Computing MFCCs for synt wave... done")
-        else:
-            self._log(["Input file '%s' cannot be read", self.synt_wave_path], Logger.CRITICAL)
-            raise OSError("Input file cannot be read")
+        :raise IOError: if the real or synt wave file cannot be read
+        """
+        if not gf.file_exists(self.real_wave_path):
+            raise IOError("Real wave path is None or it does not exist")
+
+        if not gf.file_exists(self.synt_wave_path):
+            raise IOError("Synt wave path is None or it does not exist")
+
+        self._log("Computing MFCCs for real wave...")
+        wave = AudioFileMonoWAV(self.real_wave_path, logger=self.logger)
+        wave.extract_mfcc(self.frame_rate)
+        self.real_wave_full_mfcc = wave.audio_mfcc
+        self.real_wave_length = wave.audio_length
+        self._log("Computing MFCCs for real wave... done")
+
+        self._log("Computing MFCCs for synt wave...")
+        wave = AudioFileMonoWAV(self.synt_wave_path, logger=self.logger)
+        wave.extract_mfcc(self.frame_rate)
+        self.synt_wave_full_mfcc = wave.audio_mfcc
+        self.synt_wave_length = wave.audio_length
+        self._log("Computing MFCCs for synt wave... done")
 
     def compute_path(self):
         """

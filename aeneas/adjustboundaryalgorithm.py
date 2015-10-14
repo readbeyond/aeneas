@@ -19,7 +19,7 @@ __copyright__ = """
     Copyright 2015,      Alberto Pettarin (www.albertopettarin.it)
     """
 __license__ = "GNU AGPL v3"
-__version__ = "1.2.0"
+__version__ = "1.3.0"
 __email__ = "aeneas@readbeyond.it"
 __status__ = "Production"
 
@@ -45,6 +45,8 @@ class AdjustBoundaryAlgorithm(object):
     :type  value: string
     :param logger: the logger object
     :type  logger: :class:`aeneas.logger.Logger`
+
+    :raises ValueError: if one of `text_map`, `speech` or `nonspeech` is `None` or `algorithm` value is not allowed
     """
 
     AFTERCURRENT = "aftercurrent"
@@ -91,8 +93,11 @@ class AdjustBoundaryAlgorithm(object):
     """ List of all the allowed values """
 
     DEFAULT_MAX_RATE = 21.0
-    """ Default max rate (used only when RATE or RATEAGGRESSIVE
+    """ Default max rate (used only when ``RATE`` or ``RATEAGGRESSIVE``
     algorithms are used) """
+
+    DEFAULT_PERCENT = 50
+    """ Default percent value (used only when ``PERCENT`` algorithm is used) """
 
     TOLERANCE = 0.001
     """ Tolerance when comparing floats """
@@ -108,19 +113,50 @@ class AdjustBoundaryAlgorithm(object):
             value=None,
             logger=None
         ):
+        if algorithm not in self.ALLOWED_VALUES:
+            raise ValueError("Algorithm value not allowed")
+        if text_map is None:
+            raise ValueError("Text map is None")
+        if speech is None:
+            raise ValueError("Speech list is None")
+        if nonspeech is None:
+            raise ValueError("Nonspeech list is None")
         self.algorithm = algorithm
         self.text_map = copy.deepcopy(text_map)
         self.speech = speech
         self.nonspeech = nonspeech
         self.value = value
         self.logger = logger
-        self.max_rate = self.DEFAULT_MAX_RATE
         if self.logger is None:
             self.logger = Logger()
+        self._parse_value()
 
     def _log(self, message, severity=Logger.DEBUG):
         """ Log """
         self.logger.log(message, severity, self.TAG)
+
+    def _parse_value(self):
+        """
+        Parse the self.value value
+        """
+        if self.algorithm == self.AUTO:
+            return
+        elif self.algorithm == self.PERCENT:
+            try:
+                self.value = int(self.value)
+            except ValueError:
+                self.value = self.DEFAULT_PERCENT
+            self.value = max(min(self.value, 100), 0)
+        else:
+            try:
+                self.value = float(self.value)
+            except ValueError:
+                self.value = 0.0
+            if (
+                    (self.value <= 0) and
+                    (self.algorithm in [self.RATE, self.RATEAGGRESSIVE])
+            ):
+                self.value = self.DEFAULT_MAX_RATE
 
     def adjust(self):
         """
@@ -128,8 +164,6 @@ class AdjustBoundaryAlgorithm(object):
 
         :rtype: list of intervals
         """
-        if self.text_map is None:
-            raise AttributeError("Text map is None")
         if self.algorithm == self.AUTO:
             return self._adjust_auto()
         elif self.algorithm == self.AFTERCURRENT:
@@ -153,14 +187,13 @@ class AdjustBoundaryAlgorithm(object):
     def _adjust_offset(self):
         self._log("Called _adjust_offset")
         try:
-            value = float(self.value)
             for index in range(1, len(self.text_map)):
                 current = self.text_map[index]
                 previous = self.text_map[index - 1]
-                if value >= 0:
-                    offset = min(value, current[1] - current[0])
+                if self.value >= 0:
+                    offset = min(self.value, current[1] - current[0])
                 else:
-                    offset = -min(-value, previous[1] - previous[0])
+                    offset = -min(-self.value, previous[1] - previous[0])
                 previous[1] += offset
                 current[0] += offset
         except:
@@ -170,10 +203,7 @@ class AdjustBoundaryAlgorithm(object):
     def _adjust_percent(self):
         def new_time(current_boundary, nsi):
             duration = nsi[1] - nsi[0]
-            try:
-                percent = max(min(int(self.value), 100), 0) / 100.0
-            except:
-                percent = 0.500
+            percent = self.value / 100.0
             return nsi[0] + duration * percent
         return self._adjust_on_nsi(new_time)
 
@@ -181,7 +211,7 @@ class AdjustBoundaryAlgorithm(object):
         def new_time(current_boundary, nsi):
             duration = nsi[1] - nsi[0]
             try:
-                delay = max(min(float(self.value), duration), 0)
+                delay = max(min(self.value, duration), 0)
                 if delay == 0:
                     return current_boundary
                 return nsi[0] + delay
@@ -193,7 +223,7 @@ class AdjustBoundaryAlgorithm(object):
         def new_time(current_boundary, nsi):
             duration = nsi[1] - nsi[0]
             try:
-                delay = max(min(float(self.value), duration), 0)
+                delay = max(min(self.value, duration), 0)
                 if delay == 0:
                     return current_boundary
                 return nsi[1] - delay
@@ -241,10 +271,10 @@ class AdjustBoundaryAlgorithm(object):
     def _len(self, string):
         """
         Return the length of the given string.
-        If it is greater than 2 times the max_rate,
+        If it is greater than 2 times the self.value (= user max rate),
         one space will become a newline,
         and hence we do not count it
-        (e.g., max_rate = 21 => max 42 chars per line).
+        (e.g., value = 21 => max 42 chars per line).
 
         :param string: the string to be counted
         :type  string: string
@@ -252,12 +282,12 @@ class AdjustBoundaryAlgorithm(object):
         """
         # TODO this should depend on the number of lines
         #      in the text fragment; current code assumes
-        #      at most 2 lines of at most max_rate characters each
+        #      at most 2 lines of at most value characters each
         #      (the effect of this finesse is negligible in practice)
         if string is None:
             return 0
         length = len(string)
-        if length > 2 * self.max_rate:
+        if length > 2 * self.value:
             length -= 1
         return length
 
@@ -336,7 +366,7 @@ class AdjustBoundaryAlgorithm(object):
         Return the slack of a fragment, that is,
         the difference between the current duration
         of the fragment and the duration it should have
-        if its rate was exactly self.max_rate
+        if its rate was exactly self.value (= max rate)
 
         If the slack is positive, the fragment
         can be shrinken; if the slack is negative,
@@ -356,15 +386,9 @@ class AdjustBoundaryAlgorithm(object):
         end = fragment[1]
         length = self._len(fragment[3])
         duration = end - start
-        return duration - (length / self.max_rate)
+        return duration - (length / self.value)
 
     def _adjust_rate(self, aggressive=False):
-        try:
-            self.max_rate = float(self.value)
-        except:
-            pass
-        if self.max_rate <= 0:
-            self.max_rate = self.DEFAULT_MAX_RATE
         faster = []
 
         # TODO numpy-fy this loop?
@@ -373,7 +397,7 @@ class AdjustBoundaryAlgorithm(object):
             self._log(["Fragment %d", index])
             rate = self._compute_rate(index)
             self._log(["  %.3f %.3f => %.3f", fragment[0], fragment[1], rate])
-            if rate > self.max_rate:
+            if rate > self.value:
                 self._log("  too fast")
                 faster.append(index)
 
@@ -382,7 +406,7 @@ class AdjustBoundaryAlgorithm(object):
             return self.text_map
 
         if len(faster) == 0:
-            self._log(["No fragment faster than max rate %.3f", self.max_rate])
+            self._log(["No fragment faster than max rate %.3f", self.value])
             return self.text_map
 
         # TODO numpy-fy this loop?

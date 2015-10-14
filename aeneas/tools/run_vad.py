@@ -6,14 +6,13 @@ Extract a list of speech intervals from the given audio file,
 using the MFCC energy-based VAD algorithm.
 """
 
-import os
 import sys
 import tempfile
 
-import aeneas.globalfunctions as gf
+from aeneas.audiofile import AudioFileMonoWAV
+from aeneas.audiofile import AudioFileUnsupportedFormatError
 from aeneas.ffmpegwrapper import FFMPEGWrapper
 from aeneas.logger import Logger
-from aeneas.tools import get_rel_path
 from aeneas.vad import VAD
 import aeneas.globalfunctions as gf
 
@@ -24,44 +23,52 @@ __copyright__ = """
     Copyright 2015,      Alberto Pettarin (www.albertopettarin.it)
     """
 __license__ = "GNU AGPL 3"
-__version__ = "1.2.0"
+__version__ = "1.3.0"
 __email__ = "aeneas@readbeyond.it"
 __status__ = "Production"
 
+NAME = "aeneas.tools.run_vad"
+
+INPUT_FILE = gf.get_rel_path("res/audio.mp3")
+OUTPUT_BOTH = "output/both.txt"
+OUTPUT_NONSPEECH = "output/nonspeech.txt"
+OUTPUT_SPEECH = "output/speech.txt"
+
 def usage():
     """ Print usage message """
-    name = "aeneas.tools.run_vad"
-    dir_path = get_rel_path("../tests/res/example_jobs/example1/OEBPS/Resources")
     print ""
     print "Usage:"
-    print "  $ python -m %s path/to/audio.mp3 speech    /path/to/speech.txt    [-v]" % name
-    print "  $ python -m %s path/to/audio.mp3 nonspeech /path/to/nonspeech.txt [-v]" % name
-    print "  $ python -m %s path/to/audio.mp3 both      /path/to/both.txt      [-v]" % name
+    print "  $ python -m %s /path/to/audio_file [both|nonspeech|speech] /path/to/output_file [-v]" % NAME
+    print ""
+    print "Options:"
+    print "  -v : verbose output"
     print ""
     print "Examples:"
-    print "  $ python -m %s %s/sonnet001.mp3 speech    /tmp/speech.txt" % (name, dir_path)
-    print "  $ python -m %s %s/sonnet001.mp3 nonspeech /tmp/nonspeech.txt" % (name, dir_path)
-    print "  $ python -m %s %s/sonnet001.mp3 both      /tmp/both.txt" % (name, dir_path)
+    print "  $ python -m %s %s both      %s" % (NAME, INPUT_FILE, OUTPUT_BOTH)
+    print "  $ python -m %s %s nonspeech %s" % (NAME, INPUT_FILE, OUTPUT_NONSPEECH)
+    print "  $ python -m %s %s speech    %s" % (NAME, INPUT_FILE, OUTPUT_SPEECH)
     print ""
+    sys.exit(2)
 
-def cleanup(handler, path):
-    """ Remove temporary hadler/file """
-    if handler is not None:
-        try:
-            os.close(handler)
-        except:
-            pass
-    if path is not None:
-        try:
-            os.remove(path)
-        except:
-            pass
+def write_to_file(output_file_path, intervals, labels=False):
+    output_file = open(output_file_path, "w")
+    for interval in intervals:
+        if labels:
+            output_file.write("%.3f\t%.3f\t%s\n" % (
+                interval[0],
+                interval[1],
+                interval[2]
+            ))
+        else:
+            output_file.write("%.3f\t%.3f\n" % (
+                interval[0], interval[1]
+            ))
+    output_file.close()
 
 def main():
     """ Entry point """
     if len(sys.argv) < 4:
         usage()
-        return
     audio_file_path = sys.argv[1]
     tmp_handler, tmp_file_path = tempfile.mkstemp(
         suffix=".wav",
@@ -69,68 +76,58 @@ def main():
     )
     mode = sys.argv[2]
     output_file_path = sys.argv[3]
-    verbose = (sys.argv[-1] == "-v")
-
+    verbose = False
+    for i in range(4, len(sys.argv)):
+        arg = sys.argv[i]
+        if arg == "-v":
+            verbose = True
     if mode not in ["speech", "nonspeech", "both"]:
         usage()
-        return
 
-    if not gf.can_run_c_extension():
-        print "[WARN] Unable to load Python C Extensions"
-        print "[WARN] Running the slower pure Python code"
+    if not gf.can_run_c_extension("cmfcc"):
+        print "[WARN] Unable to load Python C Extension cmfcc"
+        print "[WARN] Running the (a bit slower) pure Python code"
         print "[WARN] See the README file for directions to compile the Python C Extensions"
 
     logger = Logger(tee=verbose)
 
-    print "[INFO] Converting audio file to mono..."
-    converter = FFMPEGWrapper(logger=logger)
-    converter.convert(audio_file_path, tmp_file_path)
-    print "[INFO] Converting audio file to mono... done"
+    try:
+        print "[INFO] Converting audio file to mono..."
+        converter = FFMPEGWrapper(logger=logger)
+        converter.convert(audio_file_path, tmp_file_path)
+        print "[INFO] Converting audio file to mono... done"
+    except IOError:
+        print "[ERRO] Cannot convert audio file '%s'" % audio_file_path
+        print "[ERRO] Check that it exists and that its path is written/escaped correctly"
+        sys.exit(1)
 
-    vad = VAD(tmp_file_path, logger=logger)
-    print "[INFO] Extracting MFCCs..."
-    vad.compute_mfcc()
-    print "[INFO] Extracting MFCCs... done"
+    try:
+        print "[INFO] Extracting MFCCs..."
+        audiofile = AudioFileMonoWAV(tmp_file_path)
+        audiofile.extract_mfcc()
+        print "[INFO] Extracting MFCCs... done"
+    except (AudioFileUnsupportedFormatError, IOError):
+        print "[ERRO] Cannot read the converted WAV file '%s'" % tmp_file_path
+        sys.exit(1)
+
     print "[INFO] Executing VAD..."
+    vad = VAD(audiofile.audio_mfcc, audiofile.audio_length, logger=logger)
     vad.compute_vad()
     print "[INFO] Executing VAD... done"
 
-    print "[INFO] Cleaning up..."
-    cleanup(tmp_handler, tmp_file_path)
-    print "[INFO] Cleaning up... done"
+    gf.delete_file(tmp_handler, tmp_file_path)
 
     if mode == "speech":
-        print "[INFO] Creating speech file..."
-        output_file = open(output_file_path, "w")
-        for interval in vad.speech:
-            output_file.write("%.3f\t%.3f\n" % (interval[0], interval[1]))
-        output_file.close()
-        print "[INFO] Creating speech file... done"
-
-    if mode == "nonspeech":
-        print "[INFO] Creating nonspeech file..."
-        output_file = open(output_file_path, "w")
-        for interval in vad.nonspeech:
-            output_file.write("%.3f\t%.3f\n" % (interval[0], interval[1]))
-        output_file.close()
-        print "[INFO] Creating nonspeech file... done"
-
-    if mode == "both":
-        print "[INFO] Creating speech and nonspeech file..."
-        output_file = open(output_file_path, "w")
+        write_to_file(output_file_path, vad.speech)
+    elif mode == "nonspeech":
+        write_to_file(output_file_path, vad.nonspeech)
+    elif mode == "both":
         speech = [[x[0], x[1], "speech"] for x in vad.speech]
         nonspeech = [[x[0], x[1], "nonspeech"] for x in vad.nonspeech]
         both = sorted(speech + nonspeech)
-        for interval in both:
-            output_file.write("%.3f\t%.3f\t%s\n" % (
-                interval[0],
-                interval[1],
-                interval[2]
-            ))
-        output_file.close()
-        print "[INFO] Creating speech and nonspeech file... done"
-
+        write_to_file(output_file_path, both, labels=True)
     print "[INFO] Created file %s" % output_file_path
+    sys.exit(0)
 
 if __name__ == '__main__':
     main()

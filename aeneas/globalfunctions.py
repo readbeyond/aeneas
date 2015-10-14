@@ -5,12 +5,12 @@
 Global common functions.
 """
 
+from lxml import etree
 import math
 import os
 import re
 import shutil
 import sys
-from lxml import etree
 
 import aeneas.globalconstants as gc
 
@@ -21,7 +21,7 @@ __copyright__ = """
     Copyright 2015,      Alberto Pettarin (www.albertopettarin.it)
     """
 __license__ = "GNU AGPL v3"
-__version__ = "1.2.0"
+__version__ = "1.3.0"
 __email__ = "aeneas@readbeyond.it"
 __status__ = "Production"
 
@@ -83,6 +83,24 @@ def file_name_without_extension(path):
         return None
     return os.path.splitext(os.path.basename(path))[0]
 
+def safe_unicode(string):
+    """
+    Safely decode a UTF-8 string into a unicode object.
+
+    On error return ``None``.
+
+    :param string: string value to be converted
+    :type  string: string
+    """
+    if string is None:
+        return None
+    unic = None
+    try:
+        unic = string.decode("utf-8")
+    except UnicodeDecodeError:
+        pass
+    return unic
+
 def safe_float(string, default=None):
     """
     Safely parse a string into a float.
@@ -93,6 +111,7 @@ def safe_float(string, default=None):
     :type  string: string
     :param default: default value to be used in case of failure
     :type  default: float
+    :rtype: float
     """
     value = default
     try:
@@ -113,6 +132,7 @@ def safe_int(string, default=None):
     :type  string: string
     :param default: default value to be used in case of failure
     :type  default: int
+    :rtype: int
     """
     value = safe_float(string, default)
     if value is not None:
@@ -334,6 +354,23 @@ def copytree(source_directory, destination_directory, ignore=None):
     else:
         shutil.copyfile(source_directory, destination_directory)
 
+def ensure_parent_directory(path, get_parent=True):
+    """
+    Ensures the parent directory exists.
+
+    :param path: the path of the file
+    :type  path: string (path)
+    :param get_parent: if True, ensure the parent directory of ``path`` exists;
+                       if False, ensure ``path`` exists
+    :type  get_paerent: bool
+    :raise IOError: if the path cannot be created
+    """
+    parent_directory = os.path.abspath(path)
+    if get_parent:
+        parent_directory = os.path.dirname(parent_directory)
+    if not os.path.exists(parent_directory):
+        os.makedirs(parent_directory)
+
 def time_from_ttml(string):
     """
     Parse the given ``SS.mmms`` string
@@ -518,26 +555,149 @@ def can_run_c_extension(name=None):
     :type  name: string
     :rtype: bool
     """
-
     def can_run_cdtw():
+        """ Python C extension for computing DTW """
         try:
             import aeneas.cdtw
             return True
-        except:
+        except ImportError:
             return False
     def can_run_cmfcc():
+        """ Python C extension for computing MFCC """
         try:
             import aeneas.cmfcc
             return True
-        except:
+        except ImportError:
+            return False
+    def can_run_cew():
+        """ Python C extension for synthesizing with espeak """
+        try:
+            import aeneas.cew
+            return True
+        except ImportError:
             return False
 
     if name == "cdtw":
         return can_run_cdtw()
     elif name == "cmfcc":
         return can_run_cmfcc()
+    elif name == "cew":
+        return can_run_cew()
     else:
-        return can_run_cdtw() and can_run_cmfcc()
+        if os.uname()[0] == "Linux":
+            # Linux
+            return can_run_cdtw() and can_run_cmfcc() and can_run_cew()
+        else:
+            # no cew for other OSes
+            return can_run_cdtw() and can_run_cmfcc()
+
+def file_can_be_written(path):
+    """
+    Return ``True`` if a file can be written at the given ``path``.
+
+    IMPORTANT: this function will attempt to open the given ``path``
+    in write mode, possibly destroying the file previously existing there.
+
+    :param path: the file path
+    :type  path: string (path)
+    :rtype: bool
+    """
+    if path is None:
+        return False
+    try:
+        test_file = open(path, "wb")
+        test_file.close()
+        delete_file(None, path)
+        return True
+    except IOError:
+        return False
+
+def directory_exists(path):
+    """
+    Return ``True`` if the given ``path`` string
+    points to an existing directory.
+
+    :param path: the file path
+    :type  path: string (path)
+    :rtype: bool
+    """
+    if (path is None) or (not os.path.isdir(path)):
+        return False
+    return True
+
+def file_exists(path):
+    """
+    Return ``True`` if the given ``path`` string
+    points to an existing file.
+
+    :param path: the file path
+    :type  path: string (path)
+    :rtype: bool
+    """
+    if (path is None) or (not os.path.isfile(path)):
+        return False
+    return True
+
+def delete_directory(path):
+    """
+    Safely delete a directory.
+
+    :param path: the file path
+    :type  path: string (path)
+    """
+    if path is not None:
+        try:
+            shutil.rmtree(path)
+        except:
+            pass
+
+def delete_file(handler, path):
+    """
+    Safely delete file.
+
+    :param handler: the file handler (as returned by tempfile)
+    :type  handler: obj
+    :param path: the file path
+    :type  path: string (path)
+    """
+    if handler is not None:
+        try:
+            os.close(handler)
+        except:
+            pass
+    if path is not None:
+        try:
+            os.remove(path)
+        except:
+            pass
+
+def get_rel_path(path):
+    """
+    Get path relative to the CWD
+
+    :param path: the file path
+    :type  path: string (path)
+    """
+    current_directory = os.path.dirname(os.path.realpath(sys.argv[0]))
+    target = os.path.join(current_directory, path)
+    return os.path.relpath(target)
+
+def human_readable_number(number, suffix=""):
+    """
+    Format the given number into a human-readable string.
+
+    :param number: the number
+    :type  number: int or float
+    :param suffix: the unit of the number
+    :type  suffix: str
+
+    Code adapted from http://stackoverflow.com/a/1094933
+    """
+    for unit in ["", "K", "M", "G", "T", "P", "E", "Z"]:
+        if abs(number) < 1024.0:
+            return "%3.1f%s%s" % (number, unit, suffix)
+        number /= 1024.0
+    return "%.1f%s%s" % (number, "Y", suffix)
 
 
 

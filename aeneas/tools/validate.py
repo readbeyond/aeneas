@@ -12,10 +12,12 @@ Perform validation in one of the following modes:
 6. a job XML configuration file
 """
 
+import codecs
 import sys
 
+from aeneas.logger import Logger
 from aeneas.validator import Validator
-from aeneas.tools import get_rel_path
+import aeneas.globalfunctions as gf
 
 __author__ = "Alberto Pettarin"
 __copyright__ = """
@@ -24,63 +26,83 @@ __copyright__ = """
     Copyright 2015,      Alberto Pettarin (www.albertopettarin.it)
     """
 __license__ = "GNU AGPL 3"
-__version__ = "1.2.0"
+__version__ = "1.3.0"
 __email__ = "aeneas@readbeyond.it"
 __status__ = "Production"
 
+NAME = "aeneas.tools.validate"
+
+CONFIG_FILE = gf.get_rel_path("res/config.txt")
+CONTAINER_FILE = gf.get_rel_path("res/job.zip")
+JOB_CONFIG_STRING = "job_language=it|os_job_file_name=output.zip|os_job_file_container=zip|is_hierarchy_type=flat"
+TASK_CONFIG_STRING = "task_language=it|is_text_type=plain|os_task_file_name=output.txt|os_task_file_format=txt"
+WRONG_CONFIG_STRING = "job_language=it|invalid=string"
+
 def usage():
     """ Print usage message """
-    name = "aeneas.tools.validate"
-    file_path_1 = get_rel_path("../tests/res/container/job.zip")
-    file_path_2 = get_rel_path("../tests/res/container/job/config.txt")
     print ""
     print "Usage:"
-    print "  $ python -m %s config /path/to/config.txt" % name
-    print "  $ python -m %s config /path/to/config.xml" % name
-    print "  $ python -m %s container /path/to/container" % name
-    print "  $ python -m %s [job|task] config_string" % name
-    print "  $ python -m %s wizard /path/to/container config_string" % name
+    print "  $ python -m %s config     /path/to/config.txt              [options]" % NAME
+    print "  $ python -m %s config     /path/to/config.xml              [options]" % NAME
+    print "  $ python -m %s container  /path/to/container               [options]" % NAME
+    print "  $ python -m %s [job|task] CONFIG_STRING                    [options]" % NAME
+    print "  $ python -m %s wizard     CONFIG_STRING /path/to/container [options]" % NAME
+    print ""
+    print "Options:"
+    print "  -e : return exit code on validation result (zero: passed, nonzero: not passed)"
+    print "  -v : verbose output"
     print ""
     print "Examples:"
-    print "  $ python -m %s config %s" % (name, file_path_2)
-    print "  $ python -m %s container %s" % (name, file_path_1)
-    print "  $ python -m %s job \"job_language=it|os_job_file_name=output.zip|os_job_file_container=zip|is_hierarchy_type=flat\"" % name
-    print "  $ python -m %s task \"task_language=it|is_text_type=plain|os_task_file_name=output.txt|os_task_file_format=txt\"" % name
-    print "  $ python -m %s wizard %s \"job_language=it|generate_an_error=1\"" % (name, file_path_2)
+    print "  $ python -m %s config    %s" % (NAME, CONFIG_FILE)
+    print "  $ python -m %s container %s" % (NAME, CONTAINER_FILE)
+    print "  $ python -m %s job       \"%s\"" % (NAME, JOB_CONFIG_STRING)
+    print "  $ python -m %s task      \"%s\"" % (NAME, TASK_CONFIG_STRING)
+    print "  $ python -m %s wizard    \"%s\" %s" % (NAME, WRONG_CONFIG_STRING, CONTAINER_FILE)
     print ""
+    sys.exit(2)
+
+def read_file(input_file_path):
+    try:
+        input_file = None
+        input_file = codecs.open(input_file_path, "r", "utf-8")
+        contents = input_file.read()
+    except:
+        print "[ERRO] Unable to read file '%s'" % input_file_path
+        sys.exit(1)
+    finally:
+        input_file.close()
+    return contents.encode("utf-8")
 
 def main():
     """ Entry point """
     if len(sys.argv) < 3:
         usage()
-        return
-    validator = Validator()
     mode = sys.argv[1]
     result = None
     msg = ""
+    verbose = False
+    exit_code = False
+    for i in range(3, len(sys.argv)):
+        arg = sys.argv[i]
+        if arg == "-e":
+            exit_code = True
+        if arg == "-v":
+            verbose = True
+
+    logger = Logger(tee=verbose)
+    validator = Validator(logger=logger)
 
     if mode == "config":
         if sys.argv[2].endswith(".txt"):
-            try:
-                config_file = open(sys.argv[2], "r")
-                config_contents = config_file.read()
-                config_file.close()
-                result = validator.check_contents_txt_config_file(config_contents, True)
-                msg = "TXT configuration"
-            except:
-                print "[ERRO] Unable to read file %s" % sys.argv[2]
+            config_contents = read_file(sys.argv[2])
+            result = validator.check_contents_txt_config_file(config_contents, True)
+            msg = "TXT configuration"
         elif sys.argv[2].endswith(".xml"):
-            try:
-                config_file = open(sys.argv[2], "r")
-                config_contents = config_file.read()
-                config_file.close()
-                result = validator.check_contents_xml_config_file(config_contents)
-                msg = "XML configuration"
-            except:
-                print "[ERRO] Unable to read file %s" % sys.argv[2]
+            config_contents = read_file(sys.argv[2])
+            result = validator.check_contents_xml_config_file(config_contents)
+            msg = "XML configuration"
         else:
             usage()
-            return
     elif mode == "container":
         result = validator.check_container(sys.argv[2])
         msg = "container"
@@ -88,27 +110,30 @@ def main():
         result = validator.check_job_configuration(sys.argv[2])
         msg = "job configuration string"
     elif mode == "task":
-        result = validator.check_task_configuration(sys.argv[2])
+        result = validator.check_task_configuration(sys.argv[2], external_name=True)
         msg = "task configuration string"
     elif mode == "wizard":
         if len(sys.argv) < 4:
             usage()
-            return
-        result = validator.check_container_from_wizard(sys.argv[2], sys.argv[3])
+        result = validator.check_container_from_wizard(sys.argv[3], sys.argv[2])
         msg = "container + configuration string from wizard"
     else:
         usage()
-        return
 
     if result.passed:
         print "[INFO] Valid %s" % msg
         if len(result.warnings) > 0:
             for warning in result.warnings:
                 print "[WARN] " + warning
+        if exit_code:
+            sys.exit(0)
     else:
         print "[INFO] Invalid %s" % msg
         for error in result.errors:
             print "[ERRO] " + error
+        if exit_code:
+            sys.exit(4)
+    sys.exit(0)
 
 if __name__ == '__main__':
     main()

@@ -9,9 +9,9 @@ import os
 import re
 import subprocess
 
+from aeneas.logger import Logger
 import aeneas.globalconstants as gc
 import aeneas.globalfunctions as gf
-from aeneas.logger import Logger
 
 __author__ = "Alberto Pettarin"
 __copyright__ = """
@@ -20,9 +20,25 @@ __copyright__ = """
     Copyright 2015,      Alberto Pettarin (www.albertopettarin.it)
     """
 __license__ = "GNU AGPL v3"
-__version__ = "1.2.0"
+__version__ = "1.3.0"
 __email__ = "aeneas@readbeyond.it"
 __status__ = "Production"
+
+class FFPROBEUnsupportedFormatError(Exception):
+    """
+    Error raised when ``ffprobe`` cannot decode the format of the given file.
+    """
+    pass
+
+
+
+class FFPROBEParsingError(Exception):
+    """
+    Error raised when the call to ``ffprobe`` does not produce any output.
+    """
+    pass
+
+
 
 class FFPROBEWrapper(object):
     """
@@ -167,12 +183,19 @@ class FFPROBEWrapper(object):
         :param audio_file_path: the path of the audio file to analyze
         :type  audio_file_path: string (path)
         :rtype: dict
+
+        :raises TypeError: if ``audio_file_path`` is None
+        :raises IOError: if the file at ``audio_file_path`` cannot be read
+        :raises FFPROBEParsingError: if the call to ``ffprobe`` does not produce any output
+        :raises FFPROBEUnsupportedFormatError: if the file has a format not supported by ``ffprobe``
         """
 
         # test if we can read the file at audio_file_path
+        if audio_file_path is None:
+            raise TypeError("The audio file path is None")
         if not os.path.isfile(audio_file_path):
             self._log(["Input file '%s' cannot be read", audio_file_path], Logger.CRITICAL)
-            raise OSError("Input file cannot be read")
+            raise IOError("Input file cannot be read")
 
         # call ffprobe
         arguments = []
@@ -193,9 +216,8 @@ class FFPROBEWrapper(object):
 
         # if no output, raise error
         if (stdoutdata is None) or (len(stderrdata) == 0):
-            msg = "No output for '%s'" % audio_file_path
-            self._log(msg, Logger.CRITICAL)
-            raise Exception(msg)
+            self._log("No output produced by ffprobe", Logger.CRITICAL)
+            raise FFPROBEParsingError("No output produced by ffprobe")
 
         # dictionary for the results
         results = dict()
@@ -224,8 +246,9 @@ class FFPROBEWrapper(object):
                 None
             )
         else:
-            self._log("No duration found in stdout")
+            self._log("No duration found in stdout", Logger.WARNING)
 
+        # TODO this is ugly
         # if audio_length is still None, try scanning ffprobe stderr output
         try:
             if results[self.STDOUT_DURATION] is None:
@@ -248,8 +271,8 @@ class FFPROBEWrapper(object):
             self._log("TypeError exception while parsing stderr")
 
         if results[self.STDOUT_DURATION] is None:
-            self._log("No duration found in stdout or stderr", Logger.CRITICAL)
-            raise ValueError("Cannot determine duration of the input file")
+            self._log("No duration found in stdout or stderr (unsupported audio file format?)", Logger.CRITICAL)
+            raise FFPROBEUnsupportedFormatError("Unsupported audio file format")
 
         # return dictionary
         self._log("Returning dict")

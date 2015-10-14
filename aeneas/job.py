@@ -18,7 +18,7 @@ __copyright__ = """
     Copyright 2015,      Alberto Pettarin (www.albertopettarin.it)
     """
 __license__ = "GNU AGPL v3"
-__version__ = "1.2.0"
+__version__ = "1.3.0"
 __email__ = "aeneas@readbeyond.it"
 __status__ = "Production"
 
@@ -29,6 +29,8 @@ class Job(object):
 
     :param config_string: the job configuration string
     :type  config_string: string
+
+    :raises TypeError: if ``config_string`` is not ``None`` and not an instance of ``str`` or ``unicode``
     """
 
     TAG = "Job"
@@ -40,16 +42,16 @@ class Job(object):
         if config_string is not None:
             self.configuration = JobConfiguration(config_string)
 
-    def add_task(self, task):
+    def append_task(self, task):
         """
-        Add a task to this job.
+        Append a task to this job.
 
-        :param task: the task to be added
+        :param task: the task to be appended
         :type  task: :class:`aeneas.task.Task`
         """
         self.tasks.append(task)
 
-    def delete_tasks(self):
+    def clear_tasks(self):
         """
         Delete all the tasks of this job.
         """
@@ -89,11 +91,19 @@ class JobConfiguration(object):
 
     :param config_string: the job configuration string
     :type  config_string: string
+
+    :raises TypeError: if ``config_string`` is not ``None`` and not an instance of ``str`` or ``unicode``
     """
 
     TAG = "JobConfiguration"
 
     def __init__(self, config_string=None):
+        if (
+                (config_string is not None) and
+                (not isinstance(config_string, str)) and
+                (not isinstance(config_string, unicode))
+        ):
+            raise TypeError("config_string is not an instance of str or unicode")
         # job fields
         self.field_names = [
             gc.PPN_JOB_DESCRIPTION,

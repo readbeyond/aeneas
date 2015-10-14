@@ -7,7 +7,7 @@
 #     Copyright 2015,      Alberto Pettarin (www.albertopettarin.it)
 #     """
 # __license__ = "GNU AGPL 3"
-# __version__ = "1.2.0"
+# __version__ = "1.3.0"
 # __email__ = "aeneas@readbeyond.it"
 # __status__ = "Production"
 
@@ -42,7 +42,7 @@ apt-get install -y espeak*
 echo "[INFO] B.3 Installing espeak... done"
 
 echo "[INFO] C.1 Installing Python modules using pip..."
-pip install BeautifulSoup lxml numpy scikits.audiolab
+pip install BeautifulSoup lxml numpy pafy
 echo "[INFO] C.1 Installing Python modules using pip... done"
 
 echo "[INFO] Congratulations, now you can use aeneas!"

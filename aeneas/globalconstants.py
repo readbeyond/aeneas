@@ -13,7 +13,7 @@ __copyright__ = """
     Copyright 2015,      Alberto Pettarin (www.albertopettarin.it)
     """
 __license__ = "GNU AGPL v3"
-__version__ = "1.2.0"
+__version__ = "1.3.0"
 __email__ = "aeneas@readbeyond.it"
 __status__ = "Production"
 
@@ -619,6 +619,21 @@ Values: float
 Example::
 
     is_audio_file_process_length=987.654
+
+"""
+
+PPN_TASK_IS_AUDIO_FILE_TAIL_LENGTH = "is_audio_file_tail_length"
+"""
+Key for the number of seconds, from the end of the audio file
+of the task, to be ignored
+
+Usage: config string, XML config file
+
+Values: float
+
+Example::
+
+    is_audio_file_tail_length=12.345
 
 """
 

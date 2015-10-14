@@ -18,13 +18,13 @@ import numpy
 import os
 import tempfile
 
-import aeneas.globalconstants as gc
-import aeneas.globalfunctions as gf
-from aeneas.audiofile import AudioFile
+from aeneas.audiofile import AudioFileMonoWAV
 from aeneas.dtw import DTWAligner
 from aeneas.logger import Logger
 from aeneas.synthesizer import Synthesizer
 from aeneas.vad import VAD
+import aeneas.globalconstants as gc
+import aeneas.globalfunctions as gf
 
 __author__ = "Alberto Pettarin"
 __copyright__ = """
@@ -33,7 +33,7 @@ __copyright__ = """
     Copyright 2015,      Alberto Pettarin (www.albertopettarin.it)
     """
 __license__ = "GNU AGPL v3"
-__version__ = "1.2.0"
+__version__ = "1.3.0"
 __email__ = "aeneas@readbeyond.it"
 __status__ = "Production"
 
@@ -55,7 +55,7 @@ class SD(object):
     The SD extractor.
 
     :param audio_file: the audio file
-    :type  audio_file: :class:`aeneas.audiofile.AudioFile`
+    :type  audio_file: :class:`aeneas.audiofile.AudioFileMonoWAV`
     :param text_file: the text file
     :type  text_file: :class:`aeneas.textfile.TextFile`
     :param frame_rate: the MFCC frame rate, in frames per second. Default:
@@ -149,9 +149,9 @@ class SD(object):
         head = 0.0
         try:
             head = self._detect_start(min_head_length, max_head_length, metric, False)
-        except Exception as e:
+        except Exception as exc:
             self._log("Error while detecting head", Logger.CRITICAL)
-            self._log(["  Message: %s", str(e)], Logger.CRITICAL)
+            self._log(["  Message: %s", exc], Logger.CRITICAL)
         return head
 
     def detect_tail(
@@ -180,9 +180,9 @@ class SD(object):
         tail = 0.0
         try:
             tail = self._detect_start(min_tail_length, max_tail_length, metric, True)
-        except Exception as e:
+        except Exception as exc:
             self._log("Error while detecting tail", Logger.CRITICAL)
-            self._log(["  Message: %s", str(e)], Logger.CRITICAL)
+            self._log(["  Message: %s", exc], Logger.CRITICAL)
         return tail
 
     def _detect_start(self, min_start_length, max_start_length, metric, backwards=False):
@@ -204,15 +204,17 @@ class SD(object):
         synt = Synthesizer(logger=self.logger)
         synt_duration = max_start_length * self.QUERY_FACTOR
         self._log(["Synthesizing %.3f seconds", synt_duration])
+        # force_pure_python=True because Python C does not prepend data!!!
         result = synt.synthesize(
             self.text_file,
             tmp_file_path,
             quit_after=synt_duration,
-            backwards=backwards
+            backwards=backwards,
+            force_pure_python=True
         )
         self._log("Synthesizing query... done")
 
-        query_file = AudioFile(tmp_file_path)
+        query_file = AudioFileMonoWAV(tmp_file_path)
         if backwards:
             self._log("Reversing query")
             query_file.reverse()
@@ -222,7 +224,7 @@ class SD(object):
         self._log("Extracting MFCCs for query... done")
 
         self._log("Cleaning up...")
-        self._cleanup(tmp_handler, tmp_file_path)
+        gf.delete_file(tmp_handler, tmp_file_path)
         self._log("Cleaning up... done")
 
         query_characters = result[2]
@@ -364,19 +366,6 @@ class SD(object):
         self._log(["Returning time %.3f", sd_time])
         return sd_time
 
-    def _cleanup(self, handler, path):
-        """ Remove temporary handler/file """
-        if handler is not None:
-            try:
-                os.close(handler)
-            except:
-                pass
-        if path is not None:
-            try:
-                os.remove(path)
-            except:
-                pass
-
     def _extract_mfcc(self):
         """ Extract MFCCs for audio """
         self._log("Extracting MFCCs for audio...")
@@ -386,9 +375,12 @@ class SD(object):
     def _extract_speech(self):
         """ Extract speech intervals """
         self._log("Running VAD...")
-        vad = VAD(frame_rate=self.frame_rate, logger=self.logger)
-        vad.wave_len = self.audio_file.audio_length
-        vad.wave_mfcc = self.audio_file.audio_mfcc
+        vad = VAD(
+            self.audio_file.audio_mfcc,
+            self.audio_file.audio_length,
+            frame_rate=self.frame_rate,
+            logger=self.logger
+        )
         vad.compute_vad()
         self.audio_speech = vad.speech
         self._log("Running VAD... done")

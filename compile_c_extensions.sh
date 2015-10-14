@@ -7,7 +7,7 @@
 #     Copyright 2015,      Alberto Pettarin (www.albertopettarin.it)
 #     """
 # __license__ = "GNU AGPL 3"
-# __version__ = "1.2.0"
+# __version__ = "1.3.0"
 # __email__ = "aeneas@readbeyond.it"
 # __status__ = "Production"
 
@@ -25,6 +25,10 @@ echo "[INFO] Compiling cdtw... done"
 echo "[INFO] Compiling cmfcc..."
 python cmfcc_setup.py build_ext --inplace
 echo "[INFO] Compiling cmfcc... done"
+
+echo "[INFO] Compiling cew..."
+python cew_setup.py build_ext --inplace
+echo "[INFO] Compiling cew... done"
 
 cd ..
 

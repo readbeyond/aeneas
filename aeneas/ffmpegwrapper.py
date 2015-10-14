@@ -8,8 +8,9 @@ Wrapper around ``ffmpeg`` to convert audio files.
 import os
 import subprocess
 
-import aeneas.globalconstants as gc
 from aeneas.logger import Logger
+import aeneas.globalconstants as gc
+import aeneas.globalfunctions as gf
 
 __author__ = "Alberto Pettarin"
 __copyright__ = """
@@ -18,7 +19,7 @@ __copyright__ = """
     Copyright 2015,      Alberto Pettarin (www.albertopettarin.it)
     """
 __license__ = "GNU AGPL v3"
-__version__ = "1.2.0"
+__version__ = "1.3.0"
 __email__ = "aeneas@readbeyond.it"
 __status__ = "Production"
 
@@ -144,11 +145,18 @@ class FFMPEGWrapper(object):
         :type  head_length: float
         :param process_length: process these many seconds of the audio file
         :type  process_length: float
+
+        :raise IOError: if ``input_file_path`` does not exist or ``output_file_path`` cannot be written
         """
         # test if we can read the input file
-        if not os.path.isfile(input_file_path):
-            self._log(["Input file '%s' cannot be read", input_file_path], Logger.CRITICAL)
-            raise OSError("Inpuf file cannot be read")
+        if not gf.file_exists(input_file_path):
+            self._log(["Input file '%s' does not exist", input_file_path], Logger.CRITICAL)
+            raise IOError("Input audio file does not exist")
+
+        # test if we can write the output file
+        if not gf.file_can_be_written(output_file_path):
+            self._log(["Output file '%s' cannot be written", output_file_path], Logger.CRITICAL)
+            raise IOError("Output audio file cannot be written")
 
         # call ffmpeg
         arguments = []
@@ -173,12 +181,13 @@ class FFMPEGWrapper(object):
         self._log("Call completed")
 
         # check if the output file exists
-        if not os.path.exists(output_file_path):
-            self._log(["Output file '%s' cannot be written", output_file_path], Logger.CRITICAL)
-            raise OSError("Output file cannot be written")
-        else:
-            self._log(["Returning output file path '%s'", output_file_path])
-            return output_file_path
+        if not gf.file_exists(output_file_path):
+            self._log(["Output file '%s' was not written", output_file_path], Logger.CRITICAL)
+            raise IOError("Output file was not written")
+
+        # returning the output file path
+        self._log(["Returning output file path '%s'", output_file_path])
+        return output_file_path
 
 
 
