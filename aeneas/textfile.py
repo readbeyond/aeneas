@@ -258,6 +258,8 @@ class TextFile(object):
     :raise ValueError: if ``file_format`` value is not allowed
     """
 
+    DEFAULT_ID_REGEX = u"f%06d"
+
     TAG = "TextFile"
 
     def __init__(
@@ -274,6 +276,8 @@ class TextFile(object):
         self.logger = Logger()
         if logger is not None:
             self.logger = logger
+        if self.parameters is None:
+            self.parameters = dict()
         if (self.file_path is not None) and (self.file_format is not None):
             self._read_from_file()
 
@@ -486,7 +490,7 @@ class TextFile(object):
             self._read_plain(lines)
         if self.file_format == TextFileFormat.UNPARSED:
             self._log("Reading from format UNPARSED")
-            self._read_unparsed(lines, self.parameters)
+            self._read_unparsed(lines)
 
         # log the number of fragments
         self._log(["Parsed %d fragments", len(self.fragments)])
@@ -499,6 +503,7 @@ class TextFile(object):
         :type  lines: list of strings
         """
         self._log("Parsing fragments from subtitles text format")
+        id_regex = self._get_id_regex()
         lines = [line.strip() for line in lines]
         pairs = []
         i = 1
@@ -511,7 +516,7 @@ class TextFile(object):
                 while (following < len(lines) and (len(lines[following]) > 0)):
                     fragment_lines.append(lines[following])
                     following += 1
-                identifier = u"f" + str(i).zfill(6)
+                identifier = id_regex % i 
                 pairs.append([identifier, fragment_lines])
                 current = following
                 i += 1
@@ -524,6 +529,9 @@ class TextFile(object):
 
         :param lines: the lines of the parsed text file
         :type  lines: list of strings
+        :param parameters: additional parameters for parsing
+                           (e.g., class/id regex strings)
+        :type  parameters: dict
         """
         self._log("Parsing fragments from parsed text format")
         pairs = []
@@ -542,27 +550,28 @@ class TextFile(object):
 
         :param lines: the lines of the plain text file
         :type  lines: list of strings
+        :param parameters: additional parameters for parsing
+                           (e.g., class/id regex strings)
+        :type  parameters: dict
         """
         self._log("Parsing fragments from plain text format")
+        id_regex = self._get_id_regex()
         lines = [line.strip() for line in lines]
         pairs = []
         i = 1
         for line in lines:
-            identifier = u"f" + str(i).zfill(6)
+            identifier = id_regex % i
             text = line.strip()
             pairs.append([identifier, [text]])
             i += 1
         self._create_text_fragments(pairs)
 
-    def _read_unparsed(self, lines, parameters):
+    def _read_unparsed(self, lines):
         """
         Read text fragments from an unparsed format text file.
 
         :param lines: the lines of the unparsed text file
         :type  lines: list of strings
-        :param parameters: additional parameters for parsing
-                           (e.g., class/id regex strings)
-        :type  parameters: dict
         """
         #
         # TODO better and/or parametric parsing,
@@ -573,14 +582,14 @@ class TextFile(object):
 
         # get filter attributes
         attributes = dict()
-        if gc.PPN_JOB_IS_TEXT_UNPARSED_CLASS_REGEX in parameters:
-            class_regex_string = parameters[gc.PPN_JOB_IS_TEXT_UNPARSED_CLASS_REGEX]
+        if gc.PPN_JOB_IS_TEXT_UNPARSED_CLASS_REGEX in self.parameters:
+            class_regex_string = self.parameters[gc.PPN_JOB_IS_TEXT_UNPARSED_CLASS_REGEX]
             if class_regex_string is not None:
                 self._log(["Regex for class: '%s'", class_regex_string])
                 class_regex = re.compile(r".*\b" + class_regex_string + r"\b.*")
                 attributes['class'] = class_regex
-        if gc.PPN_JOB_IS_TEXT_UNPARSED_ID_REGEX in parameters:
-            id_regex_string = parameters[gc.PPN_JOB_IS_TEXT_UNPARSED_ID_REGEX]
+        if gc.PPN_JOB_IS_TEXT_UNPARSED_ID_REGEX in self.parameters:
+            id_regex_string = self.parameters[gc.PPN_JOB_IS_TEXT_UNPARSED_ID_REGEX]
             if id_regex_string is not None:
                 self._log(["Regex for id: '%s'", id_regex_string])
                 id_regex = re.compile(r".*\b" + id_regex_string + r"\b.*")
@@ -588,8 +597,8 @@ class TextFile(object):
 
         # get id sorting algorithm
         id_sort = IDSortingAlgorithm.UNSORTED
-        if gc.PPN_JOB_IS_TEXT_UNPARSED_ID_SORT in parameters:
-            id_sort = parameters[gc.PPN_JOB_IS_TEXT_UNPARSED_ID_SORT]
+        if gc.PPN_JOB_IS_TEXT_UNPARSED_ID_SORT in self.parameters:
+            id_sort = self.parameters[gc.PPN_JOB_IS_TEXT_UNPARSED_ID_SORT]
         self._log(["Sorting text fragments using '%s'", id_sort])
 
         # transform text in a soup object
@@ -631,6 +640,19 @@ class TextFile(object):
         for pair in pairs:
             fragment = TextFragment(identifier=pair[0], lines=pair[1])
             self.append_fragment(fragment)
+
+    def _get_id_regex(self):
+        """
+        Get the id regex.
+        """
+        id_regex = self.DEFAULT_ID_REGEX 
+        if (
+                (gc.PPN_TASK_OS_FILE_ID_REGEX in self.parameters) and
+                (self.parameters[gc.PPN_TASK_OS_FILE_ID_REGEX] is not None)
+        ):
+            id_regex = u"" + self.parameters[gc.PPN_TASK_OS_FILE_ID_REGEX]
+        self._log(["id_regex is %s", id_regex])
+        return id_regex
 
 
 

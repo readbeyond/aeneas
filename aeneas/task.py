@@ -216,6 +216,7 @@ class Task(object):
             parameters[gc.PPN_TASK_IS_TEXT_UNPARSED_CLASS_REGEX] = self.configuration.is_text_unparsed_class_regex
             parameters[gc.PPN_TASK_IS_TEXT_UNPARSED_ID_REGEX] = self.configuration.is_text_unparsed_id_regex
             parameters[gc.PPN_TASK_IS_TEXT_UNPARSED_ID_SORT] = self.configuration.is_text_unparsed_id_sort
+            parameters[gc.PPN_TASK_OS_FILE_ID_REGEX] = self.configuration.os_file_id_regex
             self.text_file = TextFile(
                 file_path=self.text_file_path_absolute,
                 file_format=self.configuration.is_text_file_format,
@@ -275,6 +276,7 @@ class TaskConfiguration(object):
             gc.PPN_TASK_IS_TEXT_UNPARSED_ID_SORT,
 
             gc.PPN_TASK_OS_FILE_FORMAT,
+            gc.PPN_TASK_OS_FILE_ID_REGEX,
             gc.PPN_TASK_OS_FILE_NAME,
             gc.PPN_TASK_OS_FILE_SMIL_AUDIO_REF,
             gc.PPN_TASK_OS_FILE_SMIL_PAGE_REF,
@@ -630,6 +632,19 @@ class TaskConfiguration(object):
     @os_file_format.setter
     def os_file_format(self, value):
         self.fields[gc.PPN_TASK_OS_FILE_FORMAT] = value
+
+    @property
+    def os_file_id_regex(self):
+        """
+        The regex to be used for the fragment identifiers
+        of the sync map output file
+
+        :rtype: string
+        """
+        return self.fields[gc.PPN_TASK_OS_FILE_ID_REGEX]
+    @os_file_id_regex.setter
+    def os_file_id_regex(self, value):
+        self.fields[gc.PPN_TASK_OS_FILE_ID_REGEX] = value
 
     @property
     def os_file_name(self):

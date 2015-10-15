@@ -3,7 +3,7 @@
 *.pyo
 *.swp
 *.so
-MANIFEST
+aeneas.egg-info
 aeneas/build
 bak
 build

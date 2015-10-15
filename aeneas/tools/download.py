@@ -58,11 +58,11 @@ def usage():
 
 def main():
     """ Entry point """
-
     if ("-h" in sys.argv) or ("--help" in sys.argv):
         # show full help
         usage()
-
+    if len(sys.argv) < 3:
+        usage()
     verbose = False
     best_audio = True
     source_url = sys.argv[1]

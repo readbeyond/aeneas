@@ -103,6 +103,7 @@ def get_parameters():
     print "  is_text_unparsed_id_sort                : sort matched elements by id (unparsed) (*)"
     print ""
     print "  os_task_file_format                     : output sync map format (*)"
+    print "  os_task_file_id_regex                   : id regex for the output sync map (subtitles, plain)"
     print "  os_task_file_head_tail_format           : format audio head/tail (*)"
     print "  os_task_file_smil_audio_ref             : value for the audio ref (smil, smilh, smilm)"
     print "  os_task_file_smil_page_ref              : value for the text ref (smil, smilh, smilm)"
@@ -292,7 +293,7 @@ def run(argv):
 
     try:
         print "[INFO] Creating task..."
-        task = Task(config_string)
+        task = Task(config_string, logger=logger)
         task.audio_file_path_absolute = audio_file_path
         task.text_file_path_absolute = text_file_path
         task.sync_map_file_path_absolute = sync_map_file_path
