@@ -23,6 +23,12 @@ class TestTextFile(unittest.TestCase):
         gc.PPN_JOB_IS_TEXT_UNPARSED_CLASS_REGEX : "ra",
         gc.PPN_JOB_IS_TEXT_UNPARSED_ID_SORT : IDSortingAlgorithm.UNSORTED,
     }
+    ID_REGEX_PARAMETERS = {
+        gc.PPN_TASK_OS_FILE_ID_REGEX : "word%06d"
+    }
+    ID_REGEX_PARAMETERS_BAD = {
+        gc.PPN_TASK_OS_FILE_ID_REGEX : "word"
+    }
 
     def load(self, input_file_path=PLAIN_FILE_PATH, fmt=TextFileFormat.PLAIN, expected_length=15, parameters=None):
         tfl = TextFile(at.get_abs_path(input_file_path), fmt, parameters)
@@ -140,11 +146,44 @@ class TestTextFile(unittest.TestCase):
         ]:
             self.load(path, TextFileFormat.SUBTITLES, 15)
 
+    def test_read_subtitles_id_regex(self):
+        for path in [
+                "res/inputtext/sonnet_subtitles_with_end_newline.txt",
+                "res/inputtext/sonnet_subtitles_no_end_newline.txt",
+                "res/inputtext/sonnet_subtitles_multiple_blank.txt",
+                "res/inputtext/sonnet_subtitles_multiple_rows.txt"
+        ]:
+            self.load(path, TextFileFormat.SUBTITLES, 15, self.ID_REGEX_PARAMETERS)
+
+    def test_read_subtitles_id_regex_bad(self):
+        with self.assertRaises(TypeError):
+            for path in [
+                    "res/inputtext/sonnet_subtitles_with_end_newline.txt",
+                    "res/inputtext/sonnet_subtitles_no_end_newline.txt",
+                    "res/inputtext/sonnet_subtitles_multiple_blank.txt",
+                    "res/inputtext/sonnet_subtitles_multiple_rows.txt"
+            ]:
+                self.load(path, TextFileFormat.SUBTITLES, 15, self.ID_REGEX_PARAMETERS_BAD)
+
     def test_read_plain(self):
         self.load("res/inputtext/sonnet_plain.txt", TextFileFormat.PLAIN, 15)
 
+    def test_read_plain_id_regex(self):
+        self.load("res/inputtext/sonnet_plain.txt", TextFileFormat.PLAIN, 15, self.ID_REGEX_PARAMETERS)
+
+    def test_read_plain_id_regex_bad(self):
+        with self.assertRaises(TypeError):
+            self.load("res/inputtext/sonnet_plain.txt", TextFileFormat.PLAIN, 15, self.ID_REGEX_PARAMETERS_BAD)
+
     def test_read_plain_utf8(self):
         self.load("res/inputtext/sonnet_plain_utf8.txt", TextFileFormat.PLAIN, 15)
+
+    def test_read_plain_utf8_id_regex(self):
+        self.load("res/inputtext/sonnet_plain_utf8.txt", TextFileFormat.PLAIN, 15, self.ID_REGEX_PARAMETERS)
+
+    def test_read_plain_utf8_id_regex_bad(self):
+        with self.assertRaises(TypeError):
+            self.load("res/inputtext/sonnet_plain_utf8.txt", TextFileFormat.PLAIN, 15, self.ID_REGEX_PARAMETERS_BAD)
 
     def test_read_parsed(self):
         self.load("res/inputtext/sonnet_parsed.txt", TextFileFormat.PARSED, 15)

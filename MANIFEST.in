@@ -1,0 +1,10 @@
+recursive-include aeneas/tools/res *
+include check_dependencies.py
+recursive-include docs *
+prune docs/build
+include LICENSE
+recursive-include licenses *
+include README.md
+include README.txt
+include requirements.txt
+include VERSION
