@@ -4,8 +4,8 @@ aeneas
 **aeneas** is a Python library and a set of tools to automagically
 synchronize audio and text.
 
--  Version: 1.3.0
--  Date: 2015-10-14
+-  Version: 1.3.1
+-  Date: 2015-10-XX
 -  Developed by: `ReadBeyond <http://www.readbeyond.it/>`__
 -  Lead Developer: `Alberto Pettarin <http://www.albertopettarin.it/>`__
 -  License: the GNU Affero General Public License Version 3 (AGPL v3)
@@ -352,6 +352,8 @@ Supported Features
    time
 -  On Linux, ``espeak`` called via a Python C extension for faster audio
    synthesis
+-  Output an HTML file (from ``finetuneas`` project) for fine tuning the
+   sync map manually
 
 Limitations and Missing Features
 --------------------------------
@@ -375,7 +377,6 @@ TODO List
 -  Improving (removing?) dependency from ``espeak``, ``ffmpeg``,
    ``ffprobe`` executables
 -  Multilevel sync map granularity (e.g., multilevel SMIL output)
--  Supporting input text encodings other than UTF-8
 -  Better documentation
 -  Testing other approaches, like HMM
 -  Publishing the package on PyPI
@@ -431,6 +432,11 @@ installing the whole ``scipy`` package. See
 The C header ``speak_lib.h`` for ``espeak`` is a verbatim copy from the
 `espeak project <http://espeak.sourceforge.net/>`__. See
 ```licenses/eSpeak.txt`` <licenses/eSpeak.txt>`__ for details.
+
+The HTML file ``aeneas/res/finetuneas.html`` is a verbatim copy from the
+`finetuneas project <https://github.com/ozdefir/finetuneas>`__, courtesy
+of Firat Özdemir. See
+```licenses/finetuneas.txt`` <licenses/finetuneas.txt>`__ for details.
 
 Audio files contained in the unit tests ``aeneas/tests/res/`` directory
 are adapted from recordings produced by the `LibriVox

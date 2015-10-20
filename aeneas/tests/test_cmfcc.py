@@ -5,13 +5,13 @@ import numpy
 import unittest
 
 from aeneas.audiofile import AudioFileMonoWAV
-import aeneas.tests as at
+import aeneas.globalfunctions as gf
 
 class TestCMFCC(unittest.TestCase):
 
-    AUDIO = at.get_abs_path("res/cmfcc/audio.wav")
-    MFCC_PRE_PY = at.get_abs_path("res/cmfcc/mfcc_py")
-    MFCC_PRE_C = at.get_abs_path("res/cmfcc/mfcc_c")
+    AUDIO = gf.get_abs_path("res/cmfcc/audio.wav", __file__)
+    MFCC_PRE_PY = gf.get_abs_path("res/cmfcc/mfcc_py", __file__)
+    MFCC_PRE_C = gf.get_abs_path("res/cmfcc/mfcc_c", __file__)
 
     def compare_with_tolerance(self, a, b, tolerance=1E-6):
         return not ((a - b) > tolerance).any()

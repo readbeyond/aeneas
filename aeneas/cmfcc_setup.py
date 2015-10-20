@@ -22,7 +22,7 @@ __copyright__ = """
     Copyright 2015,      Alberto Pettarin (www.albertopettarin.it)
     """
 __license__ = "GNU AGPL v3"
-__version__ = "1.3.0"
+__version__ = "1.3.1"
 __email__ = "aeneas@readbeyond.it"
 __status__ = "Production"
 
@@ -38,7 +38,7 @@ CMODULE = Extension("cmfcc", sources=["cmfcc.c"], include_dirs=[get_include()])
 
 setup(
     name="cmfcc",
-    version="1.3.0",
+    version="1.3.1",
     description="""
     Python C Extension for computing the MFCCs as fast as your bare metal allows.
     """,

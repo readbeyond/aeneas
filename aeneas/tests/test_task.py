@@ -16,7 +16,6 @@ from aeneas.task import TaskConfiguration
 from aeneas.textfile import TextFileFormat
 from aeneas.textfile import TextFragment
 import aeneas.globalfunctions as gf
-import aeneas.tests as at
 
 class TestTask(unittest.TestCase):
 
@@ -46,7 +45,7 @@ class TestTask(unittest.TestCase):
             task.configuration.is_text_unparsed_class_regex = class_regex
         if id_sort is not None:
             task.configuration.is_text_unparsed_id_sort = id_sort
-        task.text_file_path_absolute = at.get_abs_path(path)
+        task.text_file_path_absolute = gf.get_abs_path(path, __file__)
         self.assertNotEqual(task.text_file, None)
         self.assertEqual(len(task.text_file), expected)
 
@@ -103,7 +102,7 @@ class TestTask(unittest.TestCase):
 
     def test_set_audio_file_path_absolute(self):
         task = Task()
-        task.audio_file_path_absolute = at.get_abs_path("res/container/job/assets/p001.mp3")
+        task.audio_file_path_absolute = gf.get_abs_path("res/container/job/assets/p001.mp3", __file__)
         self.assertNotEqual(task.audio_file, None)
         self.assertEqual(task.audio_file.file_size, 426735)
         self.assertAlmostEqual(task.audio_file.audio_length, 53.3, places=1)
@@ -111,7 +110,7 @@ class TestTask(unittest.TestCase):
     def test_set_audio_file_path_absolute_error(self):
         task = Task()
         with self.assertRaises(IOError):
-            task.audio_file_path_absolute = at.get_abs_path("not_existing.mp3")
+            task.audio_file_path_absolute = gf.get_abs_path("not_existing.mp3", __file__)
 
     def test_set_text_file_unparsed_id(self):
         self.set_text_file(

@@ -5,7 +5,7 @@ import unittest
 
 from aeneas.logger import Logger
 from aeneas.validator import Validator
-import aeneas.tests as at
+import aeneas.globalfunctions as gf
 
 class TestValidator(unittest.TestCase):
 
@@ -16,7 +16,7 @@ class TestValidator(unittest.TestCase):
 
     def file_encoding(self, path, expected):
         validator = Validator()
-        result = validator.check_file_encoding(at.get_abs_path(path))
+        result = validator.check_file_encoding(gf.get_abs_path(path, __file__))
         self.assertEqual(result.passed, expected)
 
     def jc(self, string, expected):
@@ -39,7 +39,7 @@ class TestValidator(unittest.TestCase):
 
     def container(self, path, expected):
         validator = Validator()
-        result = validator.check_container(at.get_abs_path(path))
+        result = validator.check_container(gf.get_abs_path(path, __file__))
         self.assertEqual(result.passed, expected)
         if expected:
             self.assertEqual(len(result.errors), 0)

@@ -9,7 +9,6 @@ from aeneas.audiofile import AudioFile
 from aeneas.audiofile import AudioFileMonoWAV
 from aeneas.audiofile import AudioFileUnsupportedFormatError
 import aeneas.globalfunctions as gf
-import aeneas.tests as at
 
 class TestAudioFile(unittest.TestCase):
 
@@ -84,7 +83,7 @@ class TestAudioFile(unittest.TestCase):
     ]
 
     def load(self, path):
-        return AudioFile(at.get_abs_path(path))
+        return AudioFile(gf.get_abs_path(path, __file__))
 
     def test_read_on_none(self):
         audiofile = self.load(None) 
@@ -121,7 +120,7 @@ class TestAudioFileMonoWAV(unittest.TestCase):
     NOT_EXISTING_FILE = "res/audioformats/x/y/z/not_existing.wav"
 
     def load(self, path):
-        return AudioFileMonoWAV(at.get_abs_path(path))
+        return AudioFileMonoWAV(gf.get_abs_path(path, __file__))
 
     def test_load_on_none(self):
         audiofile = self.load(None)
@@ -221,7 +220,7 @@ class TestAudioFileMonoWAV(unittest.TestCase):
             audiofile.clear_data()
 
     def test_write_not_existing_path(self):
-        output_file_path = at.get_abs_path(self.NOT_EXISTING_FILE)
+        output_file_path = gf.get_abs_path(self.NOT_EXISTING_FILE, __file__)
         audiofile = self.load(self.AUDIO_FILE_PATH_MFCC)
         audiofile.load_data()
         with self.assertRaises(IOError):

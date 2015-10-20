@@ -28,7 +28,7 @@ __copyright__ = """
     Copyright 2015,      Alberto Pettarin (www.albertopettarin.it)
     """
 __license__ = "GNU AGPL 3"
-__version__ = "1.3.0"
+__version__ = "1.3.1"
 __email__ = "aeneas@readbeyond.it"
 __status__ = "Production"
 
@@ -140,6 +140,7 @@ def usage(examples=False, full_help=False):
         print "  --example-smil      : run example with SMIL output"
         print "  --example-srt       : run example with SRT output"
         print "  --keep-audio        : do not delete the audio file downloaded from YouTube (-y)"
+        print "  --output-html       : output HTML file for fine tuning"
         print "  --skip-validator    : do not validate CONFIG_STRING"
         print ""
         print "Documentation:"
@@ -220,6 +221,7 @@ def run(argv):
     download_from_youtube = False
     best_audio = False
     keep_audio = False
+    output_html = False
     if demo is None:
         # no demo, read arguments
         audio_file_path = argv[1]
@@ -240,6 +242,8 @@ def run(argv):
                 keep_audio = True
             if arg == "--best-audio":
                 best_audio = True
+            if arg == "--output-html":
+                output_html = True
     else:
         # demo, set arguments
         validate = False
@@ -253,6 +257,10 @@ def run(argv):
         print "[WARN] Unable to load Python C Extensions"
         print "[WARN] Running the slower pure Python code"
         print "[WARN] See the README file for directions to compile the Python C Extensions"
+
+    if output_html:
+        keep_audio = True
+        html_file_path = sync_map_file_path + ".html"
 
     logger = Logger(tee=verbose)
 
@@ -322,6 +330,17 @@ def run(argv):
         print "[ERRO] The following error occurred while writing the sync map file:"
         print "[ERRO] %s" % str(exc)
         sys.exit(1)
+
+    if output_html:
+        try:
+            print "[INFO] Creating output HTML file..."
+            task.sync_map.output_html_for_tuning(audio_file_path, html_file_path)
+            print "[INFO] Creating output HTML file... done"
+            print "[INFO] Created %s" % html_file_path
+        except Exception as exc:
+            print "[ERRO] The following error occurred while writing the HTML file:"
+            print "[ERRO] %s" % str(exc)
+            sys.exit(1)
 
     if download_from_youtube:
         if keep_audio:

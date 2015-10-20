@@ -10,15 +10,14 @@ from aeneas.synthesizer import Synthesizer
 from aeneas.textfile import TextFile
 from aeneas.textfile import TextFileFormat
 import aeneas.globalfunctions as gf
-import aeneas.tests as at
 
 class TestSynthesizer(unittest.TestCase):
 
-    PATH_NOT_WRITEABLE = at.get_abs_path("x/y/z/not_writeable.wav")
+    PATH_NOT_WRITEABLE = gf.get_abs_path("x/y/z/not_writeable.wav", __file__)
 
     def perform(self, path, logger=None, quit_after=None, backwards=False):
         handler, output_file_path = tempfile.mkstemp(suffix=".wav")
-        tfl = TextFile(at.get_abs_path(path), TextFileFormat.PLAIN)
+        tfl = TextFile(gf.get_abs_path(path, __file__), TextFileFormat.PLAIN)
         tfl.set_language(Language.EN)
         synth = Synthesizer(logger=logger)
         result = synth.synthesize(tfl, output_file_path, quit_after=quit_after, backwards=backwards)

@@ -1,2 +1,0 @@
-This directory contains tests that will take several seconds each to run,
-mainly because they fully execute a Task or a Job.

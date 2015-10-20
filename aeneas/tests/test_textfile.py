@@ -9,12 +9,12 @@ from aeneas.textfile import TextFile
 from aeneas.textfile import TextFileFormat
 from aeneas.textfile import TextFragment
 import aeneas.globalconstants as gc
-import aeneas.tests as at
+import aeneas.globalfunctions as gf
 
 class TestTextFile(unittest.TestCase):
 
-    NOT_EXISTING_PATH = at.get_abs_path("not_existing.txt")
-    NOT_WRITEABLE_PATH = at.get_abs_path("x/y/z/not_writeable.txt")
+    NOT_EXISTING_PATH = gf.get_abs_path("not_existing.txt", __file__)
+    NOT_WRITEABLE_PATH = gf.get_abs_path("x/y/z/not_writeable.txt", __file__)
     EMPTY_FILE_PATH = "res/inputtext/empty.txt"
     BLANK_FILE_PATH = "res/inputtext/blank.txt"
     PLAIN_FILE_PATH = "res/inputtext/sonnet_plain.txt"
@@ -31,7 +31,7 @@ class TestTextFile(unittest.TestCase):
     }
 
     def load(self, input_file_path=PLAIN_FILE_PATH, fmt=TextFileFormat.PLAIN, expected_length=15, parameters=None):
-        tfl = TextFile(at.get_abs_path(input_file_path), fmt, parameters)
+        tfl = TextFile(gf.get_abs_path(input_file_path, __file__), fmt, parameters)
         self.assertEqual(len(tfl), expected_length)
         return tfl
 
