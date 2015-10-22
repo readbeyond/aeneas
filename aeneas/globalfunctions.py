@@ -21,7 +21,7 @@ __copyright__ = """
     Copyright 2015,      Alberto Pettarin (www.albertopettarin.it)
     """
 __license__ = "GNU AGPL v3"
-__version__ = "1.3.0"
+__version__ = "1.3.1"
 __email__ = "aeneas@readbeyond.it"
 __status__ = "Production"
 
@@ -671,16 +671,46 @@ def delete_file(handler, path):
         except:
             pass
 
-def get_rel_path(path):
+def get_rel_path(path, from_path=None, absolute=False):
     """
-    Get path relative to the CWD
+    Get a path relative to the CWD or ``from_path``.
 
     :param path: the file path
     :type  path: string (path)
+    :param from_path: the current directory; if None, use CWD
+    :type  from_path: string (path)
+    :param absolute: if True, output an absolute path
+    :type  absolute: bool
+    :rtype: string (path)
     """
-    current_directory = os.path.dirname(os.path.realpath(sys.argv[0]))
+    if path is None:
+        return None
+    if from_path is None:
+        current_directory = os.path.dirname(os.path.realpath(sys.argv[0]))
+    else:
+        current_directory = from_path
     target = os.path.join(current_directory, path)
-    return os.path.relpath(target)
+    rel_path = os.path.relpath(target)
+    if absolute:
+        return os.path.abspath(rel_path)
+    else:
+        return rel_path
+
+def get_abs_path(path, from_file):
+    """
+    Get a path relative to the parent directory of ``from_file``,
+    and return it as an absolute path.
+
+    This method is intented to be called with ``__file__``
+    as second argument.
+
+    :param path: the file path
+    :type  path: string (path)
+    :param from_file: the reference file
+    :type  from_file: string (path)
+    :rtype: string (path)
+    """
+    return get_rel_path(path, os.path.dirname(from_file), True)
 
 def human_readable_number(number, suffix=""):
     """

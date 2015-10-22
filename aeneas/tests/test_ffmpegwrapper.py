@@ -7,7 +7,6 @@ import unittest
 
 from aeneas.ffmpegwrapper import FFMPEGWrapper
 import aeneas.globalfunctions as gf
-import aeneas.tests as at
 
 class TestFFMPEGWrapper(unittest.TestCase):
 
@@ -50,7 +49,10 @@ class TestFFMPEGWrapper(unittest.TestCase):
             output_file_path = ofp
         try:
             converter = FFMPEGWrapper()
-            result = converter.convert(at.get_abs_path(input_file_path), output_file_path)
+            result = converter.convert(
+                gf.get_abs_path(input_file_path, __file__),
+                output_file_path
+            )
             self.assertEqual(result, output_file_path)
             gf.delete_directory(output_path)
         except IOError as exc:

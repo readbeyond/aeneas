@@ -4,12 +4,12 @@
 import numpy
 import unittest
 
-import aeneas.tests as at
+import aeneas.globalfunctions as gf
 
 class TestCDTW(unittest.TestCase):
 
-    MFCC1 = at.get_abs_path("res/cdtw/mfcc1_53")
-    MFCC2 = at.get_abs_path("res/cdtw/mfcc2_53")
+    MFCC1 = gf.get_abs_path("res/cdtw/mfcc1_53", __file__)
+    MFCC2 = gf.get_abs_path("res/cdtw/mfcc2_53", __file__)
 
     def test_compute_path(self):
         try:

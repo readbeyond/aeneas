@@ -15,22 +15,9 @@ __copyright__ = """
     Copyright 2015,      Alberto Pettarin (www.albertopettarin.it)
     """
 __license__ = "GNU AGPL 3"
-__version__ = "1.3.0"
+__version__ = "1.3.1"
 __email__ = "aeneas@readbeyond.it"
 __status__ = "Production"
-
-def get_abs_path(rel_path):
-    """
-    Get absolute path from the path relative to this directory.
-
-    :param rel_path: the relative file path
-    :type  rel_path: string (path)
-    """
-    if rel_path is None:
-        return None
-    # TODO find a better way
-    file_dir = os.path.dirname(__file__)
-    return os.path.join(file_dir, rel_path)
 
 
 
