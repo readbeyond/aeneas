@@ -59,10 +59,29 @@ class SyncMap(object):
         ["<!-- AENEAS_REPLACE_COMMENT_BEGIN -->", "<!-- AENEAS_REPLACE_COMMENT_BEGIN"],
         ["<!-- AENEAS_REPLACE_COMMENT_END -->", "AENEAS_REPLACE_COMMENT_END -->"],
         ["<!-- AENEAS_REPLACE_UNCOMMENT_BEGIN", "<!-- AENEAS_REPLACE_UNCOMMENT_BEGIN -->"],
-        ["AENEAS_REPLACE_UNCOMMENT_END -->", "<!-- AENEAS_REPLACE_UNCOMMENT_END -->"]
+        ["AENEAS_REPLACE_UNCOMMENT_END -->", "<!-- AENEAS_REPLACE_UNCOMMENT_END -->"],
+        ["// AENEAS_REPLACE_SHOW_ID", "showID = true;"],
+        ["// AENEAS_REPLACE_ALIGN_TEXT", "alignText = \"left\""],
+        ["// AENEAS_REPLACE_CONTINUOUS_PLAY", "continuousPlay = true;"],
+        ["// AENEAS_REPLACE_TIME_FORMAT", "timeFormatHHMMSSmmm = true;"],
     ]
     FINETUNEAS_REPLACE_AUDIOFILEPATH = "// AENEAS_REPLACE_AUDIOFILEPATH"
     FINETUNEAS_REPLACE_FRAGMENTS = "// AENEAS_REPLACE_FRAGMENTS"
+    FINETUNEAS_REPLACE_OUTPUT_FORMAT = "// AENEAS_REPLACE_OUTPUT_FORMAT"
+    FINETUNEAS_REPLACE_SMIL_AUDIOREF = "// AENEAS_REPLACE_SMIL_AUDIOREF"
+    FINETUNEAS_REPLACE_SMIL_PAGEREF = "// AENEAS_REPLACE_SMIL_PAGEREF"
+    FINETUNEAS_ALLOWED_FORMATS = [
+        "csv",
+        "json",
+        "smil",
+        "srt",
+        "ssv",
+        "ttml",
+        "tsv",
+        "txt",
+        "vtt",
+        "xml"
+    ]
     FINETUNEAS_PATH = "res/finetuneas.html"
 
     TAG = "SyncMap"
@@ -136,7 +155,12 @@ class SyncMap(object):
         self._log("Clearing sync map")
         self.fragments = []
 
-    def output_html_for_tuning(self, audio_file_path, output_file_path):
+    def output_html_for_tuning(
+            self,
+            audio_file_path,
+            output_file_path,
+            parameters=None
+    ):
         """
         Output an HTML file for fine tuning the sync map manually.
 
@@ -144,11 +168,15 @@ class SyncMap(object):
         :type  audio_file_path: string (path)
         :param output_file_path: the path to the output file to write
         :type  output_file_path: string (path)
+        :param parameters: additional parameters
+        :type  parameters: dict
 
         .. versionadded:: 1.3.1
         """
         if not gf.file_can_be_written(output_file_path):
             raise IOError("Cannot output HTML file '%s' (wrong permissions?)" % output_file_path)
+        if parameters is None:
+            parameters = {}
         audio_file_path_absolute = os.path.abspath(audio_file_path)
         template_path_absolute = gf.get_rel_path(
             self.FINETUNEAS_PATH,
@@ -166,6 +194,24 @@ class SyncMap(object):
             self.FINETUNEAS_REPLACE_FRAGMENTS,
             "fragments = (%s).fragments;" % self.to_json()
         )
+        if gc.PPN_TASK_OS_FILE_FORMAT in parameters:
+            output_format = parameters[gc.PPN_TASK_OS_FILE_FORMAT]
+            if output_format in self.FINETUNEAS_ALLOWED_FORMATS:
+                template = template.replace(
+                    self.FINETUNEAS_REPLACE_OUTPUT_FORMAT,
+                    "outputFormat = \"%s\";" % output_format
+                )
+                if output_format == "smil":
+                    if gc.PPN_TASK_OS_FILE_SMIL_AUDIO_REF in parameters:
+                        template = template.replace(
+                            self.FINETUNEAS_REPLACE_SMIL_AUDIOREF,
+                            "audioref = \"%s\";" % parameters[gc.PPN_TASK_OS_FILE_SMIL_AUDIO_REF]
+                        )
+                    if gc.PPN_TASK_OS_FILE_SMIL_PAGE_REF in parameters:
+                        template = template.replace(
+                            self.FINETUNEAS_REPLACE_SMIL_PAGEREF,
+                            "pageref = \"%s\";" % parameters[gc.PPN_TASK_OS_FILE_SMIL_PAGE_REF]
+                        )
         codecs.open(output_file_path, "w", "utf-8").write(template)
 
     def read(self, sync_map_format, input_file_path, parameters=None):
