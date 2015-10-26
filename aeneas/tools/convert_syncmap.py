@@ -100,6 +100,7 @@ def main():
                 key, value = args
                 if key in [
                         gc.PPN_SYNCMAP_LANGUAGE,
+                        gc.PPN_TASK_OS_FILE_FORMAT,
                         gc.PPN_TASK_OS_FILE_SMIL_AUDIO_REF,
                         gc.PPN_TASK_OS_FILE_SMIL_PAGE_REF,
                         "input_format",
@@ -127,7 +128,7 @@ def main():
     if output_html:
         try:
             print "[INFO] Writing HTML file %s ..." % (output_file_path)
-            syncmap.output_html_for_tuning(parameters["audio_file_path"], output_file_path)
+            syncmap.output_html_for_tuning(parameters["audio_file_path"], output_file_path, parameters)
             print "[INFO] Writing HTML file %s ... done" % (output_file_path)
         except IOError as exc:
             print "[ERRO] The following error occurred while writing the output HTML file:"

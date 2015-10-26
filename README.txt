@@ -5,7 +5,7 @@ aeneas
 synchronize audio and text.
 
 -  Version: 1.3.1
--  Date: 2015-10-XX
+-  Date: 2015-10-28
 -  Developed by: `ReadBeyond <http://www.readbeyond.it/>`__
 -  Lead Developer: `Alberto Pettarin <http://www.albertopettarin.it/>`__
 -  License: the GNU Affero General Public License Version 3 (AGPL v3)

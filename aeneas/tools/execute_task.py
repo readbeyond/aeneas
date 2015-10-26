@@ -19,6 +19,7 @@ from aeneas.syncmap import SyncMapHeadTailFormat
 from aeneas.task import Task
 from aeneas.textfile import TextFileFormat
 from aeneas.validator import Validator
+import aeneas.globalconstants as gc
 import aeneas.globalfunctions as gf
 
 __author__ = "Alberto Pettarin"
@@ -333,8 +334,12 @@ def run(argv):
 
     if output_html:
         try:
+            parameters = {}
+            parameters[gc.PPN_TASK_OS_FILE_FORMAT] = task.configuration.os_file_format
+            parameters[gc.PPN_TASK_OS_FILE_SMIL_PAGE_REF] = task.configuration.os_file_smil_page_ref
+            parameters[gc.PPN_TASK_OS_FILE_SMIL_AUDIO_REF] = task.configuration.os_file_smil_audio_ref
             print "[INFO] Creating output HTML file..."
-            task.sync_map.output_html_for_tuning(audio_file_path, html_file_path)
+            task.sync_map.output_html_for_tuning(audio_file_path, html_file_path, parameters)
             print "[INFO] Creating output HTML file... done"
             print "[INFO] Created %s" % html_file_path
         except Exception as exc:

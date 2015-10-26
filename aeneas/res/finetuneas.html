@@ -13,7 +13,7 @@
                 min-height:100%;
                 position:absolute;
             }
-            button {
+            button, label, input, select {
                 margin:5px;
             }
             .tg {
@@ -27,8 +27,8 @@
             .text {
                 margin-right:auto;
                 margin-left:auto;
-                font-size:24px;
-                line-height:150%;
+                font-size:22px;
+                line-height:125%;
                 font-family:Tahoma, Geneva, sans-serif;
             }
             .td {
@@ -163,7 +163,7 @@
                 <p class="heading"><b>finetuneas</b></p>
                 <p class="normal"><b>1.</b> Before you start making adjustments, check several fragments at random to be sure that the sync map is mostly correct and it just needs fine tuning. If not, check your <i>aeneas</i> input files and parameters and run <i>aeneas</i> again.</p>
                 <p class="normal"><b>2.</b> To check the begin time of each fragment, click on the corresponding text or timestamp. If necessary, use the <b>+</b> and <b>−</b> buttons to adjust it.</p>
-                <p class="normal"><b>3.</b> When done, you can save the adjusted sync map in JSON, tab separated (TSV), or TXT format. If you need another output format, choose JSON and then use the <i>aeneas.tools.convert_syncmap</i> tool to convert it.</p>
+                <p class="normal"><b>3.</b> When done, you can save the adjusted sync map to file. If the desired format is not available, choose JSON and then use the <i>aeneas.tools.convert_syncmap</i> tool to convert it.</p>
 
                 <!-- BEGIN loadbuttons -->
                 <!-- do not remove the next line -->
@@ -182,7 +182,7 @@
                 <!-- do not remove the next line -->
                 <!-- AENEAS_REPLACE_UNCOMMENT_BEGIN
                 <div id="loadauto">
-                    <button id="buttonAutoLoad">Got it, let's start working!</button>
+                    <button id="buttonAutoLoad">Got it, let's start!</button>
                 </div>
                 AENEAS_REPLACE_UNCOMMENT_END -->
                 <!-- do not remove the line above -->
@@ -207,54 +207,143 @@
             </div>
 
             <div id="advancedcontrols">
-                <button id="buttonOneFragment" style="display:block">Continue: OFF</button>
-                <button id="downloadjson" style="display:block">Save as JSON</button>
-                <button id="downloadtsv" style="display:block">Save as TSV</button>
-                <button id="downloadtxt" style="display:block">Save as TXT</button>
+                <label for="timeStep" style="display:block">Time increment (s):</label>
+                <input id="timeStep" type="number" min="0.010" step="0.010" value="0.100" style="display:block"/> 
+                <label for="buttonShowID" style="display:block">Show ID:</label>
+                <button id="buttonShowID" style="display:block">OFF</button>
+                <label for="alignText" style="display:block">Text alignment:</label>
+                <select name="alignText" id="alignText" style="display:block">
+                    <option value="left">Left</option>
+                    <option value="center" selected="selected">Center</option>
+                    <option value="right">Right</option>
+                    <option value="justify">Justify</option>
+                </select>
+                <hr style="display:block"/>
+                <label for="playbackRate" style="display:block">Playback rate:</label>
+                <input id="playbackRate" type="number" min="0.1" max="4.0" step="0.1" value="1.0" style="display:block"/> 
+                <label for="buttonContinuousPlay">Continuous play:</label>
+                <button id="buttonContinuousPlay" style="display:block">OFF</button>
+                <label for="buttonTimeFormat" style="display:block">Time format:</label>
+                <button id="buttonTimeFormat" style="display:block">DECIMAL</button>
+                <label for="transitionOffset" style="display:block">Transition offset (s):</label>
+                <input id="transitionOffset" type="number" min="0" max="0.400" step="0.010" value="0.100" style="display:block"/> 
+                <hr style="display:block"/>
+                <label for="outputFormat" style="display:block">Format:</label>
+                <select name="outputFormat" id="outputFormat" style="display:block">
+                    <option value="csv">CSV</option>
+                    <option value="json" selected="selected">JSON</option>
+                    <option value="smil">SMIL</option>
+                    <option value="srt">SRT</option>
+                    <option value="ssv">SSV</option>
+                    <option value="ttml">TTML</option>
+                    <option value="tsv">TSV</option>
+                    <option value="txt">TXT</option>
+                    <option value="vtt">VTT</option>
+                    <option value="xml">XML</option>
+                </select>
+                <input id="smilAudioRef" style="display:none" type="text" placeholder="audio_ref"/>
+                <input id="smilPageRef" style="display:none" type="text" placeholder="page_ref"/>
+                <button id="download" style="display:block">Save</button>
             </div>
 
             <div class="footer">
-                <a href="https://github.com/ozdefir/finetuneas">finetuneas v1.0.1</a><br/>© 2015 Firat Özdemir 
+                <a href="https://github.com/ozdefir/finetuneas">finetuneas v1.0.2</a><br/>© 2015 Firat Özdemir 
             </div>
         </div>
         <!-- END container -->
 
 <!-- BEGIN script -->
 <script type="text/javascript">
+//
+//
+// global variables and constants
+//
+//
 var fragments = [];
 var currentIndex = 0;
 var audioElement = document.getElementById("audioplayer");
 var ainfo = "";
 var cinfo = "";
 var url;
-
-var oneFragment = true;
-
-// TODO ALPE surface these controls
-var timeStep = 0.1;
-var transitionTimeout = 0.400;
-var transitionOffset = 0.100;
-
 var COMPLETED = "lightgreen";
 var ACTIVE = "yellow";
 var CLEAR = "";
-
-try {
-    document.getElementById("audioinput").addEventListener("change", buttonLoadAudio, false);
-} catch(e) {
-    // pass
+var TRANSITION_TIMEOUT = 0.400;
+//
+//
+// variables that can be modified by the user at runtime
+//
+//
+// do not remove the following lines starting with AENEAS_REPLACE_
+//
+var timeStep = 0.1;
+// AENEAS_REPLACE_TIME_STEP
+var showID = false;
+// AENEAS_REPLACE_SHOW_ID
+var alignText = "center";
+// AENEAS_REPLACE_ALIGN_TEXT
+var playbackRate = 1.0;
+// AENEAS_REPLACE_PLAYBACK_RATE
+var continuousPlay = false;
+// AENEAS_REPLACE_CONTINUOUS_PLAY
+var timeFormatHHMMSSmmm = false;
+// AENEAS_REPLACE_TIME_FORMAT
+var transitionOffset = 0.100;
+// AENEAS_REPLACE_TRANSITION_OFFSET
+var outputFormat = "json";
+// AENEAS_REPLACE_OUTPUT_FORMAT
+var audioref = "";
+// AENEAS_REPLACE_SMIL_AUDIOREF
+var pageref = "";
+// AENEAS_REPLACE_SMIL_PAGEREF
+//
+// do not remove the lines above starting with AENEAS_REPLACE_
+//
+//
+// BEGIN INIT CODE
+//
+//
+bindEssentialListeners();
+applyDefaults();
+//
+//
+// END INIT CODE
+//
+//
+function bindEssentialListeners() {
+    try {
+        document.getElementById("audioinput").addEventListener("change", buttonLoadAudio, false);
+    } catch(e) {
+        // pass
+    }
+    try {
+        document.getElementById("fileinput").addEventListener("change", buttonLoadJSON, false);
+    } catch(e) {
+        // pass
+    }
+    try {
+        document.getElementById("buttonAutoLoad").addEventListener("click", buttonAutoLoad, false);
+    } catch(e) {
+        // pass
+    }
 }
-try {
-    document.getElementById("fileinput").addEventListener("change", buttonLoadJSON, false);
-} catch(e) {
-    // pass
+function applyDefaults() {
+    try {
+        document.getElementById("timeStep").value = timeStep;
+        setButtonText("buttonShowID", showID, "ON", "OFF");
+        document.getElementById("alignText").value = alignText;
+        document.getElementById("playbackRate").value = playbackRate;
+        setButtonText("buttonContinuousPlay", continuousPlay, "ON", "OFF");
+        setButtonText("buttonTimeFormat", timeFormatHHMMSSmmm, "HH:MM:SS.mmm", "DECIMAL");
+        document.getElementById("transitionOffset").value = transitionOffset;
+        document.getElementById("outputFormat").value = outputFormat;
+        document.getElementById("smilAudioRef").value = audioref;
+        document.getElementById("smilPageRef").value = pageref;
+        changeOutputFormat();
+    } catch(e) {
+        // pass
+    }
 }
-try {
-    document.getElementById("buttonAutoLoad").addEventListener("click", buttonAutoLoad, false);
-} catch(e) {
-    // pass
-}
-
 function buttonAutoLoad() {
     // fake
     var audioFilePath = "file:///tmp/audio.mp3";
@@ -288,7 +377,6 @@ function buttonAutoLoad() {
     prepareTable();
     prepareControls();
 }
-
 function buttonLoadAudio(evt) {
     var audioFile = evt.target.files[0];
     if (audioFile) {
@@ -301,11 +389,9 @@ function buttonLoadAudio(evt) {
         alert("Failed to load the audio file.");
     }
 }
-
 function loadAudio(audioFilePath) {
     audioElement.setAttribute("src", audioFilePath);
 }
-
 function buttonLoadJSON(evt) {
      var jsonFile = evt.target.files[0];
      if (jsonFile) {
@@ -314,7 +400,6 @@ function buttonLoadJSON(evt) {
         alert("Failed to load the JSON file.");
      }
 }
-
 function loadJSON(jsonFile) {
     var reader = new FileReader();
     reader.onload = function(e) { 
@@ -333,10 +418,12 @@ function loadJSON(jsonFile) {
     }
     reader.readAsText(jsonFile);
 }   
-
 function prepareControls() {
     // add event listeners
     for (var i = 0; i < fragments.length; i++) {
+        if (showID) {
+            document.getElementById(getStringID(i, "id")).addEventListener("click", fragmentClick);
+        }
         document.getElementById(getStringID(i, "cell")).addEventListener("click", fragmentClick);
         document.getElementById(getStringID(i, "text")).addEventListener("click", fragmentClick);
         document.getElementById(getStringID(i, "time")).addEventListener("click", fragmentClick);
@@ -344,24 +431,87 @@ function prepareControls() {
         document.getElementById(getStringID(i, "decrease")).addEventListener("click", decreaseClick);
     }
     document.getElementById("stop").addEventListener("click", stopOverlay);
-    document.getElementById("buttonOneFragment").addEventListener("click", changeOneFragment);
-    document.getElementById("downloadjson").addEventListener("click", downloadJsonClick);
-    document.getElementById("downloadtsv").addEventListener("click", downloadTsvClick);
-    document.getElementById("downloadtxt").addEventListener("click", downloadTxtClick);
+    document.getElementById("buttonShowID").addEventListener("click", changeShowID);
+    document.getElementById("alignText").addEventListener("change", changeAlignText);
+    document.getElementById("buttonContinuousPlay").addEventListener("click", changeContinuousPlay);
+    document.getElementById("buttonTimeFormat").addEventListener("click", changeTimeFormat);
+    document.getElementById("timeStep").addEventListener("change", changeTimeStep);
+    document.getElementById("transitionOffset").addEventListener("change", changeTransitionOffset);
+    document.getElementById("playbackRate").addEventListener("change", changePlaybackRate);
+    document.getElementById("outputFormat").addEventListener("change", changeOutputFormat, false);
+    document.getElementById("download").addEventListener("click", downloadClick);
     document.getElementById("advancedcontrols").style.visibility = "visible";
 }
-
-function changeOneFragment() {
-    oneFragment = !oneFragment;
-    if (oneFragment) {
-        text = "Continue: OFF";
-    } else {
-        text = "Continue: ON";
-    }
-    document.getElementById("buttonOneFragment").innerHTML = text;
+function changeShowID() {
+    showID = !showID;
+    setButtonText("buttonShowID", showID, "ON", "OFF");
+    prepareTable();
+    prepareControls();
 }
-
+function changeAlignText() {
+    alignText = document.getElementById("alignText").value;
+    applyAlignment();
+}
+function applyAlignment() {
+    for (var i = 0; i < fragments.length; i++) {
+        document.getElementById(getStringID(i, "cell")).style.textAlign = alignText;
+    }
+}
+function changeOutputFormat() {
+    var outputFormat = document.getElementById("outputFormat").value;
+    var disp = "none";
+    if (outputFormat == "smil") {
+        disp = "block";
+    }
+    document.getElementById("smilAudioRef").style.display = disp;
+    document.getElementById("smilPageRef").style.display = disp;
+}
+function changeTimeStep() {
+    timeStep = parseFloat(document.getElementById("timeStep").value);
+}
+function changeTransitionOffset() {
+    transitionOffset = parseFloat(document.getElementById("transitionOffset").value);
+}
+function changePlaybackRate() {
+    audioElement.playbackRate = parseFloat(document.getElementById("playbackRate").value);
+}
+function changeContinuousPlay() {
+    continuousPlay = !continuousPlay;
+    setButtonText("buttonContinuousPlay", continuousPlay, "ON", "OFF");
+}
+function changeTimeFormat() {
+    timeFormatHHMMSSmmm = !timeFormatHHMMSSmmm;
+    setButtonText("buttonTimeFormat", timeFormatHHMMSSmmm, "HH:MM:SS.mmm", "DECIMAL");
+    updateTime();
+}
+function setButtonText(element, variable, true_text, false_text) {
+    var text = false_text;
+    if (variable) {
+        text = true_text;
+    }
+    document.getElementById(element).innerHTML = text;
+}
+function updateTime(i) {
+    if (i == null) {
+        for (var i = 0; i < fragments.length; i++) {
+            var begin = fragments[i].begin;
+            document.getElementById(getStringID(i, "time")).innerHTML =  formatTime(begin);
+        }
+    } else {
+        var begin = fragments[i].begin;
+        document.getElementById(getStringID(i, "time")).innerHTML =  formatTime(begin);
+    }
+}
+function formatTime(time_value) {
+    if (timeFormatHHMMSSmmm) {
+        return timeHHMMSSmmm(time_value, ".");
+    }
+    return time_value.toFixed(3);
+}
 function getStringID(i, element) {
+    if (element == "id") {
+        return ("id" + i);
+    }
     if (element == "cell") {
         return ("c" + i);
     }
@@ -383,44 +533,51 @@ function getID(idstring) {
     var s = idstring;
     s = s.replace("inc", "");
     s = s.replace("dec", "");
+    s = s.replace("id", "");
     s = s.replace("c", "");
     s = s.replace("t", "");
     s = s.replace("f", "");
     return parseInt(s);
 }
-
 function roundTimeValues() {
     for (var i = 0; i < fragments.length; i++) {
         fragments[i].begin = roundTimeValue(fragments[i].begin);
         fragments[i].end = roundTimeValue(fragments[i].end);
     }
 }
-
 function prepareTable() {
     var rows = [];
     for (var i = 0; i < fragments.length; ++i) {
+        var id = fragments[i].id;
         var text = fragments[i].lines.join("<br/>");
-        var begin = fragments[i].begin.toFixed(2);
+        var begin = fragments[i].begin;
+        var end = fragments[i].end;
         var row = "";
         row += "<tr>";
         row += "<\/tr>";
         row += "<td><\/td>";
+        if (showID) {
+            row += '<td id="' + getStringID(i, "id") + '">' + id + '<\/td>';
+        }
         row += '<td id="' + getStringID(i, "cell") + '"><a class="text" id="' + getStringID(i, "text") + '">' + text + '<\/a><\/td>';
         row += '<td class="edit">';
-        row += '<a class="time" id="' + getStringID(i, "time") + '">' + begin + '<\/a>';
+        row += '<a class="time" id="' + getStringID(i, "time") + '">' + formatTime(begin) + '<\/a>';
         row += '<a class="increase" id="' + getStringID(i, "increase") + '">+<\/a>';
         row += '<a class="decrease" id="' + getStringID(i, "decrease") + '">−<\/a>';
         row += "<\/td>";
         row += "<\/tr>";
         rows[i] = row;
     }
-    document.getElementById("tb").innerHTML = '<col width="300"><col><col width="300"><tbody>' + rows.join("") + "<\/tbody>";
+    var colID = "";
+    if (showID) {
+        colID = '<col width="100">';
+    }
+    document.getElementById("tb").innerHTML = '<col width="250px">' + colID + '<col><col width="300px"><tbody>' + rows.join("") + "<\/tbody>";
+    applyAlignment();
 }
-
 function roundTimeValue(time) {
     return Math.round(time * 1000) / 1000;
 }
-
 function highlight(style) {
     try {
         document.getElementById(getStringID(currentIndex, "cell")).style.backgroundColor = style;
@@ -428,21 +585,17 @@ function highlight(style) {
         // pass 
     }
 }
-
 function fragmentClick(evt) {
     highlight(CLEAR);
     currentIndex = getID(evt.target.id);
     playOverlay(0);
 }
-
 function increaseClick(evt) {
     changeTime(evt, timeStep);
 }
-
 function decreaseClick(evt) {
     changeTime(evt, -timeStep);
 }
-
 function changeTime(evt, step) {
     var i = getID(evt.target.id);
     fragments[i].begin = roundTimeValue(fragments[i].begin + step);
@@ -452,12 +605,11 @@ function changeTime(evt, step) {
     if (i > 0) {
         fragments[i-1].end = fragments[i].begin;
     }
-    document.getElementById(getStringID(i, "time")).innerHTML = fragments[i].begin.toFixed(2);
+    updateTime(i);
     highlight(CLEAR);
     currentIndex = i;
     playOverlay(0);
 }
-
 function downloadData() {
     var aElement = document.createElement("a");
     aElement.style = "display: none";
@@ -470,7 +622,6 @@ function downloadData() {
         aElement.click();
     };
 }
-
 function triggerDownload(data, fileName) {
     setTimeout(function() {
         var df = downloadData();
@@ -478,8 +629,56 @@ function triggerDownload(data, fileName) {
     }, 500);
     window.URL.revokeObjectURL(url);
 }
-
-function downloadJsonClick(){
+function downloadClick() {
+    var outputFormat = document.getElementById("outputFormat").value;
+    var data = null;
+    switch(outputFormat) {
+        case "csv":
+            data = downloadCSV();
+            break;
+        case "json":
+            data = downloadJSON();
+            break;
+        case "smil":
+            data = downloadSMIL();
+            break;
+        case "srt":
+            data = downloadSRT();
+            break;
+        case "ssv":
+            data = downloadSSV();
+            break;
+        case "ttml":
+            data = downloadTTML();
+            break;
+        case "tsv":
+            data = downloadTSV();
+            break;
+        case "txt":
+            data = downloadTXT();
+            break;
+        case "vtt":
+            data = downloadVTT();
+            break;
+        case "xml":
+            data = downloadXML();
+            break;
+        default:
+            data = downloadJSON();
+    }
+    var message = "The modified " + outputFormat.toUpperCase() + " file will be saved in your default Download directory. Please enter a file name:";
+    var suggestedFileName = "tuned." + outputFormat;
+    var fileName = prompt(message, suggestedFileName);
+    triggerDownload(data, fileName);
+}
+function downloadCSV() {
+    var lines = [];
+    for (var i = 0; i < fragments.length; ++i) {
+        lines[i] = fragments[i].id + "," + fragments[i].begin + "," + fragments[i].end + ',"' + fragments[i].lines.join(" ") + '"';
+    };
+    return lines.join("\n");
+}
+function downloadJSON() {
     var jsonData = {};
     jsonData.fragments = fragments;
     // convert the numbers to strings (as in the original JSON)
@@ -489,31 +688,135 @@ function downloadJsonClick(){
         }
         return value;
     }
-    var data = JSON.stringify(jsonData, numberToString, " ");
-    var fileName = prompt("The modified JSON file will be saved in your default Download directory. Please enter a file name:", "tuned.json");
-    triggerDownload(data, fileName); 
+    return JSON.stringify(jsonData, numberToString, " ");
 }
-        
-function downloadTsvClick(){
+function downloadSMIL() {
+    var audioref = document.getElementById("smilAudioRef").value;
+    var pageref = document.getElementById("smilPageRef").value;
+    var lines = [];
+    var j = 0;
+    lines[j++] = '<smil xmlns:epub="http://www.idpf.org/2007/ops" xmlns="http://www.w3.org/ns/SMIL" version="3.0">';
+    lines[j++] = '  <body>';
+    lines[j++] = '    <seq id="s000001" epub:textref="' + pageref + '">';
+    for (var i = 0; i < fragments.length; ++i) {
+        lines[j++] = '      <par id="p' + pad(i+1, 6) + '">';
+        lines[j++] = '        <text src="' + pageref + '#' + fragments[i].id + '"/>';
+        lines[j++] = '        <audio src="' + audioref + '" clipBegin="' + timeSMIL(fragments[i].begin) + '" clipEnd="' + timeSMIL(fragments[i].end)+ '"/>';
+        lines[j++] = '      <\/par>';
+    };
+    lines[j++] = '    <\/seq>';
+    lines[j++] = '  <\/body>';
+    lines[j++] = '<\/smil>';
+    return lines.join("\n");
+}
+function downloadSRT() {
+    var lines = [];
+    var j = 0;
+    for (var i = 0; i < fragments.length; ++i) {
+        lines[j++] = "" + (i+1);
+        lines[j++] = timeSRT(fragments[i].begin) + " --> " + timeSRT(fragments[i].end);
+        var f_lines = fragments[i].lines;
+        for (var k = 0; k < f_lines.length; ++k) {
+            lines[j++] = f_lines[k];
+        }
+        lines[j++] = ""
+    };
+    return lines.join("\n") + "\n";
+}
+function downloadSSV() {
+    var lines = [];
+    for (var i = 0; i < fragments.length; ++i) {
+        lines[i] = fragments[i].begin + " " + fragments[i].end + " " + fragments[i].id + ' "' + fragments[i].lines.join(" ") + '"';
+    };
+    return lines.join("\n");
+}
+function downloadTTML() {
+    var lines = [];
+    var j = 0;
+    lines[j++] = "<?xml version='1.0' encoding='UTF-8'?>";
+    lines[j++] = '<tt xmlns="http://www.w3.org/ns/ttml" xml:lang="">';
+    lines[j++] = '  <body>';
+    lines[j++] = '    <div>';
+    for (var i = 0; i < fragments.length; ++i) {
+        lines[j++] = '      <p xml:id="' + fragments[i].id + '" begin="' + fragments[i].begin + 's" end="' + fragments[i].end + 's">' + fragments[i].lines.join("<br/>") + '<\/p>';
+    };
+    lines[j++] = '    <\/div>';
+    lines[j++] = '  <\/body>';
+    lines[j++] = '<\/tt>';
+    return lines.join("\n");
+}
+function downloadTSV() {
     var lines = [];
     for (var i = 0; i < fragments.length; ++i) {
         lines[i] = fragments[i].begin + "\t" + fragments[i].end + "\t" + fragments[i].id;
     };
-    var data = lines.join("\n");
-    var fileName = prompt("The modified TSV file will be saved in your default Download directory. Please enter a file name:", "tuned.tsv");
-    triggerDownload(data, fileName); 
+    return lines.join("\n");
 }
-
-function downloadTxtClick(){
+function downloadTXT() {
     var lines = [];
     for (var i = 0; i < fragments.length; ++i) {
-        lines[i] = fragments[i].id + " " + fragments[i].begin + " " + fragments[i].end + " " + fragments[i].lines.join(" ");
+        lines[i] = fragments[i].id + " " + fragments[i].begin + " " + fragments[i].end + ' "' + fragments[i].lines.join(" ") + '"';
     };
-    var data = lines.join("\n");
-    var fileName = prompt("The modified TXT file will be saved in your default Download directory. Please enter a file name:", "tuned.txt");
-    triggerDownload(data, fileName); 
+    return lines.join("\n");
 }
-
+function downloadVTT() {
+    var lines = [];
+    var j = 0;
+    lines[j++] = "WEBVTT\n"
+    for (var i = 0; i < fragments.length; ++i) {
+        lines[j++] = "" + (i+1);
+        lines[j++] = timeVTT(fragments[i].begin) + " --> " + timeVTT(fragments[i].end);
+        var f_lines = fragments[i].lines;
+        for (var k = 0; k < f_lines.length; ++k) {
+            lines[j++] = f_lines[k];
+        }
+        lines[j++] = ""
+    };
+    return lines.join("\n") + "\n";
+}
+function downloadXML() {
+    var lines = [];
+    var j = 0;
+    lines[j++] = "<?xml version='1.0' encoding='UTF-8'?>";
+    lines[j++] = '<map>';
+    for (var i = 0; i < fragments.length; ++i) {
+        lines[j++] = '  <fragment id="' + fragments[i].id + '" begin="' + fragments[i].begin + '" end="' + fragments[i].end + '">';
+        var f_lines = fragments[i].lines;
+        for (var k = 0; k < f_lines.length; ++k) {
+            lines[j++] = '    <line>' + f_lines[k] + '<\/line>';
+        }
+        lines[j++] = '  <\/fragment>';
+    };
+    lines[j++] = '<\/map>';
+    return lines.join("\n");
+}
+function pad(num, size) {
+    var s = num + "";
+    while (s.length < size) {
+        s = "0" + s;
+    }
+    return s;
+}
+function timeHHMMSSmmm(time_value, decimal_separator) {
+    var tmp = parseFloat(time_value);
+    var hours = parseInt(Math.floor(tmp / 3600));
+    tmp -= (hours * 3600);
+    var minutes = parseInt(Math.floor(tmp / 60));
+    tmp -= minutes * 60;
+    var seconds = parseInt(Math.floor(tmp));
+    tmp -= seconds;
+    var milliseconds = parseInt(Math.floor(tmp * 1000));
+    return pad(hours, 2) + ":" + pad(minutes, 2) + ":" + pad(seconds, 2) + decimal_separator + pad(milliseconds, 3); 
+}
+function timeSMIL(time_value) { 
+    return timeHHMMSSmmm(time_value, ".");
+}
+function timeSRT(time_value) { 
+    return timeHHMMSSmmm(time_value, ",");
+}
+function timeVTT(time_value) { 
+    return timeHHMMSSmmm(time_value, ".");
+}
 function ticker(cTime){
     
     // TODO ALPE use a global stopwatch object
@@ -522,34 +825,32 @@ function ticker(cTime){
     // to pause exactly at the end of the fragment.
     // Another option is to use temporal dimensions
     // for audio source but Chrome doesn't support it with blobs.
-    // If in the last 400 ms, calculate the time left,
+    // If in the last TRANSITION_TIMEOUT seconds, calculate the time left,
     // and set a corresponding timeout to pause the fragment.
-    if(cTime > fragments[currentIndex].end - transitionTimeout) {
-        // subtract 100 ms to account for the delay introduced by this code
-        var timeLeft = (fragments[currentIndex].end - cTime - transitionOffset) * 1000;
+    if(cTime > fragments[currentIndex].end - TRANSITION_TIMEOUT) {
+        // subtract transitionOffset seconds to account for the delay introduced by this code
+        var timeLeft = (fragments[currentIndex].end - cTime - transitionOffset) * 1000 / audioElement.playbackRate;
         var index = currentIndex;
         setTimeout(function() {
             // do not perform action if the user
             // jumped to another fragment
             if (index == currentIndex) {
-                if (oneFragment) {
+                if (continuousPlay) {
+                    playOverlay(1);
+                } else {
                     highlight(COMPLETED);
                     stopOverlay();
-                } else {
-                    playOverlay(1);
                 }
             }
         }, timeLeft)
     }
     // display current time
-    document.getElementById("audioticker").innerHTML = cTime.toFixed(2);
+    document.getElementById("audioticker").innerHTML = cTime.toFixed(3);
 }
-
 function stopOverlay() {
     audioElement.pause();
     document.getElementById("stop").style.display = "none";
 }
-
 function playOverlay(inc) {
     highlight(CLEAR);
     if (currentIndex + inc < fragments.length) { 
@@ -563,7 +864,6 @@ function playOverlay(inc) {
         stopOverlay();
     }
 }   
-
 </script>
 <!-- END script -->
 
