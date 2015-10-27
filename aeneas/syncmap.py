@@ -178,6 +178,11 @@ class SyncMap(object):
         if parameters is None:
             parameters = {}
         audio_file_path_absolute = os.path.abspath(audio_file_path)
+        if os.name != "posix":
+            # on non-POSIX OSes, change e.g. c:\abc\def into c:/abc/def
+            # the browser will figure it out correctly
+            # TODO is there a better way to do this?
+            audio_file_path_absolute = audio_file_path_absolute.replace("\\", "/")
         template_path_absolute = gf.get_rel_path(
             self.FINETUNEAS_PATH,
             from_path=os.path.dirname(__file__),
