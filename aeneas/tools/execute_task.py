@@ -286,7 +286,7 @@ def run(argv):
             print "[INFO] Downloading audio from '%s' ... done" % youtube_url
         except ImportError:
             print "[ERRO] You need to install Pythom module pafy to download audio from YouTube. Run:"
-            print "[ERRO] $ pip install pafy"
+            print "[ERRO] $ sudo pip install pafy"
             sys.exit(1)
         except Exception as exc:
             print "[ERRO] The following error occurred while downloading audio from YouTube:"

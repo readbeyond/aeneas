@@ -330,7 +330,7 @@ Changelog: [http://www.readbeyond.it/aeneas/docs/changelog.html](http://www.read
 * Audio should match the text: large portions of spurious text or audio might produce a wrong sync map
 * Audio is assumed to be spoken: not suitable/YMMV for song captioning
 * No protection against memory trashing if you feed extremely long audio files
-* On Mac OS X and Windows, audio synthesis might be slow (tens of minutes) if you have thousands of text fragments
+* On Mac OS X and Windows, audio synthesis might be slow if you have thousands of text fragments
 
 ## TODO List
 
@@ -344,6 +344,7 @@ Changelog: [http://www.readbeyond.it/aeneas/docs/changelog.html](http://www.read
 * Better documentation
 * Testing other approaches, like HMM
 * Publishing the package on PyPI
+* Publishing the package on Debian repo
 
 Would you like to see one of the above points done?
 Consider [sponsoring](#supporting) this project!
