@@ -5,7 +5,7 @@ import unittest
 
 from aeneas.ffprobewrapper import FFPROBEUnsupportedFormatError
 from aeneas.ffprobewrapper import FFPROBEWrapper
-import aeneas.tests as at
+import aeneas.globalfunctions as gf
 
 class TestFFPROBEWrapper(unittest.TestCase):
 
@@ -41,7 +41,9 @@ class TestFFPROBEWrapper(unittest.TestCase):
 
     def load(self, input_file_path):
         prober = FFPROBEWrapper()
-        return prober.read_properties(at.get_abs_path(input_file_path))
+        return prober.read_properties(
+            gf.get_abs_path(input_file_path, __file__)
+        )
 
     def test_mp3_properties(self):
         properties = self.load("res/audioformats/p001.mp3")

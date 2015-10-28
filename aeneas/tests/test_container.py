@@ -8,18 +8,16 @@ import unittest
 from aeneas.container import Container
 from aeneas.container import ContainerFormat
 import aeneas.globalfunctions as gf
-import aeneas.tests as at
 
 class TestContainer(unittest.TestCase):
 
-    NOT_EXISTING = at.get_abs_path("not_existing.zip")
-    EMPTY_DIRECTORY = at.get_abs_path("res/container/empty_dir")
+    NOT_EXISTING = gf.get_abs_path("not_existing.zip", __file__)
     EMPTY_FILES = [
-        at.get_abs_path("res/container/empty_file.epub"),
-        at.get_abs_path("res/container/empty_file.tar"),
-        at.get_abs_path("res/container/empty_file.tar.bz2"),
-        at.get_abs_path("res/container/empty_file.tar.gz"),
-        at.get_abs_path("res/container/empty_file.zip")
+        gf.get_abs_path("res/container/empty_file.epub", __file__),
+        gf.get_abs_path("res/container/empty_file.tar", __file__),
+        gf.get_abs_path("res/container/empty_file.tar.bz2", __file__),
+        gf.get_abs_path("res/container/empty_file.tar.gz", __file__),
+        gf.get_abs_path("res/container/empty_file.zip", __file__)
     ]
 
     EXPECTED_ENTRIES = [
@@ -34,37 +32,37 @@ class TestContainer(unittest.TestCase):
 
     FILES = {
         "epub": {
-            "path": at.get_abs_path("res/container/job.epub"),
+            "path": gf.get_abs_path("res/container/job.epub", __file__),
             "format": ContainerFormat.EPUB,
             "config_size": 599
          },
         "tar": {
-            "path": at.get_abs_path("res/container/job.tar"),
+            "path": gf.get_abs_path("res/container/job.tar", __file__),
             "format": ContainerFormat.TAR,
             "config_size": 599
          },
         "tar_bz2": {
-            "path": at.get_abs_path("res/container/job.tar.bz2"),
+            "path": gf.get_abs_path("res/container/job.tar.bz2", __file__),
             "format": ContainerFormat.TAR_BZ2,
             "config_size": 599
          },
         "tar": {
-            "path": at.get_abs_path("res/container/job.tar.gz"),
+            "path": gf.get_abs_path("res/container/job.tar.gz", __file__),
             "format": ContainerFormat.TAR_GZ,
             "config_size": 599
          },
         "unpacked": {
-            "path": at.get_abs_path("res/container/job"),
+            "path": gf.get_abs_path("res/container/job", __file__),
             "format": ContainerFormat.UNPACKED,
             "config_size": 599
          },
         "zip": {
-            "path": at.get_abs_path("res/container/job.zip"),
+            "path": gf.get_abs_path("res/container/job.zip", __file__),
             "format": ContainerFormat.ZIP,
             "config_size": 599
          },
         "zip_utf8": {
-            "path": at.get_abs_path("res/container/job_utf8.zip"),
+            "path": gf.get_abs_path("res/container/job_utf8.zip", __file__),
             "format": ContainerFormat.ZIP,
             "config_size": 633
          },
@@ -76,7 +74,7 @@ class TestContainer(unittest.TestCase):
 
     def test_invalid_container_format(self):
         with self.assertRaises(ValueError):
-            con = Container(file_path=self.EMPTY_DIRECTORY, container_format="foo")
+            con = Container(file_path=self.FILES["zip"]["path"], container_format="foo")
 
     def test_constructor(self):
         for key in self.FILES:
@@ -103,8 +101,10 @@ class TestContainer(unittest.TestCase):
             self.assertTrue(cont.exists())
 
     def test_exists_empty_directory(self):
-        cont = Container(self.EMPTY_DIRECTORY)
+        output_path = tempfile.mkdtemp()
+        cont = Container(output_path)
         self.assertTrue(cont.exists())
+        gf.delete_directory(output_path)
 
     def test_entries_file_not_existing(self):
         cont = Container(self.NOT_EXISTING)
@@ -118,8 +118,10 @@ class TestContainer(unittest.TestCase):
                 self.assertEqual(len(cont.entries()), 0)
 
     def test_entries_empty_directory(self):
-        cont = Container(self.EMPTY_DIRECTORY)
+        output_path = tempfile.mkdtemp()
+        cont = Container(output_path)
         self.assertEqual(len(cont.entries()), 0)
+        gf.delete_directory(output_path)
 
     def test_entries(self):
         for key in self.FILES:
@@ -149,8 +151,10 @@ class TestContainer(unittest.TestCase):
                 self.assertTrue(cont.is_safe)
 
     def test_is_safe_empty_directory(self):
-        cont = Container(self.EMPTY_DIRECTORY)
+        output_path = tempfile.mkdtemp()
+        cont = Container(output_path)
         self.assertTrue(cont.is_safe)
+        gf.delete_directory(output_path)
 
     def test_is_safe(self):
         for key in self.FILES:
@@ -194,8 +198,10 @@ class TestContainer(unittest.TestCase):
                 self.assertEqual(cont.read_entry(self.EXPECTED_ENTRIES[0]), None)
 
     def test_read_entry_empty_directory(self):
-        cont = Container(self.EMPTY_DIRECTORY)
+        output_path = tempfile.mkdtemp()
+        cont = Container(output_path)
         self.assertEqual(cont.read_entry(self.EXPECTED_ENTRIES[0]), None)
+        gf.delete_directory(output_path)
 
     def test_read_entry_existing(self):
         entry = "config.txt"
@@ -218,8 +224,10 @@ class TestContainer(unittest.TestCase):
                 self.assertEqual(cont.find_entry(self.EXPECTED_ENTRIES[0]), None)
 
     def test_find_entry_empty_directory(self):
-        cont = Container(self.EMPTY_DIRECTORY)
+        output_path = tempfile.mkdtemp()
+        cont = Container(output_path)
         self.assertEqual(cont.find_entry(self.EXPECTED_ENTRIES[0]), None)
+        gf.delete_directory(output_path)
 
     def test_find_entry_existing(self):
         entry = "config.txt"

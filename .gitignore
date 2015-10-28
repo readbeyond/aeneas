@@ -3,7 +3,7 @@
 *.pyo
 *.swp
 *.so
-MANIFEST
+aeneas.egg-info
 aeneas/build
 bak
 build
@@ -14,6 +14,7 @@ tmp
 # service scripts
 zzz_*.py
 zzz_*.sh
+zzz_long_tests
 
 # Eclipse/PyDev
 .project

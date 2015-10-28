@@ -19,7 +19,7 @@ __copyright__ = """
     Copyright 2015,      Alberto Pettarin (www.albertopettarin.it)
     """
 __license__ = "GNU AGPL 3"
-__version__ = "1.3.0"
+__version__ = "1.3.1"
 __email__ = "aeneas@readbeyond.it"
 __status__ = "Production"
 
@@ -40,14 +40,17 @@ def usage():
     print "Parameters:"
     print "  -v                : verbose output"
     print "  class_regex=REGEX : extract text from elements with class attribute matching REGEX"
-    print "  id_regex=REGEX    : extract text from elements with id attribute matching REGEX"
+    print "  id_regex=REGEX    : extract text from elements with id attribute matching REGEX (unparsed)"
+    print "  id_regex=REGEX    : use REGEX for text id attributes (subtitles, plain)"
     print "  sort=ALGORITHM    : sort the matched element id attributes using ALGORITHM (lexicographic, numeric, unsorted)"
     print ""
     print "Examples:"
     print "  $ python -m %s 'From|fairest|creatures|we|desire|increase' list" % NAME
     print "  $ python -m %s %s parsed" % (NAME, TEXT_FILE_PARSED)
     print "  $ python -m %s %s plain" % (NAME, TEXT_FILE_PLAIN)
+    print "  $ python -m %s %s plain id_regex=Word%%06d" % (NAME, TEXT_FILE_PLAIN)
     print "  $ python -m %s %s subtitles" % (NAME, TEXT_FILE_SUBTITLES)
+    print "  $ python -m %s %s subtitles id_regex=Sub%%03d" % (NAME, TEXT_FILE_SUBTITLES)
     print "  $ python -m %s %s unparsed id_regex=f[0-9]*" % (NAME, TEXT_FILE_UNPARSED)
     print "  $ python -m %s %s unparsed class_regex=ra   sort=unsorted" % (NAME, TEXT_FILE_UNPARSED)
     print "  $ python -m %s %s unparsed id_regex=f[0-9]* sort=numeric" % (NAME, TEXT_FILE_UNPARSED)
@@ -74,6 +77,7 @@ def main():
                 key, value = args
                 if key == "id_regex":
                     parameters[gc.PPN_JOB_IS_TEXT_UNPARSED_ID_REGEX] = value
+                    parameters[gc.PPN_TASK_OS_FILE_ID_REGEX] = value
                 if key == "class_regex":
                     parameters[gc.PPN_JOB_IS_TEXT_UNPARSED_CLASS_REGEX] = value
                 if key == "sort":

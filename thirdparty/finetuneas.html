@@ -1,0 +1,871 @@
+<!DOCTYPE HTML>
+<html>
+    <head>
+        <title>finetuneas, an HTML interface for fine tuning aeneas sync maps</title>
+        <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
+        <style>
+            html, body {
+                margin:0;
+                min-height:100%;
+            }
+            #container {
+                text-align:center;
+                min-height:100%;
+                position:absolute;
+            }
+            button, label, input, select {
+                margin:5px;
+            }
+            .tg {
+                table-layout:fixed;
+                width:100%;
+                border-spacing:0;
+                position:relative;
+                direction:ltr;
+                margin:100px 0;
+            }
+            .text {
+                margin-right:auto;
+                margin-left:auto;
+                font-size:22px;
+                line-height:125%;
+                font-family:Tahoma, Geneva, sans-serif;
+            }
+            .td {
+                vertical-align:middle;
+            }
+            .edit {
+                text-align:right;
+            }
+            .time, .increase, .decrease {
+                opacity:0.6;
+                position:relative;
+                margin:5px;
+                font-size:140%;
+                line-height:110%;
+                cursor:pointer;
+                font-weight:900;
+                border-style:solid;
+                border-color:#999;
+                border-width:1px 3px;
+                background-color:#333;
+                color:#fff;
+            }
+            .time {
+                padding:2px 5px 0px 5px;
+                margin-right:50px;
+            }
+            .increase {
+                padding:2px 8px 0px 8px;
+            }
+            .decrease {
+                padding:0px 8px 2px 8px;
+                bottom:2px;
+                margin-right:15px;
+            }
+            .increase, .decrease, .time, #stop {
+                -webkit-touch-callout:none;
+                -webkit-user-select:none;
+                -khtml-user-select:none;
+                -moz-user-select:none;
+                -ms-user-select:none;
+                user-select:none;
+            }
+            a:hover {
+                opacity:1;
+            }
+            td {
+                text-align:center;
+                height:80px;
+            }
+            #advancedcontrols{
+                position:fixed;
+                z-index:10;
+                bottom:30px;
+                left:25px;
+                text-align:left;
+                visibility:hidden;
+            }
+            #fileinput, #audioinput {
+                position:relative;
+                bottom:5px;
+            }
+            #step1, #step2, #fileinfo {
+                text-align:center;
+                margin:20px;
+                font-size:24px;
+                font-weight:900;
+            }
+            #directions {
+                margin:50px auto 150px auto;
+                font-size:24px;
+                max-width:700px;
+                border:1px solid black;
+                padding:20px;
+            }
+            .normal {
+                line-height:150%;
+                font-size:20px;
+                text-align:left;
+                margin:15px 50px;
+            }
+            .note {
+                font-size:16px;
+                margin:15px 80px;
+            }
+            #audiocontrols {
+                position:fixed;
+                z-index:10;
+                text-align:right;
+                top:30px;
+                left:25px;
+                display:none;
+                background-color:#fff;
+            }
+            #audioticker {
+                color:dimgrey;
+                font-size:14px;
+            }
+            #stop {
+                font-size:10px;
+                position:relative;
+                bottom:2px;
+                opacity:0.6;
+                padding:0 6px 3px 6px;
+                margin:2px;
+                cursor:pointer;
+                background-color:#333;
+                color:#fff;
+                font-weight:900;
+                font-family:Tahoma, Geneva, sans-serif;
+            }
+            #stop:hover {
+                opacity:1;
+            }
+            .footer {
+                font-size:12px;
+                text-align:center;
+                position:absolute;
+                bottom:10px;
+                left:0;
+                right:0;
+            }
+            .footer a {
+                color:#555;
+            }
+        </style>
+    </head>
+    <body>
+        <!-- BEGIN container -->
+        <div id="container">
+            <!-- BEGIN directions -->
+            <div id="directions">
+                <p class="heading"><b>finetuneas</b></p>
+                <p class="normal"><b>1.</b> Before you start making adjustments, check several fragments at random to be sure that the sync map is mostly correct and it just needs fine tuning. If not, check your <i>aeneas</i> input files and parameters and run <i>aeneas</i> again.</p>
+                <p class="normal"><b>2.</b> To check the begin time of each fragment, click on the corresponding text or timestamp. If necessary, use the <b>+</b> and <b>−</b> buttons to adjust it.</p>
+                <p class="normal"><b>3.</b> When done, you can save the adjusted sync map to file. If the desired format is not available, choose JSON and then use the <i>aeneas.tools.convert_syncmap</i> tool to convert it.</p>
+
+                <!-- BEGIN loadbuttons -->
+                <!-- do not remove the next line -->
+                <!-- AENEAS_REPLACE_COMMENT_BEGIN -->
+                <div id="loadbuttons">
+                    <p class="normal"><b>4.</b> To start working, select your audio and JSON files:</p>
+                    <div id="step1">Audio file: <input type="file" id="audioinput" accept="audio/*" autocomplete="off"/></div>
+                    <div id="fileinfo"></div>
+                    <div id="step2">JSON file: <input type="file" id="fileinput" accept=".json" autocomplete="off"/></div>
+                </div>
+                <!-- AENEAS_REPLACE_COMMENT_END -->
+                <!-- do not remove the line above -->
+                <!-- END loadbuttons -->
+
+                <!-- BEGIN loadauto -->
+                <!-- do not remove the next line -->
+                <!-- AENEAS_REPLACE_UNCOMMENT_BEGIN
+                <div id="loadauto">
+                    <button id="buttonAutoLoad">Got it, let's start!</button>
+                </div>
+                AENEAS_REPLACE_UNCOMMENT_END -->
+                <!-- do not remove the line above -->
+                <!-- END loadauto -->
+
+            </div>
+            <!-- END directions -->
+
+            <!-- BEGIN player -->
+            <div id="player"> 
+                <audio id="audioplayer" src="" ontimeupdate="ticker(this.currentTime);"></audio>
+            </div>
+            <!-- END player -->
+
+            <div id="audiocontrols" >
+                <span id="audioticker"></span>
+                <span id="playpause"><a id="stop">ıı</a></span>
+            </div>
+
+            <div id="fragments">
+                <table id="tb" class="tg"></table>
+            </div>
+
+            <div id="advancedcontrols">
+                <label for="timeStep" style="display:block">Time increment (s):</label>
+                <input id="timeStep" type="number" min="0.010" step="0.010" value="0.100" style="display:block"/> 
+                <label for="buttonShowID" style="display:block">Show ID:</label>
+                <button id="buttonShowID" style="display:block">OFF</button>
+                <label for="alignText" style="display:block">Text alignment:</label>
+                <select name="alignText" id="alignText" style="display:block">
+                    <option value="left">Left</option>
+                    <option value="center" selected="selected">Center</option>
+                    <option value="right">Right</option>
+                    <option value="justify">Justify</option>
+                </select>
+                <hr style="display:block"/>
+                <label for="playbackRate" style="display:block">Playback rate:</label>
+                <input id="playbackRate" type="number" min="0.1" max="4.0" step="0.1" value="1.0" style="display:block"/> 
+                <label for="buttonContinuousPlay">Continuous play:</label>
+                <button id="buttonContinuousPlay" style="display:block">OFF</button>
+                <label for="buttonTimeFormat" style="display:block">Time format:</label>
+                <button id="buttonTimeFormat" style="display:block">DECIMAL</button>
+                <label for="transitionOffset" style="display:block">Transition offset (s):</label>
+                <input id="transitionOffset" type="number" min="0" max="0.400" step="0.010" value="0.100" style="display:block"/> 
+                <hr style="display:block"/>
+                <label for="outputFormat" style="display:block">Format:</label>
+                <select name="outputFormat" id="outputFormat" style="display:block">
+                    <option value="csv">CSV</option>
+                    <option value="json" selected="selected">JSON</option>
+                    <option value="smil">SMIL</option>
+                    <option value="srt">SRT</option>
+                    <option value="ssv">SSV</option>
+                    <option value="ttml">TTML</option>
+                    <option value="tsv">TSV</option>
+                    <option value="txt">TXT</option>
+                    <option value="vtt">VTT</option>
+                    <option value="xml">XML</option>
+                </select>
+                <input id="smilAudioRef" style="display:none" type="text" placeholder="audio_ref"/>
+                <input id="smilPageRef" style="display:none" type="text" placeholder="page_ref"/>
+                <button id="download" style="display:block">Save</button>
+            </div>
+
+            <div class="footer">
+                <a href="https://github.com/ozdefir/finetuneas">finetuneas v1.0.2</a><br/>© 2015 Firat Özdemir 
+            </div>
+        </div>
+        <!-- END container -->
+
+<!-- BEGIN script -->
+<script type="text/javascript">
+//
+//
+// global variables and constants
+//
+//
+var fragments = [];
+var currentIndex = 0;
+var audioElement = document.getElementById("audioplayer");
+var ainfo = "";
+var cinfo = "";
+var url;
+var COMPLETED = "lightgreen";
+var ACTIVE = "yellow";
+var CLEAR = "";
+var TRANSITION_TIMEOUT = 0.400;
+//
+//
+// variables that can be modified by the user at runtime
+//
+//
+// do not remove the following lines starting with AENEAS_REPLACE_
+//
+var timeStep = 0.1;
+// AENEAS_REPLACE_TIME_STEP
+var showID = false;
+// AENEAS_REPLACE_SHOW_ID
+var alignText = "center";
+// AENEAS_REPLACE_ALIGN_TEXT
+var playbackRate = 1.0;
+// AENEAS_REPLACE_PLAYBACK_RATE
+var continuousPlay = false;
+// AENEAS_REPLACE_CONTINUOUS_PLAY
+var timeFormatHHMMSSmmm = false;
+// AENEAS_REPLACE_TIME_FORMAT
+var transitionOffset = 0.100;
+// AENEAS_REPLACE_TRANSITION_OFFSET
+var outputFormat = "json";
+// AENEAS_REPLACE_OUTPUT_FORMAT
+var audioref = "";
+// AENEAS_REPLACE_SMIL_AUDIOREF
+var pageref = "";
+// AENEAS_REPLACE_SMIL_PAGEREF
+//
+// do not remove the lines above starting with AENEAS_REPLACE_
+//
+//
+// BEGIN INIT CODE
+//
+//
+bindEssentialListeners();
+applyDefaults();
+//
+//
+// END INIT CODE
+//
+//
+function bindEssentialListeners() {
+    try {
+        document.getElementById("audioinput").addEventListener("change", buttonLoadAudio, false);
+    } catch(e) {
+        // pass
+    }
+    try {
+        document.getElementById("fileinput").addEventListener("change", buttonLoadJSON, false);
+    } catch(e) {
+        // pass
+    }
+    try {
+        document.getElementById("buttonAutoLoad").addEventListener("click", buttonAutoLoad, false);
+    } catch(e) {
+        // pass
+    }
+}
+function applyDefaults() {
+    try {
+        document.getElementById("timeStep").value = timeStep;
+        setButtonText("buttonShowID", showID, "ON", "OFF");
+        document.getElementById("alignText").value = alignText;
+        document.getElementById("playbackRate").value = playbackRate;
+        setButtonText("buttonContinuousPlay", continuousPlay, "ON", "OFF");
+        setButtonText("buttonTimeFormat", timeFormatHHMMSSmmm, "HH:MM:SS.mmm", "DECIMAL");
+        document.getElementById("transitionOffset").value = transitionOffset;
+        document.getElementById("outputFormat").value = outputFormat;
+        document.getElementById("smilAudioRef").value = audioref;
+        document.getElementById("smilPageRef").value = pageref;
+        changeOutputFormat();
+    } catch(e) {
+        // pass
+    }
+}
+function buttonAutoLoad() {
+    // fake
+    var audioFilePath = "file:///tmp/audio.mp3";
+    // do not remove the next line
+    // AENEAS_REPLACE_AUDIOFILEPATH
+    // do not remove the line above
+    loadAudio(audioFilePath);
+   
+    // fake
+    fragments = [
+      {"begin": "0.000",  "end": "2.680",  "id": "f000001", "language": "en", "lines": ["1"]}, 
+      {"begin": "2.680",  "end": "5.880",  "id": "f000002", "language": "en", "lines": ["From fairest creatures we desire increase,"]}, 
+      {"begin": "5.880",  "end": "9.240",  "id": "f000003", "language": "en", "lines": ["That thereby beauty's rose might never die,"]}, 
+      {"begin": "9.240",  "end": "11.760", "id": "f000004", "language": "en", "lines": ["But as the riper should by time decease,"]},
+      {"begin": "11.760", "end": "14.440", "id": "f000005", "language": "en", "lines": ["His tender heir might bear his memory:"]},
+      {"begin": "14.440", "end": "18.560", "id": "f000006", "language": "en", "lines": ["But thou contracted to thine own bright eyes,"]},
+      {"begin": "18.560", "end": "22.280", "id": "f000007", "language": "en", "lines": ["Feed'st thy light's flame with self-substantial fuel,"]},
+      {"begin": "22.280", "end": "25.480", "id": "f000008", "language": "en", "lines": ["Making a famine where abundance lies,"]},
+      {"begin": "25.480", "end": "31.200", "id": "f000009", "language": "en", "lines": ["Thy self thy foe, to thy sweet self too cruel:"]},
+      {"begin": "31.200", "end": "34.400", "id": "f000010", "language": "en", "lines": ["Thou that art now the world's fresh ornament,"]},
+      {"begin": "34.400", "end": "36.960", "id": "f000011", "language": "en", "lines": ["And only herald to the gaudy spring,"]},
+      {"begin": "36.960", "end": "40.640", "id": "f000012", "language": "en", "lines": ["Within thine own bud buriest thy content,"]},
+      {"begin": "40.640", "end": "43.640", "id": "f000013", "language": "en", "lines": ["And tender churl mak'st waste in niggarding:"]},
+      {"begin": "43.640", "end": "48.120", "id": "f000014", "language": "en", "lines": ["Pity the world, or else this glutton be,"]},
+      {"begin": "48.120", "end": "53.240", "id": "f000015", "language": "en", "lines": ["To eat the world's due, by the grave and thee."]}
+    ];
+    // do not remove the next line
+    // AENEAS_REPLACE_FRAGMENTS
+    // do not remove the line above
+    roundTimeValues();
+    prepareTable();
+    prepareControls();
+}
+function buttonLoadAudio(evt) {
+    var audioFile = evt.target.files[0];
+    if (audioFile) {
+        var audioFilePath = URL.createObjectURL(audioFile);
+        loadAudio(audioFilePath);
+        ainfo = "[Audio file: \"" + audioFile.name + "\"]";
+        document.getElementById("fileinfo").innerHTML = ainfo + " " + cinfo;
+        document.getElementById("step1").style.display = "none";
+    } else {
+        alert("Failed to load the audio file.");
+    }
+}
+function loadAudio(audioFilePath) {
+    audioElement.setAttribute("src", audioFilePath);
+}
+function buttonLoadJSON(evt) {
+     var jsonFile = evt.target.files[0];
+     if (jsonFile) {
+        loadJSON(jsonFile);
+     } else {
+        alert("Failed to load the JSON file.");
+     }
+}
+function loadJSON(jsonFile) {
+    var reader = new FileReader();
+    reader.onload = function(e) { 
+        try {
+            fragments = JSON.parse(e.target.result).fragments;
+        } catch (e) {
+            alert("Unable to parse the given JSON file.");
+            return;
+        }
+        roundTimeValues();
+        prepareTable();
+        prepareControls();
+        cinfo = "[JSON file: \"" + jsonFile.name + "\"]";
+        document.getElementById("step2").style.display = "none";
+        document.getElementById("fileinfo").innerHTML = ainfo + " " + cinfo;
+    }
+    reader.readAsText(jsonFile);
+}   
+function prepareControls() {
+    // add event listeners
+    for (var i = 0; i < fragments.length; i++) {
+        if (showID) {
+            document.getElementById(getStringID(i, "id")).addEventListener("click", fragmentClick);
+        }
+        document.getElementById(getStringID(i, "cell")).addEventListener("click", fragmentClick);
+        document.getElementById(getStringID(i, "text")).addEventListener("click", fragmentClick);
+        document.getElementById(getStringID(i, "time")).addEventListener("click", fragmentClick);
+        document.getElementById(getStringID(i, "increase")).addEventListener("click", increaseClick);
+        document.getElementById(getStringID(i, "decrease")).addEventListener("click", decreaseClick);
+    }
+    document.getElementById("stop").addEventListener("click", stopOverlay);
+    document.getElementById("buttonShowID").addEventListener("click", changeShowID);
+    document.getElementById("alignText").addEventListener("change", changeAlignText);
+    document.getElementById("buttonContinuousPlay").addEventListener("click", changeContinuousPlay);
+    document.getElementById("buttonTimeFormat").addEventListener("click", changeTimeFormat);
+    document.getElementById("timeStep").addEventListener("change", changeTimeStep);
+    document.getElementById("transitionOffset").addEventListener("change", changeTransitionOffset);
+    document.getElementById("playbackRate").addEventListener("change", changePlaybackRate);
+    document.getElementById("outputFormat").addEventListener("change", changeOutputFormat, false);
+    document.getElementById("download").addEventListener("click", downloadClick);
+    document.getElementById("advancedcontrols").style.visibility = "visible";
+}
+function changeShowID() {
+    showID = !showID;
+    setButtonText("buttonShowID", showID, "ON", "OFF");
+    prepareTable();
+    prepareControls();
+}
+function changeAlignText() {
+    alignText = document.getElementById("alignText").value;
+    applyAlignment();
+}
+function applyAlignment() {
+    for (var i = 0; i < fragments.length; i++) {
+        document.getElementById(getStringID(i, "cell")).style.textAlign = alignText;
+    }
+}
+function changeOutputFormat() {
+    var outputFormat = document.getElementById("outputFormat").value;
+    var disp = "none";
+    if (outputFormat == "smil") {
+        disp = "block";
+    }
+    document.getElementById("smilAudioRef").style.display = disp;
+    document.getElementById("smilPageRef").style.display = disp;
+}
+function changeTimeStep() {
+    timeStep = parseFloat(document.getElementById("timeStep").value);
+}
+function changeTransitionOffset() {
+    transitionOffset = parseFloat(document.getElementById("transitionOffset").value);
+}
+function changePlaybackRate() {
+    audioElement.playbackRate = parseFloat(document.getElementById("playbackRate").value);
+}
+function changeContinuousPlay() {
+    continuousPlay = !continuousPlay;
+    setButtonText("buttonContinuousPlay", continuousPlay, "ON", "OFF");
+}
+function changeTimeFormat() {
+    timeFormatHHMMSSmmm = !timeFormatHHMMSSmmm;
+    setButtonText("buttonTimeFormat", timeFormatHHMMSSmmm, "HH:MM:SS.mmm", "DECIMAL");
+    updateTime();
+}
+function setButtonText(element, variable, true_text, false_text) {
+    var text = false_text;
+    if (variable) {
+        text = true_text;
+    }
+    document.getElementById(element).innerHTML = text;
+}
+function updateTime(i) {
+    if (i == null) {
+        for (var i = 0; i < fragments.length; i++) {
+            var begin = fragments[i].begin;
+            document.getElementById(getStringID(i, "time")).innerHTML =  formatTime(begin);
+        }
+    } else {
+        var begin = fragments[i].begin;
+        document.getElementById(getStringID(i, "time")).innerHTML =  formatTime(begin);
+    }
+}
+function formatTime(time_value) {
+    if (timeFormatHHMMSSmmm) {
+        return timeHHMMSSmmm(time_value, ".");
+    }
+    return time_value.toFixed(3);
+}
+function getStringID(i, element) {
+    if (element == "id") {
+        return ("id" + i);
+    }
+    if (element == "cell") {
+        return ("c" + i);
+    }
+    if (element == "text") {
+        return ("f" + i);
+    }
+    if (element == "time") {
+        return ("t" + i);
+    }
+    if (element == "increase") {
+        return ("t" + i + "inc");
+    }
+    if (element == "decrease") {
+        return ("t" + i + "dec");
+    }
+    return ("" + i);
+}
+function getID(idstring) {
+    var s = idstring;
+    s = s.replace("inc", "");
+    s = s.replace("dec", "");
+    s = s.replace("id", "");
+    s = s.replace("c", "");
+    s = s.replace("t", "");
+    s = s.replace("f", "");
+    return parseInt(s);
+}
+function roundTimeValues() {
+    for (var i = 0; i < fragments.length; i++) {
+        fragments[i].begin = roundTimeValue(fragments[i].begin);
+        fragments[i].end = roundTimeValue(fragments[i].end);
+    }
+}
+function prepareTable() {
+    var rows = [];
+    for (var i = 0; i < fragments.length; ++i) {
+        var id = fragments[i].id;
+        var text = fragments[i].lines.join("<br/>");
+        var begin = fragments[i].begin;
+        var end = fragments[i].end;
+        var row = "";
+        row += "<tr>";
+        row += "<\/tr>";
+        row += "<td><\/td>";
+        if (showID) {
+            row += '<td id="' + getStringID(i, "id") + '">' + id + '<\/td>';
+        }
+        row += '<td id="' + getStringID(i, "cell") + '"><a class="text" id="' + getStringID(i, "text") + '">' + text + '<\/a><\/td>';
+        row += '<td class="edit">';
+        row += '<a class="time" id="' + getStringID(i, "time") + '">' + formatTime(begin) + '<\/a>';
+        row += '<a class="increase" id="' + getStringID(i, "increase") + '">+<\/a>';
+        row += '<a class="decrease" id="' + getStringID(i, "decrease") + '">−<\/a>';
+        row += "<\/td>";
+        row += "<\/tr>";
+        rows[i] = row;
+    }
+    var colID = "";
+    if (showID) {
+        colID = '<col width="100">';
+    }
+    document.getElementById("tb").innerHTML = '<col width="250px">' + colID + '<col><col width="300px"><tbody>' + rows.join("") + "<\/tbody>";
+    applyAlignment();
+}
+function roundTimeValue(time) {
+    return Math.round(time * 1000) / 1000;
+}
+function highlight(style) {
+    try {
+        document.getElementById(getStringID(currentIndex, "cell")).style.backgroundColor = style;
+    } catch (e) {
+        // pass 
+    }
+}
+function fragmentClick(evt) {
+    highlight(CLEAR);
+    currentIndex = getID(evt.target.id);
+    playOverlay(0);
+}
+function increaseClick(evt) {
+    changeTime(evt, timeStep);
+}
+function decreaseClick(evt) {
+    changeTime(evt, -timeStep);
+}
+function changeTime(evt, step) {
+    var i = getID(evt.target.id);
+    fragments[i].begin = roundTimeValue(fragments[i].begin + step);
+    if (fragments[i].begin < 0) {
+        fragments[i].begin = 0.00;
+    }
+    if (i > 0) {
+        fragments[i-1].end = fragments[i].begin;
+    }
+    updateTime(i);
+    highlight(CLEAR);
+    currentIndex = i;
+    playOverlay(0);
+}
+function downloadData() {
+    var aElement = document.createElement("a");
+    aElement.style = "display: none";
+    document.body.appendChild(aElement);
+    return function (data, fileName) {
+        blob = new Blob([data], { type: "octet/stream" }),
+        url = window.URL.createObjectURL(blob);
+        aElement.href = url;
+        aElement.download = fileName;
+        aElement.click();
+    };
+}
+function triggerDownload(data, fileName) {
+    setTimeout(function() {
+        var df = downloadData();
+        df(data, fileName);
+    }, 500);
+    window.URL.revokeObjectURL(url);
+}
+function downloadClick() {
+    var outputFormat = document.getElementById("outputFormat").value;
+    var data = null;
+    switch(outputFormat) {
+        case "csv":
+            data = downloadCSV();
+            break;
+        case "json":
+            data = downloadJSON();
+            break;
+        case "smil":
+            data = downloadSMIL();
+            break;
+        case "srt":
+            data = downloadSRT();
+            break;
+        case "ssv":
+            data = downloadSSV();
+            break;
+        case "ttml":
+            data = downloadTTML();
+            break;
+        case "tsv":
+            data = downloadTSV();
+            break;
+        case "txt":
+            data = downloadTXT();
+            break;
+        case "vtt":
+            data = downloadVTT();
+            break;
+        case "xml":
+            data = downloadXML();
+            break;
+        default:
+            data = downloadJSON();
+    }
+    var message = "The modified " + outputFormat.toUpperCase() + " file will be saved in your default Download directory. Please enter a file name:";
+    var suggestedFileName = "tuned." + outputFormat;
+    var fileName = prompt(message, suggestedFileName);
+    triggerDownload(data, fileName);
+}
+function downloadCSV() {
+    var lines = [];
+    for (var i = 0; i < fragments.length; ++i) {
+        lines[i] = fragments[i].id + "," + fragments[i].begin + "," + fragments[i].end + ',"' + fragments[i].lines.join(" ") + '"';
+    };
+    return lines.join("\n");
+}
+function downloadJSON() {
+    var jsonData = {};
+    jsonData.fragments = fragments;
+    // convert the numbers to strings (as in the original JSON)
+    function numberToString(key, value) {
+        if (typeof value === "number") {
+            value = value.toString();
+        }
+        return value;
+    }
+    return JSON.stringify(jsonData, numberToString, " ");
+}
+function downloadSMIL() {
+    var audioref = document.getElementById("smilAudioRef").value;
+    var pageref = document.getElementById("smilPageRef").value;
+    var lines = [];
+    var j = 0;
+    lines[j++] = '<smil xmlns:epub="http://www.idpf.org/2007/ops" xmlns="http://www.w3.org/ns/SMIL" version="3.0">';
+    lines[j++] = '  <body>';
+    lines[j++] = '    <seq id="s000001" epub:textref="' + pageref + '">';
+    for (var i = 0; i < fragments.length; ++i) {
+        lines[j++] = '      <par id="p' + pad(i+1, 6) + '">';
+        lines[j++] = '        <text src="' + pageref + '#' + fragments[i].id + '"/>';
+        lines[j++] = '        <audio src="' + audioref + '" clipBegin="' + timeSMIL(fragments[i].begin) + '" clipEnd="' + timeSMIL(fragments[i].end)+ '"/>';
+        lines[j++] = '      <\/par>';
+    };
+    lines[j++] = '    <\/seq>';
+    lines[j++] = '  <\/body>';
+    lines[j++] = '<\/smil>';
+    return lines.join("\n");
+}
+function downloadSRT() {
+    var lines = [];
+    var j = 0;
+    for (var i = 0; i < fragments.length; ++i) {
+        lines[j++] = "" + (i+1);
+        lines[j++] = timeSRT(fragments[i].begin) + " --> " + timeSRT(fragments[i].end);
+        var f_lines = fragments[i].lines;
+        for (var k = 0; k < f_lines.length; ++k) {
+            lines[j++] = f_lines[k];
+        }
+        lines[j++] = ""
+    };
+    return lines.join("\n") + "\n";
+}
+function downloadSSV() {
+    var lines = [];
+    for (var i = 0; i < fragments.length; ++i) {
+        lines[i] = fragments[i].begin + " " + fragments[i].end + " " + fragments[i].id + ' "' + fragments[i].lines.join(" ") + '"';
+    };
+    return lines.join("\n");
+}
+function downloadTTML() {
+    var lines = [];
+    var j = 0;
+    lines[j++] = "<?xml version='1.0' encoding='UTF-8'?>";
+    lines[j++] = '<tt xmlns="http://www.w3.org/ns/ttml" xml:lang="">';
+    lines[j++] = '  <body>';
+    lines[j++] = '    <div>';
+    for (var i = 0; i < fragments.length; ++i) {
+        lines[j++] = '      <p xml:id="' + fragments[i].id + '" begin="' + fragments[i].begin + 's" end="' + fragments[i].end + 's">' + fragments[i].lines.join("<br/>") + '<\/p>';
+    };
+    lines[j++] = '    <\/div>';
+    lines[j++] = '  <\/body>';
+    lines[j++] = '<\/tt>';
+    return lines.join("\n");
+}
+function downloadTSV() {
+    var lines = [];
+    for (var i = 0; i < fragments.length; ++i) {
+        lines[i] = fragments[i].begin + "\t" + fragments[i].end + "\t" + fragments[i].id;
+    };
+    return lines.join("\n");
+}
+function downloadTXT() {
+    var lines = [];
+    for (var i = 0; i < fragments.length; ++i) {
+        lines[i] = fragments[i].id + " " + fragments[i].begin + " " + fragments[i].end + ' "' + fragments[i].lines.join(" ") + '"';
+    };
+    return lines.join("\n");
+}
+function downloadVTT() {
+    var lines = [];
+    var j = 0;
+    lines[j++] = "WEBVTT\n"
+    for (var i = 0; i < fragments.length; ++i) {
+        lines[j++] = "" + (i+1);
+        lines[j++] = timeVTT(fragments[i].begin) + " --> " + timeVTT(fragments[i].end);
+        var f_lines = fragments[i].lines;
+        for (var k = 0; k < f_lines.length; ++k) {
+            lines[j++] = f_lines[k];
+        }
+        lines[j++] = ""
+    };
+    return lines.join("\n") + "\n";
+}
+function downloadXML() {
+    var lines = [];
+    var j = 0;
+    lines[j++] = "<?xml version='1.0' encoding='UTF-8'?>";
+    lines[j++] = '<map>';
+    for (var i = 0; i < fragments.length; ++i) {
+        lines[j++] = '  <fragment id="' + fragments[i].id + '" begin="' + fragments[i].begin + '" end="' + fragments[i].end + '">';
+        var f_lines = fragments[i].lines;
+        for (var k = 0; k < f_lines.length; ++k) {
+            lines[j++] = '    <line>' + f_lines[k] + '<\/line>';
+        }
+        lines[j++] = '  <\/fragment>';
+    };
+    lines[j++] = '<\/map>';
+    return lines.join("\n");
+}
+function pad(num, size) {
+    var s = num + "";
+    while (s.length < size) {
+        s = "0" + s;
+    }
+    return s;
+}
+function timeHHMMSSmmm(time_value, decimal_separator) {
+    var tmp = parseFloat(time_value);
+    var hours = parseInt(Math.floor(tmp / 3600));
+    tmp -= (hours * 3600);
+    var minutes = parseInt(Math.floor(tmp / 60));
+    tmp -= minutes * 60;
+    var seconds = parseInt(Math.floor(tmp));
+    tmp -= seconds;
+    var milliseconds = parseInt(Math.floor(tmp * 1000));
+    return pad(hours, 2) + ":" + pad(minutes, 2) + ":" + pad(seconds, 2) + decimal_separator + pad(milliseconds, 3); 
+}
+function timeSMIL(time_value) { 
+    return timeHHMMSSmmm(time_value, ".");
+}
+function timeSRT(time_value) { 
+    return timeHHMMSSmmm(time_value, ",");
+}
+function timeVTT(time_value) { 
+    return timeHHMMSSmmm(time_value, ".");
+}
+function ticker(cTime){
+    
+    // TODO ALPE use a global stopwatch object
+    
+    // "timeupdate" alone isn't accurate enough
+    // to pause exactly at the end of the fragment.
+    // Another option is to use temporal dimensions
+    // for audio source but Chrome doesn't support it with blobs.
+    // If in the last TRANSITION_TIMEOUT seconds, calculate the time left,
+    // and set a corresponding timeout to pause the fragment.
+    if(cTime > fragments[currentIndex].end - TRANSITION_TIMEOUT) {
+        // subtract transitionOffset seconds to account for the delay introduced by this code
+        var timeLeft = (fragments[currentIndex].end - cTime - transitionOffset) * 1000 / audioElement.playbackRate;
+        var index = currentIndex;
+        setTimeout(function() {
+            // do not perform action if the user
+            // jumped to another fragment
+            if (index == currentIndex) {
+                if (continuousPlay) {
+                    playOverlay(1);
+                } else {
+                    highlight(COMPLETED);
+                    stopOverlay();
+                }
+            }
+        }, timeLeft)
+    }
+    // display current time
+    document.getElementById("audioticker").innerHTML = cTime.toFixed(3);
+}
+function stopOverlay() {
+    audioElement.pause();
+    document.getElementById("stop").style.display = "none";
+}
+function playOverlay(inc) {
+    highlight(CLEAR);
+    if (currentIndex + inc < fragments.length) { 
+        currentIndex += inc;
+        highlight(ACTIVE);
+        audioElement.currentTime = fragments[currentIndex].begin;
+        audioElement.play();
+        document.getElementById("audiocontrols").style.display = "block";
+        document.getElementById("stop").style.display = "inline";
+    } else {
+        stopOverlay();
+    }
+}   
+</script>
+<!-- END script -->
+
+    </body>
+</html>

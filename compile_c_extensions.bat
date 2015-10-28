@@ -10,7 +10,7 @@
 :     Copyright 2015,      Alberto Pettarin (www.albertopettarin.it)
 :
 : Licence: GNU AGPL 3
-: Version: 1.3.0
+: Version: 1.3.1
 : Email:   aeneas@readbeyond.it
 : Status:  Production
 

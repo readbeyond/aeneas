@@ -1,6 +1,13 @@
 Changelog
 =========
 
+v1.3.1 (2015-10-28)
+-------------------
+
+#. Added ``os_task_file_id_regex`` parameter to add user-defined ``id`` values for ``plain`` and ``subtitles`` input files
+#. Added the HTML file ``finetuneas.html`` for manually fine tuning the sync maps (courtesy of Firat Özdemir)
+#. Added an option to ``aeneas.tools.convert_syncmap`` and ``aeneas.tools.execute_task`` to output ``finetuneas`` HTML file
+
 v1.3.0 (2015-10-14)
 -------------------
 

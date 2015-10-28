@@ -10,13 +10,12 @@ from aeneas.syncmap import SyncMapFormat
 from aeneas.syncmap import SyncMapMissingParameterError
 import aeneas.globalconstants as gc
 import aeneas.globalfunctions as gf
-import aeneas.tests as at
 
 class TestSyncMap(unittest.TestCase):
 
-    NOT_EXISTING_SRT = at.get_abs_path("not_existing.srt")
-    EXISTING_SRT = at.get_abs_path("res/syncmaps/sonnet001.srt")
-    NOT_WRITEABLE_SRT = at.get_abs_path("x/y/z/not_writeable.srt")
+    NOT_EXISTING_SRT = gf.get_abs_path("not_existing.srt", __file__)
+    EXISTING_SRT = gf.get_abs_path("res/syncmaps/sonnet001.srt", __file__)
+    NOT_WRITEABLE_SRT = gf.get_abs_path("x/y/z/not_writeable.srt", __file__)
 
     PARAMETERS = {
         gc.PPN_TASK_OS_FILE_SMIL_PAGE_REF: "sonnet001.xhtml",
@@ -34,7 +33,7 @@ class TestSyncMap(unittest.TestCase):
             path = "res/syncmaps/sonnet001_u."
         else:
             path = "res/syncmaps/sonnet001."
-        syn.read(fmt, at.get_abs_path(path + fmt), parameters=parameters)
+        syn.read(fmt, gf.get_abs_path(path + fmt, __file__), parameters=parameters)
         return syn
 
     def write(self, fmt, multiline=False, utf8=False, parameters=PARAMETERS):

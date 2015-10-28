@@ -16,7 +16,7 @@ __copyright__ = """
     Copyright 2015,      Alberto Pettarin (www.albertopettarin.it)
     """
 __license__ = "GNU AGPL 3"
-__version__ = "1.3.0"
+__version__ = "1.3.1"
 __email__ = "aeneas@readbeyond.it"
 __status__ = "Production"
 
@@ -31,14 +31,15 @@ if (os.name == "posix") and (os.uname()[0] == "Linux"):
 
 setup(
     name="aeneas",
-    packages=["aeneas", "aeneas.tests", "aeneas.tools"],
-    version="1.3.0",
+    packages=["aeneas", "aeneas.tools"],
+    version="1.3.1",
     description="aeneas is a Python library and a set of tools to automagically synchronize audio and text",
     author="Alberto Pettarin",
     author_email="alberto@albertopettarin.it",
     url="https://github.com/readbeyond/aeneas",
     license="GNU Affero General Public License v3 (AGPL v3)",
-    long_description=open("README.txt").read(),
+    long_description=open("README.txt", "r").read(),
+    install_requires=["BeautifulSoup", "lxml", "numpy", "pafy"],
     keywords=[
         "CSV",
         "DTW",

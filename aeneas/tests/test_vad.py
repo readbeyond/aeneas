@@ -6,7 +6,7 @@ import unittest
 from aeneas.audiofile import AudioFileMonoWAV
 from aeneas.audiofile import AudioFileUnsupportedFormatError
 from aeneas.vad import VAD
-import aeneas.tests as at
+import aeneas.globalfunctions as gf
 
 class TestVAD(unittest.TestCase):
 
@@ -52,7 +52,7 @@ class TestVAD(unittest.TestCase):
     EMPTY_FILE_PATH = "res/audioformats/p001.empty"
 
     def perform(self, input_file_path, speech_length, nonspeech_length):
-        audiofile = AudioFileMonoWAV(at.get_abs_path(input_file_path))
+        audiofile = AudioFileMonoWAV(gf.get_abs_path(input_file_path, __file__))
         audiofile.extract_mfcc()
         vad = VAD(audiofile.audio_mfcc, audiofile.audio_length)
         vad.compute_vad()

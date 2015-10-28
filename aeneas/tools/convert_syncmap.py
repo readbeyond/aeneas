@@ -20,17 +20,19 @@ __copyright__ = """
     Copyright 2015,      Alberto Pettarin (www.albertopettarin.it)
     """
 __license__ = "GNU AGPL 3"
-__version__ = "1.3.0"
+__version__ = "1.3.1"
 __email__ = "aeneas@readbeyond.it"
 __status__ = "Production"
 
 NAME = "aeneas.tools.convert_syncmap"
 
+AUDIO = gf.get_rel_path("res/audio.mp3")
 SMIL_PARAMETERS = "os_task_file_smil_audio_ref=audio/sonnet001.mp3 os_task_file_smil_page_ref=text/sonnet001.xhtml"
 SYNC_MAP_CSV = gf.get_rel_path("res/sonnet.csv")
 SYNC_MAP_JSON = gf.get_rel_path("res/sonnet.json")
 SYNC_MAP_ZZZ = gf.get_rel_path("res/sonnet.zzz")
 
+OUTPUT_HTML = "output/sonnet.html"
 OUTPUT_MAP_DAT = "output/syncmap.dat"
 OUTPUT_MAP_JSON = "output/syncmap.json"
 OUTPUT_MAP_SMIL = "output/syncmap.smil"
@@ -42,8 +44,11 @@ def usage():
     print ""
     print "Usage:"
     print "  $ python -m %s /path/to/input_sync_map /path/to/output_sync_map [parameters]" % NAME
+    print "  $ python -m %s /path/to/input_sync_map /path/to/output_html     audio_file_path=/path/to/audio.file [parameters]" % NAME
     print ""
     print "Parameters:"
+    print "  -v                              : verbose output"
+    print "  audio_file_path=PATH            : create HTML file for fine tuning, reading audio from PATH"
     print "  input_format=FMT                : input sync map file has format FMT"
     print "  language=CODE                   : set language to CODE"
     print "  output_format=FMT               : output sync map file has format FMT"
@@ -55,7 +60,8 @@ def usage():
     print "  $ python -m %s %s %s  output_format=txt" % (NAME, SYNC_MAP_JSON, OUTPUT_MAP_DAT)
     print "  $ python -m %s %s  %s  input_format=csv" % (NAME, SYNC_MAP_ZZZ, OUTPUT_MAP_TXT)
     print "  $ python -m %s %s  %s %s=en" % (NAME, SYNC_MAP_CSV, gc.PPN_SYNCMAP_LANGUAGE, OUTPUT_MAP_JSON)
-    print "  $ python -m %s %s %s %s" % (NAME, SYNC_MAP_JSON, SMIL_PARAMETERS, OUTPUT_MAP_SMIL)
+    print "  $ python -m %s %s %s %s" % (NAME, SYNC_MAP_JSON, OUTPUT_MAP_SMIL, SMIL_PARAMETERS)
+    print "  $ python -m %s %s %s audio_file_path=%s" % (NAME, SYNC_MAP_JSON, OUTPUT_HTML, AUDIO)
     # TODO a SMIL + text example
     print ""
     sys.exit(2)
@@ -94,15 +100,19 @@ def main():
                 key, value = args
                 if key in [
                         gc.PPN_SYNCMAP_LANGUAGE,
+                        gc.PPN_TASK_OS_FILE_FORMAT,
                         gc.PPN_TASK_OS_FILE_SMIL_AUDIO_REF,
                         gc.PPN_TASK_OS_FILE_SMIL_PAGE_REF,
                         "input_format",
                         "output_format",
-                        "text_file"
+                        "text_file",
+                        "audio_file_path"
                 ]:
                     parameters[key] = value
     input_sm_format = get_format(parameters, "input_format", input_file_path, "Input")
-    output_sm_format = get_format(parameters, "output_format", output_file_path, "Output")
+    output_html = ("audio_file_path" in parameters)
+    if not output_html:
+        output_sm_format = get_format(parameters, "output_format", output_file_path, "Output")
 
     logger = Logger(tee=verbose)
     try:
@@ -115,14 +125,24 @@ def main():
         print "[ERRO] %s" % str(exc)
         sys.exit(1)
     print "[INFO] Read %s sync map fragments" % (len(syncmap))
-    try:
-        print "[INFO] Writing sync map in %s format to file %s ..." % (output_sm_format, output_file_path)
-        syncmap.write(output_sm_format, output_file_path, parameters)
-        print "[INFO] Writing sync map in %s format to file %s ... done" % (output_sm_format, output_file_path)
-    except IOError:
-        print "[ERRO] The following error occurred while writing the output sync map:"
-        print "[ERRO] %s" % str(exc)
-        sys.exit(1)
+    if output_html:
+        try:
+            print "[INFO] Writing HTML file %s ..." % (output_file_path)
+            syncmap.output_html_for_tuning(parameters["audio_file_path"], output_file_path, parameters)
+            print "[INFO] Writing HTML file %s ... done" % (output_file_path)
+        except IOError as exc:
+            print "[ERRO] The following error occurred while writing the output HTML file:"
+            print "[ERRO] %s" % str(exc)
+            sys.exit(1)
+    else:
+        try:
+            print "[INFO] Writing sync map in %s format to file %s ..." % (output_sm_format, output_file_path)
+            syncmap.write(output_sm_format, output_file_path, parameters)
+            print "[INFO] Writing sync map in %s format to file %s ... done" % (output_sm_format, output_file_path)
+        except IOError as exc:
+            print "[ERRO] The following error occurred while writing the output sync map:"
+            print "[ERRO] %s" % str(exc)
+            sys.exit(1)
     sys.exit(0)    
 
 if __name__ == '__main__':

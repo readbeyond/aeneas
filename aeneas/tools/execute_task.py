@@ -19,6 +19,7 @@ from aeneas.syncmap import SyncMapHeadTailFormat
 from aeneas.task import Task
 from aeneas.textfile import TextFileFormat
 from aeneas.validator import Validator
+import aeneas.globalconstants as gc
 import aeneas.globalfunctions as gf
 
 __author__ = "Alberto Pettarin"
@@ -28,7 +29,7 @@ __copyright__ = """
     Copyright 2015,      Alberto Pettarin (www.albertopettarin.it)
     """
 __license__ = "GNU AGPL 3"
-__version__ = "1.3.0"
+__version__ = "1.3.1"
 __email__ = "aeneas@readbeyond.it"
 __status__ = "Production"
 
@@ -103,6 +104,7 @@ def get_parameters():
     print "  is_text_unparsed_id_sort                : sort matched elements by id (unparsed) (*)"
     print ""
     print "  os_task_file_format                     : output sync map format (*)"
+    print "  os_task_file_id_regex                   : id regex for the output sync map (subtitles, plain)"
     print "  os_task_file_head_tail_format           : format audio head/tail (*)"
     print "  os_task_file_smil_audio_ref             : value for the audio ref (smil, smilh, smilm)"
     print "  os_task_file_smil_page_ref              : value for the text ref (smil, smilh, smilm)"
@@ -139,6 +141,7 @@ def usage(examples=False, full_help=False):
         print "  --example-smil      : run example with SMIL output"
         print "  --example-srt       : run example with SRT output"
         print "  --keep-audio        : do not delete the audio file downloaded from YouTube (-y)"
+        print "  --output-html       : output HTML file for fine tuning"
         print "  --skip-validator    : do not validate CONFIG_STRING"
         print ""
         print "Documentation:"
@@ -219,6 +222,7 @@ def run(argv):
     download_from_youtube = False
     best_audio = False
     keep_audio = False
+    output_html = False
     if demo is None:
         # no demo, read arguments
         audio_file_path = argv[1]
@@ -239,6 +243,8 @@ def run(argv):
                 keep_audio = True
             if arg == "--best-audio":
                 best_audio = True
+            if arg == "--output-html":
+                output_html = True
     else:
         # demo, set arguments
         validate = False
@@ -252,6 +258,10 @@ def run(argv):
         print "[WARN] Unable to load Python C Extensions"
         print "[WARN] Running the slower pure Python code"
         print "[WARN] See the README file for directions to compile the Python C Extensions"
+
+    if output_html:
+        keep_audio = True
+        html_file_path = sync_map_file_path + ".html"
 
     logger = Logger(tee=verbose)
 
@@ -276,7 +286,7 @@ def run(argv):
             print "[INFO] Downloading audio from '%s' ... done" % youtube_url
         except ImportError:
             print "[ERRO] You need to install Pythom module pafy to download audio from YouTube. Run:"
-            print "[ERRO] $ pip install pafy"
+            print "[ERRO] $ sudo pip install pafy"
             sys.exit(1)
         except Exception as exc:
             print "[ERRO] The following error occurred while downloading audio from YouTube:"
@@ -292,7 +302,7 @@ def run(argv):
 
     try:
         print "[INFO] Creating task..."
-        task = Task(config_string)
+        task = Task(config_string, logger=logger)
         task.audio_file_path_absolute = audio_file_path
         task.text_file_path_absolute = text_file_path
         task.sync_map_file_path_absolute = sync_map_file_path
@@ -321,6 +331,21 @@ def run(argv):
         print "[ERRO] The following error occurred while writing the sync map file:"
         print "[ERRO] %s" % str(exc)
         sys.exit(1)
+
+    if output_html:
+        try:
+            parameters = {}
+            parameters[gc.PPN_TASK_OS_FILE_FORMAT] = task.configuration.os_file_format
+            parameters[gc.PPN_TASK_OS_FILE_SMIL_PAGE_REF] = task.configuration.os_file_smil_page_ref
+            parameters[gc.PPN_TASK_OS_FILE_SMIL_AUDIO_REF] = task.configuration.os_file_smil_audio_ref
+            print "[INFO] Creating output HTML file..."
+            task.sync_map.output_html_for_tuning(audio_file_path, html_file_path, parameters)
+            print "[INFO] Creating output HTML file... done"
+            print "[INFO] Created %s" % html_file_path
+        except Exception as exc:
+            print "[ERRO] The following error occurred while writing the HTML file:"
+            print "[ERRO] %s" % str(exc)
+            sys.exit(1)
 
     if download_from_youtube:
         if keep_audio:

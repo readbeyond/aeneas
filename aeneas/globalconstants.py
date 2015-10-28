@@ -13,7 +13,7 @@ __copyright__ = """
     Copyright 2015,      Alberto Pettarin (www.albertopettarin.it)
     """
 __license__ = "GNU AGPL v3"
-__version__ = "1.3.0"
+__version__ = "1.3.1"
 __email__ = "aeneas@readbeyond.it"
 __status__ = "Production"
 
@@ -719,6 +719,27 @@ Example::
     os_task_file_format=txt
     os_task_file_format=srt
 
+"""
+
+PPN_TASK_OS_FILE_ID_REGEX = "os_task_file_id_regex"
+"""
+Key for the regex to be used for the fragment identifiers
+of the sync map output file.
+This parameter will be used only
+when the input text file has `plain` or `subtitles` format;
+for `parsed` and `unparsed` input text files, the identifiers
+contained in the input text file will be used instead.
+
+Usage: config string, TXT config file, XML config file
+
+Values: string
+
+Example::
+
+    os_task_file_id_regex=f%06d
+    os_task_file_id_regex=Word%03d
+
+.. versionadded:: 1.3.1
 """
 
 PPN_TASK_OS_FILE_NAME = "os_task_file_name"
