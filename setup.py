@@ -39,7 +39,7 @@ setup(
     url="https://github.com/readbeyond/aeneas",
     license="GNU Affero General Public License v3 (AGPL v3)",
     long_description=open("README.txt", "r").read(),
-    install_requires=["BeautifulSoup", "lxml", "numpy", "pafy"],
+    install_requires=["BeautifulSoup", "lxml", "numpy"],
     keywords=[
         "CSV",
         "DTW",
