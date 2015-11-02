@@ -1,0 +1,23 @@
+Source: aeneas
+Section: python
+X-Python-Version: >= 2.7
+Priority: optional
+Maintainer: Alberto Pettarin <aeneas@readbeyond.it>
+Build-Depends: debhelper (>= 9.0.0),
+               dh-python,
+               python-all-dev,
+               python-setuptools,
+               python-numpy, python-lxml, python-beautifulsoup,
+               libasound2-dev, libsndfile1-dev, libespeak-dev
+Standards-Version: 3.9.5
+Homepage: https://github.com/readbeyond/aeneas
+
+Package: python-aeneas
+Architecture: any
+Depends: ${misc:Depends}, ${python:Depends}, 
+         espeak, espeak-data, libespeak1, vorbis-tools, ffmpeg, flac
+Description: Python library to automagically synchronize audio and text
+ aeneas automatically generates a synchronization map between a list of
+ text fragments and an audio file containing the narration of the text.
+ In computer science this task is known as (automatically computing a)
+ forced alignment.
