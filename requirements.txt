@@ -1,4 +1,3 @@
 BeautifulSoup
 lxml
 numpy
-pafy
