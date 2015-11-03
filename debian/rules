@@ -1,0 +1,7 @@
+#!/usr/bin/make -f
+
+export PYBUILD_NAME=aeneas
+
+%: 
+	dh $@ --with python2 --buildsystem=pybuild
+
