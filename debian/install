@@ -1,4 +1,4 @@
-check_dependencies.py /usr/share/python-aeneas
+aeneas_check_setup.py /usr/share/python-aeneas
 VERSION /usr/share/python-aeneas
-aeneas/tests/res/container/job/assets/p001.mp3 /usr/share/python-aeneas/aeneas/tests/res/container/job/assets
+aeneas/tools/res/audio.mp3 /usr/share/python-aeneas/aeneas/tools/res/
 

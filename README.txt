@@ -4,8 +4,8 @@ aeneas
 **aeneas** is a Python library and a set of tools to automagically
 synchronize audio and text.
 
--  Version: 1.3.1
--  Date: 2015-10-28
+-  Version: 1.3.2
+-  Date: 2015-11-XX
 -  Developed by: `ReadBeyond <http://www.readbeyond.it/>`__
 -  Lead Developer: `Alberto Pettarin <http://www.albertopettarin.it/>`__
 -  License: the GNU Affero General Public License Version 3 (AGPL v3)
@@ -86,9 +86,11 @@ System Requirements
 2. ``ffmpeg`` and ``ffprobe`` executables available in your ``$PATH``
 3. ``espeak`` executable available in your ``$PATH``
 4. Python 2.7.x
-5. Python modules ``BeautifulSoup``, ``lxml``, ``numpy``, and ``pafy``
+5. Python modules ``BeautifulSoup``, ``lxml``, and ``numpy``
 6. (Optional but strongly suggested) Python C headers to compile the
    Python C extensions
+7. (Optional, required only if you want to download audio streams from
+   YouTube) Python module ``pafy``
 
 Depending on the format(s) of audio files you work with, you might need
 to install additional audio codecs for ``ffmpeg``. Similarly, you might
@@ -156,8 +158,9 @@ Linux
        $ git clone https://github.com/ReadBeyond/aeneas.git
        $ cd aeneas
        $ sudo pip install -r requirements.txt
+       (Optional: $ sudo pip install pafy)
        $ python setup.py build_ext --inplace
-       $ python check_dependencies.py
+       $ python aeneas_check_setup.py
 
    If the last command prints a success message, you have all the
    required dependencies installed and you can confidently run
@@ -243,8 +246,9 @@ Feel free to jump to step 9 if you already have ``python``,
        $ git clone https://github.com/ReadBeyond/aeneas.git
        $ cd aeneas
        $ sudo pip install -r requirements.txt
+       (Optional: $ sudo pip install pafy)
        $ python setup.py build_ext --inplace
-       $ python check_dependencies.py
+       $ python aeneas_check_setup.py
 
    If the last command prints a success message, you have all the
    required dependencies installed and you can confidently run
@@ -363,8 +367,8 @@ Limitations and Missing Features
 -  Audio is assumed to be spoken: not suitable/YMMV for song captioning
 -  No protection against memory trashing if you feed extremely long
    audio files
--  On Mac OS X and Windows, audio synthesis might be slow (tens of
-   minutes) if you have thousands of text fragments
+-  On Mac OS X and Windows, audio synthesis might be slow if you have
+   thousands of text fragments
 
 TODO List
 ---------
@@ -380,6 +384,7 @@ TODO List
 -  Better documentation
 -  Testing other approaches, like HMM
 -  Publishing the package on PyPI
+-  Publishing the package on Debian repo
 
 Would you like to see one of the above points done? Consider
 `sponsoring <#supporting>`__ this project!
@@ -564,6 +569,9 @@ text.
 **Paolo Bertasi**, who developed the APIs and Web application for
 ReadBeyond Sync, helped shaping the structure of this package for its
 asynchronous usage.
+
+**Chris Hubbard** prepared the files for packaging aeneas as a
+Debian/Ubuntu ``.deb``.
 
 All the mighty `GitHub
 contributors <https://github.com/readbeyond/aeneas/graphs/contributors>`__,

@@ -58,7 +58,8 @@ class TestESPEAKWrapper(unittest.TestCase):
         for frag in frags:
             language = frag[0]
             lines = frag[1]
-            tfl.append_fragment(TextFragment(language=language, lines=lines))
+            filtered_lines = frag[1]
+            tfl.append_fragment(TextFragment(language=language, lines=lines, filtered_lines=filtered_lines))
         return tfl
 
     def test_multiple_tfl_none(self):

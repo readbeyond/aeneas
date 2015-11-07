@@ -2,8 +2,8 @@
 
 **aeneas** is a Python library and a set of tools to automagically synchronize audio and text.
 
-* Version: 1.3.1
-* Date: 2015-10-28
+* Version: 1.3.2
+* Date: 2015-11-XX
 * Developed by: [ReadBeyond](http://www.readbeyond.it/)
 * Lead Developer: [Alberto Pettarin](http://www.albertopettarin.it/)
 * License: the GNU Affero General Public License Version 3 (AGPL v3)
@@ -75,8 +75,9 @@ or raw CSV/SSV/TSV/TXT/XML for further processing.
 2. `ffmpeg` and `ffprobe` executables available in your `$PATH`
 3. `espeak` executable available in your `$PATH`
 4. Python 2.7.x
-5. Python modules `BeautifulSoup`, `lxml`, `numpy`, and `pafy`
+5. Python modules `BeautifulSoup`, `lxml`, and `numpy`
 6. (Optional but strongly suggested) Python C headers to compile the Python C extensions
+7. (Optional, required only if you want to download audio streams from YouTube) Python module `pafy`
 
 Depending on the format(s) of audio files you work with,
 you might need to install additional audio codecs for `ffmpeg`.
@@ -144,8 +145,9 @@ you can install all the dependencies by running
     $ git clone https://github.com/ReadBeyond/aeneas.git
     $ cd aeneas
     $ sudo pip install -r requirements.txt
+    (Optional: $ sudo pip install pafy)
     $ python setup.py build_ext --inplace
-    $ python check_dependencies.py
+    $ python aeneas_check_setup.py
     ```
 
     If the last command prints a success message,
@@ -226,8 +228,9 @@ Feel free to jump to step 9 if you already have
     $ git clone https://github.com/ReadBeyond/aeneas.git
     $ cd aeneas
     $ sudo pip install -r requirements.txt
+    (Optional: $ sudo pip install pafy)
     $ python setup.py build_ext --inplace
-    $ python check_dependencies.py
+    $ python aeneas_check_setup.py
     ```
 
     If the last command prints a success message,
@@ -535,6 +538,9 @@ for aligning audio and text.
 APIs and Web application for ReadBeyond Sync,
 helped shaping the structure of this package
 for its asynchronous usage.
+
+**Chris Hubbard** prepared the files for
+packaging aeneas as a Debian/Ubuntu `.deb`.
 
 All the mighty [GitHub contributors](https://github.com/readbeyond/aeneas/graphs/contributors),
 and the members of the [Google Group](https://groups.google.com/d/forum/aeneas-forced-alignment).

@@ -11,7 +11,6 @@ import os
 import re
 
 from aeneas.idsortingalgorithm import IDSortingAlgorithm
-from aeneas.language import Language
 from aeneas.logger import Logger
 import aeneas.globalconstants as gc
 import aeneas.globalfunctions as gf
@@ -23,7 +22,7 @@ __copyright__ = """
     Copyright 2015,      Alberto Pettarin (www.albertopettarin.it)
     """
 __license__ = "GNU AGPL v3"
-__version__ = "1.3.1"
+__version__ = "1.3.2"
 __email__ = "aeneas@readbeyond.it"
 __status__ = "Production"
 
@@ -138,6 +137,9 @@ class TextFragment(object):
     :type  language: string (from :class:`aeneas.language.Language` enumeration)
     :param lines: the lines in which text is split up
     :type  lines: list of unicode
+    :param filtered_lines: the lines in which text is split up,
+                           possibly filtered for the alignment purpose
+    :type  filtered_lines: list of unicode
 
     :raise TypeError: if ``identifier`` is not an instance of ``unicode``
     :raise TypeError: if ``lines`` is not an instance of ``list`` or it contains an element which is not an instance of ``unicode``
@@ -145,10 +147,17 @@ class TextFragment(object):
 
     TAG = "TextFragment"
 
-    def __init__(self, identifier=None, language=None, lines=None):
+    def __init__(
+            self,
+            identifier=None,
+            language=None,
+            lines=None,
+            filtered_lines=None
+        ):
         self.identifier = identifier
         self.language = language
         self.lines = lines
+        self.filtered_lines = filtered_lines
 
     def __len__(self):
         if self.lines is None:
@@ -236,6 +245,25 @@ class TextFragment(object):
         :rtype: int
         """
         return len(self.text)
+
+    @property
+    def filtered_text(self):
+        """
+        The filtered text of the text fragment.
+
+        :rtype: unicode
+        """
+        return u" ".join(self.filtered_lines)
+
+    @property
+    def filtered_characters(self):
+        """
+        The number of filtered characters in this text fragment.
+
+        :rtype: int
+        """
+        return len(self.filtered_text)
+
 
 
 class TextFile(object):
@@ -637,8 +665,38 @@ class TextFile(object):
         :type  pairs: list of lists (see above)
         """
         self._log("Creating TextFragment objects")
+
+        # default: do not filter
+        def no_filter(lines):
+            """ Return the lines unfiltered """
+            return lines
+        filter_text_function = no_filter
+
+        # if a filter regex is specified, use it
+        if gc.PPN_TASK_IS_TEXT_FILE_IGNORE_REGEX in self.parameters:
+            regex_string = self.parameters[gc.PPN_TASK_IS_TEXT_FILE_IGNORE_REGEX]
+            try:
+                regex = re.compile(regex_string)
+                self._log(["Ignore regex specified: %s", regex_string])
+                def filter_regex(lines):
+                    """ Filter text according to regex """
+                    filtered = []
+                    for line in lines:
+                        line = regex.sub("", line)
+                        if len(line.strip()) == 0:
+                            line = " "
+                        filtered.append(line)
+                    return filtered
+                filter_text_function = filter_regex
+            except Exception as exc:
+                self._log(["Regex cannot be compiled from string '%s'", regex_string])
+
         for pair in pairs:
-            fragment = TextFragment(identifier=pair[0], lines=pair[1])
+            fragment = TextFragment(
+                identifier=pair[0],
+                lines=pair[1],
+                filtered_lines=filter_text_function(pair[1])
+            )
             self.append_fragment(fragment)
 
     def _get_id_regex(self):

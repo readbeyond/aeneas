@@ -1,6 +1,18 @@
 Changelog
 =========
 
+v1.3.2 (2015-11-XX)
+-------------------
+
+#. Added ``is_text_file_ignore_regex`` parameter to ignore text from the input file
+#. Edited ``README.md``, stating the optional dependency from ``pafy``
+
+v1.3.1.1 (2015-11-03)
+---------------------
+
+#. Added ``debian/`` directory containing files for creating a Debian/Ubuntu ``.deb`` package, courtesy of Chris Hubbard
+#. Removed ``pafy`` from required dependencies
+
 v1.3.1 (2015-10-28)
 -------------------
 
