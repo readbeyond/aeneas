@@ -8,6 +8,8 @@ from aeneas.language import Language
 from aeneas.textfile import TextFile
 from aeneas.textfile import TextFileFormat
 from aeneas.textfile import TextFragment
+from aeneas.textfile import TextFilter
+from aeneas.textfile import TextFilterIgnoreRegex
 import aeneas.globalconstants as gc
 import aeneas.globalfunctions as gf
 
@@ -50,6 +52,11 @@ class TestTextFile(unittest.TestCase):
         sli = tfl.get_slice(start, end)
         self.assertEqual(len(sli), expected)
         return sli
+
+    def filter_ignore_regex(self, regex, string_in, expected_out):
+        fil = TextFilterIgnoreRegex(regex)
+        string_out = fil.apply_filter(string_in)
+        self.assertEqual(string_out, expected_out)
 
     def test_tf_identifier_str(self):
         with self.assertRaises(TypeError):
@@ -359,6 +366,43 @@ class TestTextFile(unittest.TestCase):
     def test_get_slice_end_less_than_start(self):
         sli = self.load_and_slice(1, 10, 5)
         self.assertEqual(sli.chars, 36)
+
+    def test_filter_identity(self):
+        fil = TextFilter()
+        string_in = [u"abc"]
+        string_out = fil.apply_filter(string_in)
+        expected_out = string_in
+        self.assertEqual(string_out, expected_out)
+
+    def test_filter_ignore_regex_error(self):
+        with self.assertRaises(ValueError):
+            self.filter_ignore_regex("word[abc", [u"abc"], [u"abc"])
+
+    def test_filter_ignore_regex_no_match(self):
+        self.filter_ignore_regex("word", [u"abc"], [u"abc"])
+
+    def test_filter_ignore_regex_one_match(self):
+        self.filter_ignore_regex("word", [u"abc word abc"], [u"abc abc"])
+
+    def test_filter_ignore_regex_many_matches(self):
+        self.filter_ignore_regex("word", [u"abc word word abc word abc"], [u"abc abc abc"])
+
+    def test_filter_ignore_regex_strip(self):
+        self.filter_ignore_regex("word", [u"word abc word"], [u"abc"])
+
+    def test_filter_ignore_regex_parenthesis(self):
+        self.filter_ignore_regex("\(.*?\)", [u"(CHAR) bla bla bla"], [u"bla bla bla"])
+
+    def test_filter_ignore_regex_brackets(self):
+        self.filter_ignore_regex("\[.*?\]", [u"[CHAR] bla bla bla"], [u"bla bla bla"])
+
+    def test_filter_ignore_regex_braces(self):
+        self.filter_ignore_regex("\{.*?\}", [u"{CHAR} bla bla bla"], [u"bla bla bla"])
+
+    def test_filter_ignore_regex_entire_match(self):
+        self.filter_ignore_regex("word", [u"word"], [u""])
+
+
 
 if __name__ == '__main__':
     unittest.main()

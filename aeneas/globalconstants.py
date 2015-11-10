@@ -657,7 +657,7 @@ PPN_TASK_IS_TEXT_FILE_IGNORE_REGEX = "is_text_file_ignore_regex"
 """
 Key for the regex matching the text to be ignored,
 for the purpose of the alignment.
-The text will still be present in the output sync map.
+The output sync map file will contain the original text.
 
 Usage: config string, TXT config file, XML config file
 
@@ -666,6 +666,23 @@ Values: regex
 Example::
 
     is_text_file_ignore_regex=\\[.*?\\]
+
+"""
+
+PPN_TASK_IS_TEXT_FILE_TRANSLITERATE_MAP = "is_text_file_transliterate_map"
+"""
+Key for the path of the transliteration map file
+which will be used to delete/replace characters in the input text file
+for the purpose of the alignment.
+The output sync map file will contain the original text.
+
+Usage: config string, TXT config file, XML config file
+
+Values: string (path)
+
+Example::
+
+    is_text_file_transliterate_map=trans.map
 
 """
 
