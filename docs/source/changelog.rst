@@ -1,6 +1,21 @@
 Changelog
 =========
 
+v1.3.2 (2015-11-11)
+-------------------
+
+#. Added ``is_text_file_ignore_regex`` parameter to ignore text from the input file
+#. Added ``is_text_file_transliterate_map`` parameter to read a transliteration map from file and apply it to the input text
+#. Added ``thirdparty/transliteration.map`` sample transliteration map (courtesy of Steve Gallagher and Richard Margetts)
+#. Edited ``README.md``, stating the optional dependency from ``pafy``
+#. Renamed ``check_dependencies.sh`` into ``aeneas_check_setup.py``
+
+v1.3.1.1 (2015-11-03)
+---------------------
+
+#. Added ``debian/`` directory containing files for creating a Debian/Ubuntu ``.deb`` package (courtesy of Chris Hubbard)
+#. Removed ``pafy`` from required dependencies
+
 v1.3.1 (2015-10-28)
 -------------------
 

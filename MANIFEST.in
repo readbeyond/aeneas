@@ -1,6 +1,6 @@
 recursive-include aeneas/res *
 recursive-include aeneas/tools/res *
-include check_dependencies.py
+include aeneas_check_setup.py
 recursive-include docs *
 prune docs/build
 include LICENSE

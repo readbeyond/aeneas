@@ -23,7 +23,7 @@ __copyright__ = """
     Copyright 2015,      Alberto Pettarin (www.albertopettarin.it)
     """
 __license__ = "GNU AGPL v3"
-__version__ = "1.3.1"
+__version__ = "1.3.2"
 __email__ = "aeneas@readbeyond.it"
 __status__ = "Production"
 
@@ -213,6 +213,8 @@ class Task(object):
             ):
             parameters = dict()
             # the following might be None
+            parameters[gc.PPN_TASK_IS_TEXT_FILE_IGNORE_REGEX] = self.configuration.is_text_file_ignore_regex
+            parameters[gc.PPN_TASK_IS_TEXT_FILE_TRANSLITERATE_MAP] = self.configuration.is_text_file_transliterate_map
             parameters[gc.PPN_TASK_IS_TEXT_UNPARSED_CLASS_REGEX] = self.configuration.is_text_unparsed_class_regex
             parameters[gc.PPN_TASK_IS_TEXT_UNPARSED_ID_REGEX] = self.configuration.is_text_unparsed_id_regex
             parameters[gc.PPN_TASK_IS_TEXT_UNPARSED_ID_SORT] = self.configuration.is_text_unparsed_id_sort
@@ -271,6 +273,8 @@ class TaskConfiguration(object):
             gc.PPN_TASK_IS_AUDIO_FILE_PROCESS_LENGTH,
             gc.PPN_TASK_IS_AUDIO_FILE_TAIL_LENGTH,
             gc.PPN_TASK_IS_TEXT_FILE_FORMAT,
+            gc.PPN_TASK_IS_TEXT_FILE_IGNORE_REGEX,
+            gc.PPN_TASK_IS_TEXT_FILE_TRANSLITERATE_MAP,
             gc.PPN_TASK_IS_TEXT_UNPARSED_CLASS_REGEX,
             gc.PPN_TASK_IS_TEXT_UNPARSED_ID_REGEX,
             gc.PPN_TASK_IS_TEXT_UNPARSED_ID_SORT,
@@ -448,6 +452,31 @@ class TaskConfiguration(object):
     @is_text_file_format.setter
     def is_text_file_format(self, value):
         self.fields[gc.PPN_TASK_IS_TEXT_FILE_FORMAT] = value
+
+    @property
+    def is_text_file_ignore_regex(self):
+        """
+        The regex to match text to be ignored for alignment purposes.
+
+        :rtype: regex
+        """
+        return self.fields[gc.PPN_TASK_IS_TEXT_FILE_IGNORE_REGEX]
+    @is_text_file_ignore_regex.setter
+    def is_text_file_ignore_regex(self, value):
+        self.fields[gc.PPN_TASK_IS_TEXT_FILE_IGNORE_REGEX] = value
+
+    @property
+    def is_text_file_transliterate_map(self):
+        """
+        The path to the transliteration map file to be used to delete/replace
+        characters in the input text file for alignment purposes.
+
+        :rtype: string (path)
+        """
+        return self.fields[gc.PPN_TASK_IS_TEXT_FILE_TRANSLITERATE_MAP]
+    @is_text_file_transliterate_map.setter
+    def is_text_file_transliterate_map(self, value):
+        self.fields[gc.PPN_TASK_IS_TEXT_FILE_TRANSLITERATE_MAP] = value
 
     @property
     def is_text_unparsed_class_regex(self):

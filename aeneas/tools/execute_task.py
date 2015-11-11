@@ -29,7 +29,7 @@ __copyright__ = """
     Copyright 2015,      Alberto Pettarin (www.albertopettarin.it)
     """
 __license__ = "GNU AGPL 3"
-__version__ = "1.3.1"
+__version__ = "1.3.2"
 __email__ = "aeneas@readbeyond.it"
 __status__ = "Production"
 
@@ -102,6 +102,8 @@ def get_parameters():
     print "  is_text_unparsed_class_regex            : regex matching class attributes (unparsed)"
     print "  is_text_unparsed_id_regex               : regex matching id attributes (unparsed)"
     print "  is_text_unparsed_id_sort                : sort matched elements by id (unparsed) (*)"
+    print "  is_text_file_ignore_regex               : ignore text matched by regex for audio alignment purposes"
+    print "  is_text_file_transliterate_map          : apply the given transliteration map for audio alignment purposes"
     print ""
     print "  os_task_file_format                     : output sync map format (*)"
     print "  os_task_file_id_regex                   : id regex for the output sync map (subtitles, plain)"

@@ -2,7 +2,14 @@
 # coding=utf-8
 
 """
-Check dependencies
+Check whether the setup of aeneas was successful.
+
+Requires the audio file aeneas/tools/res/audio.mp3
+
+Running this script makes sense only
+if you git-cloned the original GitHub repository
+and/or if you are interested in contributing to the
+development of aeneas.
 """
 
 import os
@@ -15,7 +22,7 @@ __copyright__ = """
     Copyright 2015,      Alberto Pettarin (www.albertopettarin.it)
     """
 __license__ = "GNU AGPL 3"
-__version__ = "1.3.1"
+__version__ = "1.3.2"
 __email__ = "aeneas@readbeyond.it"
 __status__ = "Production"
 
@@ -56,7 +63,7 @@ def step2():
     try:
         on_info("  Trying to call ffprobe...")
         from aeneas.ffprobewrapper import FFPROBEWrapper
-        file_path = get_abs_path("aeneas/tests/res/container/job/assets/p001.mp3")
+        file_path = get_abs_path("aeneas/tools/res/audio.mp3")
         prober = FFPROBEWrapper()
         properties = prober.read_properties(file_path)
         on_info("  Trying to call ffprobe... succeeded.")
@@ -72,7 +79,7 @@ def step3():
         on_info("  Trying to call ffmpeg...")
         from aeneas.ffmpegwrapper import FFMPEGWrapper
         import aeneas.globalfunctions as gf
-        input_file_path = get_abs_path("aeneas/tests/res/container/job/assets/p001.mp3")
+        input_file_path = get_abs_path("aeneas/tools/res/audio.mp3")
         handler, output_file_path = tempfile.mkstemp(suffix=".wav")
         converter = FFMPEGWrapper()
         result = converter.convert(input_file_path, output_file_path)
