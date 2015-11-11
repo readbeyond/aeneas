@@ -1,0 +1,32 @@
+#
+# Transliteration map for testing 
+#
+
+a A
+b B
+c C
+d D
+e
+f
+g
+i-k u
+à a
+d d
+è-ù e
+
+# U+58 = X, U+59 = Y, U+5A = Z
+U+58 x
+U+59 y
+U+5A z
+
+# U+54 = T, ..., U+57 = W
+U+54-U+57 w
+
+U+8 a
+U+88 a
+U+888 a
+U+8888 a
+U+88888 a
+U+108888 a
+
+

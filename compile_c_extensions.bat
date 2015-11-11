@@ -10,7 +10,7 @@
 :     Copyright 2015,      Alberto Pettarin (www.albertopettarin.it)
 :
 : Licence: GNU AGPL 3
-: Version: 1.3.1
+: Version: 1.3.2
 : Email:   aeneas@readbeyond.it
 : Status:  Production
 
@@ -44,7 +44,7 @@ echo "[INFO] Compiling cmfcc... done"
 cd ..
 
 echo "[INFO] Now please run"
-echo "[INFO]   python check_dependencies.py"
+echo "[INFO]   python aeneas_check_setup.py"
 echo "[INFO] to check that the C extensions are compiled."
 echo ""
 echo "[INFO] If the compilation failed, please check that:"

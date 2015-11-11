@@ -11,7 +11,6 @@ import os
 import re
 
 from aeneas.idsortingalgorithm import IDSortingAlgorithm
-from aeneas.language import Language
 from aeneas.logger import Logger
 import aeneas.globalconstants as gc
 import aeneas.globalfunctions as gf
@@ -23,7 +22,7 @@ __copyright__ = """
     Copyright 2015,      Alberto Pettarin (www.albertopettarin.it)
     """
 __license__ = "GNU AGPL v3"
-__version__ = "1.3.1"
+__version__ = "1.3.2"
 __email__ = "aeneas@readbeyond.it"
 __status__ = "Production"
 
@@ -138,6 +137,9 @@ class TextFragment(object):
     :type  language: string (from :class:`aeneas.language.Language` enumeration)
     :param lines: the lines in which text is split up
     :type  lines: list of unicode
+    :param filtered_lines: the lines in which text is split up,
+                           possibly filtered for the alignment purpose
+    :type  filtered_lines: list of unicode
 
     :raise TypeError: if ``identifier`` is not an instance of ``unicode``
     :raise TypeError: if ``lines`` is not an instance of ``list`` or it contains an element which is not an instance of ``unicode``
@@ -145,10 +147,17 @@ class TextFragment(object):
 
     TAG = "TextFragment"
 
-    def __init__(self, identifier=None, language=None, lines=None):
+    def __init__(
+            self,
+            identifier=None,
+            language=None,
+            lines=None,
+            filtered_lines=None
+        ):
         self.identifier = identifier
         self.language = language
         self.lines = lines
+        self.filtered_lines = filtered_lines
 
     def __len__(self):
         if self.lines is None:
@@ -236,6 +245,25 @@ class TextFragment(object):
         :rtype: int
         """
         return len(self.text)
+
+    @property
+    def filtered_text(self):
+        """
+        The filtered text of the text fragment.
+
+        :rtype: unicode
+        """
+        return u" ".join(self.filtered_lines)
+
+    @property
+    def filtered_characters(self):
+        """
+        The number of filtered characters in this text fragment.
+
+        :rtype: int
+        """
+        return len(self.filtered_text)
+
 
 
 class TextFile(object):
@@ -637,9 +665,51 @@ class TextFile(object):
         :type  pairs: list of lists (see above)
         """
         self._log("Creating TextFragment objects")
+        text_filter = self._get_text_filter()
         for pair in pairs:
-            fragment = TextFragment(identifier=pair[0], lines=pair[1])
+            fragment = TextFragment(
+                identifier=pair[0],
+                lines=pair[1],
+                filtered_lines=text_filter.apply_filter(pair[1])
+            )
             self.append_fragment(fragment)
+
+    def _get_text_filter(self):
+        """
+        Create a suitable TextFilter object
+        """
+        text_filter = TextFilter(logger=self.logger)
+        self._log("Created TextFilter object")
+
+        if gc.PPN_TASK_IS_TEXT_FILE_IGNORE_REGEX in self.parameters:
+            regex_string = self.parameters[gc.PPN_TASK_IS_TEXT_FILE_IGNORE_REGEX]
+            if regex_string is not None:
+                self._log("Creating TextFilterIgnoreRegex object")
+                try:
+                    regex_filter = TextFilterIgnoreRegex(
+                        regex_string,
+                        logger=self.logger
+                    )
+                    text_filter.append(regex_filter)
+                    self._log("Created TextFilterIgnoreRegex object")
+                except ValueError as exc:
+                    self._log(["Cannot create TextFilterIgnoreRegex object from string '%s'", str(exc)])
+
+        if gc.PPN_TASK_IS_TEXT_FILE_TRANSLITERATE_MAP in self.parameters:
+            trans_map_path = self.parameters[gc.PPN_TASK_IS_TEXT_FILE_TRANSLITERATE_MAP]
+            if trans_map_path is not None:
+                self._log("Creating TextFilterTransliterate object")
+                try:
+                    trans_filter = TextFilterTransliterate(
+                        map_file_path=trans_map_path,
+                        logger=self.logger
+                    )
+                    text_filter.append(trans_filter)
+                    self._log("Created TextFilterTransliterate object")
+                except ValueError as exc:
+                    self._log(["Cannot create TextFilterTransliterate object from file '%s'", str(exc)])
+
+        return text_filter
 
     def _get_id_regex(self):
         """
@@ -653,6 +723,313 @@ class TextFile(object):
             id_regex = u"" + self.parameters[gc.PPN_TASK_OS_FILE_ID_REGEX]
         self._log(["id_regex is %s", id_regex])
         return id_regex
+
+
+
+class TextFilter(object):
+    """
+    A text filter is a function acting on a list of strings,
+    and returning a new list of strings derived from the former
+    (with the same number of elements).
+
+    For example, a filter might apply a regex to the input string,
+    or it might transliterate its characters.
+
+    Filters can be chained.
+
+    Note: internally, all the text objects are ``unicode`` strings.
+
+    :param logger: the logger object
+    :type  logger: :class:`aeneas.logger.Logger`
+    """
+
+    TAG = "TextFilter"
+
+    SPACES_REGEX = re.compile(" [ ]+")
+
+    def __init__(self, logger=None):
+        self.filters = []
+        self.logger = Logger()
+        if logger is not None:
+            self.logger = logger
+
+    def _log(self, message, severity=Logger.DEBUG):
+        """ Log """
+        self.logger.log(message, severity, self.TAG)
+
+    def append(self, new_filter):
+        """
+        Append (to the right) a new filter to this filter.
+
+        :param new_filter: the filter to be appended
+        :type  new_filter: :class:`aeneas.textfile.TextFilter`
+        """
+        self.filters.append(new_filter)
+
+    def apply_filter(self, strings):
+        """
+        Apply the text filter filter to the given list of strings.
+
+        :param strings: the list of input strings
+        :type  strings: list of unicode
+        """
+        result = strings
+        for filt in self.filters:
+            result = filt.apply_filter(result)
+        self._log(["Applying regex: '%s' => '%s'", strings, result])
+        return result
+
+
+
+class TextFilterIgnoreRegex(TextFilter):
+    """
+    Delete the text matching the given regex.
+
+    Leading/trailing spaces, and repeated spaces are removed.
+
+    :param regex: the regular expression to be applied
+    :type  regex: regex
+    :param logger: the logger object
+    :type  logger: :class:`aeneas.logger.Logger`
+
+    :raise ValueError: if ``regex`` is not a valid regex
+    """
+
+    TAG = "TextFilterIgnoreRegex"
+
+    def __init__(self, regex, logger=None):
+        try:
+            self.regex = re.compile(regex)
+        except Exception as exc:
+            raise ValueError("String '%s' is not a valid regular expression" % regex)
+        TextFilter.__init__(self, logger)
+
+    def apply_filter(self, strings):
+        return [self._apply(s) for s in strings]
+
+    def _apply(self, string):
+        if string is None:
+            return None
+        result = self.regex.sub("", string)
+        result = self.SPACES_REGEX.sub(" ", result).strip()
+        return result
+
+
+
+class TextFilterTransliterate(TextFilter):
+    """
+    Transliterate the text using the given map file.
+
+    Leading/trailing spaces, and repeated spaces are removed.
+
+    :param map_object: the map object
+    :type  map_object: :class:`aeneas.textfile.TransliterationMap`
+    :param map_file_path: the path to a map file
+    :type  map_file_path: str (path)
+    :param logger: the logger object
+    :type  logger: :class:`aeneas.logger.Logger`
+
+    :raise IOError: if ``map_file_path`` cannot be read
+    :raise TypeError: if ``map_object`` is not an instance of :class:`aeneas.textfile.TransliterationMap`
+    """
+
+    TAG = "TextFilterTransliterate"
+    DELETE_SINGLE = ".[ ]*"
+
+    def __init__(self, map_file_path=None, map_object=None, logger=None):
+        if map_object is not None:
+            if not isinstance(map_object, TransliterationMap):
+                raise TypeError("map_object is not an instance of TransliterationMap")
+            self.trans_map = map_object
+        elif map_file_path is not None:
+            self.trans_map = TransliterationMap(
+                file_path=map_file_path,
+                logger=logger
+            )
+        TextFilter.__init__(self, logger)
+
+    def apply_filter(self, strings):
+        return [self._apply(s) for s in strings]
+
+    def _apply(self, string):
+        if string is None:
+            return None
+        result = self.trans_map.transliterate(string)
+        result = self.SPACES_REGEX.sub(" ", result).strip()
+        return result
+
+
+
+class TransliterationMap(object):
+    """
+    A transliteration map is a dictionary that maps Unicode characters
+    to their equivalent Unicode characters or strings (character sequences).
+    If a character is unmapped, its image is the character itself.
+    If a character is mapped to the empty string, it will be deleted.
+    Otherwise, a character will be replaced with the associated string.
+
+    For its format, please read the initial comment
+    included at the top of the ``transliteration.map`` sample file.
+
+    :param file_path: the path to the map file to be read
+    :type  file_path: str (path)
+    :param logger: the logger object
+    :type  logger: :class:`aeneas.logger.Logger`
+
+    :raise IOError: if ``file_path`` cannot be read
+    """
+
+    TAG = "TransliterationMap"
+    CODEPOINT_REGEX = re.compile("U\+([0-9A-Fa-f]+)")
+    DELETE_REGEX = re.compile("^([^ ]+)$")
+    REPLACE_REGEX = re.compile("^([^ ]+) ([^ ]+)$")
+    
+    def __init__(self, file_path, logger=None):
+        self.trans_map = {}
+        self.logger = Logger()
+        if logger is not None:
+            self.logger = logger
+        self.file_path = file_path
+
+    def _log(self, message, severity=Logger.DEBUG):
+        """ Log """
+        self.logger.log(message, severity, self.TAG)
+
+    @property
+    def file_path(self):
+        """
+        The path of the map file.
+
+        :rtype: string (path)
+        """
+        return self.__file_path
+    @file_path.setter
+    def file_path(self, file_path):
+        if (file_path is not None) and (not gf.file_exists(file_path)):
+            raise IOError("Map file '%s' does not exist" % file_path)
+        self.__file_path = file_path
+        self._build_map()
+
+    def transliterate(self, string):
+        result = []
+        for char in string:
+            try:
+                result.append(self.trans_map[char])
+            except:
+                result.append(char)
+        result = u"".join(result)
+        return result
+
+    def _build_map(self):
+        """
+        Read the map file at path.
+        """
+        self.trans_map = {}
+        try:
+            file_obj = codecs.open(self.file_path, "r", "utf-8")
+            contents = file_obj.read().replace("\t", " ")
+            for line in contents.splitlines():
+                # ignore lines starting with "#" or blank (after stripping)
+                if not line.startswith("#"):
+                    line = line.strip()
+                    if len(line) > 0:
+                        self._process_map_rule(line)
+            file_obj.close()
+        except Exception as exc:
+            pass
+
+    def _process_map_rule(self, line):
+        """
+        Process the line string containing a map rule.
+        """
+        result = self.REPLACE_REGEX.match(line)
+        if result is not None:
+            what = self._process_first_group(result.group(1))
+            replacement = self._process_second_group(result.group(2))
+            for char in what:
+                self.trans_map[char] = replacement
+                self._log(["Adding rule: replace '%s' with '%s'", char, replacement])
+        else:
+            result = self.DELETE_REGEX.match(line)
+            if result is not None:
+                what = self._process_first_group(result.group(1))
+                for char in what:
+                    self.trans_map[char] = ""
+                    self._log(["Adding rule: delete '%s'", char])
+
+    def _process_first_group(self, group):
+        """
+        Process the first group of a rule.
+        """
+        if "-" in group:
+            # interval
+            if len(group.split("-")) == 2:
+                arr = group.split("-")
+                start = self._parse_codepoint(arr[0])
+                end = self._parse_codepoint(arr[1])
+        else:
+            # single char/U+xxxx
+            start = self._parse_codepoint(group)
+            end = start
+        result = []
+        if (start > -1) and (end >= start):
+            for index in range(start, end + 1):
+                result.append(unichr(index))
+        return result
+
+    def _process_second_group(self, group):
+        """
+        Process the second group of a (replace) rule.
+        """
+        def _replace_codepoint(match):
+            """
+            Replace the matched Unicode hex code
+            with the corresponding unicode character
+            """
+            result = self._match_to_int(match)
+            if result == -1:
+                return ""
+            return unichr(result)
+        result = group
+        try:
+            result = re.sub(self.CODEPOINT_REGEX, _replace_codepoint, result)
+        except:
+            pass
+        return result
+
+    def _match_to_int(self, match):
+        """
+        Convert to int the first group of the match,
+        representing the hex number in CODEPOINT_REGEX
+        (e.g., 12AB in U+12AB).
+        """
+        try:
+            return int(match.group(1), 16)
+        except:
+            pass
+        return -1
+
+    def _unichr_to_int(self, char):
+        """
+        Convert to int the given character.
+        """
+        try:
+            return ord(char) 
+        except:
+            pass
+        return -1
+
+    def _parse_codepoint(self, string):
+        """
+        Parse the given string, either a unicode character or U+....,
+        and return the corresponding Unicode code point as int.
+        """
+        if len(string) > 1:
+            match = self.CODEPOINT_REGEX.match(string)
+            return self._match_to_int(match)
+        elif len(string) == 1:
+            return self._unichr_to_int(string)
+        return -1
 
 
 

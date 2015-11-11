@@ -22,7 +22,7 @@ __copyright__ = """
     Copyright 2015,      Alberto Pettarin (www.albertopettarin.it)
     """
 __license__ = "GNU AGPL v3"
-__version__ = "1.3.1"
+__version__ = "1.3.2"
 __email__ = "aeneas@readbeyond.it"
 __status__ = "Production"
 
@@ -183,7 +183,7 @@ class ESPEAKWrapper(object):
         fragments = text_file.fragments
         for fragment in fragments:
             f_lang = fragment.language
-            f_text = fragment.text
+            f_text = fragment.filtered_text
             if f_lang is None:
                 f_lang = Language.EN
             f_lang = self._replace_language(f_lang)
@@ -220,7 +220,7 @@ class ESPEAKWrapper(object):
             anchors.append([
                 intervals[i][0],
                 fragment.identifier,
-                fragment.text
+                fragment.filtered_text
             ])
             # increase the character counter
             num_chars += fragment.characters
@@ -270,7 +270,7 @@ class ESPEAKWrapper(object):
             # synthesize and get the duration of the output file
             self._log(["Synthesizing fragment %d", num])
             result = self._synthesize_fragment_pure_python(
-                text=fragment.text,
+                text=fragment.filtered_text,
                 language=language
             )
             (duration, sr_nu, enc_nu, data) = result

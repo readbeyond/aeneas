@@ -1,3 +1,10 @@
+aeneas (1.3.2) stable; urgency=medium
+
+  * Renamed check_dependecies.py as aeneas_check_setup.py
+  * Added new parameters: is_text_file_ignore_regex and is_text_file_transliterate_map
+
+ -- alberto <alberto@nievo>  Sat, 07 Nov 2015 16:08:28 +0100
+
 aeneas (1.3.1) stable; urgency=medium
 
   * Initial release. 

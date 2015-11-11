@@ -20,7 +20,7 @@ __copyright__ = """
     Copyright 2015,      Alberto Pettarin (www.albertopettarin.it)
     """
 __license__ = "GNU AGPL v3"
-__version__ = "1.3.1"
+__version__ = "1.3.2"
 __email__ = "aeneas@readbeyond.it"
 __status__ = "Production"
 
@@ -36,7 +36,7 @@ CMODULE = Extension("cew", sources=["cew.c"], libraries=["espeak"])
 
 setup(
     name="cew",
-    version="1.3.1",
+    version="1.3.2",
     description="""
     Python C Extension for synthesizing text with espeak.
     """,
