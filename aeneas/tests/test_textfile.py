@@ -10,6 +10,7 @@ from aeneas.textfile import TextFileFormat
 from aeneas.textfile import TextFragment
 from aeneas.textfile import TextFilter
 from aeneas.textfile import TextFilterIgnoreRegex
+from aeneas.textfile import TextFilterTransliterate
 import aeneas.globalconstants as gc
 import aeneas.globalfunctions as gf
 
@@ -31,6 +32,7 @@ class TestTextFile(unittest.TestCase):
     ID_REGEX_PARAMETERS_BAD = {
         gc.PPN_TASK_OS_FILE_ID_REGEX : "word"
     }
+    TRANSLITERATION_MAP_FILE_PATH = gf.get_abs_path("res/transliteration/transliteration.map", __file__)
 
     def load(self, input_file_path=PLAIN_FILE_PATH, fmt=TextFileFormat.PLAIN, expected_length=15, parameters=None):
         tfl = TextFile(gf.get_abs_path(input_file_path, __file__), fmt, parameters)
@@ -55,6 +57,11 @@ class TestTextFile(unittest.TestCase):
 
     def filter_ignore_regex(self, regex, string_in, expected_out):
         fil = TextFilterIgnoreRegex(regex)
+        string_out = fil.apply_filter(string_in)
+        self.assertEqual(string_out, expected_out)
+
+    def filter_transliterate(self, string_in, expected_out, map_file_path=TRANSLITERATION_MAP_FILE_PATH):
+        fil = TextFilterTransliterate(map_file_path=map_file_path)
         string_out = fil.apply_filter(string_in)
         self.assertEqual(string_out, expected_out)
 
@@ -378,6 +385,12 @@ class TestTextFile(unittest.TestCase):
         with self.assertRaises(ValueError):
             self.filter_ignore_regex("word[abc", [u"abc"], [u"abc"])
 
+    def test_filter_ignore_regex_replace_empty(self):
+        self.filter_ignore_regex("word", [u""], [u""])
+
+    def test_filter_ignore_regex_replace_none(self):
+        self.filter_ignore_regex("word", [None], [None])
+
     def test_filter_ignore_regex_no_match(self):
         self.filter_ignore_regex("word", [u"abc"], [u"abc"])
 
@@ -401,6 +414,45 @@ class TestTextFile(unittest.TestCase):
 
     def test_filter_ignore_regex_entire_match(self):
         self.filter_ignore_regex("word", [u"word"], [u""])
+
+    def test_filter_transliterate_identity(self):
+        self.filter_transliterate([u"worm"], [u"worm"])
+
+    def test_filter_transliterate_error(self):
+        with self.assertRaises(IOError):
+            self.filter_transliterate([u"worm"], [u"worm"], self.NOT_EXISTING_PATH)
+
+    def test_filter_transliterate_replace_empty(self):
+        self.filter_transliterate([u""], [u""])
+
+    def test_filter_transliterate_replace_none(self):
+        self.filter_transliterate([None], [None])
+
+    def test_filter_transliterate_replace_single(self):
+        self.filter_transliterate([u"warm"], [u"wArm"])
+
+    def test_filter_transliterate_replace_range(self):
+        self.filter_transliterate([u"pill"], [u"pull"])
+
+    def test_filter_transliterate_replace_single_unicode(self):
+        self.filter_transliterate([u"wàrm"], [u"warm"])
+
+    def test_filter_transliterate_replace_range_unicode(self):
+        self.filter_transliterate([u"wàrèm"], [u"warem"])
+
+    def test_filter_transliterate_replace_codepoint(self):
+        self.filter_transliterate([u"Xylophon"], [u"xylophon"])
+
+    def test_filter_transliterate_replace_codepoint_range(self):
+        self.filter_transliterate([u"TUTTE"], [u"wwwwE"])
+
+    def test_filter_transliterate_replace_codepoint_length(self):
+        self.filter_transliterate([u"x" + unichr(0x8) + u"z"], [u"xaz"])
+        self.filter_transliterate([u"x" + unichr(0x88) + u"z"], [u"xaz"])
+        self.filter_transliterate([u"x" + unichr(0x888) + u"z"], [u"xaz"])
+        self.filter_transliterate([u"x" + unichr(0x8888) + u"z"], [u"xaz"])
+        self.filter_transliterate([u"x" + unichr(0x88888) + u"z"], [u"xaz"])
+        self.filter_transliterate([u"x" + unichr(0x108888) + u"z"], [u"xaz"])
 
 
 

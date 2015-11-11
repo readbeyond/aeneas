@@ -808,6 +808,8 @@ class TextFilterIgnoreRegex(TextFilter):
         return [self._apply(s) for s in strings]
 
     def _apply(self, string):
+        if string is None:
+            return None
         result = self.regex.sub("", string)
         result = self.SPACES_REGEX.sub(" ", result).strip()
         return result
@@ -821,29 +823,37 @@ class TextFilterTransliterate(TextFilter):
     Leading/trailing spaces, and repeated spaces are removed.
 
     :param map_object: the map object
-    :type  map_object: dict
+    :type  map_object: :class:`aeneas.textfile.TransliterationMap`
     :param map_file_path: the path to a map file
     :type  map_file_path: str (path)
     :param logger: the logger object
     :type  logger: :class:`aeneas.logger.Logger`
 
-    :raise ValueError: if ``regex`` is not a valid regex
+    :raise IOError: if ``map_file_path`` cannot be read
+    :raise TypeError: if ``map_object`` is not an instance of :class:`aeneas.textfile.TransliterationMap`
     """
 
     TAG = "TextFilterTransliterate"
     DELETE_SINGLE = ".[ ]*"
 
-    def __init__(self, map_object=None, map_file_path=None, logger=None):
+    def __init__(self, map_file_path=None, map_object=None, logger=None):
         if map_object is not None:
+            if not isinstance(map_object, TransliterationMap):
+                raise TypeError("map_object is not an instance of TransliterationMap")
             self.trans_map = map_object
         elif map_file_path is not None:
-            self.trans_map = TransliterationMap(path=map_file_path, logger=logger)
+            self.trans_map = TransliterationMap(
+                file_path=map_file_path,
+                logger=logger
+            )
         TextFilter.__init__(self, logger)
 
     def apply_filter(self, strings):
         return [self._apply(s) for s in strings]
 
     def _apply(self, string):
+        if string is None:
+            return None
         result = self.trans_map.transliterate(string)
         result = self.SPACES_REGEX.sub(" ", result).strip()
         return result
@@ -852,14 +862,21 @@ class TextFilterTransliterate(TextFilter):
 
 class TransliterationMap(object):
     """
-    A transliteration map 
+    A transliteration map is a dictionary that maps Unicode characters
+    to their equivalent Unicode characters or strings (character sequences).
+    If a character is unmapped, its image is the character itself.
+    If a character is mapped to the empty string, it will be deleted.
+    Otherwise, a character will be replaced with the associated string.
 
-    Leading/trailing spaces, and repeated spaces are removed.
+    For its format, please read the initial comment
+    included at the top of the ``transliteration.map`` sample file.
 
-    :param path: the path to the map file to be read
-    :type  path: str (path)
+    :param file_path: the path to the map file to be read
+    :type  file_path: str (path)
     :param logger: the logger object
     :type  logger: :class:`aeneas.logger.Logger`
+
+    :raise IOError: if ``file_path`` cannot be read
     """
 
     TAG = "TransliterationMap"
@@ -867,17 +884,31 @@ class TransliterationMap(object):
     DELETE_REGEX = re.compile("^([^ ]+)$")
     REPLACE_REGEX = re.compile("^([^ ]+) ([^ ]+)$")
     
-    def __init__(self, path, logger=None):
+    def __init__(self, file_path, logger=None):
         self.trans_map = {}
-        self.path = path
         self.logger = Logger()
         if logger is not None:
             self.logger = logger
-        self._build_map(path)
+        self.file_path = file_path
 
     def _log(self, message, severity=Logger.DEBUG):
         """ Log """
         self.logger.log(message, severity, self.TAG)
+
+    @property
+    def file_path(self):
+        """
+        The path of the map file.
+
+        :rtype: string (path)
+        """
+        return self.__file_path
+    @file_path.setter
+    def file_path(self, file_path):
+        if (file_path is not None) and (not gf.file_exists(file_path)):
+            raise IOError("Map file '%s' does not exist" % file_path)
+        self.__file_path = file_path
+        self._build_map()
 
     def transliterate(self, string):
         result = []
@@ -889,16 +920,20 @@ class TransliterationMap(object):
         result = u"".join(result)
         return result
 
-    def _build_map(self, path):
+    def _build_map(self):
         """
         Read the map file at path.
         """
+        self.trans_map = {}
         try:
-            file_obj = codecs.open(path, "r", "utf-8")
+            file_obj = codecs.open(self.file_path, "r", "utf-8")
             contents = file_obj.read().replace("\t", " ")
             for line in contents.splitlines():
-                if (not line.startswith("#")) and (len(line.strip()) > 0):
-                    self._process_map_rule(line)
+                # ignore lines starting with "#" or blank (after stripping)
+                if not line.startswith("#"):
+                    line = line.strip()
+                    if len(line) > 0:
+                        self._process_map_rule(line)
             file_obj.close()
         except Exception as exc:
             pass

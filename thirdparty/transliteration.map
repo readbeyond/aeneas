@@ -1,0 +1,247 @@
+#
+# Transliteration map example, courtesy of Steve Gallagher and Richard Margetts
+#
+# PROCESSING RULES
+# 1. The file must be encoded using UTF-8.
+# 2. The line terminator is parsed in universal mode (i.e., CR, LF, and CRLF are equivalent).
+# 3. Each line contains at most one processing rule.
+# 4. Each line is stripped before processing, that is, leading and trailing blank characters (spaces, tabs, etc.) are removed.
+# 5. If a line is empty or it starts with '#', it is ignored. (Use '#' for comments.)
+# 6. If a line contains only a group, it is treated as a "delete" rule.
+# 7. If a line contains two groups, it is treated as a "replace" rule.
+# 8. A group is:
+#   a. a Unicode character (i.e., its actual bytes: 'à'); or
+#   b. an ASCII string starting with "U+" and denoting the Unicode code point in hexadecimal (e.g., "U+12AB"); or
+#   c. a range in the form "start-end", where "start" and "end" are as point a. or point b. (e.g., "a-z", "à-è", "U+2000-U+200D").
+# 9. The group separator is the tab character or the space character (tab characters are automatically replaced by a space character).
+# 10. Rules are processed from top to bottom, possibly overriding previous rules concerning the same character.
+#
+# NOTE
+# Since the following characters have special meaning, you might need to use the U+.... syntax if they have to appear on a rule
+# '\t' = U+9  (TAB)
+# '\n' = U+A  (LF)
+# '\r' = U+D  (CR)
+# ' '  = U+20 (SPACE)
+# '+'  = U+2B (PLUS SIGN)
+# '-'  = U+2D (HYPHEN-MINUS)
+# 'U'  = U+55 (CAPITAL LETTER U)
+#
+# EXAMPLES
+# (Remove the leading "# " to make the rule effective)
+# 
+# Delete all 'à' characters
+# à
+#
+# Delete all U+200A characters
+# U+200A
+#
+# Delete all characters from 'à' to 'è' (included)
+# à-è
+#
+# Delete all characters from U+2000 to U+200D (included)
+# U+2000-U+200D
+#
+# Replace all 'à' characters with 'a'
+# à a
+#
+# Replace all U+2010 characters with '-'
+# U+2010 -
+#
+# Replace all characters from U+2010 to U+2016 (included) with '-'
+# U+2010-U+2016 -
+#
+# Replace all 'ñ' characters with 'ny' (note that the replacement has more than one character)
+# ñ ny
+#
+# Same as above, but using the U+.... syntax (note you can chain U+.... strings)
+# U+F1 U+6EU+67
+#
+# After these two rules, 'b' characters will be replaced by '2' (the second rule will override the first)
+# a-z 1
+# b 2
+#
+
+###############################################################################
+#
+# replace various letters with their ASCII "base" character
+#
+à a
+À A
+á a
+Á A
+â a
+Â A
+ă a
+Ă A
+ǎ a
+Ǎ A
+ȧ a
+Ȧ A
+ā a
+Ā A
+ã a
+ɑ a
+ɓ b
+Ɓ B
+ĉ c
+Ĉ C
+ć c
+Ć C
+ċ c
+Ċ C
+ƈ c
+Ƈ C
+ḍ d
+ɗ d
+ȡ d
+Ɗ D
+è e
+È E
+é e
+É E
+ê e
+Ê E
+ē e
+Ē E
+ẽ e
+ë e
+ė e
+Ė E
+ɛ e
+Ɛ E
+ə e
+Ǝ E
+ƒ f
+Ƒ F
+ɣ ĥ
+Ɣ Ĥ
+ì i
+Ì I
+í i
+Í I
+î i
+Î I
+ĩ i
+ï i
+ɨ i
+Ɨ I
+ɩ i
+ɪ i
+ƙ k
+Ƙ K
+ k
+ K
+ƚ l
+ḷ l
+Ḷ L
+ḻ l
+Ḻ L
+ḽ l
+Ḽ L
+ṁ m
+Ṁ M
+ṃ m
+Ṃ M
+ɱ m
+ M
+ñ ny
+Ñ Ny
+ɲ ny
+Ɲ Ny
+ŋ ng
+Ŋ Ng
+ɳ n
+ò o
+Ò O
+ó o
+Ó O
+ô o
+Ô O
+ǒ o
+Ǒ O
+ȯ o
+Ȯ O
+ɔ o
+Ɔ O
+ṗ p
+Ṗ P
+ƥ p
+Ƥ P
+ᵽ p
+Ᵽ P
+ṣ s
+Ṣ S
+š ŝ
+Š Ŝ
+ş s
+Ş S
+ś s
+Ś S
+ṭ t
+Ṭ T
+ṫ t
+Ṫ T
+ṫ t
+Ṫ T
+ṱ t
+Ṱ T
+ƭ t
+Ƭ T
+Ʈ T
+ŧ t
+Ŧ T
+ţ t
+Ţ T
+ù u
+Ù U
+ú u
+Ú U
+û u
+Û U
+ǔ u
+Ǔ U
+ü u
+Ü U
+ū u
+Ū U
+ũ u
+ʉ u
+ƴ y
+ż z
+ẓ z
+Ż Z
+ž ĝ
+Ž Ĝ
+ƶ z
+Ƶ z
+ z
+ Z
+
+###############################################################################
+#
+# replace typographic hyphens/dashes/bars with - (U+002D)
+#
+U+2010 -
+U+2011 -
+U+2012 -
+U+2013 -
+U+2014 -
+U+2015 -
+
+###############################################################################
+#
+# delete the following characters not spoken in audio
+#
+<
+>
+«
+»
+*
+†
+‡
+U+2000-U+200D
+U+2016-U+201F
+U+2039
+U+203A
+U+02B0-U+036F
+

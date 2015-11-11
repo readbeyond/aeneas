@@ -1,4 +1,4 @@
 aeneas_check_setup.py /usr/share/python-aeneas
 VERSION /usr/share/python-aeneas
-aeneas/tools/res/audio.mp3 /usr/share/python-aeneas/aeneas/tools/res/
+aeneas/tools/res/audio.mp3 /usr/share/python-aeneas/aeneas/tools/res
 
