@@ -4,10 +4,8 @@
 """
 Set aeneas package up
 """
-from numpy import get_include
-from numpy.distutils import misc_util
+
 from setuptools import setup, Extension
-import os
 
 __author__ = "Alberto Pettarin"
 __copyright__ = """
@@ -20,26 +18,37 @@ __version__ = "1.3.2"
 __email__ = "aeneas@readbeyond.it"
 __status__ = "Production"
 
+EXTENSIONS = []
+INCLUDE_DIRS = []
+#try:
+from numpy import get_include
+from numpy.distutils import misc_util
+import os
+INCLUDE_DIRS = [misc_util.get_numpy_include_dirs()]
 EXTENSION_CDTW = Extension("aeneas.cdtw", ["aeneas/cdtw.c"], include_dirs=[get_include()])
 EXTENSION_CEW = Extension("aeneas.cew", ["aeneas/cew.c"], libraries=["espeak"])
 EXTENSION_CMFCC = Extension("aeneas.cmfcc", ["aeneas/cmfcc.c"], include_dirs=[get_include()])
-
 EXTENSIONS = [EXTENSION_CDTW, EXTENSION_CMFCC]
 if (os.name == "posix") and (os.uname()[0] == "Linux"):
     # cew is available only for Linux at the moment
     EXTENSIONS.append(EXTENSION_CEW)
+#except:
+#    pass
 
 setup(
     name="aeneas",
     packages=["aeneas", "aeneas.tools"],
-    version="1.3.2",
+    package_data={"aeneas": ["res/*", "speak_lib.h"], "aeneas.tools": ["res/*"]},
+    version="1.3.2.6",
     description="aeneas is a Python library and a set of tools to automagically synchronize audio and text",
     author="Alberto Pettarin",
     author_email="alberto@albertopettarin.it",
     url="https://github.com/readbeyond/aeneas",
     license="GNU Affero General Public License v3 (AGPL v3)",
     long_description=open("README.txt", "r").read(),
-    install_requires=["BeautifulSoup", "lxml", "numpy"],
+    setup_requires=["numpy>=1.9"],
+    install_requires=["BeautifulSoup>=3.0", "lxml>=3.0", "numpy>=1.9"],
+    extras_require={"pafy": ["pafy>=0.3"]},
     keywords=[
         "CSV",
         "DTW",
@@ -78,8 +87,10 @@ setup(
         "License :: OSI Approved :: GNU Affero General Public License v3",
         "Natural Language :: English",
         "Programming Language :: Python",
+        "Programming Language :: Python :: 2",
+        "Programming Language :: Python :: 2.7",
         "Topic :: Software Development :: Libraries :: Python Modules"
     ],
     ext_modules=EXTENSIONS,
-    include_dirs=[misc_util.get_numpy_include_dirs()]
+    include_dirs=INCLUDE_DIRS,
 )
