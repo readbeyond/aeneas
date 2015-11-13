@@ -19,9 +19,10 @@ synchronize audio and text.
     2. `Supported Platforms <#supported-platforms>`__
     3. `Installation <#installation>`__
 
-       1. `Linux <#linux>`__
-       2. `Windows <#windows>`__
-       3. `Mac OS X <#mac-os-x>`__
+       1. `Using pip (OS Independent) <#using-pip-os-independent>`__
+       2. `Linux <#linux>`__
+       3. `Windows <#windows>`__
+       4. `Mac OS X <#mac-os-x>`__
 
 3.  `Usage <#usage>`__
 4.  `Documentation <#documentation>`__
@@ -49,8 +50,9 @@ text. In computer science this task is known as (automatically computing
 a) **forced alignment**.
 
 For example, given `this text
-file <aeneas/tests/res/container/job/assets/p001.xhtml>`__ and `this
-audio file <aeneas/tests/res/container/job/assets/p001.mp3>`__,
+file <https://raw.githubusercontent.com/readbeyond/aeneas/master/aeneas/tests/res/container/job/assets/p001.xhtml>`__
+and `this audio
+file <https://raw.githubusercontent.com/readbeyond/aeneas/master/aeneas/tests/res/container/job/assets/p001.mp3>`__,
 **aeneas** determines, for each fragment, the corresponding time
 interval in the audio file:
 
@@ -132,16 +134,39 @@ provides **aeneas** inside a virtualized Debian image running under
 Installation
 ~~~~~~~~~~~~
 
+Using pip (OS Independent)
+^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+1. Make sure you have ``ffmpeg``, ``ffprobe`` (usually provided by the
+   ``ffmpeg`` package), and ``espeak`` installed and available on your
+   command line. You also need Python 2.x and its "developer" package
+   containing the C headers (``python-dev`` or similar).
+
+2. Install ``aeneas`` system-wise with ``pip``:
+
+   .. code:: bash
+
+       $ sudo pip install numpy
+       $ sudo pip install aeneas
+       (Optional: $ sudo pip install pafy)
+
+   **Note**: you must install ``numpy`` before ``aeneas``, otherwise the
+   setup process will fail.
+
+   **Note**: you can install ``aeneas`` via ``pip`` in a virtual
+   environment (e.g. created by ``virtualenv``).
+
 Linux
 ^^^^^
 
 1. If you are a user of a ``deb``-based Linux distribution (e.g., Debian
-   or Ubuntu), you can install all the dependencies by running `the
-   provided ``install_dependencies.sh``
-   script <install_dependencies.sh>`__
+   or Ubuntu), you can install all the dependencies by downloading and
+   running `the provided install\_dependencies.sh
+   script <https://raw.githubusercontent.com/readbeyond/aeneas/master/install_dependencies.sh>`__
 
    .. code:: bash
 
+       $ wget https://raw.githubusercontent.com/readbeyond/aeneas/master/install_dependencies.sh
        $ sudo bash install_dependencies.sh
 
    If you have another Linux distribution, just make sure you have
@@ -166,6 +191,15 @@ Linux
    required dependencies installed and you can confidently run
    **aeneas** in production.
 
+3. In alternative to the previous point, you can install ``aeneas``
+   system-wise with ``pip``:
+
+   .. code:: bash
+
+       $ sudo pip install numpy
+       $ sudo pip install aeneas
+       (Optional: $ sudo pip install pafy)
+
 Windows
 ^^^^^^^
 
@@ -182,77 +216,86 @@ Mac OS X
 Feel free to jump to step 9 if you already have ``python``,
 ``ffmpeg``/``ffprobe`` and ``espeak`` installed.
 
-1. Install the Xcode command line tools:
+1.  Install the Xcode command line tools:
 
-   .. code:: bash
+    .. code:: bash
 
-       $ xcode-select --install
+        $ xcode-select --install
 
-   Follow the instructions appearing on screen.
+    Follow the instructions appearing on screen.
 
-2. Install the ``brew`` packet manager:
+2.  Install the ``brew`` packet manager:
 
-   .. code:: bash
+    .. code:: bash
 
-       $ ruby -e "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install)"
+        $ ruby -e "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install)"
 
-3. Update ``brew``:
+3.  Update ``brew``:
 
-   .. code:: bash
+    .. code:: bash
 
-       $ brew update
+        $ brew update
 
-4. Install ``espeak`` and ``ffmpeg`` (which also provides ``ffprobe``)
-   via ``brew``:
+4.  Install ``espeak`` and ``ffmpeg`` (which also provides ``ffprobe``)
+    via ``brew``:
 
-   .. code:: bash
+    .. code:: bash
 
-       $ brew install espeak
-       $ brew install ffmpeg
+        $ brew install espeak
+        $ brew install ffmpeg
 
-5. Install Python:
+5.  Install Python:
 
-   .. code:: bash
+    .. code:: bash
 
-       $ brew install python
+        $ brew install python
 
-6. Replace the default (Apple's) Python distribution with the Python
-   installed by ``brew``, by adding the following line at the end of
-   your ``~/.bash_profile``:
+6.  Replace the default (Apple's) Python distribution with the Python
+    installed by ``brew``, by adding the following line at the end of
+    your ``~/.bash_profile``:
 
-   .. code:: bash
+    .. code:: bash
 
-       export PATH=/usr/local/bin:/usr/local/sbin:~/bin:$PATH
+        export PATH=/usr/local/bin:/usr/local/sbin:~/bin:$PATH
 
-7. Open a new terminal window. (This step is IMPORTANT! If you do not,
-   you will still use Apple's Python, and everything in the Universe
-   will go wrong!)
+7.  Open a new terminal window. (This step is IMPORTANT! If you do not,
+    you will still use Apple's Python, and everything in the Universe
+    will go wrong!)
 
-8. Check that you are running the new ``python``:
+8.  Check that you are running the new ``python``:
 
-   .. code:: bash
+    .. code:: bash
 
-       $ which python
-       /usr/local/bin/python
+        $ which python
+        /usr/local/bin/python
 
-       $ python --version
-       Python 2.7.10 (or later)
+        $ python --version
+        Python 2.7.10 (or later)
 
-9. Clone the ``aeneas`` repo, install Python dependencies, and compile C
-   extensions:
+9.  Clone the ``aeneas`` repo, install Python dependencies, and compile
+    C extensions:
 
-   .. code:: bash
+    .. code:: bash
 
-       $ git clone https://github.com/ReadBeyond/aeneas.git
-       $ cd aeneas
-       $ sudo pip install -r requirements.txt
-       (Optional: $ sudo pip install pafy)
-       $ python setup.py build_ext --inplace
-       $ python aeneas_check_setup.py
+        $ git clone https://github.com/ReadBeyond/aeneas.git
+        $ cd aeneas
+        $ sudo pip install -r requirements.txt
+        (Optional: $ sudo pip install pafy)
+        $ python setup.py build_ext --inplace
+        $ python aeneas_check_setup.py
 
-   If the last command prints a success message, you have all the
-   required dependencies installed and you can confidently run
-   **aeneas** in production.
+    If the last command prints a success message, you have all the
+    required dependencies installed and you can confidently run
+    **aeneas** in production.
+
+10. In alternative to the previous point, you can install ``aeneas``
+    system-wise with ``pip``:
+
+    .. code:: bash
+
+        $ sudo pip install numpy
+        $ sudo pip install aeneas
+        (Optional: $ sudo pip install pafy)
 
 Usage
 -----
@@ -261,7 +304,9 @@ Usage
 
 2. Open a command prompt/shell/terminal and go to the root directory of
    the aeneas repository, that is, the one containing the ``README.md``
-   and ``VERSION`` files.
+   and ``VERSION`` files. (This step is not needed if you installed
+   ``aeneas`` with ``pip``, since you will have the ``aeneas`` module
+   available system-wise.)
 
 3. To compute a synchronization map ``map.json`` for a pair
    (``audio.mp3``, ``text.txt`` in ``plain`` text format), you can run:
@@ -383,7 +428,6 @@ TODO List
 -  Multilevel sync map granularity (e.g., multilevel SMIL output)
 -  Better documentation
 -  Testing other approaches, like HMM
--  Publishing the package on PyPI
 -  Publishing the package on Debian repo
 
 Would you like to see one of the above points done? Consider
@@ -421,38 +465,46 @@ License
 -------
 
 **aeneas** is released under the terms of the GNU Affero General Public
-License Version 3. See the `LICENSE <LICENSE>`__ file for details.
+License Version 3. See the
+`LICENSE <https://raw.githubusercontent.com/readbeyond/aeneas/master/LICENSE>`__
+file for details.
 
 The pure Python code for computing the MFCCs ``aeneas/mfcc.py`` is a
 verbatim copy from the `CMU Sphinx3
 project <http://cmusphinx.sourceforge.net/>`__. See
-```licenses/sphinx3.txt`` <licenses/sphinx3.txt>`__ for details.
+`licenses/sphinx3.txt <https://raw.githubusercontent.com/readbeyond/aeneas/master/licenses/sphinx3.txt>`__
+for details.
 
 The pure Python code for reading and writing WAVE files
 ``aeneas/wavfile.py`` is a verbatim copy from the `scipy
 project <https://github.com/scipy/scipy/>`__, included here to avoid
 installing the whole ``scipy`` package. See
-```licenses/scipy.txt`` <licenses/scipy.txt>`__ for details.
+`licenses/scipy.txt <https://raw.githubusercontent.com/readbeyond/aeneas/master/licenses/scipy.txt>`__
+for details.
 
 The C header ``speak_lib.h`` for ``espeak`` is a verbatim copy from the
 `espeak project <http://espeak.sourceforge.net/>`__. See
-```licenses/eSpeak.txt`` <licenses/eSpeak.txt>`__ for details.
+`licenses/eSpeak.txt <https://raw.githubusercontent.com/readbeyond/aeneas/master/licenses/eSpeak.txt>`__
+for details.
 
 The HTML file ``aeneas/res/finetuneas.html`` is a verbatim copy from the
 `finetuneas project <https://github.com/ozdefir/finetuneas>`__, courtesy
 of Firat Özdemir. See
-```licenses/finetuneas.txt`` <licenses/finetuneas.txt>`__ for details.
+`licenses/finetuneas.txt <https://raw.githubusercontent.com/readbeyond/aeneas/master/licenses/finetuneas.txt>`__
+for details.
 
 Audio files contained in the unit tests ``aeneas/tests/res/`` directory
 are adapted from recordings produced by the `LibriVox
 Project <http://www.librivox.org>`__ and they are in the public domain.
-See ```licenses/LibriVox.txt`` <licenses/LibriVox.txt>`__ for details.
+See
+`licenses/LibriVox.txt <https://raw.githubusercontent.com/readbeyond/aeneas/master/licenses/LibriVox.txt>`__
+for details.
 
 Text files contained in the unit tests ``aeneas/tests/res/`` directory
 are adapted from files produced by the `Project
 Gutenberg <http://www.gutenberg.org>`__ and they are in the public
 domain. See
-```licenses/ProjectGutenberg.txt`` <licenses/ProjectGutenberg.txt>`__
+`licenses/ProjectGutenberg.txt <https://raw.githubusercontent.com/readbeyond/aeneas/master/licenses/ProjectGutenberg.txt>`__
 for details.
 
 No copy rights were harmed in the making of this project.
@@ -558,6 +610,9 @@ detect the audio head/tail
 **October 2015**: release of v1.3.0, including calling espeak via its C
 API (on Linux) for faster audio synthesis, and the possibility of
 downloading audio from YouTube
+
+**November 2015**: release of v1.3.2, for the first time available also
+on `PyPI <https://pypi.python.org/pypi/aeneas/>`__
 
 Acknowledgments
 ---------------
