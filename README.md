@@ -14,9 +14,10 @@
     1. [System Requirements](#system-requirements)
     2. [Supported Platforms](#supported-platforms)
     3. [Installation](#installation)
-        1. [Linux](#linux)
-        2. [Windows](#windows)
-        3. [Mac OS X](#mac-os-x)
+        1. [Using pip (OS Independent)](#using-pip-os-independent)
+        2. [Linux](#linux)
+        3. [Windows](#windows)
+        4. [Mac OS X](#mac-os-x)
 3. [Usage](#usage)
 4. [Documentation](#documentation)
 5. [Supported Features](#supported-features)
@@ -39,8 +40,8 @@ and an audio file containing the narration of the text.
 In computer science this task is known as
 (automatically computing a) **forced alignment**.
 
-For example, given [this text file](aeneas/tests/res/container/job/assets/p001.xhtml)
-and [this audio file](aeneas/tests/res/container/job/assets/p001.mp3),
+For example, given [this text file](https://raw.githubusercontent.com/readbeyond/aeneas/master/aeneas/tests/res/container/job/assets/p001.xhtml)
+and [this audio file](https://raw.githubusercontent.com/readbeyond/aeneas/master/aeneas/tests/res/container/job/assets/p001.mp3),
 **aeneas** determines, for each fragment, the corresponding time interval in the audio file:
 
 ```
@@ -121,14 +122,37 @@ and [Vagrant](http://www.vagrantup.com/).
 
 ### Installation
 
+#### Using pip (OS Independent)
+
+1. Make sure you have
+    `ffmpeg`, `ffprobe` (usually provided by the `ffmpeg` package),
+    and `espeak` installed and available on your command line.
+    You also need Python 2.x and its "developer" package
+    containing the C headers (`python-dev` or similar).
+
+2. Install `aeneas` system-wise with `pip`:
+    
+    ```bash
+    $ sudo pip install numpy
+    $ sudo pip install aeneas
+    (Optional: $ sudo pip install pafy)
+    ```
+
+    **Note**: you must install `numpy` before `aeneas`,
+    otherwise the setup process will fail.
+
+    **Note**: you can install `aeneas` via `pip`
+    in a virtual environment (e.g. created by `virtualenv`).
+
 #### Linux
 
 1. If you are a user of a `deb`-based Linux distribution
 (e.g., Debian or Ubuntu),
-you can install all the dependencies by running
-[the provided `install_dependencies.sh` script](install_dependencies.sh)
+you can install all the dependencies by downloading and running
+[the provided install_dependencies.sh script](https://raw.githubusercontent.com/readbeyond/aeneas/master/install_dependencies.sh)
 
     ```bash
+    $ wget https://raw.githubusercontent.com/readbeyond/aeneas/master/install_dependencies.sh
     $ sudo bash install_dependencies.sh
     ```
 
@@ -153,6 +177,14 @@ you can install all the dependencies by running
     If the last command prints a success message,
     you have all the required dependencies installed
     and you can confidently run **aeneas** in production.
+
+3. In alternative to the previous point, you can install `aeneas` system-wise with `pip`:
+    
+    ```bash
+    $ sudo pip install numpy
+    $ sudo pip install aeneas
+    (Optional: $ sudo pip install pafy)
+    ```
 
 #### Windows
 
@@ -237,12 +269,22 @@ Feel free to jump to step 9 if you already have
     you have all the required dependencies installed
     and you can confidently run **aeneas** in production.
 
+10. In alternative to the previous point, you can install `aeneas` system-wise with `pip`:
+    
+    ```bash
+    $ sudo pip install numpy
+    $ sudo pip install aeneas
+    (Optional: $ sudo pip install pafy)
+    ```
+
 ## Usage
 
 1. Install `aeneas` as described above. (Only the first time!)
 
 2. Open a command prompt/shell/terminal and go to the root directory
 of the aeneas repository, that is, the one containing the `README.md` and `VERSION` files.
+(This step is not needed if you installed `aeneas` with `pip`,
+since you will have the `aeneas` module available system-wise.)
 
 3. To compute a synchronization map `map.json` for a pair
 (`audio.mp3`, `text.txt` in `plain` text format), you can run:
@@ -346,7 +388,6 @@ Changelog: [http://www.readbeyond.it/aeneas/docs/changelog.html](http://www.read
 * Multilevel sync map granularity (e.g., multilevel SMIL output)
 * Better documentation
 * Testing other approaches, like HMM
-* Publishing the package on PyPI
 * Publishing the package on Debian repo
 
 Would you like to see one of the above points done?
@@ -383,43 +424,43 @@ To be written. Eventually. Some day.
 
 **aeneas** is released under the terms of the
 GNU Affero General Public License Version 3.
-See the [LICENSE](LICENSE) file for details.
+See the [LICENSE](https://raw.githubusercontent.com/readbeyond/aeneas/master/LICENSE) file for details.
 
 The pure Python code for computing the MFCCs
 `aeneas/mfcc.py`
 is a verbatim copy from the
 [CMU Sphinx3 project](http://cmusphinx.sourceforge.net/).
-See [`licenses/sphinx3.txt`](licenses/sphinx3.txt) for details.
+See [licenses/sphinx3.txt](https://raw.githubusercontent.com/readbeyond/aeneas/master/licenses/sphinx3.txt) for details.
 
 The pure Python code for reading and writing WAVE files 
 `aeneas/wavfile.py`
 is a verbatim copy from the
 [scipy project](https://github.com/scipy/scipy/),
 included here to avoid installing the whole `scipy` package.
-See [`licenses/scipy.txt`](licenses/scipy.txt) for details.
+See [licenses/scipy.txt](https://raw.githubusercontent.com/readbeyond/aeneas/master/licenses/scipy.txt) for details.
 
 The C header `speak_lib.h` for `espeak`
 is a verbatim copy from the
 [espeak project](http://espeak.sourceforge.net/).
-See [`licenses/eSpeak.txt`](licenses/eSpeak.txt) for details.
+See [licenses/eSpeak.txt](https://raw.githubusercontent.com/readbeyond/aeneas/master/licenses/eSpeak.txt) for details.
 
 The HTML file `aeneas/res/finetuneas.html`
 is a verbatim copy from the
 [finetuneas project](https://github.com/ozdefir/finetuneas),
 courtesy of Firat Özdemir.
-See [`licenses/finetuneas.txt`](licenses/finetuneas.txt) for details.
+See [licenses/finetuneas.txt](https://raw.githubusercontent.com/readbeyond/aeneas/master/licenses/finetuneas.txt) for details.
 
 Audio files contained in the unit tests `aeneas/tests/res/` directory
 are adapted from recordings produced by
 the [LibriVox Project](http://www.librivox.org)
 and they are in the public domain.
-See [`licenses/LibriVox.txt`](licenses/LibriVox.txt) for details.
+See [licenses/LibriVox.txt](https://raw.githubusercontent.com/readbeyond/aeneas/master/licenses/LibriVox.txt) for details.
 
 Text files contained in the unit tests `aeneas/tests/res/` directory
 are adapted from files produced by
 the [Project Gutenberg](http://www.gutenberg.org)
 and they are in the public domain.
-See [`licenses/ProjectGutenberg.txt`](licenses/ProjectGutenberg.txt) for details.
+See [licenses/ProjectGutenberg.txt](https://raw.githubusercontent.com/readbeyond/aeneas/master/licenses/ProjectGutenberg.txt) for details.
 
 No copy rights were harmed in the making of this project.
 
@@ -526,6 +567,10 @@ including code to automatically detect the audio head/tail
 including calling espeak via its C API (on Linux)
 for faster audio synthesis, and the possibility
 of downloading audio from YouTube
+
+**November 2015**: release of v1.3.2,
+for the first time available
+also on [PyPI](https://pypi.python.org/pypi/aeneas/)
 
 ## Acknowledgments
 
