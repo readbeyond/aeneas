@@ -6,7 +6,7 @@ prune docs/build
 include LICENSE
 recursive-include licenses *
 include README.md
-include README.txt
+include README.rst
 include requirements.txt
 recursive-include thirdparty *
 include VERSION
