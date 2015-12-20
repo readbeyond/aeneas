@@ -1,6 +1,11 @@
 Changelog
 =========
 
+v1.3.3 (2015-12-20)
+-------------------
+
+#. Added all voice variants (e.g., ``en-gb`` to ``language.py``) supported by espeak v1.48.03
+
 v1.3.2 (2015-11-11)
 -------------------
 
