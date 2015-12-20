@@ -138,9 +138,7 @@ class TestESPEAKWrapper(unittest.TestCase):
         #with self.assertRaises(IOError):
         self.synthesize_multiple(tfl, zero_length=True)
 
-    def test_multiple_unsupported_language(self):
-        # "en-gb" is valid for espeak, but not listed in language.py
-        # NOTE disabling this check to allow testing new languages
+    def test_multiple_variation_language(self):
         tfl = self.tfl([["en-gb", [u"Word"]]])
         self.synthesize_multiple(tfl)
 
@@ -177,9 +175,7 @@ class TestESPEAKWrapper(unittest.TestCase):
         with self.assertRaises(IOError):
             self.synthesize_single(u"Word", "zzzz", zero_length=True)
 
-    def test_single_unsupported_language(self):
-        # "en-gb" is valid for espeak, but not listed in language.py
-        # NOTE disabling this check to allow testing new languages
+    def test_single_variation_language(self):
         self.synthesize_single(u"Word", "en-gb")
 
 if __name__ == '__main__':
