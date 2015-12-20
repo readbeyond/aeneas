@@ -14,7 +14,7 @@ __copyright__ = """
     Copyright 2015,      Alberto Pettarin (www.albertopettarin.it)
     """
 __license__ = "GNU AGPL 3"
-__version__ = "1.3.2"
+__version__ = "1.3.3"
 __email__ = "aeneas@readbeyond.it"
 __status__ = "Production"
 
@@ -39,7 +39,7 @@ setup(
     name="aeneas",
     packages=["aeneas", "aeneas.tools"],
     package_data={"aeneas": ["res/*", "speak_lib.h"], "aeneas.tools": ["res/*"]},
-    version="1.3.2.8",
+    version="1.3.3.0",
     description="aeneas is a Python library and a set of tools to automagically synchronize audio and text",
     author="Alberto Pettarin",
     author_email="alberto@albertopettarin.it",
