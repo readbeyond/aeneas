@@ -6,7 +6,8 @@ A structure representing a job, that is,
 a collection of related Tasks.
 """
 
-import uuid
+from __future__ import absolute_import
+from __future__ import print_function
 
 import aeneas.globalconstants as gc
 import aeneas.globalfunctions as gf
@@ -15,10 +16,10 @@ __author__ = "Alberto Pettarin"
 __copyright__ = """
     Copyright 2012-2013, Alberto Pettarin (www.albertopettarin.it)
     Copyright 2013-2015, ReadBeyond Srl   (www.readbeyond.it)
-    Copyright 2015,      Alberto Pettarin (www.albertopettarin.it)
+    Copyright 2015-2016, Alberto Pettarin (www.albertopettarin.it)
     """
 __license__ = "GNU AGPL v3"
-__version__ = "1.3.3"
+__version__ = "1.4.0"
 __email__ = "aeneas@readbeyond.it"
 __status__ = "Production"
 
@@ -33,11 +34,11 @@ class Job(object):
     :raises TypeError: if ``config_string`` is not ``None`` and not an instance of ``str`` or ``unicode``
     """
 
-    TAG = "Job"
+    TAG = u"Job"
 
     def __init__(self, config_string=None):
         self.tasks = []
-        self.identifier = str(uuid.uuid4()).lower()
+        self.identifier = gf.uuid_string()
         self.configuration = None
         if config_string is not None:
             self.configuration = JobConfiguration(config_string)
@@ -60,16 +61,19 @@ class Job(object):
     def __len__(self):
         return len(self.tasks)
 
-    def __str__(self):
-        accumulator = ""
-        accumulator += "%s: '%s'\n" % (gc.RPN_JOB_IDENTIFIER, self.identifier)
-        accumulator += "Configuration:\n%s\n" % str(self.configuration)
+    def __unicode__(self):
         i = 0
-        accumulator += "Tasks:\n"
+        msg = []
+        msg.append(u"%s: '%s'" % (gc.RPN_JOB_IDENTIFIER, self.identifier))
+        msg.append(u"Configuration:\n%s" % self.configuration.__unicode__())
+        msg.append(u"Tasks:")
         for task in self.tasks:
-            accumulator += "Task %d %s\n" % (i, task.identifier)
+            msg.append(u"Task %d %s" % (i, task.identifier))
             i += 1
-        return accumulator
+        return u"\n".join(msg)
+
+    def __str__(self):
+        return gf.safe_str(self.__unicode__())
 
     @property
     def identifier(self):
@@ -92,18 +96,18 @@ class JobConfiguration(object):
     :param config_string: the job configuration string
     :type  config_string: string
 
-    :raises TypeError: if ``config_string`` is not ``None`` and not an instance of ``str`` or ``unicode``
+    :raises TypeError: if ``config_string`` is not ``None`` and
+                       it is not a Unicode string
     """
 
-    TAG = "JobConfiguration"
+    TAG = u"JobConfiguration"
 
     def __init__(self, config_string=None):
         if (
                 (config_string is not None) and
-                (not isinstance(config_string, str)) and
-                (not isinstance(config_string, unicode))
+                (not gf.is_unicode(config_string))
         ):
-            raise TypeError("config_string is not an instance of str or unicode")
+            raise TypeError("config_string is not a Unicode string")
         # job fields
         self.field_names = [
             gc.PPN_JOB_DESCRIPTION,
@@ -137,8 +141,11 @@ class JobConfiguration(object):
                 if key in self.field_names:
                     self.fields[key] = properties[key]
 
+    def __unicode__(self):
+        return u"\n".join([u"%s: '%s'" % (fn, self.fields[fn]) for fn in self.field_names])
+
     def __str__(self):
-        return "\n".join(["%s: '%s'" % (fn, self.fields[fn]) for fn in self.field_names])
+        return gf.safe_str(self.__unicode__())
 
     def config_string(self):
         """
@@ -147,7 +154,7 @@ class JobConfiguration(object):
 
         :rtype: string
         """
-        return (gc.CONFIG_STRING_SEPARATOR_SYMBOL).join(["%s%s%s" % (fn, gc.CONFIG_STRING_ASSIGNMENT_SYMBOL, self.fields[fn]) for fn in self.field_names if self.fields[fn] is not None])
+        return (gc.CONFIG_STRING_SEPARATOR_SYMBOL).join([u"%s%s%s" % (fn, gc.CONFIG_STRING_ASSIGNMENT_SYMBOL, self.fields[fn]) for fn in self.field_names if self.fields[fn] is not None])
 
     @property
     def description(self):

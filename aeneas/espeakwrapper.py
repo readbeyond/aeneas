@@ -5,8 +5,9 @@
 Wrapper around ``espeak`` to synthesize text into a ``wav`` audio file.
 """
 
+from __future__ import absolute_import
+from __future__ import print_function
 import subprocess
-import tempfile
 
 from aeneas.audiofile import AudioFileMonoWAV
 from aeneas.audiofile import AudioFileUnsupportedFormatError
@@ -19,10 +20,10 @@ __author__ = "Alberto Pettarin"
 __copyright__ = """
     Copyright 2012-2013, Alberto Pettarin (www.albertopettarin.it)
     Copyright 2013-2015, ReadBeyond Srl   (www.readbeyond.it)
-    Copyright 2015,      Alberto Pettarin (www.albertopettarin.it)
+    Copyright 2015-2016, Alberto Pettarin (www.albertopettarin.it)
     """
 __license__ = "GNU AGPL v3"
-__version__ = "1.3.3"
+__version__ = "1.4.0"
 __email__ = "aeneas@readbeyond.it"
 __status__ = "Production"
 
@@ -41,7 +42,7 @@ class ESPEAKWrapper(object):
     :type  logger: :class:`aeneas.logger.Logger`
     """
 
-    TAG = "ESPEAKWrapper"
+    TAG = u"ESPEAKWrapper"
 
     def __init__(self, logger=None):
         self.logger = logger
@@ -62,7 +63,7 @@ class ESPEAKWrapper(object):
         :rtype: string (from :class:`aeneas.language.Language` enumeration)
         """
         if language == Language.UK:
-            self._log(["Replaced '%s' with '%s'", Language.UK, Language.RU])
+            self._log([u"Replaced '%s' with '%s'", Language.UK, Language.RU])
             return Language.RU
         return language
 
@@ -91,35 +92,36 @@ class ESPEAKWrapper(object):
         :type  force_pure_python: bool
         :rtype: tuple (anchors, total_time, num_chars)
 
-        :raise TypeError: if ``text_file`` is ``None`` or one of the text fragments is not a ``unicode`` object
+        :raise TypeError: if ``text_file`` is ``None`` or
+                          one of the text fragments is not a ``unicode`` object
         :raise IOError: if output file cannot be written to ``output_file_path``
         """
         # check that text_file is not None
         if text_file is None:
-            self._log("text_file is None", Logger.CRITICAL)
+            self._log(u"text_file is None", Logger.CRITICAL)
             raise TypeError("text_file is None")
 
         # check that the lines in the text file all have unicode type
         for fragment in text_file.fragments:
             for line in fragment.lines:
-                if not isinstance(line, unicode):
-                    self._log("Text file must contain only unicode strings", Logger.CRITICAL)
+                if not gf.is_unicode(line):
+                    self._log(u"Text file must contain only unicode strings", Logger.CRITICAL)
                     raise TypeError("Text file must contain only unicode strings")
 
         # log parameters
         if quit_after is not None:
-            self._log(["Quit after reaching %.3f", quit_after])
+            self._log([u"Quit after reaching %.3f", quit_after])
         if backwards:
-            self._log("Synthesizing backwards")
+            self._log(u"Synthesizing backwards")
 
         # check that output_file_path can be written
         if not gf.file_can_be_written(output_file_path):
-            self._log(["Cannot write output file to '%s'", output_file_path], Logger.CRITICAL)
+            self._log([u"Cannot write output file to '%s'", output_file_path], Logger.CRITICAL)
             raise IOError("Cannot write output file")
 
         # force using pure Python code
         if force_pure_python:
-            self._log("Force using pure Python code")
+            self._log(u"Force using pure Python code")
             return self._synthesize_multiple_pure_python(
                 text_file,
                 output_file_path,
@@ -129,9 +131,9 @@ class ESPEAKWrapper(object):
 
         # call C extension, if possible
         if gc.USE_C_EXTENSIONS:
-            self._log("C extensions enabled in gc")
+            self._log(u"C extensions enabled in gc")
             if gf.can_run_c_extension("cew"):
-                self._log("C extensions enabled in gc and cew can be loaded")
+                self._log(u"C extensions enabled in gc and cew can be loaded")
                 try:
                     return self._synthesize_multiple_c_extension(
                         text_file,
@@ -141,16 +143,16 @@ class ESPEAKWrapper(object):
                     )
                 except:
                     self._log(
-                        "An error occurred running cew",
-                         severity=Logger.WARNING
+                        u"An error occurred running cew",
+                        severity=Logger.WARNING
                     )
             else:
-                self._log("C extensions enabled in gc, but cew cannot be loaded")
+                self._log(u"C extensions enabled in gc, but cew cannot be loaded")
         else:
-            self._log("C extensions disabled in gc")
+            self._log(u"C extensions disabled in gc")
 
         # fallback: run pure Python code
-        self._log("Running the pure Python code")
+        self._log(u"Running the pure Python code")
         return self._synthesize_multiple_pure_python(
             text_file,
             output_file_path,
@@ -165,7 +167,7 @@ class ESPEAKWrapper(object):
             quit_after=None,
             backwards=False
     ):
-        self._log("Synthesizing using C extension...")
+        self._log(u"Synthesizing using C extension...")
 
         # convert parameters from Python values to C values
         try:
@@ -175,10 +177,10 @@ class ESPEAKWrapper(object):
         c_backwards = 0
         if backwards:
             c_backwards = 1
-        self._log(["output_file_path: %s", output_file_path])
-        self._log(["c_quit_after:     %.3f", c_quit_after])
-        self._log(["c_backwards:      %d", c_backwards])
-        self._log("Preparing c_text...")
+        self._log([u"output_file_path: %s", output_file_path])
+        self._log([u"c_quit_after:     %.3f", c_quit_after])
+        self._log([u"c_backwards:      %d", c_backwards])
+        self._log(u"Preparing c_text...")
         c_text = []
         fragments = text_file.fragments
         for fragment in fragments:
@@ -189,23 +191,23 @@ class ESPEAKWrapper(object):
             f_lang = self._replace_language(f_lang)
             if f_text is None:
                 f_text = u""
-            c_text.append((f_lang, f_text.encode("utf-8")))
-        self._log("Preparing c_text... done")
+            c_text.append((gf.safe_bytes(f_lang), gf.safe_bytes(f_text)))
+        self._log(u"Preparing c_text... done")
 
         # call C extension
-        self._log("Importing aeneas.cew...")
+        self._log(u"Importing aeneas.cew...")
         import aeneas.cew
-        self._log("Importing aeneas.cew... done")
-        self._log("Calling aeneas.cew...")
+        self._log(u"Importing aeneas.cew... done")
+        self._log(u"Calling aeneas.cew...")
         sr, sf, intervals = aeneas.cew.cew_synthesize_multiple(
             output_file_path,
             c_quit_after,
             c_backwards,
             c_text
         )
-        self._log("Calling aeneas.cew... done")
-        self._log(["sr: %d", sr])
-        self._log(["sf: %d", sf])
+        self._log(u"Calling aeneas.cew... done")
+        self._log([u"sr: %d", sr])
+        self._log([u"sf: %d", sf])
 
         # create output
         anchors = []
@@ -229,10 +231,10 @@ class ESPEAKWrapper(object):
 
         # return output
         # NOTE anchors do not make sense if backwards == True
-        self._log(["Returning %d time anchors", len(anchors)])
-        self._log(["Current time %.3f", current_time])
-        self._log(["Synthesized %d characters", num_chars])
-        self._log("Synthesizing using C extension... done")
+        self._log([u"Returning %d time anchors", len(anchors)])
+        self._log([u"Current time %.3f", current_time])
+        self._log([u"Synthesized %d characters", num_chars])
+        self._log(u"Synthesizing using C extension... done")
         return (anchors, current_time, num_chars)
 
     def _synthesize_multiple_pure_python(
@@ -242,10 +244,10 @@ class ESPEAKWrapper(object):
             quit_after=None,
             backwards=False
     ):
-        self._log("Synthesizing using pure Python...")
+        self._log(u"Synthesizing using pure Python...")
 
         # get sample rate and encoding
-        result = self._synthesize_fragment_pure_python("Dummy", Language.EN)
+        result = self._synthesize_fragment_pure_python(u"Dummy", Language.EN)
         (du_nu, sample_rate, encoding, da_nu) = result
 
         # open output file
@@ -268,7 +270,7 @@ class ESPEAKWrapper(object):
             # replace language
             language = self._replace_language(fragment.language)
             # synthesize and get the duration of the output file
-            self._log(["Synthesizing fragment %d", num])
+            self._log([u"Synthesizing fragment %d", num])
             result = self._synthesize_fragment_pure_python(
                 text=fragment.filtered_text,
                 language=language
@@ -279,9 +281,9 @@ class ESPEAKWrapper(object):
             # increase the character counter
             num_chars += fragment.characters
             # append/prepend data 
-            self._log(["Fragment %d starts at: %f", num, current_time])
+            self._log([u"Fragment %d starts at: %f", num, current_time])
             if duration > 0:
-                self._log(["Fragment %d duration: %f", num, duration])
+                self._log([u"Fragment %d duration: %f", num, duration])
                 current_time += duration
                 #
                 # NOTE since numpy.append cannot be in place,
@@ -294,26 +296,26 @@ class ESPEAKWrapper(object):
                 else:
                     output_file.append_data(data)
             else:
-                self._log(["Fragment %d has zero duration", num])
+                self._log([u"Fragment %d has zero duration", num])
 
             # increment fragment counter
             num += 1
             
             # check if we must stop synthesizing because we have enough audio
             if (quit_after is not None) and (current_time > quit_after):
-                self._log(["Quitting after reached duration %.3f", current_time])
+                self._log([u"Quitting after reached duration %.3f", current_time])
                 break
 
         # write output file
-        self._log(["Writing audio file '%s'", output_file_path])
+        self._log([u"Writing audio file '%s'", output_file_path])
         output_file.write(file_path=output_file_path)
 
         # return output
         # NOTE anchors do not make sense if backwards == True
-        self._log(["Returning %d time anchors", len(anchors)])
-        self._log(["Current time %.3f", current_time])
-        self._log(["Synthesized %d characters", num_chars])
-        self._log("Synthesizing using pure Python... done")
+        self._log([u"Returning %d time anchors", len(anchors)])
+        self._log([u"Current time %.3f", current_time])
+        self._log([u"Synthesized %d characters", num_chars])
+        self._log(u"Synthesizing using pure Python... done")
         return (anchors, current_time, num_chars)
 
     def synthesize_single(
@@ -346,42 +348,42 @@ class ESPEAKWrapper(object):
         """
         # check that text_file is not None
         if text is None:
-            self._log("text is None", Logger.CRITICAL)
+            self._log(u"text is None", Logger.CRITICAL)
             raise TypeError("text is None")
 
         # check that text has unicode type
-        if not isinstance(text, unicode):
-            self._log("text must be a unicode object", Logger.CRITICAL)
-            raise TypeError("text must be a unicode object")
+        if not gf.is_unicode(text):
+            self._log(u"text must be a unicode string", Logger.CRITICAL)
+            raise TypeError("text must be a unicode string")
 
         # check that output_file_path can be written
         if not gf.file_can_be_written(output_file_path):
-            self._log(["Cannot write output file to '%s'", output_file_path], Logger.CRITICAL)
+            self._log([u"Cannot write output file to '%s'", output_file_path], Logger.CRITICAL)
             raise IOError("Cannot write output file")
 
-        self._log(["Synthesizing text: '%s'", text])
-        self._log(["Synthesizing language: '%s'", language])
-        self._log(["Synthesizing to file: '%s'", output_file_path])
+        self._log([u"Synthesizing text: '%s'", text])
+        self._log([u"Synthesizing language: '%s'", language])
+        self._log([u"Synthesizing to file: '%s'", output_file_path])
 
         # return zero if text is the empty string
         if len(text) == 0:
-            self._log("len(text) is zero: returning 0.0")
+            self._log(u"len(text) is zero: returning 0.0")
             return 0.0
 
         # replace language
         language = self._replace_language(language)
-        self._log(["Using language: '%s'", language])
+        self._log([u"Using language: '%s'", language])
 
         # return 0 if the requested language is not listed in language.py
         # NOTE disabling this check to allow testing new languages
         # TODO put it back, add an option in gc to allow unlisted languages
         #if language not in Language.ALLOWED_VALUES:
-        #    self._log(["Language %s is not allowed", language])
+        #    self._log([u"Language %s is not allowed", language])
         #    return 0
 
         # force using pure Python code
         if force_pure_python:
-            self._log("Force using pure Python code")
+            self._log(u"Force using pure Python code")
             result = self._synthesize_single_pure_python(
                 text,
                 language,
@@ -391,9 +393,9 @@ class ESPEAKWrapper(object):
 
         # call C extension, if possible
         if gc.USE_C_EXTENSIONS:
-            self._log("C extensions enabled in gc")
+            self._log(u"C extensions enabled in gc")
             if gf.can_run_c_extension("cew"):
-                self._log("C extensions enabled in gc and cew can be loaded")
+                self._log(u"C extensions enabled in gc and cew can be loaded")
                 try:
                     return self._synthesize_single_c_extension(
                         text,
@@ -402,16 +404,16 @@ class ESPEAKWrapper(object):
                     )
                 except:
                     self._log(
-                        "An error occurred running cew",
+                        u"An error occurred running cew",
                         severity=Logger.WARNING
                     )
             else:
-                self._log("C extensions enabled in gc, but cew cannot be loaded")
+                self._log(u"C extensions enabled in gc, but cew cannot be loaded")
         else:
-            self._log("C extensions disabled in gc")
+            self._log(u"C extensions disabled in gc")
 
         # fallback: run pure Python code
-        self._log("Running the pure Python code")
+        self._log(u"Running the pure Python code")
         result = self._synthesize_single_pure_python(
             text,
             language,
@@ -427,24 +429,24 @@ class ESPEAKWrapper(object):
 
         :rtype: float
         """
-        self._log("Synthesizing using C extension...")
+        self._log(u"Synthesizing using C extension...")
 
-        self._log("Preparing c_text...")
-        c_text = text.encode("utf-8")
+        self._log(u"Preparing c_text...")
+        c_text = gf.safe_bytes(text)
         # NOTE language has been replaced already!
-        self._log("Preparing c_text... done")
-        self._log("Importing aeneas.cew...")
+        self._log(u"Preparing c_text... done")
+        self._log(u"Importing aeneas.cew...")
         import aeneas.cew
-        self._log("Importing aeneas.cew... done")
-        self._log("Calling aeneas.cew...")
+        self._log(u"Importing aeneas.cew... done")
+        self._log(u"Calling aeneas.cew...")
         sr, begin, end = aeneas.cew.cew_synthesize_single(
             output_file_path,
             language,
             c_text
         )
-        self._log("Calling aeneas.cew... done")
+        self._log(u"Calling aeneas.cew... done")
 
-        self._log("Synthesizing using C extension... done")
+        self._log(u"Synthesizing using C extension... done")
         return end
 
     def _synthesize_single_pure_python(self, text, language, output_file_path):
@@ -453,7 +455,7 @@ class ESPEAKWrapper(object):
 
         :rtype: tuple (duration, sample_rate, encoding, data)
         """
-        self._log("Synthesizing using pure Python...")
+        self._log(u"Synthesizing using pure Python...")
 
         # NOTE language has been replaced already!
 
@@ -462,23 +464,23 @@ class ESPEAKWrapper(object):
         arguments += [gc.ESPEAK_PATH]
         arguments += ["-v", language]
         arguments += ["-w", output_file_path]
-        self._log(["Calling with arguments '%s'", " ".join(arguments)])
-        self._log(["Calling with text '%s'", text])
+        self._log([u"Calling with arguments '%s'", " ".join(arguments)])
+        self._log([u"Calling with text '%s'", text])
         proc = subprocess.Popen(
             arguments,
             stdout=subprocess.PIPE,
             stdin=subprocess.PIPE,
             stderr=subprocess.PIPE,
             universal_newlines=True)
-        proc.communicate(input=text.encode("utf-8"))
+        proc.communicate(input=text)
         proc.stdout.close()
         proc.stdin.close()
         proc.stderr.close()
-        self._log("Call completed")
+        self._log(u"Call completed")
 
         # check the file can be read
         if not gf.file_exists(output_file_path):
-            self._log(["Output file '%s' does not exist", output_file_path], Logger.CRITICAL)
+            self._log([u"Output file '%s' does not exist", output_file_path], Logger.CRITICAL)
             raise IOError("Output file does not exist")
 
         # return the duration of the output file
@@ -492,12 +494,12 @@ class ESPEAKWrapper(object):
             sample_rate = audio_file.audio_sample_rate
             encoding = audio_file.audio_format
             data = audio_file.audio_data
-            self._log(["Duration of '%s': %f", output_file_path, duration])
-            self._log("Synthesizing using pure Python... done")
+            self._log([u"Duration of '%s': %f", output_file_path, duration])
+            self._log(u"Synthesizing using pure Python... done")
             return (duration, sample_rate, encoding, data)
         except (AudioFileUnsupportedFormatError, IOError) as exc:
-            self._log("Error while trying reading the output file")
-            self._log(["Message: %s", exc])
+            self._log(u"Error while trying reading the output file")
+            self._log([u"Message: %s", exc])
             return (0, None, None, None)
 
     def _synthesize_fragment_pure_python(self, text, language):
@@ -505,20 +507,17 @@ class ESPEAKWrapper(object):
         Synthesize a single fragment, pure Python,
         and immediately remove the temporary file.
         """
-        self._log("Synthesizing text...")
-        handler, tmp_destination = tempfile.mkstemp(
-            suffix=".wav",
-            dir=gf.custom_tmp_dir()
-        )
+        self._log(u"Synthesizing text...")
+        handler, tmp_destination = gf.tmp_file(suffix=".wav")
         result = self._synthesize_single_pure_python(
             # TODO check this out
             text=text + u" ",
             language=language,
             output_file_path=tmp_destination
         )
-        self._log(["Removing temporary file '%s'", tmp_destination])
+        self._log([u"Removing temporary file '%s'", tmp_destination])
         gf.delete_file(handler, tmp_destination)
-        self._log("Synthesizing text... done")
+        self._log(u"Synthesizing text... done")
         return result
 
 

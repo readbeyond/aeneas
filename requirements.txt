@@ -1,3 +1,3 @@
-BeautifulSoup>=3.0
+BeautifulSoup4>=4.4
 lxml>=3.0
 numpy>=1.9

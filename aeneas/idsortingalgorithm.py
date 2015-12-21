@@ -5,6 +5,8 @@
 Enumeration of the available algorithms to sort IDs.
 """
 
+from __future__ import absolute_import
+from __future__ import print_function
 import re
 
 from aeneas.logger import Logger
@@ -13,10 +15,10 @@ __author__ = "Alberto Pettarin"
 __copyright__ = """
     Copyright 2012-2013, Alberto Pettarin (www.albertopettarin.it)
     Copyright 2013-2015, ReadBeyond Srl   (www.readbeyond.it)
-    Copyright 2015,      Alberto Pettarin (www.albertopettarin.it)
+    Copyright 2015-2016, Alberto Pettarin (www.albertopettarin.it)
     """
 __license__ = "GNU AGPL v3"
-__version__ = "1.3.3"
+__version__ = "1.4.0"
 __email__ = "aeneas@readbeyond.it"
 __status__ = "Production"
 
@@ -48,7 +50,7 @@ class IDSortingAlgorithm(object):
     ALLOWED_VALUES = [LEXICOGRAPHIC, NUMERIC, UNSORTED]
     """ List of all the allowed values """
 
-    TAG = "IDSortingAlgorithm"
+    TAG = u"IDSortingAlgorithm"
 
     def __init__(self, algorithm, logger=None):
         self.algorithm = algorithm
@@ -71,21 +73,21 @@ class IDSortingAlgorithm(object):
         tmp = ids
         if self.algorithm == IDSortingAlgorithm.UNSORTED:
             # nothing to do
-            self._log("Using UNSORTED")
+            self._log(u"Using UNSORTED")
         if self.algorithm == IDSortingAlgorithm.LEXICOGRAPHIC:
             # sort lexicographically
-            self._log("Using LEXICOGRAPHIC")
+            self._log(u"Using LEXICOGRAPHIC")
             tmp = sorted(ids)
         if self.algorithm == IDSortingAlgorithm.NUMERIC:
             # sort numerically
-            self._log("Using NUMERIC")
+            self._log(u"Using NUMERIC")
             tmp = ids
             try:
                 tmp = [[int(re.sub(r"[^0-9]", "", i)), i] for i in ids]
                 tmp = sorted(tmp)
                 tmp = [t[1] for t in tmp]
             except (ValueError, TypeError):
-                self._log("Failed", Logger.WARNING)
+                self._log(u"Failed", Logger.WARNING)
         return tmp
 
 

@@ -2,7 +2,6 @@
 # coding=utf-8
 
 import os
-import tempfile
 import unittest
 
 from aeneas.ffmpegwrapper import FFMPEGWrapper
@@ -43,7 +42,7 @@ class TestFFMPEGWrapper(unittest.TestCase):
 
     def convert(self, input_file_path, ofp=None):
         if ofp is None:
-            output_path = tempfile.mkdtemp()
+            output_path = gf.tmp_directory()
             output_file_path = os.path.join(output_path, "audio.wav")
         else:
             output_file_path = ofp

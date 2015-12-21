@@ -7,6 +7,8 @@ a single ``wav`` file,
 along with the corresponding time anchors.
 """
 
+from __future__ import absolute_import
+from __future__ import print_function
 from aeneas.espeakwrapper import ESPEAKWrapper
 from aeneas.logger import Logger
 from aeneas.textfile import TextFile
@@ -16,10 +18,10 @@ __author__ = "Alberto Pettarin"
 __copyright__ = """
     Copyright 2012-2013, Alberto Pettarin (www.albertopettarin.it)
     Copyright 2013-2015, ReadBeyond Srl   (www.readbeyond.it)
-    Copyright 2015,      Alberto Pettarin (www.albertopettarin.it)
+    Copyright 2015-2016, Alberto Pettarin (www.albertopettarin.it)
     """
 __license__ = "GNU AGPL v3"
-__version__ = "1.3.3"
+__version__ = "1.4.0"
 __email__ = "aeneas@readbeyond.it"
 __status__ = "Production"
 
@@ -33,7 +35,7 @@ class Synthesizer(object):
     :type  logger: :class:`aeneas.logger.Logger`
     """
 
-    TAG = "Synthesizer"
+    TAG = u"Synthesizer"
 
     def __init__(self, logger=None):
         self.logger = logger
@@ -79,7 +81,7 @@ class Synthesizer(object):
             raise IOError("audio_file_path cannot be written")
 
         # at the moment only espeak TTS is supported
-        self._log("Synthesizing using espeak...")
+        self._log(u"Synthesizing using espeak...")
         espeak = ESPEAKWrapper(logger=self.logger)
         result = espeak.synthesize_multiple(
             text_file=text_file,
@@ -88,7 +90,7 @@ class Synthesizer(object):
             backwards=backwards,
             force_pure_python=force_pure_python
         )
-        self._log("Synthesizing using espeak... done")
+        self._log(u"Synthesizing using espeak... done")
 
         if not gf.file_exists(audio_file_path):
             raise IOError("audio_file_path was not written")

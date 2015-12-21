@@ -5,8 +5,10 @@
 A structure describing the properties of a text file.
 """
 
-import BeautifulSoup
-import codecs
+from __future__ import absolute_import
+from __future__ import print_function
+from bs4 import BeautifulSoup
+import io
 import os
 import re
 
@@ -19,10 +21,10 @@ __author__ = "Alberto Pettarin"
 __copyright__ = """
     Copyright 2012-2013, Alberto Pettarin (www.albertopettarin.it)
     Copyright 2013-2015, ReadBeyond Srl   (www.readbeyond.it)
-    Copyright 2015,      Alberto Pettarin (www.albertopettarin.it)
+    Copyright 2015-2016, Alberto Pettarin (www.albertopettarin.it)
     """
 __license__ = "GNU AGPL v3"
-__version__ = "1.3.3"
+__version__ = "1.4.0"
 __email__ = "aeneas@readbeyond.it"
 __status__ = "Production"
 
@@ -164,8 +166,11 @@ class TextFragment(object):
             return 0
         return len(self.lines)
 
+    def __unicode__(self):
+        return u"%s %s" % (self.identifier, self.text)
+
     def __str__(self):
-        return ("%s %s" % (self.identifier, self.text)).encode('utf-8')
+        return gf.safe_str(self.__unicode__())
 
     @property
     def chars(self):
@@ -190,8 +195,8 @@ class TextFragment(object):
         return self.__identifier
     @identifier.setter
     def identifier(self, identifier):
-        if (identifier is not None) and (not isinstance(identifier, unicode)):
-            raise TypeError("identifier is not an instance of unicode")
+        if (identifier is not None) and (not gf.is_unicode(identifier)):
+            raise TypeError("identifier is not a Unicode string")
         self.__identifier = identifier
 
     @property
@@ -224,8 +229,8 @@ class TextFragment(object):
             if not isinstance(lines, list):
                 raise TypeError("lines is not an instance of list")
             for line in lines:
-                if not isinstance(line, unicode):
-                    raise TypeError("lines contains an element which is not an instance of unicode")
+                if not gf.is_unicode(line):
+                    raise TypeError("lines contains an element which is not a Unicode string")
         self.__lines = lines
 
     @property
@@ -288,7 +293,7 @@ class TextFile(object):
 
     DEFAULT_ID_REGEX = u"f%06d"
 
-    TAG = "TextFile"
+    TAG = u"TextFile"
 
     def __init__(
             self,
@@ -312,8 +317,11 @@ class TextFile(object):
     def __len__(self):
         return len(self.fragments)
 
+    def __unicode__(self):
+        return u"\n".join([f.__unicode__() for f in self.fragments])
+
     def __str__(self):
-        return "\n".join([str(f) for f in self.fragments])
+        return gf.safe_str(self.__unicode__())
 
     def _log(self, message, severity=Logger.DEBUG):
         """ Log """
@@ -445,7 +453,7 @@ class TextFile(object):
         :param language: the language of the text fragments
         :type  language: string (from :class:`aeneas.language.Language` enumeration)
         """
-        self._log(["Setting language: '%s'", language])
+        self._log([u"Setting language: '%s'", language])
         for fragment in self.fragments:
             fragment.language = language
 
@@ -453,7 +461,7 @@ class TextFile(object):
         """
         Clear the list of text fragments.
         """
-        self._log("Clearing text fragments")
+        self._log(u"Clearing text fragments")
         self.fragments = []
 
     def read_from_list(self, lines):
@@ -465,7 +473,7 @@ class TextFile(object):
         :param lines: the text fragments
         :type  lines: list of strings
         """
-        self._log("Reading text fragments from list")
+        self._log(u"Reading text fragments from list")
         self._read_plain(lines)
 
     def read_from_list_with_ids(self, lines):
@@ -477,7 +485,7 @@ class TextFile(object):
         :param lines: the list of ``[id, text]`` fragments (see above)
         :type  lines: list of pairs (see above)
         """
-        self._log("Reading text fragments from list with ids")
+        self._log(u"Reading text fragments from list with ids")
         pairs = []
         for line in lines:
             pairs.append([line[0], [line[1]]])
@@ -490,38 +498,37 @@ class TextFile(object):
 
         # test if we can read the given file
         if not os.path.isfile(self.file_path):
-            self._log(["File '%s' cannot be read", self.file_path], Logger.CRITICAL)
+            self._log([u"File '%s' cannot be read", self.file_path], Logger.CRITICAL)
             raise IOError("Input file cannot be read")
 
         if self.file_format not in TextFileFormat.ALLOWED_VALUES:
-            self._log(["Text file format '%s' is not supported.", self.file_format], Logger.CRITICAL)
+            self._log([u"Text file format '%s' is not supported.", self.file_format], Logger.CRITICAL)
             raise ValueError("Text file format not supported")
 
         # read the contents of the file
-        self._log(["Reading contents of file '%s'", self.file_path])
-        text_file = codecs.open(self.file_path, "r", "utf-8")
-        lines = text_file.readlines()
-        text_file.close()
+        self._log([u"Reading contents of file '%s'", self.file_path])
+        with io.open(self.file_path, "r", encoding="utf-8") as text_file:
+            lines = text_file.readlines()
 
         # clear text fragments
         self.clear()
 
         # parse the contents
         if self.file_format == TextFileFormat.SUBTITLES:
-            self._log("Reading from format SUBTITLES")
+            self._log(u"Reading from format SUBTITLES")
             self._read_subtitles(lines)
         if self.file_format == TextFileFormat.PARSED:
-            self._log("Reading from format PARSED")
+            self._log(u"Reading from format PARSED")
             self._read_parsed(lines)
         if self.file_format == TextFileFormat.PLAIN:
-            self._log("Reading from format PLAIN")
+            self._log(u"Reading from format PLAIN")
             self._read_plain(lines)
         if self.file_format == TextFileFormat.UNPARSED:
-            self._log("Reading from format UNPARSED")
+            self._log(u"Reading from format UNPARSED")
             self._read_unparsed(lines)
 
         # log the number of fragments
-        self._log(["Parsed %d fragments", len(self.fragments)])
+        self._log([u"Parsed %d fragments", len(self.fragments)])
 
     def _read_subtitles(self, lines):
         """
@@ -530,7 +537,7 @@ class TextFile(object):
         :param lines: the lines of the subtitles text file
         :type  lines: list of strings
         """
-        self._log("Parsing fragments from subtitles text format")
+        self._log(u"Parsing fragments from subtitles text format")
         id_regex = self._get_id_regex()
         lines = [line.strip() for line in lines]
         pairs = []
@@ -561,7 +568,7 @@ class TextFile(object):
                            (e.g., class/id regex strings)
         :type  parameters: dict
         """
-        self._log("Parsing fragments from parsed text format")
+        self._log(u"Parsing fragments from parsed text format")
         pairs = []
         for line in lines:
             pieces = line.split(gc.PARSED_TEXT_SEPARATOR)
@@ -582,7 +589,7 @@ class TextFile(object):
                            (e.g., class/id regex strings)
         :type  parameters: dict
         """
-        self._log("Parsing fragments from plain text format")
+        self._log(u"Parsing fragments from plain text format")
         id_regex = self._get_id_regex()
         lines = [line.strip() for line in lines]
         pairs = []
@@ -605,7 +612,7 @@ class TextFile(object):
         # TODO better and/or parametric parsing,
         #      for example, removing tags but keeping text, etc.
         #
-        self._log("Parsing fragments from unparsed text format")
+        self._log(u"Parsing fragments from unparsed text format")
         pairs = []
 
         # get filter attributes
@@ -613,46 +620,46 @@ class TextFile(object):
         if gc.PPN_JOB_IS_TEXT_UNPARSED_CLASS_REGEX in self.parameters:
             class_regex_string = self.parameters[gc.PPN_JOB_IS_TEXT_UNPARSED_CLASS_REGEX]
             if class_regex_string is not None:
-                self._log(["Regex for class: '%s'", class_regex_string])
+                self._log([u"Regex for class: '%s'", class_regex_string])
                 class_regex = re.compile(r".*\b" + class_regex_string + r"\b.*")
-                attributes['class'] = class_regex
+                attributes["class"] = class_regex
         if gc.PPN_JOB_IS_TEXT_UNPARSED_ID_REGEX in self.parameters:
             id_regex_string = self.parameters[gc.PPN_JOB_IS_TEXT_UNPARSED_ID_REGEX]
             if id_regex_string is not None:
-                self._log(["Regex for id: '%s'", id_regex_string])
+                self._log([u"Regex for id: '%s'", id_regex_string])
                 id_regex = re.compile(r".*\b" + id_regex_string + r"\b.*")
-                attributes['id'] = id_regex
+                attributes["id"] = id_regex
 
         # get id sorting algorithm
         id_sort = IDSortingAlgorithm.UNSORTED
         if gc.PPN_JOB_IS_TEXT_UNPARSED_ID_SORT in self.parameters:
             id_sort = self.parameters[gc.PPN_JOB_IS_TEXT_UNPARSED_ID_SORT]
-        self._log(["Sorting text fragments using '%s'", id_sort])
+        self._log([u"Sorting text fragments using '%s'", id_sort])
 
         # transform text in a soup object
-        self._log("Creating soup")
-        soup = BeautifulSoup.BeautifulSoup("\n".join(lines))
+        self._log(u"Creating soup")
+        soup = BeautifulSoup("\n".join(lines), "lxml")
 
         # extract according to class_regex and id_regex
         text_from_id = dict()
         ids = []
-        self._log(["Finding elements matching attributes '%s'", attributes])
+        self._log([u"Finding elements matching attributes '%s'", attributes])
         nodes = soup.findAll(attrs=attributes)
         for node in nodes:
             try:
-                f_id = node['id']
-                f_text = node.text
+                f_id = gf.safe_unicode(node["id"])
+                f_text = gf.safe_unicode(node.text)
                 text_from_id[f_id] = f_text
                 ids.append(f_id)
             except KeyError:
-                self._log("KeyError while parsing a node", Logger.WARNING)
+                self._log(u"KeyError while parsing a node", Logger.WARNING)
 
         # sort by ID as requested
-        self._log("Sorting text fragments")
+        self._log(u"Sorting text fragments")
         sorted_ids = IDSortingAlgorithm(id_sort).sort(ids)
 
         # append to fragments
-        self._log("Appending fragments")
+        self._log(u"Appending fragments")
         for key in sorted_ids:
             pairs.append([key, [text_from_id[key]]])
         self._create_text_fragments(pairs)
@@ -664,7 +671,7 @@ class TextFile(object):
         :param pairs: a list of lists, each being [id, [line_1, ..., line_n]]
         :type  pairs: list of lists (see above)
         """
-        self._log("Creating TextFragment objects")
+        self._log(u"Creating TextFragment objects")
         text_filter = self._get_text_filter()
         for pair in pairs:
             fragment = TextFragment(
@@ -679,35 +686,35 @@ class TextFile(object):
         Create a suitable TextFilter object
         """
         text_filter = TextFilter(logger=self.logger)
-        self._log("Created TextFilter object")
+        self._log(u"Created TextFilter object")
 
         if gc.PPN_TASK_IS_TEXT_FILE_IGNORE_REGEX in self.parameters:
             regex_string = self.parameters[gc.PPN_TASK_IS_TEXT_FILE_IGNORE_REGEX]
             if regex_string is not None:
-                self._log("Creating TextFilterIgnoreRegex object")
+                self._log(u"Creating TextFilterIgnoreRegex object")
                 try:
                     regex_filter = TextFilterIgnoreRegex(
                         regex_string,
                         logger=self.logger
                     )
                     text_filter.append(regex_filter)
-                    self._log("Created TextFilterIgnoreRegex object")
+                    self._log(u"Created TextFilterIgnoreRegex object")
                 except ValueError as exc:
-                    self._log(["Cannot create TextFilterIgnoreRegex object from string '%s'", str(exc)])
+                    self._log([u"Cannot create TextFilterIgnoreRegex object from string '%s'", exc])
 
         if gc.PPN_TASK_IS_TEXT_FILE_TRANSLITERATE_MAP in self.parameters:
             trans_map_path = self.parameters[gc.PPN_TASK_IS_TEXT_FILE_TRANSLITERATE_MAP]
             if trans_map_path is not None:
-                self._log("Creating TextFilterTransliterate object")
+                self._log(u"Creating TextFilterTransliterate object")
                 try:
                     trans_filter = TextFilterTransliterate(
                         map_file_path=trans_map_path,
                         logger=self.logger
                     )
                     text_filter.append(trans_filter)
-                    self._log("Created TextFilterTransliterate object")
+                    self._log(u"Created TextFilterTransliterate object")
                 except ValueError as exc:
-                    self._log(["Cannot create TextFilterTransliterate object from file '%s'", str(exc)])
+                    self._log([u"Cannot create TextFilterTransliterate object from file '%s'", exc])
 
         return text_filter
 
@@ -721,7 +728,7 @@ class TextFile(object):
                 (self.parameters[gc.PPN_TASK_OS_FILE_ID_REGEX] is not None)
         ):
             id_regex = u"" + self.parameters[gc.PPN_TASK_OS_FILE_ID_REGEX]
-        self._log(["id_regex is %s", id_regex])
+        self._log([u"id_regex is %s", id_regex])
         return id_regex
 
 
@@ -743,7 +750,7 @@ class TextFilter(object):
     :type  logger: :class:`aeneas.logger.Logger`
     """
 
-    TAG = "TextFilter"
+    TAG = u"TextFilter"
 
     SPACES_REGEX = re.compile(" [ ]+")
 
@@ -776,7 +783,7 @@ class TextFilter(object):
         result = strings
         for filt in self.filters:
             result = filt.apply_filter(result)
-        self._log(["Applying regex: '%s' => '%s'", strings, result])
+        self._log([u"Applying regex: '%s' => '%s'", strings, result])
         return result
 
 
@@ -795,12 +802,12 @@ class TextFilterIgnoreRegex(TextFilter):
     :raise ValueError: if ``regex`` is not a valid regex
     """
 
-    TAG = "TextFilterIgnoreRegex"
+    TAG = u"TextFilterIgnoreRegex"
 
     def __init__(self, regex, logger=None):
         try:
             self.regex = re.compile(regex)
-        except Exception as exc:
+        except:
             raise ValueError("String '%s' is not a valid regular expression" % regex)
         TextFilter.__init__(self, logger)
 
@@ -830,10 +837,11 @@ class TextFilterTransliterate(TextFilter):
     :type  logger: :class:`aeneas.logger.Logger`
 
     :raise IOError: if ``map_file_path`` cannot be read
-    :raise TypeError: if ``map_object`` is not an instance of :class:`aeneas.textfile.TransliterationMap`
+    :raise TypeError: if ``map_object`` is not an instance
+                      of :class:`aeneas.textfile.TransliterationMap`
     """
 
-    TAG = "TextFilterTransliterate"
+    TAG = u"TextFilterTransliterate"
     DELETE_SINGLE = ".[ ]*"
 
     def __init__(self, map_file_path=None, map_object=None, logger=None):
@@ -855,7 +863,7 @@ class TextFilterTransliterate(TextFilter):
         if string is None:
             return None
         result = self.trans_map.transliterate(string)
-        result = self.SPACES_REGEX.sub(" ", result).strip()
+        result = self.SPACES_REGEX.sub(u" ", result).strip()
         return result
 
 
@@ -879,11 +887,13 @@ class TransliterationMap(object):
     :raise IOError: if ``file_path`` cannot be read
     """
 
-    TAG = "TransliterationMap"
+    # TODO check using r"" instead
     CODEPOINT_REGEX = re.compile("U\+([0-9A-Fa-f]+)")
     DELETE_REGEX = re.compile("^([^ ]+)$")
     REPLACE_REGEX = re.compile("^([^ ]+) ([^ ]+)$")
-    
+
+    TAG = u"TransliterationMap"
+
     def __init__(self, file_path, logger=None):
         self.trans_map = {}
         self.logger = Logger()
@@ -925,18 +935,14 @@ class TransliterationMap(object):
         Read the map file at path.
         """
         self.trans_map = {}
-        try:
-            file_obj = codecs.open(self.file_path, "r", "utf-8")
-            contents = file_obj.read().replace("\t", " ")
+        with io.open(self.file_path, "r", encoding="utf-8") as file_obj:
+            contents = file_obj.read().replace(u"\t", u" ")
             for line in contents.splitlines():
                 # ignore lines starting with "#" or blank (after stripping)
-                if not line.startswith("#"):
+                if not line.startswith(u"#"):
                     line = line.strip()
                     if len(line) > 0:
                         self._process_map_rule(line)
-            file_obj.close()
-        except Exception as exc:
-            pass
 
     def _process_map_rule(self, line):
         """
@@ -948,14 +954,14 @@ class TransliterationMap(object):
             replacement = self._process_second_group(result.group(2))
             for char in what:
                 self.trans_map[char] = replacement
-                self._log(["Adding rule: replace '%s' with '%s'", char, replacement])
+                self._log([u"Adding rule: replace '%s' with '%s'", char, replacement])
         else:
             result = self.DELETE_REGEX.match(line)
             if result is not None:
                 what = self._process_first_group(result.group(1))
                 for char in what:
                     self.trans_map[char] = ""
-                    self._log(["Adding rule: delete '%s'", char])
+                    self._log([u"Adding rule: delete '%s'", char])
 
     def _process_first_group(self, group):
         """
@@ -974,7 +980,7 @@ class TransliterationMap(object):
         result = []
         if (start > -1) and (end >= start):
             for index in range(start, end + 1):
-                result.append(unichr(index))
+                result.append(gf.safe_unichr(index))
         return result
 
     def _process_second_group(self, group):
@@ -988,36 +994,14 @@ class TransliterationMap(object):
             """
             result = self._match_to_int(match)
             if result == -1:
-                return ""
-            return unichr(result)
+                return u""
+            return gf.safe_unichr(result)
         result = group
         try:
             result = re.sub(self.CODEPOINT_REGEX, _replace_codepoint, result)
         except:
             pass
         return result
-
-    def _match_to_int(self, match):
-        """
-        Convert to int the first group of the match,
-        representing the hex number in CODEPOINT_REGEX
-        (e.g., 12AB in U+12AB).
-        """
-        try:
-            return int(match.group(1), 16)
-        except:
-            pass
-        return -1
-
-    def _unichr_to_int(self, char):
-        """
-        Convert to int the given character.
-        """
-        try:
-            return ord(char) 
-        except:
-            pass
-        return -1
 
     def _parse_codepoint(self, string):
         """
@@ -1029,6 +1013,30 @@ class TransliterationMap(object):
             return self._match_to_int(match)
         elif len(string) == 1:
             return self._unichr_to_int(string)
+        return -1
+
+    @classmethod
+    def _match_to_int(cls, match):
+        """
+        Convert to int the first group of the match,
+        representing the hex number in CODEPOINT_REGEX
+        (e.g., 12AB in U+12AB).
+        """
+        try:
+            return int(match.group(1), 16)
+        except:
+            pass
+        return -1
+
+    @classmethod
+    def _unichr_to_int(cls, char):
+        """
+        Convert to int the given character.
+        """
+        try:
+            return ord(char)
+        except:
+            pass
         return -1
 
 

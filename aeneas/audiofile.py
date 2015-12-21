@@ -5,8 +5,9 @@
 A class representing an audio file.
 """
 
-#from scikits.audiolab import wavread
-#from scikits.audiolab import wavwrite
+from __future__ import absolute_import
+from __future__ import division
+from __future__ import print_function
 import numpy
 import os
 
@@ -24,10 +25,10 @@ __author__ = "Alberto Pettarin"
 __copyright__ = """
     Copyright 2012-2013, Alberto Pettarin (www.albertopettarin.it)
     Copyright 2013-2015, ReadBeyond Srl   (www.readbeyond.it)
-    Copyright 2015,      Alberto Pettarin (www.albertopettarin.it)
+    Copyright 2015-2016, Alberto Pettarin (www.albertopettarin.it)
     """
 __license__ = "GNU AGPL v3"
-__version__ = "1.3.3"
+__version__ = "1.4.0"
 __email__ = "aeneas@readbeyond.it"
 __status__ = "Production"
 
@@ -57,7 +58,7 @@ class AudioFile(object):
     :type  logger: :class:`aeneas.logger.Logger`
     """
 
-    TAG = "AudioFile"
+    TAG = u"AudioFile"
 
     def __init__(self, file_path=None, logger=None):
         self.logger = logger
@@ -74,15 +75,19 @@ class AudioFile(object):
         """ Log """
         self.logger.log(message, severity, self.TAG)
 
+    def __unicode__(self):
+        msg = [
+            u"File path:         %s" % self.file_path,
+            u"File size (bytes): %s" % gf.safe_int(self.file_size),
+            u"Audio length (s):  %s" % gf.safe_float(self.audio_length),
+            u"Audio format:      %s" % self.audio_format,
+            u"Audio sample rate: %s" % gf.safe_int(self.audio_sample_rate),
+            u"Audio channels:    %s" % gf.safe_int(self.audio_channels),
+        ]
+        return u"\n".join(msg)
+
     def __str__(self):
-        accumulator = ""
-        accumulator += "File path:         %s\n" % self.file_path
-        accumulator += "File size (bytes): %s\n" % gf.safe_int(self.file_size)
-        accumulator += "Audio length (s):  %s\n" % gf.safe_float(self.audio_length)
-        accumulator += "Audio format:      %s\n" % self.audio_format
-        accumulator += "Audio sample rate: %s\n" % gf.safe_int(self.audio_sample_rate)
-        accumulator += "Audio channels:    %s" % gf.safe_int(self.audio_channels)
-        return accumulator
+        return gf.safe_str(self.__unicode__())
 
     @property
     def file_path(self):
@@ -170,39 +175,39 @@ class AudioFile(object):
         :raises IOError: if the audio file cannot be read
         """
 
-        self._log("Reading properties...")
+        self._log(u"Reading properties...")
 
         # check the file can be read
         if not gf.file_exists(self.file_path):
-            self._log(["File '%s' does not exist", self.file_path], Logger.CRITICAL)
-            raise IOError("Input audio file '%s' does not exist" % self.file_path)
+            self._log([u"File '%s' does not exist", self.file_path], Logger.CRITICAL)
+            raise IOError(u"Input audio file '%s' does not exist" % self.file_path)
 
         # get the file size
-        self._log(["Getting file size for '%s'", self.file_path])
+        self._log([u"Getting file size for '%s'", self.file_path])
         self.file_size = os.path.getsize(self.file_path)
-        self._log(["File size for '%s' is '%d'", self.file_path, self.file_size])
+        self._log([u"File size for '%s' is '%d'", self.file_path, self.file_size])
 
         # get the audio properties
         try:
-            self._log("Reading properties with FFPROBEWrapper...")
+            self._log(u"Reading properties with FFPROBEWrapper...")
             prober = FFPROBEWrapper(logger=self.logger)
             properties = prober.read_properties(self.file_path)
-            self._log("Reading properties with FFPROBEWrapper... done")
+            self._log(u"Reading properties with FFPROBEWrapper... done")
         except (FFPROBEUnsupportedFormatError, FFPROBEParsingError):
-            self._log("Reading properties with FFPROBEWrapper... failed", Logger.CRITICAL)
-            self._log("Unsupported audio file format", Logger.CRITICAL)
+            self._log(u"Reading properties with FFPROBEWrapper... failed", Logger.CRITICAL)
+            self._log(u"Unsupported audio file format", Logger.CRITICAL)
             raise AudioFileUnsupportedFormatError("Unsupported audio file format")
 
         # save relevant properties in results inside the audiofile object
         self.audio_length = gf.safe_float(properties[FFPROBEWrapper.STDOUT_DURATION])
-        self._log(["Stored audio_length: '%s'", self.audio_length])
+        self._log([u"Stored audio_length: '%s'", self.audio_length])
         self.audio_format = properties[FFPROBEWrapper.STDOUT_CODEC_NAME]
-        self._log(["Stored audio_format: '%s'", self.audio_format])
+        self._log([u"Stored audio_format: '%s'", self.audio_format])
         self.audio_sample_rate = gf.safe_int(properties[FFPROBEWrapper.STDOUT_SAMPLE_RATE])
-        self._log(["Stored audio_sample_rate: '%s'", self.audio_sample_rate])
+        self._log([u"Stored audio_sample_rate: '%s'", self.audio_sample_rate])
         self.audio_channels = gf.safe_int(properties[FFPROBEWrapper.STDOUT_CHANNELS])
-        self._log(["Stored audio_channels: '%s'", self.audio_channels])
-        self._log("Reading properties... done")
+        self._log([u"Stored audio_channels: '%s'", self.audio_channels])
+        self._log(u"Reading properties... done")
 
 
 
@@ -230,7 +235,7 @@ class AudioFileMonoWAV(AudioFile):
     :type  logger: :class:`aeneas.logger.Logger`
     """
 
-    TAG = "AudioFileMonoWAV"
+    TAG = u"AudioFileMonoWAV"
 
     def __init__(self, file_path=None, logger=None):
         self.logger = logger
@@ -272,30 +277,27 @@ class AudioFileMonoWAV(AudioFile):
         :raises AudioFileUnsupportedFormatError: if the audio file is not a mono wav file
         :raises IOError: if the audio file cannot be read
         """
-        self._log("Loading audio data...")
+        self._log(u"Loading audio data...")
 
         # check the file can be read
         if not gf.file_exists(self.file_path):
-            self._log(["File '%s' does not exist", self.file_path], Logger.CRITICAL)
+            self._log([u"File '%s' does not exist", self.file_path], Logger.CRITICAL)
             raise IOError("Input audio file '%s' does not exist" % self.file_path)
 
         try:
-            # old way using scikits.audiolab
-            #self.audio_data, self.audio_sample_rate, self.audio_format = wavread(self.file_path)
-            # new way using wavfile from scipy.io
             self.audio_format = "pcm16"
             self.audio_sample_rate, self.audio_data = scipywavread(self.file_path)
-            # scikits => [-1..1], scipy => [-32768..32767]
+            # scipy => [-32768..32767]
             self.audio_data = self.audio_data.astype("float64") / 32768
         except ValueError:
-            self._log("Unsupported audio file format", Logger.CRITICAL)
+            self._log(u"Unsupported audio file format", Logger.CRITICAL)
             raise AudioFileUnsupportedFormatError("Unsupported audio file format")
 
         self._update_length()
-        self._log(["Sample length: %f", self.audio_length])
-        self._log(["Sample rate:   %f", self.audio_sample_rate])
-        self._log(["Audio format:  %s", self.audio_format])
-        self._log("Loading audio data... done")
+        self._log([u"Sample length: %f", self.audio_length])
+        self._log([u"Sample rate:   %f", self.audio_sample_rate])
+        self._log([u"Audio format:  %s", self.audio_format])
+        self._log(u"Loading audio data... done")
 
     def append_data(self, new_data):
         """
@@ -306,11 +308,11 @@ class AudioFileMonoWAV(AudioFile):
 
         .. versionadded:: 1.2.1
         """
-        self._log("Appending audio data...")
+        self._log(u"Appending audio data...")
         self._ensure_audio_data(load=False)
         self.audio_data = numpy.append(self.audio_data, new_data)
         self._update_length()
-        self._log("Appending audio data... done")
+        self._log(u"Appending audio data... done")
 
     def prepend_data(self, new_data):
         """
@@ -321,11 +323,11 @@ class AudioFileMonoWAV(AudioFile):
 
         .. versionadded:: 1.2.1
         """
-        self._log("Prepending audio data...")
+        self._log(u"Prepending audio data...")
         self._ensure_audio_data(load=False)
         self.audio_data = numpy.append(new_data, self.audio_data)
         self._update_length()
-        self._log("Prepending audio data... done")
+        self._log(u"Prepending audio data... done")
 
     def extract_mfcc(self, frame_rate=gc.MFCC_FRAME_RATE):
         """
@@ -342,9 +344,9 @@ class AudioFileMonoWAV(AudioFile):
         had_audio_data = self._ensure_audio_data(load=True)
 
         if gc.USE_C_EXTENSIONS:
-            self._log("C extensions enabled in gc")
+            self._log(u"C extensions enabled in gc")
             if gf.can_run_c_extension("cmfcc"):
-                self._log("C extensions enabled in gc and cmfcc can be loaded")
+                self._log(u"C extensions enabled in gc and cmfcc can be loaded")
                 try:
                     self._compute_mfcc_c_extension(frame_rate)
                     # if we did not have audio data, clear it immediately
@@ -353,19 +355,19 @@ class AudioFileMonoWAV(AudioFile):
                     return
                 except:
                     self._log(
-                        "An error occurred running cmfcc",
+                        u"An error occurred running cmfcc",
                         severity=Logger.WARNING
                     )
             else:
-                self._log("C extensions enabled in gc, but cmfcc cannot be loaded")
+                self._log(u"C extensions enabled in gc, but cmfcc cannot be loaded")
         else:
-            self._log("C extensions disabled in gc")
-        self._log("Running the pure Python code")
+            self._log(u"C extensions disabled in gc")
+        self._log(u"Running the pure Python code")
         try:
             self._compute_mfcc_pure_python(frame_rate)
         except:
             self._log(
-                "An error occurred running _compute_mfcc_pure_python",
+                u"An error occurred running _compute_mfcc_pure_python",
                 severity=Logger.WARNING
             )
 
@@ -381,10 +383,10 @@ class AudioFileMonoWAV(AudioFile):
 
         .. versionadded:: 1.2.0
         """
-        self._log("Reversing...")
+        self._log(u"Reversing...")
         self._ensure_audio_data(load=True)
         self.audio_data = self.audio_data[::-1]
-        self._log("Reversing... done")
+        self._log(u"Reversing... done")
 
     def trim(self, begin=None, length=None):
         """
@@ -400,27 +402,27 @@ class AudioFileMonoWAV(AudioFile):
 
         .. versionadded:: 1.2.0
         """
-        self._log("Trimming...")
+        self._log(u"Trimming...")
         if (begin is None) and (length is None):
-            self._log("begin and length are both None: nothing to do")
+            self._log(u"begin and length are both None: nothing to do")
         else:
             self._ensure_audio_data(load=True)
-            self._log(["audio_length is %.3f", self.audio_length])
+            self._log([u"audio_length is %.3f", self.audio_length])
             if begin is None:
                 begin = 0
-                self._log(["begin was None, now set to %.3f", begin])
+                self._log([u"begin was None, now set to %.3f", begin])
             begin = min(max(0, begin), self.audio_length)
-            self._log(["begin is %.3f", begin])
+            self._log([u"begin is %.3f", begin])
             if length is None:
                 length = self.audio_length - begin
-                self._log(["length was None, now set to %.3f", length])
+                self._log([u"length was None, now set to %.3f", length])
             length = min(max(0, length), self.audio_length - begin)
-            self._log(["length is %.3f", length])
+            self._log([u"length is %.3f", length])
             begin_index = int(begin * self.audio_sample_rate)
             end_index = int((begin + length) * self.audio_sample_rate)
             self.audio_data = self.audio_data[begin_index:end_index]
             self._update_length()
-        self._log("Trimming... done")
+        self._log(u"Trimming... done")
 
     def write(self, file_path):
         """
@@ -432,25 +434,22 @@ class AudioFileMonoWAV(AudioFile):
 
         .. versionadded:: 1.2.0
         """
-        self._log(["Writing audio file '%s'...", file_path])
+        self._log([u"Writing audio file '%s'...", file_path])
         self._ensure_audio_data(load=False)
         try:
-            # old way using scikits.audiolab
-            #wavwrite(self.audio_data, file_path, self.audio_sample_rate, self.audio_format)
-            # new way using wavfile from scipy.io
-            # scikits => [-1..1], scipy => [-32768..32767]
+            # scipy => [-32768..32767]
             data = (self.audio_data * 32768).astype("int16")
             scipywavwrite(file_path, self.audio_sample_rate, data)
         except:
-            self._log("Error writing audio file", severity=Logger.CRITICAL)
+            self._log(u"Error writing audio file", severity=Logger.CRITICAL)
             raise IOError("Error writing audio file to '%s'" % file_path) 
-        self._log(["Writing audio file '%s'... done", file_path])
+        self._log([u"Writing audio file '%s'... done", file_path])
 
     def clear_data(self):
         """
         Clear the audio data, freeing memory.
         """
-        self._log("Clear audio_data")
+        self._log(u"Clear audio_data")
         self.audio_data = None
 
     def _update_length(self):
@@ -458,7 +457,10 @@ class AudioFileMonoWAV(AudioFile):
         Update audio length
         """
         if (self.audio_sample_rate is not None) and (self.audio_data is not None):
-            self.audio_length = (float(len(self.audio_data)) / self.audio_sample_rate)
+            # old:
+            #self.audio_length = (float(len(self.audio_data)) / self.audio_sample_rate)
+            # new: float division from future
+            self.audio_length = len(self.audio_data) / self.audio_sample_rate
 
     def _ensure_audio_data(self, load=True):
         """
@@ -473,25 +475,25 @@ class AudioFileMonoWAV(AudioFile):
         :rtype: bool
         """
         if self.audio_data is not None:
-            self._log("audio data is not None: returning True")
+            self._log(u"audio data is not None: returning True")
             return True
         if load:
-            self._log("No audio data: loading it")
+            self._log(u"No audio data: loading it")
             self.load_data()
         else:
-            self._log("No audio data: initializing it")
+            self._log(u"No audio data: initializing it")
             self.audio_data = numpy.array([])
-        self._log("audio data was None: returning False")
+        self._log(u"audio data was None: returning False")
         return False
 
     def _compute_mfcc_c_extension(self, frame_rate):
         """
         Compute MFCCs using the Python C extension cmfcc.
         """
-        self._log("Computing MFCCs using C extension...")
-        self._log("Importing cmfcc...")
+        self._log(u"Computing MFCCs using C extension...")
+        self._log(u"Importing cmfcc...")
         import aeneas.cmfcc
-        self._log("Importing cmfcc... done")
+        self._log(u"Importing cmfcc... done")
         self.audio_mfcc = aeneas.cmfcc.cmfcc_compute_mfcc(
             self.audio_data,
             self.audio_sample_rate,
@@ -504,16 +506,16 @@ class AudioFileMonoWAV(AudioFile):
             0.97,
             0.0256
         ).transpose()
-        self._log("Computing MFCCs using C extension... done")
+        self._log(u"Computing MFCCs using C extension... done")
 
     def _compute_mfcc_pure_python(self, frame_rate):
         """
         Compute MFCCs using the pure Python code.
         """
-        self._log("Computing MFCCs using pure Python code...")
+        self._log(u"Computing MFCCs using pure Python code...")
         extractor = MFCC(samprate=self.audio_sample_rate, frate=frame_rate)
         self.audio_mfcc = extractor.sig2s2mfc(self.audio_data).transpose()
-        self._log("Computing MFCCs using pure Python code... done")
+        self._log(u"Computing MFCCs using pure Python code... done")
 
 
 

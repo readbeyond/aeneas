@@ -9,6 +9,8 @@ This module provides functions for computing MFCC (mel-frequency
 cepstral coefficients) as used in the Sphinx speech recognition
 system.
 """
+# float division from future (ALPE)
+from __future__ import division
 
 __author__ = "David Huggins-Daines <dhuggins@cs.cmu.edu>"
 __version__ = "$Revision: 6390 $"
@@ -44,7 +46,11 @@ class MFCC(object):
         self.alpha = alpha
 
         # Build mel filter matrix
-        self.filters = numpy.zeros((nfft/2+1,nfilt), 'd')
+        # old:
+        # self.filters = numpy.zeros((nfft/2+1,nfilt), 'd')
+        # new:
+        # explicit integer division (ALPE)
+        self.filters = numpy.zeros((nfft//2+1,nfilt), 'd')
         dfreq = float(samprate) / nfft
         if upperf > samprate/2:
             raise(Exception,
@@ -57,9 +63,10 @@ class MFCC(object):
 
         for whichfilt in range(0, nfilt):
             # Filter triangles, in DFT points
-            leftfr = round(filt_edge[whichfilt] / dfreq)
-            centerfr = round(filt_edge[whichfilt + 1] / dfreq)
-            rightfr = round(filt_edge[whichfilt + 2] / dfreq)
+            # added int() to cast to native int instead of numpy.float64 (ALPE)
+            leftfr = int(round(filt_edge[whichfilt] / dfreq))
+            centerfr = int(round(filt_edge[whichfilt + 1] / dfreq))
+            rightfr = int(round(filt_edge[whichfilt + 2] / dfreq))
             # For some reason this is calculated in Hz, though I think
             # it doesn't really matter
             fwidth = (rightfr - leftfr) * dfreq

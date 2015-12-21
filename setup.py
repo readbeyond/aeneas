@@ -11,10 +11,10 @@ __author__ = "Alberto Pettarin"
 __copyright__ = """
     Copyright 2012-2013, Alberto Pettarin (www.albertopettarin.it)
     Copyright 2013-2015, ReadBeyond Srl   (www.readbeyond.it)
-    Copyright 2015,      Alberto Pettarin (www.albertopettarin.it)
+    Copyright 2015-2016, Alberto Pettarin (www.albertopettarin.it)
     """
 __license__ = "GNU AGPL 3"
-__version__ = "1.3.3"
+__version__ = "1.4.0"
 __email__ = "aeneas@readbeyond.it"
 __status__ = "Production"
 
@@ -39,15 +39,14 @@ setup(
     name="aeneas",
     packages=["aeneas", "aeneas.tools"],
     package_data={"aeneas": ["res/*", "speak_lib.h"], "aeneas.tools": ["res/*"]},
-    version="1.3.3.0",
+    version="1.4.0.0",
     description="aeneas is a Python library and a set of tools to automagically synchronize audio and text",
     author="Alberto Pettarin",
     author_email="alberto@albertopettarin.it",
     url="https://github.com/readbeyond/aeneas",
     license="GNU Affero General Public License v3 (AGPL v3)",
     long_description=open("README.rst", "r").read(),
-    setup_requires=["numpy>=1.9"],
-    install_requires=["BeautifulSoup>=3.0", "lxml>=3.0", "numpy>=1.9"],
+    install_requires=["BeautifulSoup4>=4.4", "lxml>=3.0", "numpy>=1.9"],
     extras_require={"pafy": ["pafy>=0.3"]},
     keywords=[
         "CSV",
@@ -96,6 +95,9 @@ setup(
         "Programming Language :: Python",
         "Programming Language :: Python :: 2",
         "Programming Language :: Python :: 2.7",
+        "Programming Language :: Python :: 3",
+        "Programming Language :: Python :: 3.4",
+        "Programming Language :: Python :: 3.5",
         "Topic :: Education",
         "Topic :: Multimedia",
         "Topic :: Multimedia :: Sound/Audio",
