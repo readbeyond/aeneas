@@ -60,14 +60,14 @@ class ReadAudioCLI(AbstractCLIProgram):
         try:
             audiofile = AudioFile(audio_file_path, logger=self.logger)
             audiofile.read_properties()
-            self.print_generic(str(audiofile))
+            self.print_generic(audiofile.__unicode__())
             return self.NO_ERROR_EXIT_CODE
         except IOError:
-            self.print_error("Cannot read file '%s'" % (audio_file_path))
-            self.print_error("Make sure the input file path is written/escaped correctly")
+            self.print_error(u"Cannot read file '%s'" % (audio_file_path))
+            self.print_error(u"Make sure the input file path is written/escaped correctly")
         except AudioFileUnsupportedFormatError:
-            self.print_error("Cannot read properties of file '%s'" % (audio_file_path))
-            self.print_error("Make sure the input file has a format supported by ffprobe")
+            self.print_error(u"Cannot read properties of file '%s'" % (audio_file_path))
+            self.print_error(u"Make sure the input file has a format supported by ffprobe")
 
         return self.ERROR_EXIT_CODE
 

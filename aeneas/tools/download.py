@@ -81,7 +81,7 @@ class DownloadCLI(AbstractCLIProgram):
 
         try:
             if download:
-                self.print_info("Downloading audio stream from '%s' ..." % source_url)
+                self.print_info(u"Downloading audio stream from '%s' ..." % source_url)
                 downloader = Downloader(logger=self.logger)
                 result = downloader.audio_from_youtube(
                     source_url,
@@ -91,16 +91,16 @@ class DownloadCLI(AbstractCLIProgram):
                     preferred_index=preferred_index,
                     download=download
                 )
-                self.print_info("Downloading audio stream from '%s' ... done" % source_url)
-                self.print_info("Downloaded file '%s'" % result)
+                self.print_info(u"Downloading audio stream from '%s' ... done" % source_url)
+                self.print_info(u"Downloaded file '%s'" % result)
             else:
-                self.print_info("Downloading stream info from '%s' ..." % source_url)
+                self.print_info(u"Downloading stream info from '%s' ..." % source_url)
                 downloader = Downloader(logger=self.logger)
                 result = downloader.audio_from_youtube(
                     source_url,
                     download=False
                 )
-                self.print_info("Downloading stream info from '%s' ... done" % source_url)
+                self.print_info(u"Downloading stream info from '%s' ... done" % source_url)
                 msg = []
                 msg.append(u"%s\t%s\t%s\t%s" % ("Index", "Format", "Bitrate", "Size"))
                 i = 0
@@ -110,15 +110,15 @@ class DownloadCLI(AbstractCLIProgram):
                     size = gf.human_readable_number(audio.get_filesize())
                     msg.append(u"%d\t%s\t%s\t%s" % (i, ext, bitrate, size))
                     i += 1
-                self.print_generic("Available audio streams:")
+                self.print_generic(u"Available audio streams:")
                 self.print_generic(u"\n".join(msg))
             return self.NO_ERROR_EXIT_CODE
         except ImportError:
-            self.print_error("You need to install Python module pafy to download audio from YouTube. Run:")
-            self.print_error("$ [sudo] pip install pafy")
+            self.print_error(u"You need to install Python module pafy to download audio from YouTube. Run:")
+            self.print_error(u"$ [sudo] pip install pafy")
         except Exception as exc:
-            self.print_error("An unexpected Exception occurred while downloading audio from YouTube:")
-            self.print_error("%s" % exc)
+            self.print_error(u"An unexpected Exception occurred while downloading audio from YouTube:")
+            self.print_error(u"%s" % exc)
 
         return self.ERROR_EXIT_CODE
 

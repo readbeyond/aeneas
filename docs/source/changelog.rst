@@ -4,7 +4,7 @@ Changelog
 v1.4.0 (2016-01-??)
 -------------------
 
-#. Now running on both Python 2.7.x and Python 3.4.x or later
+#. Now running on both Python 2.7.x and Python 3.4.x or later, including C extensions
 #. For XML-based sync map formats, now using ``UTF-8`` encoding instead of ``ASCII`` (the latter is ``lxml`` default)
 #. Unified ``aeneas.tools.*`` structure, with better docs and exit codes
 #. All ``aeneas.tools.*`` can be run interactively or called from other Python code by passing a list of arguments

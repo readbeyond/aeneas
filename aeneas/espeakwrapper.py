@@ -191,7 +191,12 @@ class ESPEAKWrapper(object):
             f_lang = self._replace_language(f_lang)
             if f_text is None:
                 f_text = u""
-            c_text.append((gf.safe_bytes(f_lang), gf.safe_bytes(f_text)))
+            if gf.PY2:
+                # Python 2 => pass byte strings
+                c_text.append((gf.safe_bytes(f_lang), gf.safe_bytes(f_text)))
+            else:
+                # Python 3 => pass Unicode strings
+                c_text.append((gf.safe_unicode(f_lang), gf.safe_unicode(f_text)))
         self._log(u"Preparing c_text... done")
 
         # call C extension
@@ -432,7 +437,12 @@ class ESPEAKWrapper(object):
         self._log(u"Synthesizing using C extension...")
 
         self._log(u"Preparing c_text...")
-        c_text = gf.safe_bytes(text)
+        if gf.PY2:
+            # Python 2 => pass byte strings
+            c_text = gf.safe_bytes(text)
+        else:
+            # Python 3 => pass Unicode strings
+            c_text = text
         # NOTE language has been replaced already!
         self._log(u"Preparing c_text... done")
         self._log(u"Importing aeneas.cew...")
@@ -472,7 +482,10 @@ class ESPEAKWrapper(object):
             stdin=subprocess.PIPE,
             stderr=subprocess.PIPE,
             universal_newlines=True)
-        proc.communicate(input=text)
+        if gf.PY2:
+            proc.communicate(input=gf.safe_bytes(text))
+        else:
+            proc.communicate(input=text)
         proc.stdout.close()
         proc.stdin.close()
         proc.stderr.close()
@@ -510,8 +523,7 @@ class ESPEAKWrapper(object):
         self._log(u"Synthesizing text...")
         handler, tmp_destination = gf.tmp_file(suffix=".wav")
         result = self._synthesize_single_pure_python(
-            # TODO check this out
-            text=text + u" ",
+            text=(text + u" "),
             language=language,
             output_file_path=tmp_destination
         )

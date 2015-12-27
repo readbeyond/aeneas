@@ -76,28 +76,28 @@ class RunVADCLI(AbstractCLIProgram):
 
         tmp_handler, tmp_file_path = gf.tmp_file(suffix=".wav")
         try:
-            self.print_info("Converting audio file to mono...")
+            self.print_info(u"Converting audio file to mono...")
             converter = FFMPEGWrapper(logger=self.logger)
             converter.convert(audio_file_path, tmp_file_path)
-            self.print_info("Converting audio file to mono... done")
+            self.print_info(u"Converting audio file to mono... done")
         except IOError:
-            self.print__error("Cannot convert audio file '%s'" % audio_file_path)
-            self.print_error("Check that its format is supported by ffmpeg")
+            self.print__error(u"Cannot convert audio file '%s'" % audio_file_path)
+            self.print_error(u"Check that its format is supported by ffmpeg")
             return self.ERROR_EXIT_CODE
 
         try:
-            self.print_info("Extracting MFCCs...")
+            self.print_info(u"Extracting MFCCs...")
             audiofile = AudioFileMonoWAV(tmp_file_path)
             audiofile.extract_mfcc()
-            self.print_info("Extracting MFCCs... done")
+            self.print_info(u"Extracting MFCCs... done")
         except (AudioFileUnsupportedFormatError, IOError):
-            self.print_error("Cannot read the converted WAV file '%s'" % tmp_file_path)
+            self.print_error(u"Cannot read the converted WAV file '%s'" % tmp_file_path)
             return self.ERROR_EXIT_CODE
 
-        self.print_info("Executing VAD...")
+        self.print_info(u"Executing VAD...")
         vad = VAD(audiofile.audio_mfcc, audiofile.audio_length, logger=self.logger)
         vad.compute_vad()
-        self.print_info("Executing VAD... done")
+        self.print_info(u"Executing VAD... done")
 
         gf.delete_file(tmp_handler, tmp_file_path)
 
@@ -132,7 +132,7 @@ class RunVADCLI(AbstractCLIProgram):
             msg = [template % (interval) for interval in intervals]
         with io.open(output_file_path, "w", encoding="utf-8") as output_file:
             output_file.write(u"\n".join(msg))
-            self.print_info("Created file %s" % output_file_path)
+            self.print_info(u"Created file %s" % output_file_path)
 
 
 

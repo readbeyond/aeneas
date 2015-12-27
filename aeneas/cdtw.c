@@ -626,10 +626,53 @@ static PyMethodDef cdtw_methods[] = {
     }
 };
 
+/*
+// Python 2 only
 PyMODINIT_FUNC initcdtw(void)  {
     (void) Py_InitModule("cdtw", cdtw_methods);
     import_array();
 }
+*/
+
+// Python 2 and 3
+#if PY_MAJOR_VERSION >= 3
+static struct PyModuleDef moduledef = {
+    PyModuleDef_HEAD_INIT,
+    "cdtw",         /* m_name */
+    "cdtw",         /* m_doc */
+    -1,             /* m_size */
+    cdtw_methods,   /* m_methods */
+    NULL,           /* m_reload */
+    NULL,           /* m_traverse */
+    NULL,           /* m_clear */
+    NULL,           /* m_free */
+};
+#endif
+
+static PyObject *moduleinit(void) {
+    PyObject *m;
+
+#if PY_MAJOR_VERSION >= 3
+    m = PyModule_Create(&moduledef);
+#else
+    m = Py_InitModule("cdtw", cdtw_methods);
+#endif
+
+    return m;
+}
+
+#if PY_MAJOR_VERSION >= 3
+PyMODINIT_FUNC PyInit_cdtw(void) {
+    PyObject *ret = moduleinit();
+    import_array();
+    return ret; 
+}
+#else
+PyMODINIT_FUNC initcdtw(void) {
+    moduleinit();
+    import_array();
+}
+#endif
 
 
 

@@ -129,12 +129,12 @@ class ValidateCLI(AbstractCLIProgram):
         if result.passed:
             self.print_info(u"Valid %s" % msg)
             for warning in result.warnings:
-                self.print_warning(warning)
+                self.print_warning(u"%s" % warning)
             return self.NO_ERROR_EXIT_CODE
         else:
             self.print_error(u"Invalid %s" % msg)
             for error in result.errors:
-                self.print_error(error)
+                self.print_error(u"%s" % error)
 
         return self.ERROR_EXIT_CODE
 

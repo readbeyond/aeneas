@@ -92,7 +92,7 @@ class ReadTextCLI(AbstractCLIProgram):
 
         text_file = self.get_text_file(text_format, text, parameters)
         if text_file is not None:
-            self.print_generic(gf.safe_unicode(str(text_file)))
+            self.print_generic(text_file.__unicode__())
             return self.NO_ERROR_EXIT_CODE
         else:
             self.print_error(u"Unable to build a TextFile from the given parameters")

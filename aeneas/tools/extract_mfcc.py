@@ -65,13 +65,13 @@ class ExtractMFCC(AbstractCLIProgram):
 
         tmp_handler, tmp_file_path = gf.tmp_file(suffix=".wav")
         try:
-            self.print_info("Converting audio file to mono...")
+            self.print_info(u"Converting audio file to mono...")
             converter = FFMPEGWrapper(logger=self.logger)
             converter.convert(input_file_path, tmp_file_path)
-            self.print_info("Converting audio file to mono... done")
+            self.print_info(u"Converting audio file to mono... done")
         except IOError:
-            self.print_error("Cannot convert audio file '%s'" % input_file_path)
-            self.print_error("Check that its format is supported by ffmpeg")
+            self.print_error(u"Cannot convert audio file '%s'" % input_file_path)
+            self.print_error(u"Check that its format is supported by ffmpeg")
             return self.ERROR_EXIT_CODE
 
         try:
@@ -81,13 +81,13 @@ class ExtractMFCC(AbstractCLIProgram):
             audiofile.clear_data()
             gf.delete_file(tmp_handler, tmp_file_path)
             numpy.savetxt(output_file_path, audiofile.audio_mfcc)
-            self.print_info("MFCCs saved to %s" % (output_file_path))
+            self.print_info(u"MFCCs saved to %s" % (output_file_path))
             return self.NO_ERROR_EXIT_CODE
         except AudioFileUnsupportedFormatError:
-            self.print_error("Cannot read file '%s'" % (tmp_file_path))
-            self.print_error("Check that it is a mono WAV file")
+            self.print_error(u"Cannot read file '%s'" % (tmp_file_path))
+            self.print_error(u"Check that it is a mono WAV file")
         except IOError:
-            self.print_error("Cannot write file '%s'" % (output_file_path))
+            self.print_error(u"Cannot write file '%s'" % (output_file_path))
 
         return self.ERROR_EXIT_CODE
 

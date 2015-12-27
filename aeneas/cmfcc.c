@@ -527,10 +527,53 @@ static PyMethodDef cmfcc_methods[] = {
     }
 };
 
+/*
+// Python 2 ONLY
 PyMODINIT_FUNC initcmfcc(void)  {
     (void) Py_InitModule("cmfcc", cmfcc_methods);
     import_array();
 }
+*/
+
+// Python 2 and 3
+#if PY_MAJOR_VERSION >= 3
+static struct PyModuleDef moduledef = {
+    PyModuleDef_HEAD_INIT,
+    "cmfcc",        /* m_name */
+    "cmfcc",        /* m_doc */
+    -1,             /* m_size */
+    cmfcc_methods,  /* m_methods */
+    NULL,           /* m_reload */
+    NULL,           /* m_traverse */
+    NULL,           /* m_clear */
+    NULL,           /* m_free */
+};
+#endif
+
+static PyObject *moduleinit(void) {
+    PyObject *m;
+
+#if PY_MAJOR_VERSION >= 3
+    m = PyModule_Create(&moduledef);
+#else
+    m = Py_InitModule("cmfcc", cmfcc_methods);
+#endif
+
+    return m;
+}
+
+#if PY_MAJOR_VERSION >= 3
+PyMODINIT_FUNC PyInit_cmfcc(void) {
+    PyObject *ret = moduleinit();
+    import_array();
+    return ret;
+}
+#else
+PyMODINIT_FUNC initcmfcc(void) {
+    moduleinit();
+    import_array();
+}
+#endif
 
 
 

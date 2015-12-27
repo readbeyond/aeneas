@@ -61,11 +61,11 @@ class FFPROBEWrapperCLI(AbstractCLIProgram):
             prober = FFPROBEWrapper(logger=self.logger)
             dictionary = prober.read_properties(audio_file_path)
             for key in sorted(dictionary.keys()):
-                self.print_generic("%s %s" % (key, dictionary[key]))
+                self.print_generic(u"%s %s" % (key, dictionary[key]))
             return self.NO_ERROR_EXIT_CODE
         except (FFPROBEUnsupportedFormatError, FFPROBEParsingError):
-            self.print_error("Cannot read properties of file '%s'" % (audio_file_path))
-            self.print_error("Make sure the input file has a format supported by ffprobe")
+            self.print_error(u"Cannot read properties of file '%s'" % (audio_file_path))
+            self.print_error(u"Make sure the input file has a format supported by ffprobe")
 
         return self.ERROR_EXIT_CODE
 

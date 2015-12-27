@@ -69,7 +69,7 @@ class ESPEAKWrapperCLI(AbstractCLIProgram):
         custom_language = self.has_option(u"--allow-custom-language")
 
         if (not custom_language) and (not language in Language.ALLOWED_VALUES):
-            self.print_error("Language code '%s' is not allowed." % language)
+            self.print_error(u"Language code '%s' is not allowed." % language)
             return self.ERROR_EXIT_CODE
 
         if not self.check_output_file(output_file_path):
@@ -84,10 +84,10 @@ class ESPEAKWrapperCLI(AbstractCLIProgram):
                 synt.synthesize_multiple(tfl, output_file_path, force_pure_python=pure)
             else:
                 synt.synthesize_single(text, language, output_file_path, force_pure_python=pure)
-            self.print_info("Created file '%s'" % output_file_path)
+            self.print_info(u"Created file '%s'" % output_file_path)
             return self.NO_ERROR_EXIT_CODE
         except IOError:
-            self.print_error("Unable to create file '%s'" % output_file_path)
+            self.print_error(u"Unable to create file '%s'" % output_file_path)
 
         return self.ERROR_EXIT_CODE
 

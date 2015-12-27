@@ -62,11 +62,11 @@ class FFMPEGWrapperCLI(AbstractCLIProgram):
         try:
             converter = FFMPEGWrapper(logger=self.logger)
             converter.convert(input_file_path, output_file_path)
-            self.print_info("Converted '%s' into '%s'" % (input_file_path, output_file_path))
+            self.print_info(u"Converted '%s' into '%s'" % (input_file_path, output_file_path))
             return self.NO_ERROR_EXIT_CODE
         except IOError:
-            self.print_error("Cannot convert file '%s' into '%s'" % (input_file_path, output_file_path))
-            self.print_error("Make sure the input file has a format supported by ffmpeg")
+            self.print_error(u"Cannot convert file '%s' into '%s'" % (input_file_path, output_file_path))
+            self.print_error(u"Make sure the input file has a format supported by ffmpeg")
 
         return self.ERROR_EXIT_CODE
 
