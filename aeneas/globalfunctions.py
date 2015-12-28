@@ -5,12 +5,17 @@
 Global common functions.
 """
 
+from __future__ import absolute_import
+from __future__ import print_function
 from lxml import etree
 import math
+import io
 import os
 import re
 import shutil
 import sys
+import tempfile
+import uuid
 
 import aeneas.globalconstants as gc
 
@@ -18,15 +23,24 @@ __author__ = "Alberto Pettarin"
 __copyright__ = """
     Copyright 2012-2013, Alberto Pettarin (www.albertopettarin.it)
     Copyright 2013-2015, ReadBeyond Srl   (www.readbeyond.it)
-    Copyright 2015,      Alberto Pettarin (www.albertopettarin.it)
+    Copyright 2015-2016, Alberto Pettarin (www.albertopettarin.it)
     """
 __license__ = "GNU AGPL v3"
-__version__ = "1.3.3"
+__version__ = "1.4.0"
 __email__ = "aeneas@readbeyond.it"
 __status__ = "Production"
 
 HHMMSS_MMM_PATTERN = re.compile(r"([0-9]*):([0-9]*):([0-9]*)\.([0-9]*)")
 HHMMSS_MMM_PATTERN_COMMA = re.compile(r"([0-9]*):([0-9]*):([0-9]*),([0-9]*)")
+PY2 = (sys.version_info[0] == 2)
+
+def uuid_string():
+    """
+    Return a uuid4 as a Unicode string.
+
+    :rtype: Unicode string
+    """
+    return safe_unicode(str(uuid.uuid4())).lower()
 
 def custom_tmp_dir():
     """
@@ -44,6 +58,25 @@ def custom_tmp_dir():
     if sys.platform in ["linux", "linux2", "darwin"]:
         return gc.TMP_PATH
     return None
+
+def tmp_directory():
+    """
+    Return the path of a temporary directory created by ``tempfile``.
+
+    :rtype: string (path)
+    """
+    return tempfile.mkdtemp(dir=custom_tmp_dir())
+
+def tmp_file(suffix=u""):
+    """
+    Return a (handler, path) tuple
+    for a temporary file with given suffix created by ``tempfile``.
+
+    :param suffix: the suffix (e.g., the extension) of the file
+    :type  suffix: Unicode string
+    :rtype: tuple
+    """
+    return tempfile.mkstemp(suffix=suffix, dir=custom_tmp_dir())
 
 def file_extension(path):
     """
@@ -82,24 +115,6 @@ def file_name_without_extension(path):
     if path is None:
         return None
     return os.path.splitext(os.path.basename(path))[0]
-
-def safe_unicode(string):
-    """
-    Safely decode a UTF-8 string into a unicode object.
-
-    On error return ``None``.
-
-    :param string: string value to be converted
-    :type  string: string
-    """
-    if string is None:
-        return None
-    unic = None
-    try:
-        unic = string.decode("utf-8")
-    except UnicodeDecodeError:
-        pass
-    return unic
 
 def safe_float(string, default=None):
     """
@@ -182,8 +197,8 @@ def config_txt_to_string(string):
         key_1=value_1|key_2=value_2|...|key_n=value_n
 
     :param string: the contents of a TXT config file
-    :type  string: string
-    :rtype: string
+    :type  string: Unicode string 
+    :rtype: Unicode string
     """
     if string is None:
         return None
@@ -223,7 +238,7 @@ def config_xml_to_dict(contents, result, parse_job=True):
         dictionary[key_n] = value_n
 
     :param contents: the XML configuration contents
-    :type  contents: string
+    :type  contents: bytes
     :param parse_job: if ``True``, parse the job properties;
                       if ``False``, parse the tasks properties
     :type  parse_job: bool
@@ -236,10 +251,10 @@ def config_xml_to_dict(contents, result, parse_job=True):
             # parse job
             for elem in root:
                 if (elem.tag != gc.CONFIG_XML_TASKS_TAG) and (elem.text is not None):
-                    pairs.append("%s%s%s" % (
-                        elem.tag,
+                    pairs.append(u"%s%s%s" % (
+                        safe_unicode(elem.tag),
                         gc.CONFIG_STRING_ASSIGNMENT_SYMBOL,
-                        elem.text.strip()
+                        safe_unicode(elem.text.strip())
                     ))
             return pairs_to_dict(pairs)
         else:
@@ -250,16 +265,17 @@ def config_xml_to_dict(contents, result, parse_job=True):
                     pairs = []
                     for elem in task:
                         if elem.text is not None:
-                            pairs.append("%s%s%s" % (
-                                elem.tag,
+                            pairs.append(u"%s%s%s" % (
+                                safe_unicode(elem.tag),
                                 gc.CONFIG_STRING_ASSIGNMENT_SYMBOL,
-                                elem.text.strip()
+                                safe_unicode(elem.text.strip())
                             ))
                     output_list.append(pairs_to_dict(pairs))
             return output_list
     except:
-        result.passed = False
-        result.add_error("An error occurred while parsing XML file")
+        if result is not None:
+            result.passed = False
+            result.add_error("An error occurred while parsing XML file")
         return dict()
 
 def config_dict_to_string(dictionary):
@@ -281,7 +297,7 @@ def config_dict_to_string(dictionary):
     """
     parameters = []
     for key in dictionary:
-        parameters.append("%s%s%s" % (
+        parameters.append(u"%s%s%s" % (
             key,
             gc.CONFIG_STRING_ASSIGNMENT_SYMBOL,
             dictionary[key]
@@ -591,6 +607,24 @@ def can_run_c_extension(name=None):
             # no cew for other OSes
             return can_run_cdtw() and can_run_cmfcc()
 
+def file_can_be_read(path):
+    """
+    Return ``True`` if a file can be read at the given ``path``.
+
+    :param path: the file path
+    :type  path: string (path)
+    :rtype: bool
+    """
+    if path is None:
+        return False
+    try:
+        test_file = io.open(path, "rb")
+        test_file.close()
+        return True
+    except IOError:
+        pass
+    return False
+
 def file_can_be_written(path):
     """
     Return ``True`` if a file can be written at the given ``path``.
@@ -605,12 +639,13 @@ def file_can_be_written(path):
     if path is None:
         return False
     try:
-        test_file = open(path, "wb")
+        test_file = io.open(path, "wb")
         test_file.close()
         delete_file(None, path)
         return True
     except IOError:
-        return False
+        pass
+    return False
 
 def directory_exists(path):
     """
@@ -728,6 +763,123 @@ def human_readable_number(number, suffix=""):
             return "%3.1f%s%s" % (number, unit, suffix)
         number /= 1024.0
     return "%.1f%s%s" % (number, "Y", suffix)
+
+def read_file_bytes(input_file_path):
+    """
+    Read the file at the given file path
+    and return its contents as a byte string,
+    or ``None`` if an error occurred.
+
+    :param input_file_path: the file path
+    :type  input_file_path: string (path)
+    :rtype: byte string
+    """
+    contents = None
+    try:
+        with io.open(input_file_path, "rb") as input_file:
+            contents = input_file.read()
+    except:
+        pass
+    return contents
+
+def is_unicode(string):
+    """
+    Return True if the given string is a sequence of Unicode code points.
+
+    :param: string
+    :type: any
+    :rtype: bool
+    """
+    if PY2:
+        return isinstance(string, unicode)
+    return isinstance(string, str)
+
+def is_bytes(string):
+    """
+    Return True if the given string is a sequence of bytes.
+
+    :param: string
+    :type: any
+    :rtype: bool
+    """
+    if PY2:
+        return isinstance(string, str)
+    return isinstance(string, bytes)
+
+def safe_str(string):
+    """
+    Safely return the given Unicode string
+    from a __str__ function: as a byte string
+    in Python 2, or as a Unicode string in Python 3.
+
+    :param string: the string to return
+    :type  string: Unicode string
+    :rtype: byte string or Unicode string
+    """
+    if PY2:
+        return string.encode("utf-8")
+    return string
+
+def safe_unichr(codepoint):
+    """
+    Safely return a Unicode string of length one,
+    containing the Unicode character with given codepoint.
+
+    :param codepoint: the codepoint
+    :type  codepoint: int
+    :rtype: Unicode string
+    """
+    if PY2:
+        return unichr(codepoint)
+    return chr(codepoint)
+
+def safe_unicode(string):
+    """
+    Safely convert the given string to a Unicode string.
+
+    :param string: the string to convert
+    :type  string: byte string or Unicode string
+    :rtype: Unicode string
+    """
+    if is_bytes(string):
+        return string.decode("utf-8")
+    return string
+
+def safe_bytes(string):
+    """
+    Safely convert the given string to a bytes string.
+
+    :param string: the string to convert
+    :type  string: byte string or Unicode string
+    :rtype: byte string
+    """
+    if is_unicode(string):
+        return string.encode("utf-8")
+    return string
+
+def object_to_unicode(obj):
+    """
+    Return a sequence of Unicode code points from the given object.
+
+    :param obj: the object
+    :type  obj: object
+    :rtype: unicode
+    """
+    if PY2:
+        return unicode(obj)
+    return str(obj)
+
+def object_to_bytes(obj):
+    """
+    Return a sequence of bytes from the given object.
+
+    :param obj: the object
+    :type  obj: object
+    :rtype: unicode
+    """
+    if PY2:
+        return str(obj)
+    return bytes(obj, encoding="utf-8")
 
 
 

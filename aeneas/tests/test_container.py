@@ -2,7 +2,6 @@
 # coding=utf-8
 
 import os
-import tempfile
 import unittest
 
 from aeneas.container import Container
@@ -101,7 +100,7 @@ class TestContainer(unittest.TestCase):
             self.assertTrue(cont.exists())
 
     def test_exists_empty_directory(self):
-        output_path = tempfile.mkdtemp()
+        output_path = gf.tmp_directory()
         cont = Container(output_path)
         self.assertTrue(cont.exists())
         gf.delete_directory(output_path)
@@ -118,7 +117,7 @@ class TestContainer(unittest.TestCase):
                 self.assertEqual(len(cont.entries()), 0)
 
     def test_entries_empty_directory(self):
-        output_path = tempfile.mkdtemp()
+        output_path = gf.tmp_directory()
         cont = Container(output_path)
         self.assertEqual(len(cont.entries()), 0)
         gf.delete_directory(output_path)
@@ -151,7 +150,7 @@ class TestContainer(unittest.TestCase):
                 self.assertTrue(cont.is_safe)
 
     def test_is_safe_empty_directory(self):
-        output_path = tempfile.mkdtemp()
+        output_path = gf.tmp_directory()
         cont = Container(output_path)
         self.assertTrue(cont.is_safe)
         gf.delete_directory(output_path)
@@ -198,7 +197,7 @@ class TestContainer(unittest.TestCase):
                 self.assertEqual(cont.read_entry(self.EXPECTED_ENTRIES[0]), None)
 
     def test_read_entry_empty_directory(self):
-        output_path = tempfile.mkdtemp()
+        output_path = gf.tmp_directory()
         cont = Container(output_path)
         self.assertEqual(cont.read_entry(self.EXPECTED_ENTRIES[0]), None)
         gf.delete_directory(output_path)
@@ -224,7 +223,7 @@ class TestContainer(unittest.TestCase):
                 self.assertEqual(cont.find_entry(self.EXPECTED_ENTRIES[0]), None)
 
     def test_find_entry_empty_directory(self):
-        output_path = tempfile.mkdtemp()
+        output_path = gf.tmp_directory()
         cont = Container(output_path)
         self.assertEqual(cont.find_entry(self.EXPECTED_ENTRIES[0]), None)
         gf.delete_directory(output_path)
@@ -263,7 +262,7 @@ class TestContainer(unittest.TestCase):
 
     def test_decompress(self):
         for key in self.FILES:
-            output_path = tempfile.mkdtemp()
+            output_path = gf.tmp_directory()
             f = self.FILES[key]
             cont = Container(f["path"])
             cont.decompress(output_path)
@@ -273,7 +272,7 @@ class TestContainer(unittest.TestCase):
 
     def test_compress_unpacked(self):
         input_path = self.FILES["unpacked"]["path"]
-        output_path = tempfile.mkdtemp()
+        output_path = gf.tmp_directory()
         cont = Container(output_path, ContainerFormat.UNPACKED)
         cont.compress(input_path)
         self.assertFalse(os.path.isfile(output_path))
@@ -286,7 +285,7 @@ class TestContainer(unittest.TestCase):
         for key in self.FILES:
             fmt = self.FILES[key]["format"]
             if fmt != ContainerFormat.UNPACKED:
-                handler, output_path = tempfile.mkstemp(suffix="." + fmt)
+                handler, output_path = gf.tmp_file(suffix="." + fmt)
                 cont = Container(output_path, fmt)
                 cont.compress(input_path)
                 self.assertTrue(os.path.isfile(output_path))

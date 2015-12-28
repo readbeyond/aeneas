@@ -2,8 +2,8 @@
 
 **aeneas** is a Python library and a set of tools to automagically synchronize audio and text.
 
-* Version: 1.3.3
-* Date: 2015-12-20
+* Version: 1.4.0
+* Date: 2016-01-??
 * Developed by: [ReadBeyond](http://www.readbeyond.it/)
 * Lead Developer: [Alberto Pettarin](http://www.albertopettarin.it/)
 * License: the GNU Affero General Public License Version 3 (AGPL v3)
@@ -75,8 +75,8 @@ or raw CSV/SSV/TSV/TXT/XML for further processing.
 1. a reasonably recent machine (recommended 4 GB RAM, 2 GHz 64bit CPU)
 2. `ffmpeg` and `ffprobe` executables available in your `$PATH`
 3. `espeak` executable available in your `$PATH`
-4. Python 2.7.x
-5. Python modules `BeautifulSoup`, `lxml`, and `numpy`
+4. Python 2.7.x or 3.4.x or later
+5. Python modules `BeautifulSoup4`, `lxml`, and `numpy`
 6. (Optional, but strongly recommended) Python C headers to compile the Python C extensions
 7. (Optional, required only for downloading audio from YouTube) Python module `pafy`
 
@@ -571,6 +571,9 @@ of downloading audio from YouTube
 **November 2015**: release of v1.3.2,
 for the first time available
 also on [PyPI](https://pypi.python.org/pypi/aeneas/)
+
+**January 2016**: release of v1.4.0,
+supporting both Python 2.7.x and 3.4 or later
 
 ## Acknowledgments
 

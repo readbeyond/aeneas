@@ -9,7 +9,7 @@ __copyright__ = """
     Copyright 2015,      Alberto Pettarin (www.albertopettarin.it)
     """
 __license__ = "GNU AGPL v3"
-__version__ = "1.3.3"
+__version__ = "1.4.0"
 __email__ = "aeneas@readbeyond.it"
 __status__ = "Production"
 
@@ -385,9 +385,49 @@ static PyMethodDef cew_methods[] = {
     }
 };
 
+/*
+// Python 2 ONLY
 PyMODINIT_FUNC initcew(void)  {
     (void) Py_InitModule("cew", cew_methods);
 }
+*/
+
+// Python 2 and 3
+#if PY_MAJOR_VERSION >= 3
+static struct PyModuleDef moduledef = {
+    PyModuleDef_HEAD_INIT,
+    "cew",          /* m_name */
+    "cew",          /* m_doc */
+    -1,             /* m_size */
+    cew_methods,    /* m_methods */
+    NULL,           /* m_reload */
+    NULL,           /* m_traverse */
+    NULL,           /* m_clear */
+    NULL,           /* m_free */
+};
+#endif
+
+static PyObject *moduleinit(void) {
+    PyObject *m;
+
+#if PY_MAJOR_VERSION >= 3
+    m = PyModule_Create(&moduledef);
+#else
+    m = Py_InitModule("cew", cew_methods);
+#endif
+
+    return m;
+}
+
+#if PY_MAJOR_VERSION >= 3
+PyMODINIT_FUNC PyInit_cew(void) {
+    return moduleinit();
+}
+#else
+PyMODINIT_FUNC initcew(void) {
+    moduleinit();
+}
+#endif
 
 
 

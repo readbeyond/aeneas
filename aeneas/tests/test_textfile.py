@@ -67,7 +67,7 @@ class TestTextFile(unittest.TestCase):
 
     def test_tf_identifier_str(self):
         with self.assertRaises(TypeError):
-            tf = TextFragment(identifier="foo")
+            tf = TextFragment(identifier=b"foo")
 
     def test_tf_identifier_unicode(self):
         tf = TextFragment(identifier=u"foo")
@@ -87,11 +87,11 @@ class TestTextFile(unittest.TestCase):
 
     def test_tf_lines_invalid_str(self):
         with self.assertRaises(TypeError):
-            tf = TextFragment(lines=["foo"])
+            tf = TextFragment(lines=[b"foo"])
 
     def test_tf_lines_invalid_str_mixed(self):
         with self.assertRaises(TypeError):
-            tf = TextFragment(lines=[u"foo", "bar", u"baz"])
+            tf = TextFragment(lines=[u"foo", b"bar", u"baz"])
 
     def test_tf_lines_unicode(self):
         tf = TextFragment(lines=[u"foo"])
@@ -447,12 +447,12 @@ class TestTextFile(unittest.TestCase):
         self.filter_transliterate([u"TUTTE"], [u"wwwwE"])
 
     def test_filter_transliterate_replace_codepoint_length(self):
-        self.filter_transliterate([u"x" + unichr(0x8) + u"z"], [u"xaz"])
-        self.filter_transliterate([u"x" + unichr(0x88) + u"z"], [u"xaz"])
-        self.filter_transliterate([u"x" + unichr(0x888) + u"z"], [u"xaz"])
-        self.filter_transliterate([u"x" + unichr(0x8888) + u"z"], [u"xaz"])
-        self.filter_transliterate([u"x" + unichr(0x88888) + u"z"], [u"xaz"])
-        self.filter_transliterate([u"x" + unichr(0x108888) + u"z"], [u"xaz"])
+        self.filter_transliterate([u"x" + u"\u0008" + u"z"], [u"xaz"])
+        self.filter_transliterate([u"x" + u"\u0088" + u"z"], [u"xaz"])
+        self.filter_transliterate([u"x" + u"\u0888" + u"z"], [u"xaz"])
+        self.filter_transliterate([u"x" + u"\u8888" + u"z"], [u"xaz"])
+        self.filter_transliterate([u"x" + u"\U00088888" + u"z"], [u"xaz"])
+        self.filter_transliterate([u"x" + u"\U00108888" + u"z"], [u"xaz"])
 
 
 

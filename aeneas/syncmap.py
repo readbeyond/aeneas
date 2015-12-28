@@ -18,9 +18,11 @@ This module contains three classes:
    of the supported output formats.
 """
 
+from __future__ import absolute_import
+from __future__ import print_function
 from itertools import chain
 from lxml import etree
-import codecs
+import io
 import json
 import os
 
@@ -33,10 +35,10 @@ __author__ = "Alberto Pettarin"
 __copyright__ = """
     Copyright 2012-2013, Alberto Pettarin (www.albertopettarin.it)
     Copyright 2013-2015, ReadBeyond Srl   (www.readbeyond.it)
-    Copyright 2015,      Alberto Pettarin (www.albertopettarin.it)
+    Copyright 2015-2016, Alberto Pettarin (www.albertopettarin.it)
     """
 __license__ = "GNU AGPL v3"
-__version__ = "1.3.3"
+__version__ = "1.4.0"
 __email__ = "aeneas@readbeyond.it"
 __status__ = "Production"
 
@@ -84,7 +86,7 @@ class SyncMap(object):
     ]
     FINETUNEAS_PATH = "res/finetuneas.html"
 
-    TAG = "SyncMap"
+    TAG = u"SyncMap"
 
     def __init__(self, logger=None):
         self.fragments = []
@@ -99,14 +101,17 @@ class SyncMap(object):
     def __len__(self):
         return len(self.fragments)
 
+    def __unicode__(self):
+        return u"\n".join([f.__unicode__() for f in self.fragments])
+
     def __str__(self):
-        return "\n".join([str(f) for f in self.fragments])
+        return gf.safe_str(self.__unicode__())
 
     def to_json(self):
         """
         Return a JSON representation of the sync map.
 
-        :rtype: str
+        :rtype: Unicode string
 
         .. versionadded:: 1.3.1
         """
@@ -121,7 +126,7 @@ class SyncMap(object):
             output_fragment["end"] = gf.time_to_ssmmm(fragment.end)
             output_fragments.append(output_fragment)
         output_dict = {"fragments": output_fragments}
-        return json.dumps(output_dict, indent=1, sort_keys=True)
+        return gf.safe_unicode(json.dumps(output_dict, indent=1, sort_keys=True))
 
     def append_fragment(self, fragment):
         """
@@ -152,7 +157,7 @@ class SyncMap(object):
         """
         Clear the sync map.
         """
-        self._log("Clearing sync map")
+        self._log(u"Clearing sync map")
         self.fragments = []
 
     def output_html_for_tuning(
@@ -188,7 +193,8 @@ class SyncMap(object):
             from_path=os.path.dirname(__file__),
             absolute=True
         )
-        template = codecs.open(template_path_absolute, "r", "utf-8").read()
+        with io.open(template_path_absolute, "r", encoding="utf-8") as file_obj:
+            template = file_obj.read()
         for repl in self.FINETUNEAS_REPLACEMENTS:
             template = template.replace(repl[0], repl[1])
         template = template.replace(
@@ -217,7 +223,8 @@ class SyncMap(object):
                             self.FINETUNEAS_REPLACE_SMIL_PAGEREF,
                             "pageref = \"%s\";" % parameters[gc.PPN_TASK_OS_FILE_SMIL_PAGE_REF]
                         )
-        codecs.open(output_file_path, "w", "utf-8").write(template)
+        with io.open(output_file_path, "w", encoding="utf-8") as file_obj:
+            file_obj.write(template)
 
     def read(self, sync_map_format, input_file_path, parameters=None):
         """
@@ -244,72 +251,67 @@ class SyncMap(object):
         if not gf.file_exists(input_file_path):
             raise IOError("Cannot read sync map file '%s' (wrong permissions?)" % input_file_path)
 
-        self._log(["Input format:     '%s'", sync_map_format])
-        self._log(["Input path:       '%s'", input_file_path])
-        self._log(["Input parameters: '%s'", parameters])
+        self._log([u"Input format:     '%s'", sync_map_format])
+        self._log([u"Input path:       '%s'", input_file_path])
+        self._log([u"Input parameters: '%s'", parameters])
 
         # open file for writing
-        self._log("Opening input file")
-        input_file = codecs.open(input_file_path, "r", "utf-8")
-
-        # input from the requested format
-        if sync_map_format == SyncMapFormat.CSV:
-            self._read_csv(input_file, gf.time_from_ssmmm)
-        elif sync_map_format == SyncMapFormat.CSVH:
-            self._read_csv(input_file, gf.time_from_hhmmssmmm)
-        elif sync_map_format == SyncMapFormat.CSVM:
-            self._read_csv(input_file, gf.time_from_ssmmm)
-        elif sync_map_format == SyncMapFormat.JSON:
-            self._read_json(input_file)
-        elif sync_map_format == SyncMapFormat.RBSE:
-            self._read_rbse(input_file)
-        elif sync_map_format == SyncMapFormat.SMIL:
-            self._read_smil(input_file)
-        elif sync_map_format == SyncMapFormat.SMILH:
-            self._read_smil(input_file)
-        elif sync_map_format == SyncMapFormat.SMILM:
-            self._read_smil(input_file)
-        elif sync_map_format == SyncMapFormat.SRT:
-            self._read_srt(input_file)
-        elif sync_map_format == SyncMapFormat.SSV:
-            self._read_ssv(input_file, gf.time_from_ssmmm)
-        elif sync_map_format == SyncMapFormat.SSVH:
-            self._read_ssv(input_file, gf.time_from_hhmmssmmm)
-        elif sync_map_format == SyncMapFormat.SSVM:
-            self._read_ssv(input_file, gf.time_from_ssmmm)
-        elif sync_map_format == SyncMapFormat.TAB:
-            self._read_tsv(input_file, gf.time_from_ssmmm)
-        elif sync_map_format == SyncMapFormat.TSV:
-            self._read_tsv(input_file, gf.time_from_ssmmm)
-        elif sync_map_format == SyncMapFormat.TSVH:
-            self._read_tsv(input_file, gf.time_from_hhmmssmmm)
-        elif sync_map_format == SyncMapFormat.TSVM:
-            self._read_tsv(input_file, gf.time_from_ssmmm)
-        elif sync_map_format == SyncMapFormat.TTML:
-            self._read_ttml(input_file)
-        elif sync_map_format == SyncMapFormat.TXT:
-            self._read_txt(input_file, gf.time_from_ssmmm)
-        elif sync_map_format == SyncMapFormat.TXTH:
-            self._read_txt(input_file, gf.time_from_hhmmssmmm)
-        elif sync_map_format == SyncMapFormat.TXTM:
-            self._read_txt(input_file, gf.time_from_ssmmm)
-        elif sync_map_format == SyncMapFormat.VTT:
-            self._read_vtt(input_file)
-        elif sync_map_format == SyncMapFormat.XML:
-            self._read_xml(input_file)
-        elif sync_map_format == SyncMapFormat.XML_LEGACY:
-            self._read_xml_legacy(input_file)
+        self._log(u"Opening input file")
+        with io.open(input_file_path, "r", encoding="utf-8") as input_file:
+            # input from the requested format
+            if sync_map_format == SyncMapFormat.CSV:
+                self._read_csv(input_file, gf.time_from_ssmmm)
+            elif sync_map_format == SyncMapFormat.CSVH:
+                self._read_csv(input_file, gf.time_from_hhmmssmmm)
+            elif sync_map_format == SyncMapFormat.CSVM:
+                self._read_csv(input_file, gf.time_from_ssmmm)
+            elif sync_map_format == SyncMapFormat.JSON:
+                self._read_json(input_file)
+            elif sync_map_format == SyncMapFormat.RBSE:
+                self._read_rbse(input_file)
+            elif sync_map_format == SyncMapFormat.SMIL:
+                self._read_smil(input_file)
+            elif sync_map_format == SyncMapFormat.SMILH:
+                self._read_smil(input_file)
+            elif sync_map_format == SyncMapFormat.SMILM:
+                self._read_smil(input_file)
+            elif sync_map_format == SyncMapFormat.SRT:
+                self._read_srt(input_file)
+            elif sync_map_format == SyncMapFormat.SSV:
+                self._read_ssv(input_file, gf.time_from_ssmmm)
+            elif sync_map_format == SyncMapFormat.SSVH:
+                self._read_ssv(input_file, gf.time_from_hhmmssmmm)
+            elif sync_map_format == SyncMapFormat.SSVM:
+                self._read_ssv(input_file, gf.time_from_ssmmm)
+            elif sync_map_format == SyncMapFormat.TAB:
+                self._read_tsv(input_file, gf.time_from_ssmmm)
+            elif sync_map_format == SyncMapFormat.TSV:
+                self._read_tsv(input_file, gf.time_from_ssmmm)
+            elif sync_map_format == SyncMapFormat.TSVH:
+                self._read_tsv(input_file, gf.time_from_hhmmssmmm)
+            elif sync_map_format == SyncMapFormat.TSVM:
+                self._read_tsv(input_file, gf.time_from_ssmmm)
+            elif sync_map_format == SyncMapFormat.TTML:
+                self._read_ttml(input_file)
+            elif sync_map_format == SyncMapFormat.TXT:
+                self._read_txt(input_file, gf.time_from_ssmmm)
+            elif sync_map_format == SyncMapFormat.TXTH:
+                self._read_txt(input_file, gf.time_from_hhmmssmmm)
+            elif sync_map_format == SyncMapFormat.TXTM:
+                self._read_txt(input_file, gf.time_from_ssmmm)
+            elif sync_map_format == SyncMapFormat.VTT:
+                self._read_vtt(input_file)
+            elif sync_map_format == SyncMapFormat.XML:
+                self._read_xml(input_file)
+            elif sync_map_format == SyncMapFormat.XML_LEGACY:
+                self._read_xml_legacy(input_file)
 
         # overwrite language if requested
         if (parameters is not None) and (gc.PPN_SYNCMAP_LANGUAGE in parameters):
             language = parameters[gc.PPN_SYNCMAP_LANGUAGE]
-            self._log(["Overwriting language to '%s'", language])
+            self._log([u"Overwriting language to '%s'", language])
             for fragment in self.fragments:
                 fragment.text_fragment.language = language
-
-        # close file and return
-        self._log("Closing input file")
-        input_file.close()
 
     def write(self, sync_map_format, output_file_path, parameters=None):
         """
@@ -336,9 +338,9 @@ class SyncMap(object):
         if not gf.file_can_be_written(output_file_path):
             raise IOError("Cannot output sync map file '%s' (wrong permissions?)" % output_file_path)
 
-        self._log(["Output format:     '%s'", sync_map_format])
-        self._log(["Output path:       '%s'", output_file_path])
-        self._log(["Output parameters: '%s'", parameters])
+        self._log([u"Output format:     '%s'", sync_map_format])
+        self._log([u"Output path:       '%s'", output_file_path])
+        self._log([u"Output parameters: '%s'", parameters])
 
         # create dir hierarchy, if needed
         gf.ensure_parent_directory(output_file_path)
@@ -353,68 +355,63 @@ class SyncMap(object):
             except (TypeError, KeyError):
                 pass
             if page_ref == None:
-                msg = "Parameter %s must be specified for format %s" % (gc.PPN_TASK_OS_FILE_SMIL_PAGE_REF, sync_map_format)
+                msg = u"Parameter %s must be specified for format %s" % (gc.PPN_TASK_OS_FILE_SMIL_PAGE_REF, sync_map_format)
                 self._log(msg, Logger.CRITICAL)
                 raise SyncMapMissingParameterError(msg)
             if audio_ref == None:
-                msg = "Parameter %s must be specified for format %s" % (gc.PPN_TASK_OS_FILE_SMIL_AUDIO_REF, sync_map_format)
+                msg = u"Parameter %s must be specified for format %s" % (gc.PPN_TASK_OS_FILE_SMIL_AUDIO_REF, sync_map_format)
                 self._log(msg, Logger.CRITICAL)
                 raise SyncMapMissingParameterError(msg)
 
         # open file for writing
-        self._log("Opening output file")
-        output_file = codecs.open(output_file_path, "w", "utf-8")
-
-        # output in the requested format
-        if sync_map_format == SyncMapFormat.CSV:
-            self._write_csv(output_file, gf.time_to_ssmmm)
-        elif sync_map_format == SyncMapFormat.CSVH:
-            self._write_csv(output_file, gf.time_to_hhmmssmmm)
-        elif sync_map_format == SyncMapFormat.CSVM:
-            self._write_csv(output_file, gf.time_to_ssmmm)
-        elif sync_map_format == SyncMapFormat.JSON:
-            self._write_json(output_file)
-        elif sync_map_format == SyncMapFormat.RBSE:
-            self._write_rbse(output_file)
-        elif sync_map_format == SyncMapFormat.SMIL:
-            self._write_smil(output_file, gf.time_to_hhmmssmmm, parameters)
-        elif sync_map_format == SyncMapFormat.SMILH:
-            self._write_smil(output_file, gf.time_to_hhmmssmmm, parameters)
-        elif sync_map_format == SyncMapFormat.SMILM:
-            self._write_smil(output_file, gf.time_to_ssmmm, parameters)
-        elif sync_map_format == SyncMapFormat.SRT:
-            self._write_srt(output_file)
-        elif sync_map_format == SyncMapFormat.SSV:
-            self._write_ssv(output_file, gf.time_to_ssmmm)
-        elif sync_map_format == SyncMapFormat.SSVH:
-            self._write_ssv(output_file, gf.time_to_hhmmssmmm)
-        elif sync_map_format == SyncMapFormat.SSVM:
-            self._write_ssv(output_file, gf.time_to_ssmmm)
-        elif sync_map_format == SyncMapFormat.TAB:
-            self._write_tsv(output_file, gf.time_to_ssmmm)
-        elif sync_map_format == SyncMapFormat.TSV:
-            self._write_tsv(output_file, gf.time_to_ssmmm)
-        elif sync_map_format == SyncMapFormat.TSVH:
-            self._write_tsv(output_file, gf.time_to_hhmmssmmm)
-        elif sync_map_format == SyncMapFormat.TSVM:
-            self._write_tsv(output_file, gf.time_to_ssmmm)
-        elif sync_map_format == SyncMapFormat.TTML:
-            self._write_ttml(output_file, parameters)
-        elif sync_map_format == SyncMapFormat.TXT:
-            self._write_txt(output_file, gf.time_to_ssmmm)
-        elif sync_map_format == SyncMapFormat.TXTH:
-            self._write_txt(output_file, gf.time_to_hhmmssmmm)
-        elif sync_map_format == SyncMapFormat.TXTM:
-            self._write_txt(output_file, gf.time_to_ssmmm)
-        elif sync_map_format == SyncMapFormat.VTT:
-            self._write_vtt(output_file)
-        elif sync_map_format == SyncMapFormat.XML:
-            self._write_xml(output_file)
-        elif sync_map_format == SyncMapFormat.XML_LEGACY:
-            self._write_xml_legacy(output_file)
-
-        # close file and return
-        output_file.close()
+        self._log(u"Opening output file")
+        with io.open(output_file_path, "w", encoding="utf-8") as output_file:
+            if sync_map_format == SyncMapFormat.CSV:
+                self._write_csv(output_file, gf.time_to_ssmmm)
+            elif sync_map_format == SyncMapFormat.CSVH:
+                self._write_csv(output_file, gf.time_to_hhmmssmmm)
+            elif sync_map_format == SyncMapFormat.CSVM:
+                self._write_csv(output_file, gf.time_to_ssmmm)
+            elif sync_map_format == SyncMapFormat.JSON:
+                self._write_json(output_file)
+            elif sync_map_format == SyncMapFormat.RBSE:
+                self._write_rbse(output_file)
+            elif sync_map_format == SyncMapFormat.SMIL:
+                self._write_smil(output_file, gf.time_to_hhmmssmmm, parameters)
+            elif sync_map_format == SyncMapFormat.SMILH:
+                self._write_smil(output_file, gf.time_to_hhmmssmmm, parameters)
+            elif sync_map_format == SyncMapFormat.SMILM:
+                self._write_smil(output_file, gf.time_to_ssmmm, parameters)
+            elif sync_map_format == SyncMapFormat.SRT:
+                self._write_srt(output_file)
+            elif sync_map_format == SyncMapFormat.SSV:
+                self._write_ssv(output_file, gf.time_to_ssmmm)
+            elif sync_map_format == SyncMapFormat.SSVH:
+                self._write_ssv(output_file, gf.time_to_hhmmssmmm)
+            elif sync_map_format == SyncMapFormat.SSVM:
+                self._write_ssv(output_file, gf.time_to_ssmmm)
+            elif sync_map_format == SyncMapFormat.TAB:
+                self._write_tsv(output_file, gf.time_to_ssmmm)
+            elif sync_map_format == SyncMapFormat.TSV:
+                self._write_tsv(output_file, gf.time_to_ssmmm)
+            elif sync_map_format == SyncMapFormat.TSVH:
+                self._write_tsv(output_file, gf.time_to_hhmmssmmm)
+            elif sync_map_format == SyncMapFormat.TSVM:
+                self._write_tsv(output_file, gf.time_to_ssmmm)
+            elif sync_map_format == SyncMapFormat.TTML:
+                self._write_ttml(output_file, parameters)
+            elif sync_map_format == SyncMapFormat.TXT:
+                self._write_txt(output_file, gf.time_to_ssmmm)
+            elif sync_map_format == SyncMapFormat.TXTH:
+                self._write_txt(output_file, gf.time_to_hhmmssmmm)
+            elif sync_map_format == SyncMapFormat.TXTM:
+                self._write_txt(output_file, gf.time_to_ssmmm)
+            elif sync_map_format == SyncMapFormat.VTT:
+                self._write_vtt(output_file)
+            elif sync_map_format == SyncMapFormat.XML:
+                self._write_xml(output_file)
+            elif sync_map_format == SyncMapFormat.XML_LEGACY:
+                self._write_xml_legacy(output_file)
 
     def _read_csv(self, input_file, parse_time):
         """
@@ -437,7 +434,7 @@ class SyncMap(object):
         """
         for fragment in self.fragments:
             text = fragment.text_fragment
-            output_file.write("%s,%s,%s,\"%s\"\n" % (
+            output_file.write(u"%s,%s,%s,\"%s\"\n" % (
                 text.identifier,
                 format_time(fragment.begin),
                 format_time(fragment.end),
@@ -503,7 +500,7 @@ class SyncMap(object):
             "smil_ids": smil_ids,
             "smil_data": smil_data
         }
-        output_file.write(json.dumps(output_dict, indent=1, sort_keys=True))
+        output_file.write(gf.safe_unicode(json.dumps(output_dict, indent=1, sort_keys=True)))
 
     def _read_smil(self, input_file):
         """
@@ -520,7 +517,7 @@ class SyncMap(object):
         for par in root.iter(smil_ns + "par"):
             for child in par:
                 if child.tag == (smil_ns + "text"):
-                    identifier = gf.split_url(child.get("src"))[1].decode("utf-8")
+                    identifier = gf.safe_unicode(gf.split_url(child.get("src"))[1])
                 elif child.tag == (smil_ns + "audio"):
                     begin = gf.time_from_hhmmssmmm(child.get("clipBegin"))
                     if begin is None:
@@ -533,37 +530,6 @@ class SyncMap(object):
             text_fragment = TextFragment(identifier=identifier, lines=[text])
             sm_fragment = SyncMapFragment(text_fragment, begin, end)
             self.append_fragment(sm_fragment)
-
-    #def _write_smil(self, output_file, format_time, parameters=None):
-    #    """
-    #    Write to SMIL file
-    #    """
-    #    text_ref = parameters[gc.PPN_TASK_OS_FILE_SMIL_PAGE_REF]
-    #    audio_ref = parameters[gc.PPN_TASK_OS_FILE_SMIL_AUDIO_REF]
-    #    output_file.write("<smil xmlns=\"http://www.w3.org/ns/SMIL\" xmlns:epub=\"http://www.idpf.org/2007/ops\" version=\"3.0\">\n")
-    #    output_file.write(" <body>\n")
-    #    output_file.write("  <seq id=\"s%s\" epub:textref=\"%s\">\n" % (
-    #        str(1).zfill(6),
-    #        text_ref
-    #    ))
-    #    i = 1
-    #    for fragment in self.fragments:
-    #        text = fragment.text_fragment
-    #        output_file.write("   <par id=\"p%s\">\n" % (str(i).zfill(6)))
-    #        output_file.write("    <text src=\"%s#%s\"/>\n" % (
-    #            text_ref,
-    #            text.identifier
-    #        ))
-    #        output_file.write("    <audio clipBegin=\"%s\" clipEnd=\"%s\" src=\"%s\"/>\n" % (
-    #            format_time(fragment.begin),
-    #            format_time(fragment.end),
-    #            audio_ref
-    #        ))
-    #        output_file.write("   </par>\n")
-    #        i += 1
-    #    output_file.write("  </seq>\n")
-    #    output_file.write(" </body>\n")
-    #    output_file.write("</smil>\n")
 
     def _write_smil(self, output_file, format_time, parameters=None):
         """
@@ -640,14 +606,14 @@ class SyncMap(object):
         i = 1
         for fragment in self.fragments:
             text = fragment.text_fragment
-            output_file.write("%d\n" % i)
-            output_file.write("%s --> %s\n" % (
+            output_file.write(u"%d\n" % i)
+            output_file.write(u"%s --> %s\n" % (
                 gf.time_to_srt(fragment.begin),
                 gf.time_to_srt(fragment.end)
             ))
             for line in text.lines:
-                output_file.write("%s\n" % line)
-            output_file.write("\n")
+                output_file.write(u"%s\n" % line)
+            output_file.write(u"\n")
             i += 1
 
     def _read_ssv(self, input_file, parse_time):
@@ -671,7 +637,7 @@ class SyncMap(object):
         """
         for fragment in self.fragments:
             text = fragment.text_fragment
-            output_file.write("%s %s %s \"%s\"\n" % (
+            output_file.write(u"%s %s %s \"%s\"\n" % (
                 format_time(fragment.begin),
                 format_time(fragment.end),
                 text.identifier,
@@ -700,7 +666,7 @@ class SyncMap(object):
         """
         for fragment in self.fragments:
             text = fragment.text_fragment
-            output_file.write("%s\t%s\t%s\n" % (
+            output_file.write(u"%s\t%s\t%s\n" % (
                 format_time(fragment.begin),
                 format_time(fragment.end),
                 text.identifier
@@ -716,36 +682,13 @@ class SyncMap(object):
         root = etree.fromstring(contents.encode("utf-8"))
         language = root.get(xml_ns + "lang")
         for elem in root.iter(ttml_ns + "p"):
-            identifier = elem.get(xml_ns + "id").decode("utf-8")
+            identifier = gf.safe_unicode(elem.get(xml_ns + "id"))
             begin = gf.time_from_ttml(elem.get("begin"))
             end = gf.time_from_ttml(elem.get("end"))
             lines = self._get_lines_from_node_text(elem)
             text_fragment = TextFragment(identifier=identifier, language=language, lines=lines)
             sm_fragment = SyncMapFragment(text_fragment, begin, end)
             self.append_fragment(sm_fragment)
-
-    #def _write_ttml(self, output_file):
-    #    """
-    #    Write to TTML file
-    #    """
-    #    output_file.write("<?xml version=\"1.0\" encoding=\"UTF-8\" ?>\n")
-    #    output_file.write("<tt xmlns=\"http://www.w3.org/ns/ttml\">\n")
-    #    # TODO add metadata from parameters here?
-    #    # output_file.write(" <head/>\n")
-    #    output_file.write(" <body>\n")
-    #    output_file.write("  <div>\n")
-    #    for fragment in self.fragments:
-    #        text = fragment.text_fragment
-    #        output_file.write("   <p xml:id=\"%s\" begin=\"%s\" end=\"%s\">\n" % (
-    #            text.identifier,
-    #            gf.time_to_ssmmm(fragment.begin),
-    #            gf.time_to_ssmmm(fragment.end)
-    #        ))
-    #        output_file.write("    %s\n" % "<br/>\n    ".join(text.lines))
-    #        output_file.write("   </p>\n")
-    #    output_file.write("  </div>\n")
-    #    output_file.write(" </body>\n")
-    #    output_file.write("</tt>")
 
     def _write_ttml(self, output_file, parameters):
         """
@@ -807,7 +750,7 @@ class SyncMap(object):
         """
         for fragment in self.fragments:
             text = fragment.text_fragment
-            output_file.write("%s %s %s \"%s\"\n" % (
+            output_file.write(u"%s %s %s \"%s\"\n" % (
                 text.identifier,
                 format_time(fragment.begin),
                 format_time(fragment.end),
@@ -851,18 +794,18 @@ class SyncMap(object):
         """
         Write to WebVTT file
         """
-        output_file.write("WEBVTT\n\n")
+        output_file.write(u"WEBVTT\n\n")
         i = 1
         for fragment in self.fragments:
             text = fragment.text_fragment
-            output_file.write("%d\n" % i)
-            output_file.write("%s --> %s\n" % (
+            output_file.write(u"%d\n" % i)
+            output_file.write(u"%s --> %s\n" % (
                 gf.time_to_hhmmssmmm(fragment.begin),
                 gf.time_to_hhmmssmmm(fragment.end)
             ))
             for line in text.lines:
-                output_file.write("%s\n" % line)
-            output_file.write("\n")
+                output_file.write(u"%s\n" % line)
+            output_file.write(u"\n")
             i += 1
 
     def _read_xml(self, input_file):
@@ -872,16 +815,13 @@ class SyncMap(object):
         contents = input_file.read()
         root = etree.fromstring(contents.encode("utf-8"))
         for frag in root:
-            identifier = frag.get("id").decode("utf-8")
+            identifier = gf.safe_unicode(frag.get("id"))
             begin = gf.time_from_ssmmm(frag.get("begin"))
             end = gf.time_from_ssmmm(frag.get("end"))
             lines = []
             for child in frag:
                 if child.tag == "line":
-                    if isinstance(child.text, unicode):
-                        lines.append(child.text)
-                    else:
-                        lines.append(child.text.decode("utf-8"))
+                    lines.append(gf.safe_unicode(child.text))
             text_fragment = TextFragment(identifier=identifier, lines=lines)
             sm_fragment = SyncMapFragment(text_fragment, begin, end)
             self.append_fragment(sm_fragment)
@@ -911,7 +851,7 @@ class SyncMap(object):
         for frag in root:
             for child in frag:
                 if child.tag == "identifier":
-                    identifier = child.text.decode("utf-8")
+                    identifier = gf.safe_unicode(child.text)
                 elif child.tag == "start":
                     begin = gf.time_from_ssmmm(child.text)
                 elif child.tag == "end":
@@ -926,27 +866,35 @@ class SyncMap(object):
         """
         Write to XML file (legacy format)
         """
-        output_file.write("<?xml version=\"1.0\" encoding=\"UTF-8\" ?>\n")
-        output_file.write("<map>\n")
+        output_file.write(u"<?xml version=\"1.0\" encoding=\"UTF-8\" ?>\n")
+        output_file.write(u"<map>\n")
         for fragment in self.fragments:
             text = fragment.text_fragment
-            output_file.write(" <fragment>\n")
-            output_file.write("  <identifier>%s</identifier>\n" % text.identifier)
-            output_file.write("  <start>%s</start>\n" % gf.time_to_ssmmm(fragment.begin))
-            output_file.write("  <end>%s</end>\n" % gf.time_to_ssmmm(fragment.end))
-            output_file.write(" </fragment>\n")
-        output_file.write("</map>")
+            output_file.write(u" <fragment>\n")
+            output_file.write(u"  <identifier>%s</identifier>\n" % text.identifier)
+            output_file.write(u"  <start>%s</start>\n" % gf.time_to_ssmmm(fragment.begin))
+            output_file.write(u"  <end>%s</end>\n" % gf.time_to_ssmmm(fragment.end))
+            output_file.write(u" </fragment>\n")
+        output_file.write(u"</map>")
 
-    def _write_tree_to_file(self, root_element, output_file, pretty_print=True, xml_declaration=True):
+    def _write_tree_to_file(
+            self,
+            root_element,
+            output_file,
+            pretty_print=True,
+            xml_declaration=True
+        ):
         """
         Write an lxml tree to the given output file
         """
-        tree = etree.ElementTree(root_element)
-        tree.write(
-            output_file,
-            pretty_print=pretty_print,
-            xml_declaration=xml_declaration
+        string = etree.tostring(
+            root_element,
+            encoding="UTF-8",
+            method="xml",
+            xml_declaration=xml_declaration,
+            pretty_print=pretty_print
         )
+        output_file.write(gf.safe_unicode(string))
 
     def _get_lines_from_node_text(self, node):
         """
@@ -954,14 +902,12 @@ class SyncMap(object):
         where the line separator is "<br xmlns=... />".
         """
         parts = ([node.text] + list(chain(*([etree.tostring(c, with_tail=False), c.tail] for c in node.getchildren()))) + [node.tail])
-        parts = [p.strip() for p in parts if not p.startswith("<br ")]
+        parts = [gf.safe_unicode(p) for p in parts]
+        parts = [p.strip() for p in parts if not p.startswith(u"<br ")]
         parts = [p for p in parts if len(p) > 0]
         uparts = []
         for part in parts:
-            if isinstance(part, unicode):
-                uparts.append(part)
-            else:
-                uparts.append(part.decode("utf-8"))
+            uparts.append(gf.safe_unicode(part))
         return uparts
 
 
@@ -981,7 +927,7 @@ class SyncMapFragment(object):
     :type  confidence: float
     """
 
-    TAG = "SyncMapFragment"
+    TAG = u"SyncMapFragment"
 
     def __init__(
             self,
@@ -995,13 +941,16 @@ class SyncMapFragment(object):
         self.end = end
         self.confidence = confidence
 
-    def __str__(self):
-        return "%s %.3f %.3f %.3f" % (
+    def __unicode__(self):
+        return u"%s %.3f %.3f %.3f" % (
             self.text_fragment.identifier,
             self.begin,
             self.end,
             self.confidence
         )
+
+    def __str__(self):
+        return gf.safe_str(self.__unicode__())
 
     def __len__(self):
         return self.end - self.begin

@@ -2,7 +2,6 @@
 # coding=utf-8
 
 import os
-import tempfile
 import unittest
 
 from aeneas.audiofile import AudioFile
@@ -99,6 +98,11 @@ class TestAudioFile(unittest.TestCase):
         audiofile = self.load(self.AUDIO_FILE_EMPTY)
         with self.assertRaises(AudioFileUnsupportedFormatError):
             audiofile.read_properties()
+
+    def test_str(self):
+        audiofile = self.load(self.FILES[0]["path"])
+        audiofile.read_properties()
+        ignored = str(audiofile)
 
     def test_read(self):
         for f in self.FILES:
@@ -230,7 +234,7 @@ class TestAudioFileMonoWAV(unittest.TestCase):
         audiofile = self.load(self.AUDIO_FILE_PATH_MFCC)
         audiofile.load_data()
         data = audiofile.audio_data
-        handler, output_file_path = tempfile.mkstemp(suffix=".wav")
+        handler, output_file_path = gf.tmp_file(suffix=".wav")
         audiofile.write(output_file_path)
         audiocopy = self.load(output_file_path)
         audiocopy.load_data()

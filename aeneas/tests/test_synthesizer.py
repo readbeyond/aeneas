@@ -1,7 +1,6 @@
 #!/usr/bin/env python
 # coding=utf-8
 
-import tempfile
 import unittest
 
 from aeneas.language import Language
@@ -16,7 +15,7 @@ class TestSynthesizer(unittest.TestCase):
     PATH_NOT_WRITEABLE = gf.get_abs_path("x/y/z/not_writeable.wav", __file__)
 
     def perform(self, path, logger=None, quit_after=None, backwards=False):
-        handler, output_file_path = tempfile.mkstemp(suffix=".wav")
+        handler, output_file_path = gf.tmp_file(suffix=".wav")
         tfl = TextFile(gf.get_abs_path(path, __file__), TextFileFormat.PLAIN)
         tfl.set_language(Language.EN)
         synth = Synthesizer(logger=logger)

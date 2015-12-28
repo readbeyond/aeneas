@@ -2,82 +2,102 @@
 # coding=utf-8
 
 """
-Probe the properties of a given audio file
+Extract MFCCs from a given audio file.
 """
 
+from __future__ import absolute_import
+from __future__ import print_function
 import numpy
 import sys
 
 from aeneas.audiofile import AudioFileMonoWAV
 from aeneas.audiofile import AudioFileUnsupportedFormatError
-from aeneas.logger import Logger
+from aeneas.ffmpegwrapper import FFMPEGWrapper
+from aeneas.tools.abstract_cli_program import AbstractCLIProgram
 import aeneas.globalfunctions as gf
 
 __author__ = "Alberto Pettarin"
 __copyright__ = """
     Copyright 2012-2013, Alberto Pettarin (www.albertopettarin.it)
     Copyright 2013-2015, ReadBeyond Srl   (www.readbeyond.it)
-    Copyright 2015,      Alberto Pettarin (www.albertopettarin.it)
+    Copyright 2015-2016, Alberto Pettarin (www.albertopettarin.it)
     """
 __license__ = "GNU AGPL 3"
-__version__ = "1.3.3"
+__version__ = "1.4.0"
 __email__ = "aeneas@readbeyond.it"
 __status__ = "Production"
 
-NAME = "aeneas.tools.extract_mfcc"
+class ExtractMFCC(AbstractCLIProgram):
+    """
+    Extract MFCCs from a given audio file.
+    """
+    INPUT_FILE = gf.get_rel_path("res/audio.wav")
+    OUTPUT_FILE = "output/audio.wav.mfcc.txt"
 
-INPUT_FILE = gf.get_rel_path("res/audio.wav")
-OUTPUT_FILE = "output/audio.wav.mfcc.txt"
+    NAME = gf.file_name_without_extension(__file__)
 
-def usage():
-    """ Print usage message """
-    print ""
-    print "Usage:"
-    print "  $ python -m %s /path/to/audio_file.mono.wav /path/to/output.txt [-v]" % NAME
-    print ""
-    print "Options:"
-    print "  -v : verbose output"
-    print ""
-    print "Example:"
-    print "  $ python -m %s %s %s" % (NAME, INPUT_FILE, OUTPUT_FILE)
-    print ""
-    sys.exit(2)
+    HELP = {
+        "description": u"Extract MFCCs from a given audio file.",
+        "synopsis": [
+            u"AUDIO_FILE OUTPUT_FILE"
+        ],
+        "examples": [
+            u"%s %s" % (INPUT_FILE, OUTPUT_FILE)
+        ]
+    }
+
+    def perform_command(self):
+        """
+        Perform command and return the appropriate exit code.
+
+        :rtype: int
+        """
+        if len(self.actual_arguments) < 2:
+            return self.print_help()
+        input_file_path = self.actual_arguments[0]
+        output_file_path = self.actual_arguments[1]
+
+        self.check_c_extensions("cmfcc")
+        if not self.check_input_file(input_file_path):
+            return self.ERROR_EXIT_CODE
+        if not self.check_output_file(output_file_path):
+            return self.ERROR_EXIT_CODE
+
+        tmp_handler, tmp_file_path = gf.tmp_file(suffix=".wav")
+        try:
+            self.print_info(u"Converting audio file to mono...")
+            converter = FFMPEGWrapper(logger=self.logger)
+            converter.convert(input_file_path, tmp_file_path)
+            self.print_info(u"Converting audio file to mono... done")
+        except IOError:
+            self.print_error(u"Cannot convert audio file '%s'" % input_file_path)
+            self.print_error(u"Check that its format is supported by ffmpeg")
+            return self.ERROR_EXIT_CODE
+
+        try:
+            audiofile = AudioFileMonoWAV(tmp_file_path, logger=self.logger)
+            audiofile.load_data()
+            audiofile.extract_mfcc()
+            audiofile.clear_data()
+            gf.delete_file(tmp_handler, tmp_file_path)
+            numpy.savetxt(output_file_path, audiofile.audio_mfcc)
+            self.print_info(u"MFCCs saved to %s" % (output_file_path))
+            return self.NO_ERROR_EXIT_CODE
+        except AudioFileUnsupportedFormatError:
+            self.print_error(u"Cannot read file '%s'" % (tmp_file_path))
+            self.print_error(u"Check that it is a mono WAV file")
+        except IOError:
+            self.print_error(u"Cannot write file '%s'" % (output_file_path))
+
+        return self.ERROR_EXIT_CODE
+
+
 
 def main():
-    """ Entry point """
-    if len(sys.argv) < 3:
-        usage()
-    file_path = sys.argv[1]
-    save_path = sys.argv[2]
-    verbose = False
-    for i in range(3, len(sys.argv)):
-        arg = sys.argv[i]
-        if arg == "-v":
-            verbose = True
-
-    if not gf.can_run_c_extension():
-        print "[WARN] Unable to load Python C Extensions"
-        print "[WARN] Running the slower pure Python code"
-        print "[WARN] See the README file for directions to compile the Python C Extensions"
-
-    if not gf.file_can_be_written(save_path):
-        print "[ERRO] Unable to create file '%s'" % save_path
-        print "[ERRO] Make sure the output file path is written/escaped correctly and that you have write permission on it"
-        sys.exit(1)
-
-    logger = Logger(tee=verbose)
-    try:
-        audiofile = AudioFileMonoWAV(file_path, logger=logger)
-        audiofile.load_data()
-        audiofile.extract_mfcc()
-        audiofile.clear_data()
-    except (AudioFileUnsupportedFormatError, IOError):
-        print "[ERRO] Cannot read file '%s'" % file_path
-        print "[ERRO] Make sure it is a mono WAV file and that its path is written/escaped correctly"
-        sys.exit(1)
-    numpy.savetxt(save_path, audiofile.audio_mfcc)
-    print "[INFO] MFCCs saved to %s" % (save_path)
-    sys.exit(0)
+    """
+    Execute program.
+    """
+    ExtractMFCC().run(arguments=sys.argv)
 
 if __name__ == '__main__':
     main()

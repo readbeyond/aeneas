@@ -1,7 +1,6 @@
 #!/usr/bin/env python
 # coding=utf-8
 
-import tempfile
 import unittest
 
 from aeneas.language import Language
@@ -25,7 +24,7 @@ class TestSyncMap(unittest.TestCase):
 
     def read(self, fmt, multiline=False, utf8=False, parameters=PARAMETERS):
         syn = SyncMap()
-        if multiline and unicode:
+        if multiline and utf8:
             path = "res/syncmaps/sonnet001_mu."
         elif multiline:
             path = "res/syncmaps/sonnet001_m."
@@ -39,7 +38,7 @@ class TestSyncMap(unittest.TestCase):
     def write(self, fmt, multiline=False, utf8=False, parameters=PARAMETERS):
         suffix = "." + fmt
         syn = self.read(SyncMapFormat.XML, multiline, utf8, self.PARAMETERS)
-        handler, output_file_path = tempfile.mkstemp(suffix=suffix)
+        handler, output_file_path = gf.tmp_file(suffix=suffix)
         syn.write(fmt, output_file_path, parameters)
         gf.delete_file(handler, output_file_path)
 
@@ -76,21 +75,25 @@ class TestSyncMap(unittest.TestCase):
         for fmt in SyncMapFormat.ALLOWED_VALUES:
             syn = self.read(fmt)
             self.assertEqual(len(syn), 15)
+            ignored = str(syn)
 
     def test_read_m(self):
         for fmt in SyncMapFormat.ALLOWED_VALUES:
             syn = self.read(fmt, multiline=True)
             self.assertEqual(len(syn), 15)
+            ignored = str(syn)
 
     def test_read_u(self):
         for fmt in SyncMapFormat.ALLOWED_VALUES:
             syn = self.read(fmt, utf8=True)
             self.assertEqual(len(syn), 15)
+            ignored = str(syn)
 
     def test_read_mu(self):
         for fmt in SyncMapFormat.ALLOWED_VALUES:
             syn = self.read(fmt, multiline=True, utf8=True)
             self.assertEqual(len(syn), 15)
+            ignored = str(syn)
 
     def test_write_none(self):
         syn = SyncMap()

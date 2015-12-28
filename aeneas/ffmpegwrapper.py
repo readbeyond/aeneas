@@ -5,6 +5,8 @@
 Wrapper around ``ffmpeg`` to convert audio files.
 """
 
+from __future__ import absolute_import
+from __future__ import print_function
 import os
 import subprocess
 
@@ -16,10 +18,10 @@ __author__ = "Alberto Pettarin"
 __copyright__ = """
     Copyright 2012-2013, Alberto Pettarin (www.albertopettarin.it)
     Copyright 2013-2015, ReadBeyond Srl   (www.readbeyond.it)
-    Copyright 2015,      Alberto Pettarin (www.albertopettarin.it)
+    Copyright 2015-2016, Alberto Pettarin (www.albertopettarin.it)
     """
 __license__ = "GNU AGPL v3"
-__version__ = "1.3.3"
+__version__ = "1.4.0"
 __email__ = "aeneas@readbeyond.it"
 __status__ = "Production"
 
@@ -85,14 +87,14 @@ class FFMPEGWrapper(object):
     FFMPEG_PARAMETERS_DEFAULT = FFMPEG_PARAMETERS_SAMPLE_22050
     """ Default set of parameters for ``ffmpeg`` """
 
-    TAG = "FFMPEGWrapper"
+    TAG = u"FFMPEGWrapper"
 
     def __init__(self, parameters=FFMPEG_PARAMETERS_DEFAULT, logger=None):
         self.parameters = parameters
         self.logger = logger
         if self.logger is None:
             self.logger = Logger()
-        self._log(["Initialized with parameters '%s'", self.parameters])
+        self._log([u"Initialized with parameters '%s'", self.parameters])
 
     def _log(self, message, severity=Logger.DEBUG):
         """ Log """
@@ -150,12 +152,12 @@ class FFMPEGWrapper(object):
         """
         # test if we can read the input file
         if not gf.file_exists(input_file_path):
-            self._log(["Input file '%s' does not exist", input_file_path], Logger.CRITICAL)
+            self._log([u"Input file '%s' does not exist", input_file_path], Logger.CRITICAL)
             raise IOError("Input audio file does not exist")
 
         # test if we can write the output file
         if not gf.file_can_be_written(output_file_path):
-            self._log(["Output file '%s' cannot be written", output_file_path], Logger.CRITICAL)
+            self._log([u"Output file '%s' cannot be written", output_file_path], Logger.CRITICAL)
             raise IOError("Output audio file cannot be written")
 
         # call ffmpeg
@@ -168,7 +170,7 @@ class FFMPEGWrapper(object):
             arguments += ["-t", process_length]
         arguments += self.parameters
         arguments += [output_file_path]
-        self._log(["Calling with arguments '%s'", arguments])
+        self._log([u"Calling with arguments '%s'", arguments])
         proc = subprocess.Popen(
             arguments,
             stdout=subprocess.PIPE,
@@ -178,15 +180,15 @@ class FFMPEGWrapper(object):
         proc.stdout.close()
         proc.stdin.close()
         proc.stderr.close()
-        self._log("Call completed")
+        self._log(u"Call completed")
 
         # check if the output file exists
         if not gf.file_exists(output_file_path):
-            self._log(["Output file '%s' was not written", output_file_path], Logger.CRITICAL)
+            self._log([u"Output file '%s' was not written", output_file_path], Logger.CRITICAL)
             raise IOError("Output file was not written")
 
         # returning the output file path
-        self._log(["Returning output file path '%s'", output_file_path])
+        self._log([u"Returning output file path '%s'", output_file_path])
         return output_file_path
 
 
