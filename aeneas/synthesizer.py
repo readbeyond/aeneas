@@ -52,7 +52,8 @@ class Synthesizer(object):
             audio_file_path,
             quit_after=None,
             backwards=False,
-            force_pure_python=False
+            force_pure_python=False,
+            allow_unlisted_languages=False
     ):
         """
         Synthesize the text contained in the given fragment list
@@ -65,10 +66,15 @@ class Synthesizer(object):
         :param quit_after: stop synthesizing as soon as
                            reaching this many seconds
         :type  quit_after: float
-        :param backwards: synthesizing from the end of the text file
+        :param backwards: if ``True``, synthesizing from the end of the text file
         :type  backwards: bool
-        :param force_pure_python: force using the pure Python version
+        :param force_pure_python: if ``True``, force using the pure Python version
         :type  force_pure_python: bool
+        :param allow_unlisted_languages: if ``True``, do not emit an error
+                                         if ``text_file`` contains fragments
+                                         with language not listed in
+                                         :class:`aeneas.language.Language`
+        :type  allow_unlisted_languages: bool
 
         :raise TypeError: if ``text_file`` is ``None`` or not an instance of ``TextFile``
         :raise IOError: if ``audio_file_path`` cannot be written
@@ -88,7 +94,8 @@ class Synthesizer(object):
             output_file_path=audio_file_path,
             quit_after=quit_after,
             backwards=backwards,
-            force_pure_python=force_pure_python
+            force_pure_python=force_pure_python,
+            allow_unlisted_languages=allow_unlisted_languages
         )
         self._log(u"Synthesizing using espeak... done")
 

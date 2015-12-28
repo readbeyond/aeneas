@@ -123,7 +123,7 @@ class ExecuteTaskCLI(AbstractCLIProgram):
     NAME = gf.file_name_without_extension(__file__)
 
     HELP = {
-        "description": u"Execute a Job, passed as a container.",
+        "description": u"Execute a Task.",
         "synopsis": [
             u"--examples",
             u"[--example-json|--example-srt|--example-smil]",
@@ -136,6 +136,7 @@ class ExecuteTaskCLI(AbstractCLIProgram):
             u"--examples"
         ],
         "options": [
+            u"--allow-unlisted-language : allow using a language code not officially supported",
             u"--best-audio : download best audio (-y)",
             u"--example-json : run example with JSON output",
             u"--example-smil : run example with SMIL output",
@@ -182,6 +183,7 @@ class ExecuteTaskCLI(AbstractCLIProgram):
         keep_audio = self.has_option(u"--keep-audio")
         output_html = self.has_option(u"--output-html")
         validate = not self.has_option(u"--skip-validator")
+        unlisted_language = self.has_option(u"--allow-unlisted-language")
 
         if demo:
             validate = False
@@ -277,7 +279,7 @@ class ExecuteTaskCLI(AbstractCLIProgram):
         try:
             self.print_info(u"Executing task...")
             executor = ExecuteTask(task=task, logger=self.logger)
-            executor.execute()
+            executor.execute(allow_unlisted_languages=unlisted_language)
             self.print_info(u"Executing task... done")
         except Exception as exc:
             self.print_error(u"An unexpected Exception occurred while executing the task:")

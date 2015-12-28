@@ -61,6 +61,7 @@ static int _open_wave_file(char const *path, int rate) {
 
 	wave_file = NULL;
 	if (path[0] != 0) {
+        //printf("%s", path);
         wave_file = fopen(path, "wb");
 	}
 	
@@ -78,7 +79,7 @@ static int _open_wave_file(char const *path, int rate) {
 // close wave file
 static int _close_wave_file(void) {
 	unsigned int pos;
-
+    
 	if (wave_file == NULL) {
         return 1;
     }
@@ -147,9 +148,19 @@ static float _cew_get_current_time(void) {
 }
 
 static int _cew_set_language(char const *voice_code) {
+    // /*
+    espeak_VOICE voice;
+    memset(&voice, 0, sizeof(voice));
+    voice.languages = voice_code;
+    if (espeak_SetVoiceByProperties(&voice) != EE_OK) {
+        return 1;
+    }
+    // */
+    /*
     if (espeak_SetVoiceByName(voice_code) != EE_OK) {
         return 1;
     }
+    */
     return 0;
 }
 

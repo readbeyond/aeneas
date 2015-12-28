@@ -73,7 +73,8 @@ class ESPEAKWrapper(object):
             output_file_path,
             quit_after=None,
             backwards=False,
-            force_pure_python=False
+            force_pure_python=False,
+            allow_unlisted_languages=False
     ):
         """
         Synthesize the text contained in the given fragment list
@@ -90,10 +91,18 @@ class ESPEAKWrapper(object):
         :type  backwards: bool
         :param force_pure_python: force using the pure Python version
         :type  force_pure_python: bool
+        :param allow_unlisted_languages: if ``True``, do not emit an error
+                                         if ``text_file`` contains fragments
+                                         with language not listed in
+                                         :class:`aeneas.language.Language`
+        :type  allow_unlisted_languages: bool
         :rtype: tuple (anchors, total_time, num_chars)
 
         :raise TypeError: if ``text_file`` is ``None`` or
                           one of the text fragments is not a ``unicode`` object
+        :raise ValueError: if ``allow_unlisted_languages`` is ``False`` and
+                           a fragment has its language code not listed in
+                           :class:`aeneas.language.Language`
         :raise IOError: if output file cannot be written to ``output_file_path``
         """
         # check that text_file is not None
@@ -101,8 +110,12 @@ class ESPEAKWrapper(object):
             self._log(u"text_file is None", Logger.CRITICAL)
             raise TypeError("text_file is None")
 
-        # check that the lines in the text file all have unicode type
+        # check that the lines in the text file all have
+        # a supported language code and unicode type
         for fragment in text_file.fragments:
+            if (fragment.language not in Language.ALLOWED_VALUES) and (not allow_unlisted_languages):
+                self._log([u"Language '%s' is not allowed", fragment.language], Logger.CRITICAL)
+                raise ValueError("Language code not allowed")
             for line in fragment.lines:
                 if not gf.is_unicode(line):
                     self._log(u"Text file must contain only unicode strings", Logger.CRITICAL)
@@ -328,7 +341,8 @@ class ESPEAKWrapper(object):
             text,
             language,
             output_file_path,
-            force_pure_python=False
+            force_pure_python=False,
+            allow_unlisted_languages=False
     ):
         """
         Create a ``wav`` audio file containing the synthesized text.
@@ -346,9 +360,17 @@ class ESPEAKWrapper(object):
         :type  output_file_path: string
         :param force_pure_python: force using the pure Python version
         :type  force_pure_python: bool
+        :param allow_unlisted_languages: if ``True``, do not emit an error
+                                         if ``text_file`` contains fragments
+                                         with language not listed in
+                                         :class:`aeneas.language.Language`
+        :type  allow_unlisted_languages: bool
         :rtype: float
 
         :raise TypeError: if ``text`` is ``None`` or it is not a ``unicode`` object
+        :raise ValueError: if ``allow_unlisted_languages`` is ``False`` and
+                           a fragment has its language code not listed in
+                           :class:`aeneas.language.Language`
         :raise IOError: if output file cannot be written to ``output_file_path``
         """
         # check that text_file is not None
@@ -366,6 +388,11 @@ class ESPEAKWrapper(object):
             self._log([u"Cannot write output file to '%s'", output_file_path], Logger.CRITICAL)
             raise IOError("Cannot write output file")
 
+        # check that the requested language is listed in language.py
+        if (language not in Language.ALLOWED_VALUES) and (not allow_unlisted_languages):
+            self._log([u"Language '%s' is not allowed", language], Logger.CRITICAL)
+            raise ValueError("Language code not allowed")
+
         self._log([u"Synthesizing text: '%s'", text])
         self._log([u"Synthesizing language: '%s'", language])
         self._log([u"Synthesizing to file: '%s'", output_file_path])
@@ -378,13 +405,6 @@ class ESPEAKWrapper(object):
         # replace language
         language = self._replace_language(language)
         self._log([u"Using language: '%s'", language])
-
-        # return 0 if the requested language is not listed in language.py
-        # NOTE disabling this check to allow testing new languages
-        # TODO put it back, add an option in gc to allow unlisted languages
-        #if language not in Language.ALLOWED_VALUES:
-        #    self._log([u"Language %s is not allowed", language])
-        #    return 0
 
         # force using pure Python code
         if force_pure_python:

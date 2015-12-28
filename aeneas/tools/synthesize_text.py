@@ -63,6 +63,7 @@ class SynthesizeTextCLI(AbstractCLIProgram):
             u"plain %s en %s --pure" % (TEXT_FILE_PLAIN, OUTPUT_FILE)
         ],
         "options": [
+            u"--allow-unlisted-language : allow using a language code not officially supported",
             u"--class-regex=REGEX : extract text from elements with class attribute matching REGEX (unparsed)",
             u"--end=INDEX : slice the text file until fragment INDEX",
             u"--id-format=FMT : use FMT for generating text id attributes (subtitles, plain)",
@@ -101,6 +102,7 @@ class SynthesizeTextCLI(AbstractCLIProgram):
         start_fragment = gf.safe_int(self.has_option_with_value(u"--start"), None)
         end_fragment = gf.safe_int(self.has_option_with_value(u"--end"), None)
         force_pure_python = self.has_option([u"-p", u"--pure"])
+        unlisted_language = self.has_option(u"--allow-unlisted-language")
         parameters = {
             gc.PPN_JOB_IS_TEXT_UNPARSED_ID_REGEX : id_regex,
             gc.PPN_JOB_IS_TEXT_UNPARSED_CLASS_REGEX : class_regex,
@@ -139,7 +141,14 @@ class SynthesizeTextCLI(AbstractCLIProgram):
 
         try:
             synt = Synthesizer(logger=self.logger)
-            synt.synthesize(text_slice, output_file_path, quit_after, backwards, force_pure_python)
+            synt.synthesize(
+                text_slice,
+                output_file_path,
+                quit_after=quit_after,
+                backwards=backwards,
+                force_pure_python=force_pure_python,
+                allow_unlisted_languages=unlisted_language
+            )
             self.print_info(u"Created file '%s'" % output_file_path)
             return self.NO_ERROR_EXIT_CODE
         except Exception as exc:
