@@ -68,6 +68,7 @@ class ExecuteJobCLI(AbstractCLIProgram):
         if (len(self.actual_arguments)) > 2 and (not self.actual_arguments[2].startswith(u"-")):
             config_string = self.actual_arguments[2]
         validate = not self.has_option(u"--skip-validator")
+        unlisted_language = self.has_option(u"--allow-unlisted-language")
 
         if not self.check_input_file(container_path):
             return self.ERROR_EXIT_CODE
@@ -102,7 +103,7 @@ class ExecuteJobCLI(AbstractCLIProgram):
 
         try:
             self.print_info(u"Executing...")
-            executor.execute()
+            executor.execute(allow_unlisted_languages=unlisted_language)
             self.print_info(u"Executing... done")
         except Exception as exc:
             self.print_error(u"An unexpected Exception occurred while executing the job:")

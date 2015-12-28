@@ -25,7 +25,7 @@ class TestESPEAKWrapper(unittest.TestCase):
                 self.assertEqual(result, 0)
             else:
                 self.assertGreater(result, 0)
-        except (IOError, TypeError, UnicodeDecodeError) as exc:
+        except (IOError, TypeError, UnicodeDecodeError, ValueError) as exc:
             gf.delete_file(handler, output_file_path)
             raise exc
 
@@ -48,7 +48,7 @@ class TestESPEAKWrapper(unittest.TestCase):
                 self.assertEqual(total_time, 0.0)
             else:
                 self.assertGreater(total_time, 0.0)
-        except (IOError, TypeError, UnicodeDecodeError) as exc:
+        except (IOError, TypeError, UnicodeDecodeError, ValueError) as exc:
             gf.delete_file(handler, output_file_path)
             raise exc
 
@@ -130,12 +130,11 @@ class TestESPEAKWrapper(unittest.TestCase):
 
     def test_multiple_invalid_language(self):
         tfl = self.tfl([("zzzz", [u"Word"])])
-        # TODO
-        #with self.assertRaises(IOError):
-        self.synthesize_multiple(tfl, zero_length=True)
+        with self.assertRaises(ValueError):
+            self.synthesize_multiple(tfl)
 
     def test_multiple_variation_language(self):
-        tfl = self.tfl([("en-gb", [u"Word"])])
+        tfl = self.tfl([(Language.EN_GB, [u"Word"])])
         self.synthesize_multiple(tfl)
 
     def test_single_none(self):
@@ -163,16 +162,17 @@ class TestESPEAKWrapper(unittest.TestCase):
     def test_single_text_unicode_unicode(self):
         self.synthesize_single(u"Ausführliche", Language.DE)
 
+    def test_single_variation_language(self):
+        self.synthesize_single(u"Word", Language.EN_GB)
+
     def test_single_replace_language(self):
         self.synthesize_single(u"Временами Сашке хотелось перестать делать то", Language.UK)
 
     def test_single_invalid_language(self):
-        # "zzzz" is not a valid espeak voice
-        with self.assertRaises(IOError):
-            self.synthesize_single(u"Word", "zzzz", zero_length=True)
+        with self.assertRaises(ValueError):
+            self.synthesize_single(u"Word", "zzzz")
 
-    def test_single_variation_language(self):
-        self.synthesize_single(u"Word", "en-gb")
+
 
 if __name__ == '__main__':
     unittest.main()

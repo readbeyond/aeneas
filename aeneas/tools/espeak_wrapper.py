@@ -46,9 +46,9 @@ class ESPEAKWrapperCLI(AbstractCLIProgram):
             u"\"%s\" en %s -m" % (TEXT_MULTI, OUTPUT_FILE)
         ],
         "options": [
+            u"--allow-unlisted-language : allow using a language code not officially supported",
             u"-m, --multiple : text contains multiple fragments, separated by a '|' character",
-            u"-p, --pure : use pure Python code, even if the C extension is available",
-            u"--allow-custom-language : allow using a language code not officially supported"
+            u"-p, --pure : use pure Python code, even if the C extension is available"
         ]
     }
 
@@ -66,9 +66,9 @@ class ESPEAKWrapperCLI(AbstractCLIProgram):
 
         multiple = self.has_option([u"-m", u"--multiple"])
         pure = self.has_option([u"-p", u"--pure"])
-        custom_language = self.has_option(u"--allow-custom-language")
+        unlisted_language = self.has_option(u"--allow-unlisted-language")
 
-        if (not custom_language) and (not language in Language.ALLOWED_VALUES):
+        if (not unlisted_language) and (not language in Language.ALLOWED_VALUES):
             self.print_error(u"Language code '%s' is not allowed." % language)
             return self.ERROR_EXIT_CODE
 
@@ -81,9 +81,20 @@ class ESPEAKWrapperCLI(AbstractCLIProgram):
                 tfl = TextFile()
                 tfl.read_from_list(text.split("|"))
                 tfl.set_language(language)
-                synt.synthesize_multiple(tfl, output_file_path, force_pure_python=pure)
+                synt.synthesize_multiple(
+                    tfl,
+                    output_file_path,
+                    force_pure_python=pure,
+                    allow_unlisted_languages=unlisted_language
+                )
             else:
-                synt.synthesize_single(text, language, output_file_path, force_pure_python=pure)
+                synt.synthesize_single(
+                    text,
+                    language,
+                    output_file_path,
+                    force_pure_python=pure,
+                    allow_unlisted_languages=unlisted_language
+                )
             self.print_info(u"Created file '%s'" % output_file_path)
             return self.NO_ERROR_EXIT_CODE
         except IOError:

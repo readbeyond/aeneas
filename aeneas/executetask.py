@@ -75,11 +75,16 @@ class ExecuteTask(object):
         """ Log """
         self.logger.log(message, severity, self.TAG)
 
-    def execute(self):
+    def execute(self, allow_unlisted_languages=False):
         """
         Execute the task.
         The sync map produced will be stored inside the task object.
 
+        :param allow_unlisted_languages: if ``True``, do not emit an error
+                                         if ``text_file`` contains fragments
+                                         with language not listed in
+                                        :class:`aeneas.language.Language`
+        :type  allow_unlisted_languages: bool
         :raise ExecuteTaskInputError: if there is a problem with the input parameters
         :raise ExecuteTaskExecutionError: if there is a problem during the task execution
         """
@@ -136,7 +141,7 @@ class ExecuteTask(object):
 
             # STEP 3 : synthesize text to wave
             self._log(u"STEP %d BEGIN" % (step_index))
-            synt_handler, synt_path, synt_anchors = self._synthesize()
+            synt_handler, synt_path, synt_anchors = self._synthesize(allow_unlisted_languages)
             self.cleanup_info.append([synt_handler, synt_path])
             self._log(u"STEP %d END" % (step_index))
             step_index += 1
@@ -371,7 +376,7 @@ class ExecuteTask(object):
 
         self._log(u"Setting head and/or tail: succeeded")
 
-    def _synthesize(self):
+    def _synthesize(self, allow_unlisted_languages):
         """
         Synthesize text into a ``wav`` file.
 
@@ -393,7 +398,11 @@ class ExecuteTask(object):
         self._log(u"Creating Synthesizer object")
         synt = Synthesizer(logger=self.logger)
         self._log(u"Synthesizing...")
-        result = synt.synthesize(self.task.text_file, path)
+        result = synt.synthesize(
+            self.task.text_file,
+            path,
+            allow_unlisted_languages=allow_unlisted_languages
+        )
         anchors = result[0]
         self._log(u"Synthesizing... done")
         self._log(u"Synthesizing text: succeeded")

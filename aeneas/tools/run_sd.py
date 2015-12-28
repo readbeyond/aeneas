@@ -52,6 +52,7 @@ class RunSDCLI(AbstractCLIProgram):
             u"parsed %s en %s %s %s" % (TEXT_FILE, AUDIO_FILE, PARAMETERS_HEAD, PARAMETERS_TAIL),
         ],
         "options": [
+            u"--allow-unlisted-language : allow using a language code not officially supported",
             u"--class-regex=REGEX : extract text from elements with class attribute matching REGEX (unparsed)",
             u"--id-regex=REGEX : extract text from elements with id attribute matching REGEX (unparsed)",
             u"--max-head=DUR : audio head has at most DUR seconds",
@@ -90,7 +91,8 @@ class RunSDCLI(AbstractCLIProgram):
         }
 
         language = gf.safe_unicode(self.actual_arguments[2])
-        if not language in Language.ALLOWED_VALUES:
+        unlisted_language = self.has_option(u"--allow-unlisted-language")
+        if (not language in Language.ALLOWED_VALUES) and (not unlisted_language):
             self.print_error(u"Language '%s' is not supported" % (language))
             return self.ERROR_EXIT_CODE
 

@@ -181,13 +181,18 @@ class ExecuteJob(object):
             self.clean()
             self._failed(u"Error while setting absolute paths for tasks: %s" % exc, "input")
 
-    def execute(self):
+    def execute(self, allow_unlisted_languages=False):
         """
         Execute the job, that is, execute all of its tasks.
 
         Each produced sync map will be stored
         inside the corresponding task object.
 
+        :param allow_unlisted_languages: if ``True``, do not emit an error
+                                         if ``text_file`` contains fragments
+                                         with language not listed in
+                                        :class:`aeneas.language.Language`
+        :type  allow_unlisted_languages: bool
         :raise ExecuteJobExecutionError: if there is a problem during the job execution
         """
         self._log(u"Executing job")
@@ -203,7 +208,7 @@ class ExecuteJob(object):
                 custom_id = task.configuration.custom_id
                 self._log([u"Executing task '%s'...", custom_id])
                 executor = ExecuteTask(task, logger=self.logger)
-                executor.execute()
+                executor.execute(allow_unlisted_languages=allow_unlisted_languages)
                 self._log([u"Executing task '%s'... done", custom_id])
             except Exception as exc:
                 self._failed(u"Error while executing task '%s': %s" % (custom_id, exc), "execution")
