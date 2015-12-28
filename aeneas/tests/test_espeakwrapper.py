@@ -25,7 +25,7 @@ class TestESPEAKWrapper(unittest.TestCase):
                 self.assertEqual(result, 0)
             else:
                 self.assertGreater(result, 0)
-        except (IOError, TypeError, UnicodeDecodeError) as exc:
+        except (IOError, TypeError, UnicodeDecodeError, ValueError) as exc:
             gf.delete_file(handler, output_file_path)
             raise exc
 
@@ -48,7 +48,7 @@ class TestESPEAKWrapper(unittest.TestCase):
                 self.assertEqual(total_time, 0.0)
             else:
                 self.assertGreater(total_time, 0.0)
-        except (IOError, TypeError, UnicodeDecodeError) as exc:
+        except (IOError, TypeError, UnicodeDecodeError, ValueError) as exc:
             gf.delete_file(handler, output_file_path)
             raise exc
 

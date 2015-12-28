@@ -6,6 +6,8 @@ Set aeneas package up
 """
 
 from setuptools import setup, Extension
+import os
+import sys
 
 __author__ = "Alberto Pettarin"
 __copyright__ = """
@@ -18,12 +20,17 @@ __version__ = "1.4.0"
 __email__ = "aeneas@readbeyond.it"
 __status__ = "Production"
 
+try:
+    from numpy import get_include
+    from numpy.distutils import misc_util
+except ImportError:
+    print("[ERRO] You must install numpy before installing aeneas")
+    print("[INFO] Try the following command:")
+    print("[INFO] $ [sudo] pip install numpy")
+    sys.exit(1)
+
 EXTENSIONS = []
 INCLUDE_DIRS = []
-#try:
-from numpy import get_include
-from numpy.distutils import misc_util
-import os
 INCLUDE_DIRS = [misc_util.get_numpy_include_dirs()]
 EXTENSION_CDTW = Extension("aeneas.cdtw", ["aeneas/cdtw.c"], include_dirs=[get_include()])
 EXTENSION_CEW = Extension("aeneas.cew", ["aeneas/cew.c"], libraries=["espeak"])
@@ -32,8 +39,6 @@ EXTENSIONS = [EXTENSION_CDTW, EXTENSION_CMFCC]
 if (os.name == "posix") and (os.uname()[0] == "Linux"):
     # cew is available only for Linux at the moment
     EXTENSIONS.append(EXTENSION_CEW)
-#except:
-#    pass
 
 setup(
     name="aeneas",
@@ -46,8 +51,20 @@ setup(
     url="https://github.com/readbeyond/aeneas",
     license="GNU Affero General Public License v3 (AGPL v3)",
     long_description=open("README.rst", "r").read(),
-    install_requires=["BeautifulSoup4>=4.4", "lxml>=3.0", "numpy>=1.9"],
+    install_requires=[
+        "BeautifulSoup4>=4.4",
+        "lxml>=3.0",
+        "numpy>=1.9"
+    ],
     extras_require={"pafy": ["pafy>=0.3"]},
+    scripts=[
+        "bin/aeneas_convert_syncmap",
+        "bin/aeneas_download",
+        "bin/aeneas_execute_task",
+        "bin/aeneas_execute_job",
+        "bin/aeneas_synthesize_text",
+        "bin/aeneas_validate",
+    ],
     keywords=[
         "CSV",
         "DTW",

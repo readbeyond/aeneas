@@ -39,7 +39,7 @@ class DownloadCLI(AbstractCLIProgram):
     NAME = gf.file_name_without_extension(__file__)
 
     HELP = {
-        "description": u"Downloead an audio file from a YouTube video.",
+        "description": u"Download an audio file from a YouTube video.",
         "synopsis": [
             u"TEXT LANGUAGE OUTPUT_FILE"
         ],

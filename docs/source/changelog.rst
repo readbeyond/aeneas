@@ -5,13 +5,17 @@ v1.4.0 (2016-01-??)
 -------------------
 
 #. Now running on both Python 2.7.x and Python 3.4.x or later, including C extensions
-#. For XML-based sync map formats, now using ``UTF-8`` encoding instead of ``ASCII`` (the latter is ``lxml`` default)
+#. For XML-based sync map formats, now using ``UTF-8`` encoding instead of ``ASCII``
 #. Unified ``aeneas.tools.*`` structure, with better docs and exit codes
 #. All ``aeneas.tools.*`` can be run interactively or called from other Python code by passing a list of arguments
 #. ``aeneas.tools.convert_syncmap`` has slightly different option names
 #. ``aeneas.tools.read_text`` has a different order of arguments and different option names
 #. ``aeneas.tools.synthesize_text`` has a different order of arguments and different option names
 #. ``aeneas.tools.run_sd`` has a different order of arguments and different option names
+#. Added ``bin/`` scripts 
+#. Added a flag to disable checking a language code string against listed (supported) ones, allowing for testing with custom espeak voices
+#. Ported the unit test launcher ``run_all_unit_tests.py`` in Python, with more options than ``unittest discover``
+#. Fixed a bug in ``cew.c`` triggered when passing espeak voices with variants (e.g., ``en-gb``)
 
 v1.3.3 (2015-12-20)
 -------------------
