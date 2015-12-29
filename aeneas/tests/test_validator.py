@@ -296,10 +296,10 @@ class TestValidator(unittest.TestCase):
 
     def test_check_container_txt_bad_config_03(self):
         self.container("res/validator/job_txt_config_bad_3", False)
-    
+
     def test_check_container_txt_not_root(self):
         self.container("res/validator/job_txt_config_not_root", True)
-    
+
     def test_check_container_txt_not_root_nested(self):
         self.container("res/validator/job_txt_config_not_root_nested", True)
 

@@ -31,7 +31,7 @@ class AdjustBoundaryAlgorithm(object):
     the boundary point between two consecutive fragments.
 
     :param algorithm: the boundary adjustment algorithm to be used
-    :type  algorithm: string (from :class:`aeneas.adjustboundaryalgorithm.AdjustBoundaryAlgorithm` enumeration)
+    :type  algorithm: :class:`aeneas.adjustboundaryalgorithm.AdjustBoundaryAlgorithm` enum
     :param text_map: a text map list [[start, end, id, text], ..., []]
     :type  text_map: list
     :param speech: a list of time intervals [[s_1, e_1,], ..., [s_k, e_k]]

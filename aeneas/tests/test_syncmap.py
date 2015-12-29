@@ -68,7 +68,7 @@ class TestSyncMap(unittest.TestCase):
 
     def test_read_not_existing_path(self):
         syn = SyncMap()
-        with self.assertRaises(IOError):
+        with self.assertRaises(OSError):
             syn.read(SyncMapFormat.SRT, self.NOT_EXISTING_SRT)
 
     def test_read(self):
@@ -107,7 +107,7 @@ class TestSyncMap(unittest.TestCase):
 
     def test_write_not_existing_path(self):
         syn = SyncMap()
-        with self.assertRaises(IOError):
+        with self.assertRaises(OSError):
             syn.write(SyncMapFormat.SRT, self.NOT_WRITEABLE_SRT)
 
     def test_write(self):

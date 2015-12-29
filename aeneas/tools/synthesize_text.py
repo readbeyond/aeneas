@@ -108,6 +108,9 @@ class SynthesizeTextCLI(AbstractCLIProgram):
             gc.PPN_JOB_IS_TEXT_UNPARSED_CLASS_REGEX : class_regex,
             gc.PPN_JOB_IS_TEXT_UNPARSED_ID_SORT : sort
         }
+        if (text_format == u"unparsed") and (id_regex is None) and (class_regex is None):
+            self.print_error(u"You must specify --id-regex and/or --class-regex for unparsed format")
+            return self.ERROR_EXIT_CODE
 
         language = gf.safe_unicode(self.actual_arguments[2])
         if not language in Language.ALLOWED_VALUES:

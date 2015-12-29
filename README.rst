@@ -89,10 +89,12 @@ System Requirements
 3. ``espeak`` executable available in your ``$PATH``
 4. Python 2.7.x or 3.4.x or later
 5. Python modules ``BeautifulSoup4``, ``lxml``, and ``numpy``
-6. (Optional, but strongly recommended) Python C headers to compile the
+6. (Optional, strongly recommended) Python C headers to compile the
    Python C extensions
-7. (Optional, required only for downloading audio from YouTube) Python
-   module ``pafy``
+7. (Optional, strongly recommended if you plan to use the CLI tools) A
+   shell supporting UTF-8
+8. (Optional, only required if you plan to download audio from YouTube)
+   Python module ``pafy``
 
 Depending on the format(s) of audio files you work with, you might need
 to install additional audio codecs for ``ffmpeg``. Similarly, you might
@@ -100,12 +102,13 @@ need to install additional voices for ``espeak``, depending on the
 language(s) you work on. (Installing *all* the codecs and *all* the
 voices available might be a good idea.)
 
-If installing the above dependencies proves difficult on your OS, you
-are strongly encouraged to use
+If installing **aeneas** natively on your OS proves difficult, you are
+strongly encouraged to use
 `aeneas-vagrant <https://github.com/readbeyond/aeneas-vagrant>`__, which
 provides **aeneas** inside a virtualized Debian image running under
 `VirtualBox <https://www.virtualbox.org/>`__ and
-`Vagrant <http://www.vagrantup.com/>`__.
+`Vagrant <http://www.vagrantup.com/>`__, which can be installed on any
+modern OS (Linux, Mac OS X, Windows).
 
 Supported Platforms
 ~~~~~~~~~~~~~~~~~~~
@@ -115,8 +118,8 @@ the **only supported OS** at the moment. (Do you need official support
 for another OS? Consider `sponsoring <#supporting>`__ this project!)
 
 However, **aeneas** has been confirmed to work on other Linux
-distributions (Ubuntu, Slackware), on Mac OS X 10.9 and 10.10, and on
-Windows Vista/7/8.1/10.
+distributions (Gentoo, Ubuntu, Slackware), on Mac OS X 10.9 and 10.10,
+and on Windows Vista/7/8.1/10.
 
 Whatever your OS is, make sure ``ffmpeg``, ``ffprobe`` (which is part of
 ``ffmpeg`` distribution), and ``espeak`` are properly installed and
@@ -129,7 +132,12 @@ strongly encouraged to use
 `aeneas-vagrant <https://github.com/readbeyond/aeneas-vagrant>`__, which
 provides **aeneas** inside a virtualized Debian image running under
 `VirtualBox <https://www.virtualbox.org/>`__ and
-`Vagrant <http://www.vagrantup.com/>`__.
+`Vagrant <http://www.vagrantup.com/>`__, which can be installed on any
+modern OS (Linux, Mac OS X, Windows).
+
+It is strongly recommended to run the **aeneas** CLI tools on a shell
+with UTF-8 encoding. Also note that all strings and files read/written
+by **aeneas** are expected to be UTF-8 encoded.
 
 Installation
 ~~~~~~~~~~~~
@@ -419,7 +427,7 @@ TODO List
 ---------
 
 -  Improving robustness against music in background
--  Isolate non-speech intervals (music, prolonged silence)
+-  Isolating non-speech intervals (music, prolonged silence)
 -  Automated text fragmentation based on audio analysis
 -  Auto-tuning DTW parameters
 -  Reporting the alignment score
@@ -427,7 +435,7 @@ TODO List
    ``ffprobe`` executables
 -  Multilevel sync map granularity (e.g., multilevel SMIL output)
 -  Better documentation
--  Testing other approaches, like HMM
+-  Testing other approaches, like DMM/HMM/NN (e.g., using HTK or Kaldi)
 -  Publishing the package on Debian repo
 
 Would you like to see one of the above points done? Consider

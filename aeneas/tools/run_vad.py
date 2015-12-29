@@ -11,7 +11,7 @@ from __future__ import print_function
 import io
 import sys
 
-from aeneas.audiofile import AudioFileMonoWAV
+from aeneas.audiofile import AudioFileMonoWAVE
 from aeneas.audiofile import AudioFileUnsupportedFormatError
 from aeneas.ffmpegwrapper import FFMPEGWrapper
 from aeneas.tools.abstract_cli_program import AbstractCLIProgram
@@ -80,17 +80,17 @@ class RunVADCLI(AbstractCLIProgram):
             converter = FFMPEGWrapper(logger=self.logger)
             converter.convert(audio_file_path, tmp_file_path)
             self.print_info(u"Converting audio file to mono... done")
-        except IOError:
+        except OSError:
             self.print__error(u"Cannot convert audio file '%s'" % audio_file_path)
             self.print_error(u"Check that its format is supported by ffmpeg")
             return self.ERROR_EXIT_CODE
 
         try:
             self.print_info(u"Extracting MFCCs...")
-            audiofile = AudioFileMonoWAV(tmp_file_path)
+            audiofile = AudioFileMonoWAVE(tmp_file_path)
             audiofile.extract_mfcc()
             self.print_info(u"Extracting MFCCs... done")
-        except (AudioFileUnsupportedFormatError, IOError):
+        except (AudioFileUnsupportedFormatError, OSError):
             self.print_error(u"Cannot read the converted WAV file '%s'" % tmp_file_path)
             return self.ERROR_EXIT_CODE
 

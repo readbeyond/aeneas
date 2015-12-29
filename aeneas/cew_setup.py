@@ -9,7 +9,6 @@ Compile the Python C Extension for synthesizing text with espeak.
 
 from __future__ import absolute_import
 from __future__ import print_function
-import os
 import sys
 
 from distutils.core import Extension
@@ -25,14 +24,6 @@ __license__ = "GNU AGPL v3"
 __version__ = "1.4.0"
 __email__ = "aeneas@readbeyond.it"
 __status__ = "Production"
-
-for compiled in ["cew.so", "cew.dylib", "cew.pyd"]:
-    if os.path.exists(compiled):
-        try:
-            os.remove(compiled)
-            print("[INFO] Removed file %s\n" % (compiled))
-        except:
-            pass
 
 CMODULE = Extension("cew", sources=["cew.c"], libraries=["espeak"])
 

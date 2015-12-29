@@ -89,6 +89,15 @@ class ReadTextCLI(AbstractCLIProgram):
             gc.PPN_JOB_IS_TEXT_UNPARSED_CLASS_REGEX : class_regex,
             gc.PPN_JOB_IS_TEXT_UNPARSED_ID_SORT : sort
         }
+        if (text_format == u"unparsed") and (id_regex is None) and (class_regex is None):
+            self.print_error(u"You must specify --id-regex and/or --class-regex for unparsed format")
+            return self.ERROR_EXIT_CODE
+        if (text_format in [u"plain", u"subtitles"]) and (id_format is not None):
+            try:
+                identifier = id_format % 1
+            except (TypeError, ValueError):
+                self.print_error(u"The given string '%s' is not a valid id format" % id_format)
+                return self.ERROR_EXIT_CODE
 
         text_file = self.get_text_file(text_format, text, parameters)
         if text_file is not None:

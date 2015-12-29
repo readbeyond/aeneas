@@ -77,14 +77,14 @@ class Synthesizer(object):
         :type  allow_unlisted_languages: bool
 
         :raise TypeError: if ``text_file`` is ``None`` or not an instance of ``TextFile``
-        :raise IOError: if ``audio_file_path`` cannot be written
+        :raise OSError: if ``audio_file_path`` cannot be written
         """
         if text_file is None:
             raise TypeError("text_file is None")
         if not isinstance(text_file, TextFile):
             raise TypeError("text_file is not an instance of TextFile")
         if not gf.file_can_be_written(audio_file_path):
-            raise IOError("audio_file_path cannot be written")
+            raise OSError("audio_file_path cannot be written")
 
         # at the moment only espeak TTS is supported
         self._log(u"Synthesizing using espeak...")
@@ -100,7 +100,7 @@ class Synthesizer(object):
         self._log(u"Synthesizing using espeak... done")
 
         if not gf.file_exists(audio_file_path):
-            raise IOError("audio_file_path was not written")
+            raise OSError("audio_file_path was not written")
 
         return result
 

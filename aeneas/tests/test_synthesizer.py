@@ -36,7 +36,7 @@ class TestSynthesizer(unittest.TestCase):
     def test_synthesize_path_not_writeable(self):
         tfl = TextFile()
         synth = Synthesizer()
-        with self.assertRaises(IOError):
+        with self.assertRaises(OSError):
             synth.synthesize(tfl, self.PATH_NOT_WRITEABLE)
 
     def test_synthesize(self):

@@ -26,7 +26,7 @@ try:
 except ImportError:
     print("[ERRO] You must install numpy before installing aeneas")
     print("[INFO] Try the following command:")
-    print("[INFO] $ [sudo] pip install numpy")
+    print("[INFO] $ sudo pip install numpy")
     sys.exit(1)
 
 EXTENSIONS = []

@@ -9,7 +9,7 @@ from __future__ import absolute_import
 from __future__ import print_function
 import sys
 
-from aeneas.audiofile import AudioFileMonoWAV
+from aeneas.audiofile import AudioFileMonoWAVE
 from aeneas.ffmpegwrapper import FFMPEGWrapper
 from aeneas.language import Language
 from aeneas.sd import SD
@@ -89,6 +89,9 @@ class RunSDCLI(AbstractCLIProgram):
             gc.PPN_JOB_IS_TEXT_UNPARSED_CLASS_REGEX : class_regex,
             gc.PPN_JOB_IS_TEXT_UNPARSED_ID_SORT : sort
         }
+        if (text_format == u"unparsed") and (id_regex is None) and (class_regex is None):
+            self.print_error(u"You must specify --id-regex and/or --class-regex for unparsed format")
+            return self.ERROR_EXIT_CODE
 
         language = gf.safe_unicode(self.actual_arguments[2])
         unlisted_language = self.has_option(u"--allow-unlisted-language")
@@ -117,7 +120,7 @@ class RunSDCLI(AbstractCLIProgram):
             self.print_error(u"%s" % exc)
             return self.ERROR_EXIT_CODE
         try:
-            audio_file = AudioFileMonoWAV(tmp_file_path, logger=self.logger)
+            audio_file = AudioFileMonoWAVE(tmp_file_path, logger=self.logger)
         except Exception as exc:
             self.print_error(u"An unexpected Exception occurred while converting the audio file:")
             self.print_error(u"%s" % exc)

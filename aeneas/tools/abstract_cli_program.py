@@ -68,6 +68,7 @@ class AbstractCLIProgram(object):
 
     def __init__(self, use_sys=True):
         self.use_sys = use_sys
+        self.formal_arguments_raw = []
         self.formal_arguments = []
         self.actual_arguments = []
         self.logger = Logger()
@@ -92,9 +93,8 @@ class AbstractCLIProgram(object):
             self._log(msg, Logger.INFO)
         if self.use_sys:
             if prefix is not None:
-                print(prefix, msg)
-            else:
-                print(msg)
+                msg = u"%s %s" % (prefix, msg)
+            gf.safe_print(msg)
 
     def print_error(self, msg):
         """
@@ -242,21 +242,37 @@ class AbstractCLIProgram(object):
         :type  arguments: list
         :rtype: int
         """
-        if u"-h" in arguments:
+        # convert arguments into Unicode strings
+        if self.use_sys:
+            # check that sys.stdin.encoding and sys.stdout.encoding are set to utf-8
+            if sys.stdin.encoding not in ["UTF-8", "UTF8"]:
+                self.print_warning(u"The default input encoding is not UTF-8.")
+                self.print_warning(u"You might want to set 'PYTHONIOENCODING=UTF-8' in your shell.")
+            if sys.stdout.encoding not in ["UTF-8", "UTF8"]:
+                self.print_warning(u"The default output encoding is not UTF-8.")
+                self.print_warning(u"You might want to set 'PYTHONIOENCODING=UTF-8' in your shell.")
+            # decode using sys.stdin.encoding
+            args = [gf.safe_unicode_stdin(arg) for arg in arguments]
+        else:
+            # decode using utf-8 (but you should pass Unicode strings as parameters anyway)
+            args = [gf.safe_unicode(arg) for arg in arguments]
+
+        if u"-h" in args:
             return self.print_help(short=True)
 
-        if u"--help" in arguments:
+        if u"--help" in args:
             return self.print_help(short=False)
 
-        if u"--version" in arguments:
+        if u"--version" in args:
             return self.print_name_version()
 
-        # copy formal arguments
-        self.formal_arguments = list(arguments)
+        # store formal arguments
+        self.formal_arguments_raw = arguments
+        self.formal_arguments = args
 
         # to obtain the actual arguments,
         # remove the first one and "special" switches
-        args = arguments[1:]
+        args = args[1:]
         set_args = set(args)
 
         for flag in set([u"-v", u"--verbose"]) & set_args:
@@ -275,11 +291,11 @@ class AbstractCLIProgram(object):
         if len(args) < 1:
             return self.print_help()
 
-        # TODO check with non UTF-8 shell
-        self.actual_arguments = [gf.safe_unicode(arg) for arg in args]
+        # store actual arguments 
+        self.actual_arguments = args
 
         self.logger = Logger(tee=self.verbose, tee_show_datetime=self.very_verbose)
-        self._log([u"Raw arguments: %s", self.formal_arguments])
+        self._log([u"Formal arguments: %s", self.formal_arguments])
         self._log([u"Actual arguments: %s", self.actual_arguments])
         exit_code = self.perform_command()
         self._log([u"Execution completed with code %d", exit_code])
@@ -418,7 +434,7 @@ class AbstractCLIProgram(object):
                 return None
             try:
                 return TextFile(text, text_format, parameters, logger=self.logger)
-            except IOError:
+            except OSError:
                 self.print_error(u"Cannot read file '%s'" % (text))
             return None
 

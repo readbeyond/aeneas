@@ -74,7 +74,7 @@ class ExecuteTaskCLI(AbstractCLIProgram):
             u"audio": "https://www.youtube.com/watch?v=rU4a7AA8wM0",
             u"text": gf.get_rel_path("res/plain.txt"),
             u"config": u"task_language=en|is_text_type=plain|os_task_file_format=txt",
-            u"syncmap": "output/sonnet.json",
+            u"syncmap": "output/sonnet.txt",
             u"options": u"-y"
         }
     }
@@ -137,17 +137,17 @@ class ExecuteTaskCLI(AbstractCLIProgram):
         ],
         "options": [
             u"--allow-unlisted-language : allow using a language code not officially supported",
-            u"--best-audio : download best audio (-y)",
             u"--example-json : run example with JSON output",
             u"--example-smil : run example with SMIL output",
             u"--example-srt : run example with SRT output",
             u"--example-youtube : run example with audio downloaded from YouTube",
             u"--examples : print a list of examples",
-            u"--keep-audio : do not delete the audio file downloaded from YouTube (-y)",
+            u"--keep-audio : do not delete the audio file downloaded from YouTube (-y only)",
+            u"--largest-audio : download largest audio stream (-y only)",
             u"--list-parameters : list all parameters",
             u"--list-values=PARAM : list all allowed values for parameter PARAM",
             u"--output-html : output HTML file for fine tuning",
-            u"--skip-validator : do not validate the given config string"
+            u"--skip-validator : do not validate the given config string",
             u"-e, --examples : print examples",
             u"-y, --youtube : download audio from YouTube video",
         ]
@@ -179,7 +179,7 @@ class ExecuteTaskCLI(AbstractCLIProgram):
         # NOTE list() is needed for Python3, where keys() is not a list!
         demo = self.has_option(list(self.DEMOS.keys()))
         download_from_youtube = self.has_option([u"-y", u"--youtube"])
-        best_audio = self.has_option(u"--best-audio")
+        largest_audio = self.has_option(u"--largest-audio")
         keep_audio = self.has_option(u"--keep-audio")
         output_html = self.has_option(u"--output-html")
         validate = not self.has_option(u"--skip-validator")
@@ -252,12 +252,14 @@ class ExecuteTaskCLI(AbstractCLIProgram):
                 downloader = Downloader(logger=self.logger)
                 audio_file_path = downloader.audio_from_youtube(
                     youtube_url,
-                    best_audio=best_audio
+                    download=True,
+                    output_file_path=None,
+                    largest_audio=largest_audio
                 )
                 self.print_info(u"Downloading audio from '%s' ... done" % youtube_url)
             except ImportError:
                 self.print_error(u"You need to install Pythom module pafy to download audio from YouTube. Run:")
-                self.print_error(u"$ [sudo] pip install pafy")
+                self.print_error(u"$ sudo pip install pafy")
                 return self.ERROR_EXIT_CODE
             except Exception as exc:
                 self.print_error(u"An unexpected Exception occurred while downloading audio from YouTube:")

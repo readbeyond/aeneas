@@ -27,10 +27,10 @@ class TestTextFile(unittest.TestCase):
         gc.PPN_JOB_IS_TEXT_UNPARSED_ID_SORT : IDSortingAlgorithm.UNSORTED,
     }
     ID_REGEX_PARAMETERS = {
-        gc.PPN_TASK_OS_FILE_ID_REGEX : "word%06d"
+        gc.PPN_TASK_OS_FILE_ID_REGEX : u"word%06d"
     }
     ID_REGEX_PARAMETERS_BAD = {
-        gc.PPN_TASK_OS_FILE_ID_REGEX : "word"
+        gc.PPN_TASK_OS_FILE_ID_REGEX : u"word"
     }
     TRANSLITERATION_MAP_FILE_PATH = gf.get_abs_path("res/transliteration/transliteration.map", __file__)
 
@@ -114,7 +114,7 @@ class TestTextFile(unittest.TestCase):
         self.assertEqual(len(tfl), 0)
 
     def test_file_path_not_existing(self):
-        with self.assertRaises(IOError):
+        with self.assertRaises(OSError):
             tfl = TextFile(file_path=self.NOT_EXISTING_PATH)
 
     def test_invalid_format(self):
@@ -134,7 +134,7 @@ class TestTextFile(unittest.TestCase):
         tfl = TextFile()
         tfl.fragments = []
         self.assertEqual(len(tfl), 0)
-    
+
     def test_invalid_fragment(self):
         tfl = TextFile()
         with self.assertRaises(TypeError):
@@ -170,7 +170,7 @@ class TestTextFile(unittest.TestCase):
             self.load(path, TextFileFormat.SUBTITLES, 15, self.ID_REGEX_PARAMETERS)
 
     def test_read_subtitles_id_regex_bad(self):
-        with self.assertRaises(TypeError):
+        with self.assertRaises(ValueError):
             for path in [
                     "res/inputtext/sonnet_subtitles_with_end_newline.txt",
                     "res/inputtext/sonnet_subtitles_no_end_newline.txt",
@@ -186,7 +186,7 @@ class TestTextFile(unittest.TestCase):
         self.load("res/inputtext/sonnet_plain.txt", TextFileFormat.PLAIN, 15, self.ID_REGEX_PARAMETERS)
 
     def test_read_plain_id_regex_bad(self):
-        with self.assertRaises(TypeError):
+        with self.assertRaises(ValueError):
             self.load("res/inputtext/sonnet_plain.txt", TextFileFormat.PLAIN, 15, self.ID_REGEX_PARAMETERS_BAD)
 
     def test_read_plain_utf8(self):
@@ -196,7 +196,7 @@ class TestTextFile(unittest.TestCase):
         self.load("res/inputtext/sonnet_plain_utf8.txt", TextFileFormat.PLAIN, 15, self.ID_REGEX_PARAMETERS)
 
     def test_read_plain_utf8_id_regex_bad(self):
-        with self.assertRaises(TypeError):
+        with self.assertRaises(ValueError):
             self.load("res/inputtext/sonnet_plain_utf8.txt", TextFileFormat.PLAIN, 15, self.ID_REGEX_PARAMETERS_BAD)
 
     def test_read_parsed(self):
@@ -312,11 +312,11 @@ class TestTextFile(unittest.TestCase):
     def test_read_from_list_with_ids(self):
         tfl = TextFile()
         text_list = [
-            [u"a1", u"fragment 1"],
-            [u"b2", u"fragment 2"],
-            [u"c3", u"fragment 3"],
-            [u"d4", u"fragment 4"],
-            [u"e5", u"fragment 5"]
+            (u"a1", u"fragment 1"),
+            (u"b2", u"fragment 2"),
+            (u"c3", u"fragment 3"),
+            (u"d4", u"fragment 4"),
+            (u"e5", u"fragment 5")
         ]
         tfl.read_from_list_with_ids(text_list)
         self.assertEqual(len(tfl), 5)
@@ -419,7 +419,7 @@ class TestTextFile(unittest.TestCase):
         self.filter_transliterate([u"worm"], [u"worm"])
 
     def test_filter_transliterate_error(self):
-        with self.assertRaises(IOError):
+        with self.assertRaises(OSError):
             self.filter_transliterate([u"worm"], [u"worm"], self.NOT_EXISTING_PATH)
 
     def test_filter_transliterate_replace_empty(self):

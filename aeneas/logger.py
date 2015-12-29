@@ -8,6 +8,7 @@ A logger class to help with debugging and performance tests.
 from __future__ import absolute_import
 from __future__ import print_function
 import datetime
+import sys
 
 import aeneas.globalfunctions as gf
 
@@ -142,13 +143,7 @@ class Logger(object):
         )
         self.entries.append(entry)
         if self.tee:
-            string = entry.pretty_print(show_datetime=self.tee_show_datetime)
-            try:
-                print(string)
-            except UnicodeEncodeError:
-                print(string.encode("ascii", "replace"))
-            except:
-                print("Encoding error while teeing, failing over")
+            gf.safe_print(entry.pretty_print(show_datetime=self.tee_show_datetime))
 
     def clear(self):
         """

@@ -10,7 +10,7 @@ from __future__ import print_function
 import numpy
 
 from aeneas.adjustboundaryalgorithm import AdjustBoundaryAlgorithm
-from aeneas.audiofile import AudioFileMonoWAV
+from aeneas.audiofile import AudioFileMonoWAVE
 from aeneas.dtw import DTWAligner
 from aeneas.ffmpegwrapper import FFMPEGWrapper
 from aeneas.language import Language
@@ -255,7 +255,7 @@ class ExecuteTask(object):
         2. audio length
         """
         self._log(u"Extracting MFCCs from real full wave")
-        audio_file = AudioFileMonoWAV(audio_file_path, logger=self.logger)
+        audio_file = AudioFileMonoWAVE(audio_file_path, logger=self.logger)
         audio_file.extract_mfcc()
         self._log(u"Extracting MFCCs from real full wave: succeeded")
         return (audio_file.audio_mfcc, audio_file.audio_length)
@@ -296,7 +296,7 @@ class ExecuteTask(object):
             self._log(u"No explicit head/process or detect head/tail")
         else:
             # we need to load the audio data
-            audio_file = AudioFileMonoWAV(audio_file_path, logger=self.logger)
+            audio_file = AudioFileMonoWAVE(audio_file_path, logger=self.logger)
             audio_file.load_data()
 
             if explicit:

@@ -9,6 +9,7 @@ from aeneas.idsortingalgorithm import IDSortingAlgorithm
 from aeneas.job import Job
 from aeneas.job import JobConfiguration
 from aeneas.language import Language
+from aeneas.logger import Logger
 from aeneas.task import Task
 from aeneas.textfile import TextFileFormat
 
@@ -18,6 +19,10 @@ class TestJob(unittest.TestCase):
         jobconf = JobConfiguration()
         setattr(jobconf, attribute, value)
         self.assertEqual(getattr(jobconf, attribute), value)
+
+    def test_job_logger(self):
+        logger = Logger()
+        job = Job(logger=logger)
 
     def test_job_identifier(self):
         job = Job()

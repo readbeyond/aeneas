@@ -61,6 +61,9 @@ class ContainerFormat(object):
     ZIP = "zip"
     """ ZIP container """
 
+    ALLOWED_FILE_VALUES = [EPUB, TAR, TAR_GZ, TAR_BZ2, ZIP]
+    """ List of all the allowed values for a container file """
+
     ALLOWED_VALUES = [EPUB, TAR, TAR_GZ, TAR_BZ2, UNPACKED, ZIP]
     """ List of all the allowed values """
 
@@ -222,7 +225,7 @@ class Container(object):
         :rtype: list of strings (path)
 
         :raise TypeError: if this container does not exist
-        :raise IOError: if an error occurred reading the given container (e.g., empty file, damaged file, etc.)
+        :raise OSError: if an error occurred reading the given container (e.g., empty file, damaged file, etc.)
         """
         self._log(u"Getting entries")
         if not self.exists():
@@ -289,7 +292,7 @@ class Container(object):
             self._log([u"Accessing entry '%s' is not safe", entry])
             return None
 
-        if not entry in self.entries():
+        if entry not in self.entries():
             self._log([u"Entry '%s' not found in this container", entry])
             return None
 
@@ -308,8 +311,10 @@ class Container(object):
         :type  output_path: string (path)
 
         :raise TypeError: if this container does not exist
-        :raise ValueError: if this container contains unsafe entries, or ``output_path`` is not an existing directory
-        :raise IOError: if an error occurred decompressing the given container (e.g., empty file, damaged file, etc.)
+        :raise ValueError: if this container contains unsafe entries,
+                           or ``output_path`` is not an existing directory
+        :raise OSError: if an error occurred decompressing the given container
+                        (e.g., empty file, damaged file, etc.)
         """
         self._log([u"Decompressing the container into '%s'", output_path])
         if not self.exists():
@@ -331,11 +336,12 @@ class Container(object):
 
         :raise TypeError: if the container path has not been set
         :raise ValueError: if ``input_path`` is not an existing directory
-        :raise IOError: if an error occurred compressing the given container (e.g., empty file, damaged file, etc.)
+        :raise OSError: if an error occurred compressing the given container
+                        (e.g., empty file, damaged file, etc.)
         """
         self._log([u"Compressing '%s' into this container", input_path])
 
-        if self.file_path == None:
+        if self.file_path is None:
             raise TypeError("The container path has not been set")
         if self.actual_container is None:
             raise TypeError("The actual container object has not been set")
@@ -370,18 +376,11 @@ class Container(object):
             self._log(u"Inferring actual container format")
             path_lowercased = self.file_path.lower()
             self._log([u"Lowercased file path: '%s'", path_lowercased])
-            if path_lowercased.endswith(ContainerFormat.ZIP):
-                self.container_format = ContainerFormat.ZIP
-            elif path_lowercased.endswith(ContainerFormat.EPUB):
-                self.container_format = ContainerFormat.EPUB
-            elif path_lowercased.endswith(ContainerFormat.TAR):
-                self.container_format = ContainerFormat.TAR
-            elif path_lowercased.endswith(ContainerFormat.TAR_GZ):
-                self.container_format = ContainerFormat.TAR_GZ
-            elif path_lowercased.endswith(ContainerFormat.TAR_BZ2):
-                self.container_format = ContainerFormat.TAR_BZ2
-            else:
-                self.container_format = ContainerFormat.UNPACKED
+            self.container_format = ContainerFormat.UNPACKED
+            for fmt in ContainerFormat.ALLOWED_FILE_VALUES:
+                if path_lowercased.endswith(fmt):
+                    self.container_format = fmt
+                    break
             self._log([u"Inferred format: '%s'", self.container_format])
 
         # set the actual container
@@ -420,48 +419,44 @@ class _ContainerTAR(object):
     def entries(self):
         try:
             argument = "r" + self.variant
-            tar_file = tarfile.open(self.file_path, argument)
-            result = [e.name for e in tar_file.getmembers() if e.isfile()]
-            tar_file.close()
+            with tarfile.open(self.file_path, argument) as tar_file:
+                result = [e.name for e in tar_file.getmembers() if e.isfile()]
             return sorted(result)
         except:
-            raise IOError("Cannot read entries from TAR file")
+            raise OSError("Cannot read entries from TAR file")
 
     def read_entry(self, entry):
         try:
             argument = "r" + self.variant
-            tar_file = tarfile.open(self.file_path, argument)
-            tar_entry = tar_file.extractfile(entry)
-            result = tar_entry.read()
-            tar_entry.close()
-            tar_file.close()
+            with tarfile.open(self.file_path, argument) as tar_file:
+                tar_entry = tar_file.extractfile(entry)
+                result = tar_entry.read()
+                tar_entry.close()
             return result
         except:
-            raise IOError("Cannot read entry from TAR file")
+            raise OSError("Cannot read entry from TAR file")
 
     def decompress(self, output_path):
         try:
             argument = "r" + self.variant
-            tar_file = tarfile.open(self.file_path, argument)
-            tar_file.extractall(output_path)
-            tar_file.close()
+            with tarfile.open(self.file_path, argument) as tar_file:
+                tar_file.extractall(output_path)
         except:
-            raise IOError("Cannot decompress TAR file")
+            raise OSError("Cannot decompress TAR file")
 
     def compress(self, input_path):
         try:
             argument = "w" + self.variant
-            tar_file = tarfile.open(self.file_path, argument)
-            root_len = len(os.path.abspath(input_path))
-            for root, dirs, files in os.walk(input_path):
-                archive_root = os.path.abspath(root)[root_len:]
-                for f in files:
-                    fullpath = os.path.join(root, f)
-                    archive_name = os.path.join(archive_root, f)
-                    tar_file.add(name=fullpath, arcname=archive_name)
-            tar_file.close()
+            with tarfile.open(self.file_path, argument) as tar_file:
+                root_len = len(os.path.abspath(input_path))
+                for root, dirs, files in os.walk(input_path):
+                    archive_root = os.path.abspath(root)[root_len:]
+                    for f in files:
+                        fullpath = os.path.join(root, f)
+                        archive_name = os.path.join(archive_root, f)
+                        tar_file.add(name=fullpath, arcname=archive_name)
         except:
-            raise IOError("Cannot compress TAR File")
+            raise OSError("Cannot compress TAR File")
 
 class _ContainerZIP(object):
     """
@@ -478,45 +473,41 @@ class _ContainerZIP(object):
 
     def entries(self):
         try:
-            zip_file = zipfile.ZipFile(self.file_path)
-            result = [e for e in zip_file.namelist() if not e.endswith("/")]
-            zip_file.close()
+            with zipfile.ZipFile(self.file_path) as zip_file:
+                result = [e for e in zip_file.namelist() if not e.endswith("/")]
             return sorted(result)
         except:
-            raise IOError("Cannot read entries from ZIP file")
+            raise OSError("Cannot read entries from ZIP file")
 
     def read_entry(self, entry):
         try:
-            zip_file = zipfile.ZipFile(self.file_path)
-            zip_entry = zip_file.open(entry)
-            result = zip_entry.read()
-            zip_entry.close()
-            zip_file.close()
+            with zipfile.ZipFile(self.file_path) as zip_file:
+                zip_entry = zip_file.open(entry)
+                result = zip_entry.read()
+                zip_entry.close()
             return result
         except:
-            raise IOError("Cannot read entry from ZIP file")
+            raise OSError("Cannot read entry from ZIP file")
 
     def decompress(self, output_path):
         try:
-            zip_file = zipfile.ZipFile(self.file_path)
-            zip_file.extractall(output_path)
-            zip_file.close()
+            with zipfile.ZipFile(self.file_path) as zip_file:
+                zip_file.extractall(output_path)
         except:
-            raise IOError("Cannot decompress ZIP file")
+            raise OSError("Cannot decompress ZIP file")
 
     def compress(self, input_path):
         try:
-            zip_file = zipfile.ZipFile(self.file_path, "w")
-            root_len = len(os.path.abspath(input_path))
-            for root, dirs, files in os.walk(input_path):
-                archive_root = os.path.abspath(root)[root_len:]
-                for f in files:
-                    fullpath = os.path.join(root, f)
-                    archive_name = os.path.join(archive_root, f)
-                    zip_file.write(fullpath, archive_name)
-            zip_file.close()
+            with zipfile.ZipFile(self.file_path, "w") as zip_file:
+                root_len = len(os.path.abspath(input_path))
+                for root, dirs, files in os.walk(input_path):
+                    archive_root = os.path.abspath(root)[root_len:]
+                    for f in files:
+                        fullpath = os.path.join(root, f)
+                        archive_name = os.path.join(archive_root, f)
+                        zip_file.write(fullpath, archive_name)
         except:
-            raise IOError("Cannot compress ZIP file")
+            raise OSError("Cannot compress ZIP file")
 
 class _ContainerUnpacked(object):
     """
@@ -542,7 +533,7 @@ class _ContainerUnpacked(object):
                     result.append(relative_path)
             return sorted(result)
         except:
-            raise IOError("Cannot read entries from unpacked")
+            raise OSError("Cannot read entries from unpacked")
 
     def read_entry(self, entry):
         try:
@@ -550,7 +541,7 @@ class _ContainerUnpacked(object):
                 result = unpacked_entry.read()
             return result
         except:
-            raise IOError("Cannot read entry from unpacked")
+            raise OSError("Cannot read entry from unpacked")
 
     def decompress(self, output_path):
         try:
@@ -558,7 +549,7 @@ class _ContainerUnpacked(object):
                 return
             gf.copytree(self.file_path, output_path)
         except:
-            raise IOError("Cannot decompress unpacked")
+            raise OSError("Cannot decompress unpacked")
 
     def compress(self, input_path):
         try:
@@ -566,6 +557,7 @@ class _ContainerUnpacked(object):
                 return
             gf.copytree(input_path, self.file_path)
         except:
-            raise IOError("Cannot compress unpacked")
+            raise OSError("Cannot compress unpacked")
+
 
 

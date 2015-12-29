@@ -4,7 +4,7 @@
 import numpy
 import unittest
 
-from aeneas.audiofile import AudioFileMonoWAV
+from aeneas.audiofile import AudioFileMonoWAVE
 import aeneas.globalfunctions as gf
 
 class TestCMFCC(unittest.TestCase):
@@ -21,7 +21,7 @@ class TestCMFCC(unittest.TestCase):
             import aeneas.cmfcc
             mfcc_pre_py = numpy.loadtxt(self.MFCC_PRE_PY)
             mfcc_pre_c = numpy.loadtxt(self.MFCC_PRE_C)
-            audio_file = AudioFileMonoWAV(self.AUDIO)
+            audio_file = AudioFileMonoWAVE(self.AUDIO)
             audio_file.load_data()
             mfcc_c = aeneas.cmfcc.cmfcc_compute_mfcc(
                 audio_file.audio_data,

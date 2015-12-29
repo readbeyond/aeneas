@@ -36,7 +36,7 @@ class ReadAudioCLI(AbstractCLIProgram):
     HELP = {
         "description": u"Read audio file properties.",
         "synopsis": [
-            u"AUDIO_FILE.MP3"
+            u"AUDIO_FILE"
         ],
         "options": [
         ],
@@ -62,7 +62,7 @@ class ReadAudioCLI(AbstractCLIProgram):
             audiofile.read_properties()
             self.print_generic(audiofile.__unicode__())
             return self.NO_ERROR_EXIT_CODE
-        except IOError:
+        except OSError:
             self.print_error(u"Cannot read file '%s'" % (audio_file_path))
             self.print_error(u"Make sure the input file path is written/escaped correctly")
         except AudioFileUnsupportedFormatError:

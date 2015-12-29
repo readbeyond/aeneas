@@ -6,6 +6,7 @@ import unittest
 from aeneas.adjustboundaryalgorithm import AdjustBoundaryAlgorithm
 from aeneas.idsortingalgorithm import IDSortingAlgorithm
 from aeneas.language import Language
+from aeneas.logger import Logger
 from aeneas.syncmap import SyncMap
 from aeneas.syncmap import SyncMapFormat
 from aeneas.syncmap import SyncMapFragment
@@ -60,6 +61,10 @@ class TestTask(unittest.TestCase):
         ]
         self.tc_from_string(config_string, properties)
 
+    def test_task_logger(self):
+        logger = Logger()
+        task = Task(logger=logger)
+
     def test_task_identifier(self):
         task = Task()
         self.assertEqual(len(task.identifier), 36)
@@ -108,12 +113,12 @@ class TestTask(unittest.TestCase):
 
     def test_set_audio_file_path_absolute_error(self):
         task = Task()
-        with self.assertRaises(IOError):
+        with self.assertRaises(OSError):
             task.audio_file_path_absolute = gf.get_abs_path("not_existing.mp3", __file__)
 
     def test_set_text_file_unparsed_id(self):
         self.set_text_file(
-            "res/inputtext/sonnet_unparsed_id.xhtml", 
+            "res/inputtext/sonnet_unparsed_id.xhtml",
             TextFileFormat.UNPARSED,
             15,
             id_regex=u"f[0-9]+",
@@ -123,7 +128,7 @@ class TestTask(unittest.TestCase):
     def test_set_text_file_unparsed_class(self):
         # NOTE this test fails because there are no id attributes in the html file
         self.set_text_file(
-            "res/inputtext/sonnet_unparsed_class.xhtml", 
+            "res/inputtext/sonnet_unparsed_class.xhtml",
             TextFileFormat.UNPARSED,
             0,
             class_regex=u"ra",
@@ -132,7 +137,7 @@ class TestTask(unittest.TestCase):
 
     def test_set_text_file_unparsed_id_class(self):
         self.set_text_file(
-            "res/inputtext/sonnet_unparsed_class_id.xhtml", 
+            "res/inputtext/sonnet_unparsed_class_id.xhtml",
             TextFileFormat.UNPARSED,
             15,
             id_regex=u"f[0-9]+",
@@ -143,7 +148,7 @@ class TestTask(unittest.TestCase):
     def test_set_text_file_unparsed_id_class_empty(self):
         # NOTE this test fails because there are no id attributes in the html file
         self.set_text_file(
-            "res/inputtext/sonnet_unparsed_class.xhtml", 
+            "res/inputtext/sonnet_unparsed_class.xhtml",
             TextFileFormat.UNPARSED,
             0,
             id_regex=u"f[0-9]+",
@@ -153,7 +158,7 @@ class TestTask(unittest.TestCase):
 
     def test_set_text_file_plain(self):
         self.set_text_file(
-            "res/inputtext/sonnet_plain.txt", 
+            "res/inputtext/sonnet_plain.txt",
             TextFileFormat.PLAIN,
             15
         )
@@ -161,7 +166,7 @@ class TestTask(unittest.TestCase):
     def test_set_text_file_parsed(self):
         return
         self.set_text_file(
-            "res/inputtext/sonnet_parsed.txt", 
+            "res/inputtext/sonnet_parsed.txt",
             TextFileFormat.PARSED,
             15
         )
@@ -169,7 +174,7 @@ class TestTask(unittest.TestCase):
     def test_set_text_file_subtitles(self):
         return
         self.set_text_file(
-            "res/inputtext/sonnet_subtitles.txt", 
+            "res/inputtext/sonnet_subtitles.txt",
             TextFileFormat.SUBTITLES,
             15
         )

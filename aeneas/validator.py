@@ -235,8 +235,8 @@ class Validator(object):
         """
         self._log([u"Checking encoding of file '%s'", input_file_path])
         self.result = ValidatorResult()
-        if not gf.file_exists(input_file_path):
-            self._failed(u"File '%s' not found." % (input_file_path))
+        if not gf.file_can_be_read(input_file_path):
+            self._failed(u"File '%s' cannot be read." % (input_file_path))
             return self.result
         with io.open(input_file_path, "rb") as file_object:
             bstring = file_object.read()
@@ -262,7 +262,7 @@ class Validator(object):
             self._check_utf8_encoding(string)
             if not self.result.passed:
                 return self.result
-            string = string.decode("utf-8")
+            string = gf.safe_unicode(string)
         self._check_not_empty(string)
         if not self.result.passed:
             return self.result
@@ -307,7 +307,7 @@ class Validator(object):
             self.check_raw_string(config_string, is_bstring=True)
             if not self.result.passed:
                 return self.result
-            config_string = config_string.decode("utf-8")
+            config_string = gf.safe_unicode(config_string)
         self._log(u"Checking required parameters")
         parameters = gf.config_string_to_dict(config_string, self.result)
         self._check_required_parameters(required_parameters, parameters)
@@ -336,7 +336,7 @@ class Validator(object):
             self.check_raw_string(contents, is_bstring=True)
             if not self.result.passed:
                 return self.result
-            contents = contents.decode("utf-8")
+            contents = gf.safe_unicode(contents)
         if not is_config_string:
             self._log(u"Converting file contents to config string")
             contents = gf.config_txt_to_string(contents)
@@ -361,8 +361,7 @@ class Validator(object):
         """
         self._log(u"Checking contents XML config file")
         self.result = ValidatorResult()
-        if gf.is_unicode(contents):
-            contents = contents.encode("utf-8")
+        contents = gf.safe_bytes(contents)
         self._log(u"Checking that contents is well formed")
         self.check_raw_string(contents, is_bstring=True)
         if not self.result.passed:
@@ -434,7 +433,7 @@ class Validator(object):
                 job = analyzer.analyze()
             self._check_analyzed_job(job, container)
 
-        except IOError:
+        except OSError:
             self._failed(u"Unable to read the contents of the container.")
         return self.result
 
@@ -461,9 +460,7 @@ class Validator(object):
         if not gf.is_bytes(bstring):
             self._failed(u"The given string is not a sequence of bytes")
             return
-        try:
-            bstring.decode("utf-8")
-        except UnicodeDecodeError:
+        if not gf.is_utf8_encoded(bstring):
             self._failed(u"The given string is not encoded in UTF-8.")
 
     def _check_not_empty(self, string):
@@ -499,7 +496,7 @@ class Validator(object):
             self._log([u"Checking allowed values for parameter '%s'", key])
             if key in parameters:
                 value = parameters[key]
-                if not value in allowed_values:
+                if value not in allowed_values:
                     self._failed(u"Parameter '%s' has value '%s' which is not allowed." % (key, value))
                     return
         self._log(u"Passed")
@@ -553,7 +550,7 @@ class Validator(object):
             return
         self._log(u"Checking no required parameter is missing")
         for req_param in required_parameters:
-            if not req_param in parameters:
+            if req_param not in parameters:
                 self._failed(u"Required parameter '%s' not set." % req_param)
                 return
         self._log(u"Checking all parameter values are allowed")

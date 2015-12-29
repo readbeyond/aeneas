@@ -113,7 +113,7 @@ class TestContainer(unittest.TestCase):
     def test_entries_empty_file(self):
         for f in self.EMPTY_FILES:
             cont = Container(f)
-            with self.assertRaises(IOError):
+            with self.assertRaises(OSError):
                 self.assertEqual(len(cont.entries()), 0)
 
     def test_entries_empty_directory(self):
@@ -146,7 +146,7 @@ class TestContainer(unittest.TestCase):
     def test_is_safe_empty_file(self):
         for f in self.EMPTY_FILES:
             cont = Container(f)
-            with self.assertRaises(IOError):
+            with self.assertRaises(OSError):
                 self.assertTrue(cont.is_safe)
 
     def test_is_safe_empty_directory(self):
@@ -193,7 +193,7 @@ class TestContainer(unittest.TestCase):
     def test_read_entry_empty_file(self):
         for f in self.EMPTY_FILES:
             cont = Container(f)
-            with self.assertRaises(IOError):
+            with self.assertRaises(OSError):
                 self.assertEqual(cont.read_entry(self.EXPECTED_ENTRIES[0]), None)
 
     def test_read_entry_empty_directory(self):
@@ -219,7 +219,7 @@ class TestContainer(unittest.TestCase):
     def test_find_entry_empty_file(self):
         for f in self.EMPTY_FILES:
             cont = Container(f)
-            with self.assertRaises(IOError):
+            with self.assertRaises(OSError):
                 self.assertEqual(cont.find_entry(self.EXPECTED_ENTRIES[0]), None)
 
     def test_find_entry_empty_directory(self):

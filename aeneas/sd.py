@@ -19,7 +19,7 @@ from __future__ import division
 from __future__ import print_function
 import numpy
 
-from aeneas.audiofile import AudioFileMonoWAV
+from aeneas.audiofile import AudioFileMonoWAVE
 from aeneas.dtw import DTWAligner
 from aeneas.logger import Logger
 from aeneas.synthesizer import Synthesizer
@@ -56,7 +56,7 @@ class SD(object):
     The SD extractor.
 
     :param audio_file: the audio file
-    :type  audio_file: :class:`aeneas.audiofile.AudioFileMonoWAV`
+    :type  audio_file: :class:`aeneas.audiofile.AudioFileMonoWAVE`
     :param text_file: the text file
     :type  text_file: :class:`aeneas.textfile.TextFile`
     :param frame_rate: the MFCC frame rate, in frames per second. Default:
@@ -144,16 +144,7 @@ class SD(object):
         :type  metric: :class:`aeneas.sd.SDMetric`
         :rtype: float
         """
-        self._extract_mfcc()
-        self._extract_speech()
-        self.audio_file.clear_data()
-        head = 0.0
-        try:
-            head = self._detect_start(min_head_length, max_head_length, metric, False)
-        except Exception as exc:
-            self._log(u"Error while detecting head", Logger.CRITICAL)
-            self._log([u"  Message: %s", exc], Logger.CRITICAL)
-        return head
+        return self._detect_head_or_tail(True, min_head_length, max_head_length, metric)
 
     def detect_tail(
             self,
@@ -172,20 +163,49 @@ class SD(object):
         :type  metric: :class:`aeneas.sd.SDMetric`
         :rtype: float
         """
-        self.audio_file.reverse()
+        return self._detect_head_or_tail(False, min_tail_length, max_tail_length, metric)
+
+    def _detect_head_or_tail(
+            self,
+            head,
+            min_length,
+            max_length,
+            metric
+    ):
+        """
+        Detect the audio head or tail
+
+        :param head: if ``True``, detect head; otherwise, detect tail
+        :type  head: bool
+        :param min_length: estimated minimum head/tail length
+        :type  min_length: float
+        :param max_length: estimated maximum head/tail length
+        :type  max_length: float
+        :param metric: the metric to be used when comparing candidates
+        :type  metric: :class:`aeneas.sd.SDMetric`
+        :rtype: float
+        """
+        if not head:
+            self._log(u"Reversing audio first time")
+            self.audio_file.reverse()
         self._extract_mfcc()
         self._extract_speech()
-        self._log(u"Reversing audio")
-        self.audio_file.reverse()
+        if not head:
+            self._log(u"Reversing audio second time")
+            self.audio_file.reverse()
         self.audio_file.clear_data()
-        tail = 0.0
+        value = 0.0
         try:
-            tail = self._detect_start(min_tail_length, max_tail_length, metric, True)
+            value = self._detect_start(min_length, max_length, metric, not head)
         except Exception as exc:
-            self._log(u"Error while detecting tail", Logger.CRITICAL)
-            self._log([u"  Message: %s", exc], Logger.CRITICAL)
-        return tail
+            if head:
+                self._log(u"An unexpected exception occurred while detecting head:", Logger.WARNING)
+            else:
+                self._log(u"An unexpected exception occurred while detecting tail:", Logger.WARNING)
+            self._log([u"%s", exc], Logger.WARNING)
+        return value 
 
+    # TODO simplify this function 
     def _detect_start(self, min_start_length, max_start_length, metric, backwards=False):
         """ Detect start """
 
@@ -212,7 +232,7 @@ class SD(object):
         )
         self._log(u"Synthesizing query... done")
 
-        query_file = AudioFileMonoWAV(tmp_file_path)
+        query_file = AudioFileMonoWAVE(tmp_file_path)
         if backwards:
             self._log(u"Reversing query")
             query_file.reverse()

@@ -80,7 +80,7 @@ class AnalyzeContainer(object):
                 return self._analyze_txt_config(config_string=None)
             else:
                 self._log(u"No configuration file in this container, returning None")
-        except (IOError, KeyError, TypeError) as exc:
+        except (OSError, KeyError, TypeError) as exc:
             self._log(u"Error in analyze", Logger.CRITICAL)
             self._log([u"Message: %s", exc], Logger.CRITICAL)
         return None
@@ -96,7 +96,6 @@ class AnalyzeContainer(object):
         :type  config_string: string
         :rtype: :class:`aeneas.job.Job`
         """
-        # TODO break this function down into smaller functions
         self._log(u"Analyzing container with TXT config string")
 
         if config_string is None:
@@ -108,8 +107,7 @@ class AnalyzeContainer(object):
             self._log([u"Reading TXT config entry: '%s'", config_entry])
             config_contents = self.container.read_entry(config_entry)
             self._log(u"Converting config contents to config string")
-            # TODO
-            config_contents = config_contents.decode("utf-8")
+            config_contents = gf.safe_unicode(config_contents)
             config_string = gf.config_txt_to_string(config_contents)
         else:
             self._log([u"Analyzing container with TXT config string '%s'", config_string])
@@ -252,7 +250,6 @@ class AnalyzeContainer(object):
         :type  config_contents: string
         :rtype: :class:`aeneas.job.Job`
         """
-        # TODO break this function down into smaller functions
         self._log(u"Analyzing container with XML config string")
 
         if config_contents is None:
@@ -486,8 +483,8 @@ class AnalyzeContainer(object):
         self._log(u"Matching files in flat hierarchy")
         self._log([u"Text files: '%s'", text_files])
         self._log([u"Audio files: '%s'", audio_files])
-        d_text = dict()
-        d_audio = dict()
+        d_text = {}
+        d_audio = {}
         for text_file in text_files:
             text_file_no_ext = gf.file_name_without_extension(text_file)
             d_text[text_file_no_ext] = text_file

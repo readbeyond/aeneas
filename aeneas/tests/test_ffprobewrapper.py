@@ -58,7 +58,7 @@ class TestFFPROBEWrapper(unittest.TestCase):
             self.load(None)
 
     def test_path_not_existing(self):
-        with self.assertRaises(IOError):
+        with self.assertRaises(OSError):
             self.load(self.NOT_EXISTING_PATH)
 
     def test_file_empty(self):

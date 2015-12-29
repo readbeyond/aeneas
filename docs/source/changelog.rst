@@ -15,6 +15,11 @@ v1.4.0 (2016-01-??)
 #. Added ``bin/`` scripts 
 #. Added a flag to disable checking a language code string against listed (supported) ones, allowing for testing with custom espeak voices
 #. Ported the unit test launcher ``run_all_unit_tests.py`` in Python, with more options than ``unittest discover``
+#. Added unit test ``aeneas.tests.test_idsortingalgorithm``
+#. Changed all ``IOError`` to ``OSError``, per Python 3 recommendation
+#. Changed ``parameters=None`` default value in the constructor of ``FFMPEGWrapper``
+#. Renamed ``AudioFileMonoWAV`` to ``AudioFileMonoWAVE``
+#. Renamed ``best_audio`` parameter to ``largest_audio`` in ``downloader.py`` and in ``aeneas.tools.execute_task`` and ``aeneas.tools.download``
 #. Fixed a bug in ``cew.c`` triggered when passing espeak voices with variants (e.g., ``en-gb``)
 
 v1.3.3 (2015-12-20)
