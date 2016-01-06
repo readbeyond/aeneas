@@ -40,21 +40,21 @@ class TestFFMPEGWrapper(unittest.TestCase):
     NOT_EXISTING_PATH = "this_file_does_not_exist.mp3"
     EMPTY_FILE_PATH = "res/audioformats/p001.empty"
 
-    def convert(self, input_file_path, ofp=None):
+    def convert(self, input_file_path, ofp=None, parameters=None):
         if ofp is None:
             output_path = gf.tmp_directory()
             output_file_path = os.path.join(output_path, "audio.wav")
         else:
             output_file_path = ofp
         try:
-            converter = FFMPEGWrapper()
+            converter = FFMPEGWrapper(parameters=parameters)
             result = converter.convert(
-                gf.get_abs_path(input_file_path, __file__),
+                gf.absolute_path(input_file_path, __file__),
                 output_file_path
             )
             self.assertEqual(result, output_file_path)
             gf.delete_directory(output_path)
-        except IOError as exc:
+        except OSError as exc:
             if ofp is None:
                 gf.delete_directory(output_path)
             else:
@@ -65,16 +65,20 @@ class TestFFMPEGWrapper(unittest.TestCase):
         for f in self.FILES:
             self.convert(f["path"])
 
+    def test_convert_parameters(self):
+        for f in self.FILES:
+            self.convert(f["path"], parameters=FFMPEGWrapper.FFMPEG_PARAMETERS_SAMPLE_8000)
+
     def test_not_existing(self):
-        with self.assertRaises(IOError):
+        with self.assertRaises(OSError):
             self.convert(self.NOT_EXISTING_PATH)
 
     def test_empty(self):
-        with self.assertRaises(IOError):
+        with self.assertRaises(OSError):
             self.convert(self.EMPTY_FILE_PATH)
 
     def test_cannot_be_written(self):
-        with self.assertRaises(IOError):
+        with self.assertRaises(OSError):
             self.convert(self.FILES[0]["path"], self.CANNOT_BE_WRITTEN_PATH)
 
 if __name__ == '__main__':

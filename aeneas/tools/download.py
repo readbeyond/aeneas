@@ -41,21 +41,21 @@ class DownloadCLI(AbstractCLIProgram):
     HELP = {
         "description": u"Download an audio file from a YouTube video.",
         "synopsis": [
-            u"TEXT LANGUAGE OUTPUT_FILE"
+            u"YOUTUBE_URL [OUTPUT_FILE]"
         ],
         "examples": [
-            u"%s %s" % (URL_YOUTUBE, OUTPUT_FILE_M4A),
             u"%s --list" % (URL_YOUTUBE),
+            u"%s %s" % (URL_YOUTUBE, OUTPUT_FILE_M4A),
             u"%s %s --index=0" % (URL_YOUTUBE, OUTPUT_FILE_M4A),
-            u"%s %s --best-audio" % (URL_YOUTUBE, OUTPUT_FILE_M4A),
-            u"%s %s --best-audio --format=ogg" % (URL_YOUTUBE, OUTPUT_FILE_OGG)
+            u"%s %s --smallest-audio" % (URL_YOUTUBE, OUTPUT_FILE_OGG),
+            u"%s %s --largest-audio --format=ogg" % (URL_YOUTUBE, OUTPUT_FILE_OGG),
         ],
         "options": [
+            u"--format=FMT : preferably download audio stream in FMT format",
+            u"--index=IDX : download audio stream with given index",
+            u"--largest-audio : download largest audio stream (default)",
             u"--list : list all available audio streams but do not download",
             u"--smallest-audio : download smallest audio stream",
-            u"--best-audio : download best audio stream (default)",
-            u"--format=FMT : preferably download audio stream in FMT format",
-            u"--index=IDX : download audio stream with given index"
         ]
     }
 
@@ -71,11 +71,11 @@ class DownloadCLI(AbstractCLIProgram):
         output_file_path = self.actual_arguments[1]
 
         download = not self.has_option("--list")
-        # best_audio = True by default or if explicitly given
-        if self.has_option("--best-audio"):
-            best_audio = True
+        # largest_audio = True by default or if explicitly given
+        if self.has_option("--largest-audio"):
+            largest_audio = True
         else:
-            best_audio = not self.has_option("--smallest-audio")
+            largest_audio = not self.has_option("--smallest-audio")
         preferred_format = self.has_option_with_value("--format")
         preferred_index = gf.safe_int(self.has_option_with_value("--index"), None)
 
@@ -85,11 +85,11 @@ class DownloadCLI(AbstractCLIProgram):
                 downloader = Downloader(logger=self.logger)
                 result = downloader.audio_from_youtube(
                     source_url,
+                    download=download,
                     output_file_path=output_file_path,
-                    best_audio=best_audio,
-                    preferred_format=preferred_format,
                     preferred_index=preferred_index,
-                    download=download
+                    largest_audio=largest_audio,
+                    preferred_format=preferred_format
                 )
                 self.print_info(u"Downloading audio stream from '%s' ... done" % source_url)
                 self.print_info(u"Downloaded file '%s'" % result)
@@ -115,7 +115,7 @@ class DownloadCLI(AbstractCLIProgram):
             return self.NO_ERROR_EXIT_CODE
         except ImportError:
             self.print_error(u"You need to install Python module pafy to download audio from YouTube. Run:")
-            self.print_error(u"$ [sudo] pip install pafy")
+            self.print_error(u"$ sudo pip install pafy")
         except Exception as exc:
             self.print_error(u"An unexpected Exception occurred while downloading audio from YouTube:")
             self.print_error(u"%s" % exc)

@@ -12,9 +12,9 @@ import aeneas.globalfunctions as gf
 
 class TestSyncMap(unittest.TestCase):
 
-    NOT_EXISTING_SRT = gf.get_abs_path("not_existing.srt", __file__)
-    EXISTING_SRT = gf.get_abs_path("res/syncmaps/sonnet001.srt", __file__)
-    NOT_WRITEABLE_SRT = gf.get_abs_path("x/y/z/not_writeable.srt", __file__)
+    NOT_EXISTING_SRT = gf.absolute_path("not_existing.srt", __file__)
+    EXISTING_SRT = gf.absolute_path("res/syncmaps/sonnet001.srt", __file__)
+    NOT_WRITEABLE_SRT = gf.absolute_path("x/y/z/not_writeable.srt", __file__)
 
     PARAMETERS = {
         gc.PPN_TASK_OS_FILE_SMIL_PAGE_REF: "sonnet001.xhtml",
@@ -32,7 +32,7 @@ class TestSyncMap(unittest.TestCase):
             path = "res/syncmaps/sonnet001_u."
         else:
             path = "res/syncmaps/sonnet001."
-        syn.read(fmt, gf.get_abs_path(path + fmt, __file__), parameters=parameters)
+        syn.read(fmt, gf.absolute_path(path + fmt, __file__), parameters=parameters)
         return syn
 
     def write(self, fmt, multiline=False, utf8=False, parameters=PARAMETERS):
@@ -68,7 +68,7 @@ class TestSyncMap(unittest.TestCase):
 
     def test_read_not_existing_path(self):
         syn = SyncMap()
-        with self.assertRaises(IOError):
+        with self.assertRaises(OSError):
             syn.read(SyncMapFormat.SRT, self.NOT_EXISTING_SRT)
 
     def test_read(self):
@@ -107,7 +107,7 @@ class TestSyncMap(unittest.TestCase):
 
     def test_write_not_existing_path(self):
         syn = SyncMap()
-        with self.assertRaises(IOError):
+        with self.assertRaises(OSError):
             syn.write(SyncMapFormat.SRT, self.NOT_WRITEABLE_SRT)
 
     def test_write(self):
@@ -151,6 +151,15 @@ class TestSyncMap(unittest.TestCase):
         fmt = SyncMapFormat.TTML
         parameters = {"language": Language.EN}
         self.write(fmt, parameters=parameters)
+
+    def test_output_html_for_tuning(self):
+        syn = self.read(SyncMapFormat.XML, multiline=True, utf8=True)
+        handler, output_file_path = gf.tmp_file(suffix=".html")
+        audio_file_path = "foo.mp3"
+        syn.output_html_for_tuning(audio_file_path, output_file_path, None)
+        gf.delete_file(handler, output_file_path)
+
+
 
 if __name__ == '__main__':
     unittest.main()

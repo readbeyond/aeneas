@@ -9,6 +9,7 @@ a collection of related Tasks.
 from __future__ import absolute_import
 from __future__ import print_function
 
+from aeneas.logger import Logger
 import aeneas.globalconstants as gc
 import aeneas.globalfunctions as gf
 
@@ -29,34 +30,29 @@ class Job(object):
     a collection of related Tasks.
 
     :param config_string: the job configuration string
-    :type  config_string: string
+    :type  config_string: Unicode string
+    :param logger: the logger object
+    :type  logger: :class:`aeneas.logger.Logger`
 
-    :raises TypeError: if ``config_string`` is not ``None`` and not an instance of ``str`` or ``unicode``
+    :raises TypeError: if ``config_string`` is not ``None`` and
+                       not a Unicode string
     """
 
     TAG = u"Job"
 
-    def __init__(self, config_string=None):
+    def __init__(self, config_string=None, logger=None):
+        self.logger = logger
+        if self.logger is None:
+            self.logger = Logger()
         self.tasks = []
         self.identifier = gf.uuid_string()
         self.configuration = None
         if config_string is not None:
             self.configuration = JobConfiguration(config_string)
 
-    def append_task(self, task):
-        """
-        Append a task to this job.
-
-        :param task: the task to be appended
-        :type  task: :class:`aeneas.task.Task`
-        """
-        self.tasks.append(task)
-
-    def clear_tasks(self):
-        """
-        Delete all the tasks of this job.
-        """
-        self.tasks = []
+    def _log(self, message, severity=Logger.DEBUG):
+        """ Log """
+        self.logger.log(message, severity, self.TAG)
 
     def __len__(self):
         return len(self.tasks)
@@ -75,17 +71,33 @@ class Job(object):
     def __str__(self):
         return gf.safe_str(self.__unicode__())
 
+    def append_task(self, task):
+        """
+        Append a task to this job.
+
+        :param task: the task to be appended
+        :type  task: :class:`aeneas.task.Task`
+        """
+        self.tasks.append(task)
+
+    def clear_tasks(self):
+        """
+        Delete all the tasks of this job.
+        """
+        self.tasks = []
+
     @property
     def identifier(self):
         """
         The identifier of the job.
 
-        :rtype: string
+        :rtype: Unicode string
         """
         return self.__identifier
     @identifier.setter
     def identifier(self, value):
         self.__identifier = value
+
 
 
 class JobConfiguration(object):
@@ -94,7 +106,7 @@ class JobConfiguration(object):
     a series of directives for I/O and processing the job.
 
     :param config_string: the job configuration string
-    :type  config_string: string
+    :type  config_string: Unicode string
 
     :raises TypeError: if ``config_string`` is not ``None`` and
                        it is not a Unicode string
@@ -102,47 +114,44 @@ class JobConfiguration(object):
 
     TAG = u"JobConfiguration"
 
+    # TODO use __dict__ directly?
+    FIELD_NAMES = [
+        gc.PPN_JOB_DESCRIPTION,
+        gc.PPN_JOB_LANGUAGE,
+        gc.PPN_JOB_IS_AUDIO_FILE_NAME_REGEX,
+        gc.PPN_JOB_IS_AUDIO_FILE_RELATIVE_PATH,
+        gc.PPN_JOB_IS_HIERARCHY_PREFIX,
+        gc.PPN_JOB_IS_HIERARCHY_TYPE,
+        gc.PPN_JOB_IS_TASK_DIRECTORY_NAME_REGEX,
+        gc.PPN_JOB_IS_TEXT_FILE_FORMAT,
+        gc.PPN_JOB_IS_TEXT_FILE_NAME_REGEX,
+        gc.PPN_JOB_IS_TEXT_FILE_RELATIVE_PATH,
+        gc.PPN_JOB_IS_TEXT_UNPARSED_CLASS_REGEX,
+        gc.PPN_JOB_IS_TEXT_UNPARSED_ID_REGEX,
+        gc.PPN_JOB_IS_TEXT_UNPARSED_ID_SORT,
+        gc.PPN_JOB_OS_FILE_NAME,
+        gc.PPN_JOB_OS_CONTAINER_FORMAT,
+        gc.PPN_JOB_OS_HIERARCHY_TYPE,
+        gc.PPN_JOB_OS_HIERARCHY_PREFIX,
+    ]
+
     def __init__(self, config_string=None):
-        if (
-                (config_string is not None) and
-                (not gf.is_unicode(config_string))
-        ):
+        if (config_string is not None) and (not gf.is_unicode(config_string)):
             raise TypeError("config_string is not a Unicode string")
-        # job fields
-        self.field_names = [
-            gc.PPN_JOB_DESCRIPTION,
-            gc.PPN_JOB_LANGUAGE,
 
-            gc.PPN_JOB_IS_AUDIO_FILE_NAME_REGEX,
-            gc.PPN_JOB_IS_AUDIO_FILE_RELATIVE_PATH,
-            gc.PPN_JOB_IS_HIERARCHY_PREFIX,
-            gc.PPN_JOB_IS_HIERARCHY_TYPE,
-            gc.PPN_JOB_IS_TASK_DIRECTORY_NAME_REGEX,
-            gc.PPN_JOB_IS_TEXT_FILE_FORMAT,
-            gc.PPN_JOB_IS_TEXT_FILE_NAME_REGEX,
-            gc.PPN_JOB_IS_TEXT_FILE_RELATIVE_PATH,
-            gc.PPN_JOB_IS_TEXT_UNPARSED_CLASS_REGEX,
-            gc.PPN_JOB_IS_TEXT_UNPARSED_ID_REGEX,
-            gc.PPN_JOB_IS_TEXT_UNPARSED_ID_SORT,
-
-            gc.PPN_JOB_OS_FILE_NAME,
-            gc.PPN_JOB_OS_CONTAINER_FORMAT,
-            gc.PPN_JOB_OS_HIERARCHY_TYPE,
-            gc.PPN_JOB_OS_HIERARCHY_PREFIX,
-        ]
-        self.fields = dict()
-        for key in self.field_names:
+        # create job fields
+        self.fields = {}
+        for key in self.FIELD_NAMES:
             self.fields[key] = None
 
         # populate values from config_string
         if config_string is not None:
             properties = gf.config_string_to_dict(config_string)
-            for key in properties:
-                if key in self.field_names:
-                    self.fields[key] = properties[key]
+            for key in set(properties.keys()) & set(self.FIELD_NAMES):
+                self.fields[key] = properties[key]
 
     def __unicode__(self):
-        return u"\n".join([u"%s: '%s'" % (fn, self.fields[fn]) for fn in self.field_names])
+        return u"\n".join([u"%s: '%s'" % (fn, self.fields[fn]) for fn in self.FIELD_NAMES])
 
     def __str__(self):
         return gf.safe_str(self.__unicode__())
@@ -154,7 +163,9 @@ class JobConfiguration(object):
 
         :rtype: string
         """
-        return (gc.CONFIG_STRING_SEPARATOR_SYMBOL).join([u"%s%s%s" % (fn, gc.CONFIG_STRING_ASSIGNMENT_SYMBOL, self.fields[fn]) for fn in self.field_names if self.fields[fn] is not None])
+        return (gc.CONFIG_STRING_SEPARATOR_SYMBOL).join(
+            [u"%s%s%s" % (fn, gc.CONFIG_STRING_ASSIGNMENT_SYMBOL, self.fields[fn]) for fn in self.FIELD_NAMES if self.fields[fn] is not None]
+        )
 
     @property
     def description(self):
@@ -173,7 +184,7 @@ class JobConfiguration(object):
         """
         The language of the job.
 
-        :rtype: string (from the :class:`aeneas.language.Language` enumeration)
+        :rtype: :class:`aeneas.language.Language` enum
         """
         return self.fields[gc.PPN_JOB_LANGUAGE]
     @language.setter
@@ -223,7 +234,7 @@ class JobConfiguration(object):
         """
         The type of hierarchy of the input job container.
 
-        :rtype: string (from :class:`aeneas.hierarchytype.HierarchyType` enumeration)
+        :rtype: :class:`aeneas.hierarchytype.HierarchyType` enum
         """
         return self.fields[gc.PPN_JOB_IS_HIERARCHY_TYPE]
     @is_hierarchy_type.setter
@@ -313,7 +324,7 @@ class JobConfiguration(object):
         The algorithm to sort text fragments by their ``id`` attributes.
         It applies to unparsed text files only.
 
-        :rtype: string (from the :class:`aeneas.idsortingalgorithm.IDSortingAlgorithm` enumeration)
+        :rtype: :class:`aeneas.idsortingalgorithm.IDSortingAlgorithm` enum
         """
         return self.fields[gc.PPN_JOB_IS_TEXT_UNPARSED_ID_SORT]
     @is_text_unparsed_id_sort.setter
@@ -337,7 +348,7 @@ class JobConfiguration(object):
         """
         The format for the output container for the job.
 
-        :rtype: string (from the :class:`aeneas.container.ContainerFormat` enumeration)
+        :rtype: :class:`aeneas.container.ContainerFormat` enum
         """
         return self.fields[gc.PPN_JOB_OS_CONTAINER_FORMAT]
     @os_container_format.setter
@@ -349,7 +360,7 @@ class JobConfiguration(object):
         """
         The type of hierarchy of the output job container.
 
-        :rtype: string (from :class:`aeneas.hierarchytype.HierarchyType` enumeration)
+        :rtype: :class:`aeneas.hierarchytype.HierarchyType` enum
         """
         return self.fields[gc.PPN_JOB_OS_HIERARCHY_TYPE]
     @os_hierarchy_type.setter
@@ -368,13 +379,6 @@ class JobConfiguration(object):
     @os_hierarchy_prefix.setter
     def os_hierarchy_prefix(self, value):
         self.fields[gc.PPN_JOB_OS_HIERARCHY_PREFIX] = value
-
-    #@property
-    #def xxx(self):
-    #    return self.fields[gc.KEY]
-    #@xxx.setter
-    #def xxx(self, value):
-    #    self.fields[gc.KEY] = value
 
 
 

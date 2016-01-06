@@ -28,10 +28,10 @@ class ReadTextCLI(AbstractCLIProgram):
     """
     Read text fragments from file.
     """
-    TEXT_FILE_PARSED = gf.get_rel_path("res/parsed.txt")
-    TEXT_FILE_PLAIN = gf.get_rel_path("res/plain.txt")
-    TEXT_FILE_SUBTITLES = gf.get_rel_path("res/subtitles.txt")
-    TEXT_FILE_UNPARSED = gf.get_rel_path("res/unparsed.xhtml")
+    TEXT_FILE_PARSED = gf.relative_path("res/parsed.txt", __file__)
+    TEXT_FILE_PLAIN = gf.relative_path("res/plain.txt", __file__)
+    TEXT_FILE_SUBTITLES = gf.relative_path("res/subtitles.txt", __file__)
+    TEXT_FILE_UNPARSED = gf.relative_path("res/unparsed.xhtml", __file__)
 
     NAME = gf.file_name_without_extension(__file__)
 
@@ -89,6 +89,15 @@ class ReadTextCLI(AbstractCLIProgram):
             gc.PPN_JOB_IS_TEXT_UNPARSED_CLASS_REGEX : class_regex,
             gc.PPN_JOB_IS_TEXT_UNPARSED_ID_SORT : sort
         }
+        if (text_format == u"unparsed") and (id_regex is None) and (class_regex is None):
+            self.print_error(u"You must specify --id-regex and/or --class-regex for unparsed format")
+            return self.ERROR_EXIT_CODE
+        if (text_format in [u"plain", u"subtitles"]) and (id_format is not None):
+            try:
+                identifier = id_format % 1
+            except (TypeError, ValueError):
+                self.print_error(u"The given string '%s' is not a valid id format" % id_format)
+                return self.ERROR_EXIT_CODE
 
         text_file = self.get_text_file(text_format, text, parameters)
         if text_file is not None:

@@ -11,7 +11,7 @@ from __future__ import print_function
 from aeneas.adjustboundaryalgorithm import AdjustBoundaryAlgorithm
 from aeneas.analyzecontainer import AnalyzeContainer
 from aeneas.audiofile import AudioFile
-from aeneas.audiofile import AudioFileMonoWAV
+from aeneas.audiofile import AudioFileMonoWAVE
 from aeneas.audiofile import AudioFileUnsupportedFormatError
 from aeneas.container import Container
 from aeneas.container import ContainerFormat

@@ -33,10 +33,10 @@ class SynthesizeTextCLI(AbstractCLIProgram):
     producing a WAV audio file.
     """
     OUTPUT_FILE = "output/synthesized.wav"
-    TEXT_FILE_PARSED = gf.get_rel_path("res/parsed.txt")
-    TEXT_FILE_PLAIN = gf.get_rel_path("res/plain.txt")
-    TEXT_FILE_SUBTITLES = gf.get_rel_path("res/subtitles.txt")
-    TEXT_FILE_UNPARSED = gf.get_rel_path("res/unparsed.xhtml")
+    TEXT_FILE_PARSED = gf.relative_path("res/parsed.txt", __file__)
+    TEXT_FILE_PLAIN = gf.relative_path("res/plain.txt", __file__)
+    TEXT_FILE_SUBTITLES = gf.relative_path("res/subtitles.txt", __file__)
+    TEXT_FILE_UNPARSED = gf.relative_path("res/unparsed.xhtml", __file__)
 
     NAME = gf.file_name_without_extension(__file__)
 
@@ -108,6 +108,9 @@ class SynthesizeTextCLI(AbstractCLIProgram):
             gc.PPN_JOB_IS_TEXT_UNPARSED_CLASS_REGEX : class_regex,
             gc.PPN_JOB_IS_TEXT_UNPARSED_ID_SORT : sort
         }
+        if (text_format == u"unparsed") and (id_regex is None) and (class_regex is None):
+            self.print_error(u"You must specify --id-regex and/or --class-regex for unparsed format")
+            return self.ERROR_EXIT_CODE
 
         language = gf.safe_unicode(self.actual_arguments[2])
         if not language in Language.ALLOWED_VALUES:

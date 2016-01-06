@@ -28,9 +28,11 @@ class IDSortingAlgorithm(object):
     a list of XML ``id`` attributes.
 
     :param algorithm: the id sorting algorithm to be used
-    :type  algorithm: string (from :class:`aeneas.idsortingalgorithm.IDSortingAlgorithm` enumeration)
+    :type  algorithm: :class:`aeneas.idsortingalgorithm.IDSortingAlgorithm`
     :param logger: the logger object
     :type  logger: :class:`aeneas.logger.Logger`
+
+    :raise ValueError: if the value of ``algorithm`` is not allowed
     """
 
     LEXICOGRAPHIC = "lexicographic"
@@ -39,13 +41,12 @@ class IDSortingAlgorithm(object):
 
     NUMERIC = "numeric"
     """ Numeric sorting, ignoring any non-digit characters or leading zeroes
-    (e.g., ``f2`` (= ``2``) before ``f10`` (= ``10``)
-    before ``f020`` (= ``20``)) """
+    (e.g., ``f2`` (= ``2``) before ``f10`` (= ``10``) before ``f020`` (= ``20``)) """
 
     UNSORTED = "unsorted"
     """ Do not sort and return the list of identifiers, in their original order
-    (e.g., ``f2`` before ``f020`` before ``f10``, assuming this was
-    their order in the XML DOM) """
+    (e.g., ``f2`` before ``f020`` before ``f10``,
+    assuming this was their order in the XML DOM) """
 
     ALLOWED_VALUES = [LEXICOGRAPHIC, NUMERIC, UNSORTED]
     """ List of all the allowed values """
@@ -53,6 +54,8 @@ class IDSortingAlgorithm(object):
     TAG = u"IDSortingAlgorithm"
 
     def __init__(self, algorithm, logger=None):
+        if algorithm not in self.ALLOWED_VALUES:
+            raise ValueError("Algorithm value not allowed")
         self.algorithm = algorithm
         self.logger = logger
         if self.logger is None:
@@ -64,30 +67,38 @@ class IDSortingAlgorithm(object):
 
     def sort(self, ids):
         """
-        Sort the given list of identifiers.
+        Sort the given list of identifiers,
+        returning a new (sorted) list.
 
-        :param ids: a list of identifiers to be sorted
-        :type ids: list of strings
-        :rtype: list of strings
+        :param ids: the list of identifiers to be sorted
+        :type ids: list of Unicode strings
+        :rtype: list of Unicode strings
         """
-        tmp = ids
+        def extract_int(string):
+            """
+            Extract an integer from the given string.
+
+            :param string: the identifier string
+            :type  string: string
+            :rtype: int
+            """
+            return int(re.sub(r"[^0-9]", "", string))
+
+        tmp = list(ids)
         if self.algorithm == IDSortingAlgorithm.UNSORTED:
-            # nothing to do
-            self._log(u"Using UNSORTED")
-        if self.algorithm == IDSortingAlgorithm.LEXICOGRAPHIC:
-            # sort lexicographically
-            self._log(u"Using LEXICOGRAPHIC")
+            self._log(u"Sorting using UNSORTED")
+        elif self.algorithm == IDSortingAlgorithm.LEXICOGRAPHIC:
+            self._log(u"Sorting using LEXICOGRAPHIC")
             tmp = sorted(ids)
-        if self.algorithm == IDSortingAlgorithm.NUMERIC:
-            # sort numerically
-            self._log(u"Using NUMERIC")
+        elif self.algorithm == IDSortingAlgorithm.NUMERIC:
+            self._log(u"Sorting using NUMERIC")
             tmp = ids
             try:
-                tmp = [[int(re.sub(r"[^0-9]", "", i)), i] for i in ids]
-                tmp = sorted(tmp)
-                tmp = [t[1] for t in tmp]
-            except (ValueError, TypeError):
-                self._log(u"Failed", Logger.WARNING)
+                tmp = sorted(tmp, key=extract_int)
+            except (ValueError, TypeError) as exc:
+                self._log(u"Not all id values contain a numeric part:", Logger.WARNING)
+                self._log([u"%s", exc], Logger.WARNING)
+                self._log(u"Returning the id list unchanged (unsorted)", Logger.WARNING)
         return tmp
 
 

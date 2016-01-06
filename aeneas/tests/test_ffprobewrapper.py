@@ -42,7 +42,7 @@ class TestFFPROBEWrapper(unittest.TestCase):
     def load(self, input_file_path):
         prober = FFPROBEWrapper()
         return prober.read_properties(
-            gf.get_abs_path(input_file_path, __file__)
+            gf.absolute_path(input_file_path, __file__)
         )
 
     def test_mp3_properties(self):
@@ -58,7 +58,7 @@ class TestFFPROBEWrapper(unittest.TestCase):
             self.load(None)
 
     def test_path_not_existing(self):
-        with self.assertRaises(IOError):
+        with self.assertRaises(OSError):
             self.load(self.NOT_EXISTING_PATH)
 
     def test_file_empty(self):

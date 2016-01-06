@@ -138,7 +138,7 @@ class MFCC(object):
             outfr[i] = frame[i] - self.alpha * frame[i-1]
         self.prior = frame[-1]
         return outfr
-        
+
     def frame2logspec(self, frame):
         frame = self.pre_emphasis(frame) * self.win
         fft = numpy.fft.rfft(frame, self.nfft)

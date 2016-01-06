@@ -24,15 +24,19 @@ class HierarchyType:
     """
 
     FLAT = "flat"
-    """ Flat hierarchy, that is, all the assets
+    """
+    Flat hierarchy, that is, all the assets
     are located inside the same root directory
-    (possibly, with subdirectories). """
+    (possibly, with subdirectories).
+    """
 
     PAGED = "paged"
-    """ Paged hierarchy, that is, assets are divided
+    """
+    Paged hierarchy, that is, assets are divided
     into multiple sibling directories, one corresponding to each page/task.
     A page directory might have subdirectories where the audio/text assets
-    are located. """
+    are located.
+    """
 
     ALLOWED_VALUES = [FLAT, PAGED]
     """ List of all the allowed values """

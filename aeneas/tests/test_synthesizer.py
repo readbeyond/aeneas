@@ -12,11 +12,11 @@ import aeneas.globalfunctions as gf
 
 class TestSynthesizer(unittest.TestCase):
 
-    PATH_NOT_WRITEABLE = gf.get_abs_path("x/y/z/not_writeable.wav", __file__)
+    PATH_NOT_WRITEABLE = gf.absolute_path("x/y/z/not_writeable.wav", __file__)
 
     def perform(self, path, logger=None, quit_after=None, backwards=False):
         handler, output_file_path = gf.tmp_file(suffix=".wav")
-        tfl = TextFile(gf.get_abs_path(path, __file__), TextFileFormat.PLAIN)
+        tfl = TextFile(gf.absolute_path(path, __file__), TextFileFormat.PLAIN)
         tfl.set_language(Language.EN)
         synth = Synthesizer(logger=logger)
         result = synth.synthesize(tfl, output_file_path, quit_after=quit_after, backwards=backwards)
@@ -36,7 +36,7 @@ class TestSynthesizer(unittest.TestCase):
     def test_synthesize_path_not_writeable(self):
         tfl = TextFile()
         synth = Synthesizer()
-        with self.assertRaises(IOError):
+        with self.assertRaises(OSError):
             synth.synthesize(tfl, self.PATH_NOT_WRITEABLE)
 
     def test_synthesize(self):

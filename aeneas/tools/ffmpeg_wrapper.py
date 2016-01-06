@@ -28,7 +28,7 @@ class FFMPEGWrapperCLI(AbstractCLIProgram):
     """
     Convert audio files to mono WAV using the ``ffmpeg`` wrapper.
     """
-    INPUT_FILE = gf.get_rel_path("res/audio.mp3")
+    INPUT_FILE = gf.relative_path("res/audio.mp3", __file__)
     OUTPUT_FILE = "output/audio.wav"
 
     NAME = gf.file_name_without_extension(__file__)
@@ -64,7 +64,7 @@ class FFMPEGWrapperCLI(AbstractCLIProgram):
             converter.convert(input_file_path, output_file_path)
             self.print_info(u"Converted '%s' into '%s'" % (input_file_path, output_file_path))
             return self.NO_ERROR_EXIT_CODE
-        except IOError:
+        except OSError:
             self.print_error(u"Cannot convert file '%s' into '%s'" % (input_file_path, output_file_path))
             self.print_error(u"Make sure the input file has a format supported by ffmpeg")
 

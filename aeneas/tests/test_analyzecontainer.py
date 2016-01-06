@@ -72,7 +72,7 @@ class TestAnalyzeContainer(unittest.TestCase):
         "res/validator/job_xml_config_bad_4"
     ]
 
-    NOT_EXISTING_PATH = gf.get_abs_path("res/validator/x/y/z/not_existing", __file__)
+    NOT_EXISTING_PATH = gf.absolute_path("res/validator/x/y/z/not_existing", __file__)
 
     def test_none(self):
         with self.assertRaises(TypeError):
@@ -95,7 +95,7 @@ class TestAnalyzeContainer(unittest.TestCase):
 
     def test_analyze(self):
         for f in self.FILES:
-            analyzer = AnalyzeContainer(Container(gf.get_abs_path(f["path"], __file__)))
+            analyzer = AnalyzeContainer(Container(gf.absolute_path(f["path"], __file__)))
             job = analyzer.analyze()
             self.assertEqual(len(job), f["length"])
 
@@ -112,7 +112,7 @@ class TestAnalyzeContainer(unittest.TestCase):
 
     def test_wizard_analyze_valid(self):
         f = self.FILES[0]
-        analyzer = AnalyzeContainer(Container(gf.get_abs_path(f["path"], __file__)))
+        analyzer = AnalyzeContainer(Container(gf.absolute_path(f["path"], __file__)))
         job = analyzer.analyze(config_string=self.CONFIG_STRING)
         self.assertNotEqual(job, None)
         self.assertEqual(len(job), f["length"])

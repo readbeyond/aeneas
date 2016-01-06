@@ -4,14 +4,14 @@
 import numpy
 import unittest
 
-from aeneas.audiofile import AudioFileMonoWAV
+from aeneas.audiofile import AudioFileMonoWAVE
 import aeneas.globalfunctions as gf
 
 class TestCMFCC(unittest.TestCase):
 
-    AUDIO = gf.get_abs_path("res/cmfcc/audio.wav", __file__)
-    MFCC_PRE_PY = gf.get_abs_path("res/cmfcc/mfcc_py", __file__)
-    MFCC_PRE_C = gf.get_abs_path("res/cmfcc/mfcc_c", __file__)
+    AUDIO = gf.absolute_path("res/cmfcc/audio.wav", __file__)
+    MFCC_PRE_PY = gf.absolute_path("res/cmfcc/mfcc_py", __file__)
+    MFCC_PRE_C = gf.absolute_path("res/cmfcc/mfcc_c", __file__)
 
     def compare_with_tolerance(self, a, b, tolerance=1E-6):
         return not ((a - b) > tolerance).any()
@@ -21,7 +21,7 @@ class TestCMFCC(unittest.TestCase):
             import aeneas.cmfcc
             mfcc_pre_py = numpy.loadtxt(self.MFCC_PRE_PY)
             mfcc_pre_c = numpy.loadtxt(self.MFCC_PRE_C)
-            audio_file = AudioFileMonoWAV(self.AUDIO)
+            audio_file = AudioFileMonoWAVE(self.AUDIO)
             audio_file.load_data()
             mfcc_c = aeneas.cmfcc.cmfcc_compute_mfcc(
                 audio_file.audio_data,

@@ -97,7 +97,7 @@ class ESPEAKWrapperCLI(AbstractCLIProgram):
                 )
             self.print_info(u"Created file '%s'" % output_file_path)
             return self.NO_ERROR_EXIT_CODE
-        except IOError:
+        except OSError:
             self.print_error(u"Unable to create file '%s'" % output_file_path)
 
         return self.ERROR_EXIT_CODE

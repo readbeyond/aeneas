@@ -20,8 +20,8 @@ class Language(object):
     """
     Enumeration of the supported languages.
 
-    The language is indicated by the ISO 639-1 code (2 or 3 letters),
-    which is the same as the language code accepted by ``espeak``.
+    The language is indicated by the language code accepted by ``espeak``,
+    which is the ISO 639-1 code (2 or 3 letters) for most languages.
     """
 
     AF = "af"

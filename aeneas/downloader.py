@@ -44,11 +44,11 @@ class Downloader(object):
     def audio_from_youtube(
             self,
             source_url,
+            download=True,
             output_file_path=None,
-            best_audio=True,
-            preferred_format=None,
             preferred_index=None,
-            download=True
+            largest_audio=True,
+            preferred_format=None
     ):
         """
         Download an audio stream from a YouTube video,
@@ -57,39 +57,84 @@ class Downloader(object):
         If ``download`` is ``False``, return the list
         of available audiostreams but do not download.
 
-        Return the path of the created file.
+        Otherwise, download the audio stream best matching
+        the provided parameters, as follows.
+        If ``preferred_index`` is not ``None``,
+        download the audio stream at that index.
+        If ``largest_audio`` is ``True``,
+        download the largest audiostream;
+        otherwise, download the smallest audiostream.
+        If ``preferred_format`` is not ``None``,
+        download the audiostream having that format.
+        The latter option works in combination with ``largest_audio``.
+
+        Return the path of the downloaded file.
 
         :param source_url: the URL of the YouTube video
-        :type  soruce_url: string (url)
-        :param best_audio: if ``True``, download the best audio stream available;
-                           if ``False``, download the worst (smallest) one.
-        :type  best_audio: bool
+        :type  source_url: string (url)
+        :param download: if ``True``, download the audio stream
+                         best matching ``preferred_index`` or ``preferred_format``
+                         and ``largest_audio``;
+                         if ``False``, return the list of available audio streams
+        :type  download: bool
         :param output_file_path: the path where the downloaded audio should be saved;
                                  if ``None``, create a temporary file
         :type  output_file_path: string (path)
-        :param preferred_format: preferably download this audio format
-        :type  preferred_format: string
         :param preferred_index: preferably download this audio stream
         :type  preferred_index: int
-        :param download: if ``True``, download the audio stream
-                         best matching ``preferred_index`` or ``preferred_format``
-                         and ``best_audio``;
-                         if ``False``, return the list of available audio streams
-        :type  download: bool
-        :rtype: string or list
+        :param largest_audio: if ``True``, download the largest audio stream available;
+                              if ``False``, download the smallest one.
+        :type  largest_audio: bool
+        :param preferred_format: preferably download this audio format
+        :type  preferred_format: string
+
+        :rtype: string (path) or list of pafy audio streams
 
         :raise ImportError: if ``pafy`` is not installed
-        :raise IOError: if ``output_file_path`` cannot be written
+        :raise OSError: if ``output_file_path`` cannot be written
+        :raise ValueError: if ``source_url`` is not a valid YouTube URL
         """
+        def select_audiostream(audiostreams):
+            """ Select the audiostream best matching the given parameters. """
+            if preferred_index is not None:
+                if preferred_index in range(len(audiostreams)):
+                    self._log([u"Selecting audiostream with index %d", preferred_index])
+                    return audiostreams[preferred_index]
+                else:
+                    self._log([u"Audio stream index %d not allowed", preferred_index], Logger.WARNING)
+                    self._log(u"Ignoring the requested audio stream index", Logger.WARNING)
+            # filter by preferred format
+            streams = audiostreams
+            if preferred_format is not None:
+                self._log([u"Filtering audiostreams by preferred format %s", preferred_format])
+                streams = [audiostream for audiostream in streams if audiostream.extension == preferred_format]
+                if len(streams) < 1:
+                    self._log([u"No audiostream with preferred format %s", preferred_format])
+                    streams = audiostreams
+            # sort by size
+            streams = sorted([(audio.get_filesize(), audio) for audio in streams])
+            if largest_audio:
+                self._log(u"Selecting largest audiostream")
+                selected = streams[-1][1]
+            else:
+                self._log(u"Selecting smallest audiostream")
+                selected = streams[0][1]
+            return selected
+
         try:
             import pafy
         except ImportError as exc:
             self._log(u"pafy is not installed", Logger.CRITICAL)
             raise exc
 
-        if not download:
+        try:
             video = pafy.new(source_url)
-            self._log(u"Returning the audio streams")
+        except (IOError, OSError, ValueError) as exc:
+            self._log([u"The specified source URL '%s' is not a valid YouTube URL", source_url], Logger.CRITICAL)
+            raise ValueError("The specified source URL is not a valid YouTube URL")
+
+        if not download:
+            self._log(u"Returning the list of audio streams")
             return video.audiostreams
 
         output_path = output_file_path
@@ -99,16 +144,9 @@ class Downloader(object):
         else:
             if not gf.file_can_be_written(output_path):
                 self._log([u"Path '%s' cannot be written (wrong permissions?)", output_path], Logger.CRITICAL)
-                raise IOError("Path '%s' cannot be written (wrong permissions?)" % output_path)
+                raise OSError("Path '%s' cannot be written (wrong permissions?)" % output_path)
 
-        video = pafy.new(source_url)
-
-        audiostream = self._select_audiostream(
-            video.audiostreams,
-            best_audio=best_audio,
-            preferred_format=preferred_format,
-            preferred_index=preferred_index
-        )
+        audiostream = select_audiostream(video.audiostreams)
         if output_file_path is None:
             gf.delete_file(handler, output_path)
             output_path += "." + audiostream.extension
@@ -119,36 +157,7 @@ class Downloader(object):
         self._log(u"Downloading... done")
         return output_path
 
-    def _select_audiostream(
-            self,
-            audiostreams,
-            best_audio=True,
-            preferred_format=None,
-            preferred_index=None
-    ):
-        """ Select the audiostream best matching the given parameters """
-        if (preferred_index is not None) and (preferred_index in range(len(audiostreams))):
-            self._log([u"Selecting audiostream with index %d", preferred_index])
-            return audiostreams[preferred_index]
 
-        # filter by preferred format
-        if preferred_format is not None:
-            self._log([u"Filtering audiostreams by preferred format %s", preferred_format])
-            streams = [audiostream for audiostream in audiostreams if audiostream.extension == preferred_format]
-        if len(streams) < 1:
-            self._log([u"No audiostream with preferred format %s", preferred_format])
-            streams = audiostreams
-
-        # sort by size
-        streams = sorted([(audio.get_filesize(), audio) for audio in streams])
-        if best_audio:
-            self._log(u"Selecting largest audiostream")
-            selected = streams[-1][1]
-        else:
-            self._log(u"Selecting smallest audiostream")
-            selected = streams[0][1]
-
-        return selected
 
 
 

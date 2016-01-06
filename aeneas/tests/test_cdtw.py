@@ -8,8 +8,8 @@ import aeneas.globalfunctions as gf
 
 class TestCDTW(unittest.TestCase):
 
-    MFCC1 = gf.get_abs_path("res/cdtw/mfcc1_53", __file__)
-    MFCC2 = gf.get_abs_path("res/cdtw/mfcc2_53", __file__)
+    MFCC1 = gf.absolute_path("res/cdtw/mfcc1_53", __file__)
+    MFCC2 = gf.absolute_path("res/cdtw/mfcc2_53", __file__)
 
     def test_compute_path(self):
         try:

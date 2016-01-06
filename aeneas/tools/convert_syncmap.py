@@ -30,11 +30,11 @@ class ConvertSyncMapCLI(AbstractCLIProgram):
     """
     Convert a sync map from a format to another.
     """
-    AUDIO = gf.get_rel_path("res/audio.mp3")
+    AUDIO = gf.relative_path("res/audio.mp3", __file__)
     SMIL_PARAMETERS = "--audio-ref=audio/sonnet001.mp3 --page-ref=text/sonnet001.xhtml"
-    SYNC_MAP_CSV = gf.get_rel_path("res/sonnet.csv")
-    SYNC_MAP_JSON = gf.get_rel_path("res/sonnet.json")
-    SYNC_MAP_ZZZ = gf.get_rel_path("res/sonnet.zzz")
+    SYNC_MAP_CSV = gf.relative_path("res/sonnet.csv", __file__)
+    SYNC_MAP_JSON = gf.relative_path("res/sonnet.json", __file__)
+    SYNC_MAP_ZZZ = gf.relative_path("res/sonnet.zzz", __file__)
     OUTPUT_HTML = "output/sonnet.html"
     OUTPUT_MAP_DAT = "output/syncmap.dat"
     OUTPUT_MAP_JSON = "output/syncmap.json"

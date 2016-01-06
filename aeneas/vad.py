@@ -18,9 +18,7 @@ that is a list of non-overlapping nonspeech time intervals.
 from __future__ import absolute_import
 from __future__ import print_function
 import numpy
-import os
 
-from aeneas.audiofile import AudioFileMonoWAV
 from aeneas.logger import Logger
 import aeneas.globalconstants as gc
 
@@ -141,9 +139,6 @@ class VAD(object):
         and store them internally in the corresponding properties.
         """
         self._log(u"Computing VAD for wave")
-        self.speech, self.nonspeech = self._compute_vad()
-
-    def _compute_vad(self):
         labels = []
         energy_vector = self.wave_mfcc[0]
         energy_threshold = numpy.min(energy_vector) + self.energy_threshold
@@ -172,8 +167,10 @@ class VAD(object):
         in_nonspeech = True
         if len(labels) > self.min_nonspeech_length:
             for i in range(len(labels) - self.min_nonspeech_length):
-                if ((not labels[i][3]) and
-                        (self._nonspeech_ahead(labels, i, in_nonspeech))):
+                if (
+                        (not labels[i][3]) and
+                        (self._nonspeech_ahead(labels, i, in_nonspeech))
+                ):
                     labels[i][3] = False
                     in_nonspeech = True
                 else:
@@ -212,19 +209,17 @@ class VAD(object):
         speech = []
         nonspeech = []
         nonspeech_time = 0
-        for speech_interval in speech_indices:
-            start, end = speech_interval
+        for start, end in speech_indices:
             if nonspeech_time < start:
-                nonspeech.append(
-                    [labels[nonspeech_time][0], labels[start - 1][1]]
-                )
+                nonspeech.append([labels[nonspeech_time][0], labels[start - 1][1]])
             speech.append([labels[start][0], labels[end][1]])
             nonspeech_time = end + 1
         if nonspeech_time < last_index:
             nonspeech.append([labels[nonspeech_time][0], labels[last_index][1]])
 
-        self._log(u"Returning speech and nonspeech list of intervals")
-        return speech, nonspeech
+        self._log(u"Setting speech and nonspeech list of intervals")
+        self.speech = speech
+        self.nonspeech = nonspeech
 
     # TODO check if a numpy sliding window is faster
     def _nonspeech_ahead(self, array, current_index, in_nonspeech):
