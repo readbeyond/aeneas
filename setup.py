@@ -29,9 +29,8 @@ except ImportError:
     print("[INFO] $ sudo pip install numpy")
     sys.exit(1)
 
-EXTENSIONS = []
-INCLUDE_DIRS = []
 INCLUDE_DIRS = [misc_util.get_numpy_include_dirs()]
+
 EXTENSION_CDTW = Extension("aeneas.cdtw", ["aeneas/cdtw.c"], include_dirs=[get_include()])
 EXTENSION_CEW = Extension("aeneas.cew", ["aeneas/cew.c"], libraries=["espeak"])
 EXTENSION_CMFCC = Extension("aeneas.cmfcc", ["aeneas/cmfcc.c"], include_dirs=[get_include()])
@@ -60,8 +59,8 @@ setup(
     scripts=[
         "bin/aeneas_convert_syncmap",
         "bin/aeneas_download",
-        "bin/aeneas_execute_task",
         "bin/aeneas_execute_job",
+        "bin/aeneas_execute_task",
         "bin/aeneas_synthesize_text",
         "bin/aeneas_validate",
     ],

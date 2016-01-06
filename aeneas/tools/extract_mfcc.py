@@ -31,7 +31,7 @@ class ExtractMFCCCLI(AbstractCLIProgram):
     """
     Extract MFCCs from a given audio file.
     """
-    INPUT_FILE = gf.get_rel_path("res/audio.wav")
+    INPUT_FILE = gf.relative_path("res/audio.wav", __file__)
     OUTPUT_FILE = "output/audio.wav.mfcc.txt"
 
     NAME = gf.file_name_without_extension(__file__)

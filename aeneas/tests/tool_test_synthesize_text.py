@@ -14,7 +14,7 @@ class TestSynthesizeTextCLI(unittest.TestCase):
         params = ["placeholder"]
         for p_type, p_value in parameters:
             if p_type == "in":
-                params.append(gf.get_abs_path(p_value, __file__))
+                params.append(gf.absolute_path(p_value, __file__))
             elif p_type == "out":
                 params.append(os.path.join(output_path, p_value))
             else:

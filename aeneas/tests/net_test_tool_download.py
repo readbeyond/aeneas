@@ -14,7 +14,7 @@ class TestDownloadCLI(unittest.TestCase):
         params = ["placeholder"]
         for p_type, p_value in parameters:
             if p_type == "in":
-                params.append(gf.get_abs_path(p_value, __file__))
+                params.append(gf.absolute_path(p_value, __file__))
             elif p_type == "out":
                 params.append(os.path.join(output_path, p_value))
             else:
@@ -56,12 +56,12 @@ class TestDownloadCLI(unittest.TestCase):
     def test_download_missing_1(self):
         self.execute([
             ("", "https://www.youtube.com/watch?v=rU4a7AA8wM0"),
-        ], 1)
+        ], 2)
   
     def test_download_missing_2(self):
         self.execute([
             ("out", "sonnet.m4a")
-        ], 1)
+        ], 2)
 
     def test_download_index(self):
         self.execute([

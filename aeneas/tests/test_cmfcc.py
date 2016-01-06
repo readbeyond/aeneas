@@ -9,9 +9,9 @@ import aeneas.globalfunctions as gf
 
 class TestCMFCC(unittest.TestCase):
 
-    AUDIO = gf.get_abs_path("res/cmfcc/audio.wav", __file__)
-    MFCC_PRE_PY = gf.get_abs_path("res/cmfcc/mfcc_py", __file__)
-    MFCC_PRE_C = gf.get_abs_path("res/cmfcc/mfcc_c", __file__)
+    AUDIO = gf.absolute_path("res/cmfcc/audio.wav", __file__)
+    MFCC_PRE_PY = gf.absolute_path("res/cmfcc/mfcc_py", __file__)
+    MFCC_PRE_C = gf.absolute_path("res/cmfcc/mfcc_c", __file__)
 
     def compare_with_tolerance(self, a, b, tolerance=1E-6):
         return not ((a - b) > tolerance).any()

@@ -593,11 +593,7 @@ class SyncMap(object):
         if parameters is None:
             parameters = {}
         audio_file_path_absolute = gf.fix_slash(os.path.abspath(audio_file_path))
-        template_path_absolute = gf.get_rel_path(
-            self.FINETUNEAS_PATH,
-            from_path=os.path.dirname(__file__),
-            absolute=True
-        )
+        template_path_absolute = gf.absolute_path(self.FINETUNEAS_PATH, __file__)
         with io.open(template_path_absolute, "r", encoding="utf-8") as file_obj:
             template = file_obj.read()
         for repl in self.FINETUNEAS_REPLACEMENTS:
@@ -988,6 +984,8 @@ class SyncMap(object):
             msg.extend(text.lines)
             msg.append(u"")
             i += 1
+        # add an extra \n at the end
+        msg.append(u"")
         output_file.write(u"\n".join(msg))
 
     def _read_ssv(self, input_file, parse_time):
@@ -1190,6 +1188,8 @@ class SyncMap(object):
             msg.extend(text.lines)
             msg.append(u"")
             i += 1
+        # add an extra \n at the end
+        msg.append(u"")
         output_file.write(u"\n".join(msg))
 
     def _read_xml(self, input_file):

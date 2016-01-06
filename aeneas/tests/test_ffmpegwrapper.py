@@ -49,7 +49,7 @@ class TestFFMPEGWrapper(unittest.TestCase):
         try:
             converter = FFMPEGWrapper(parameters=parameters)
             result = converter.convert(
-                gf.get_abs_path(input_file_path, __file__),
+                gf.absolute_path(input_file_path, __file__),
                 output_file_path
             )
             self.assertEqual(result, output_file_path)

@@ -597,7 +597,9 @@ def fix_slash(path):
     On non-POSIX OSes, change the slashes in ``path``
     for loading in the browser.
 
-    Example: c:\\abc\\def => c:/abc/def
+    Example: ::
+
+        c:\\abc\\def => c:/abc/def
 
     :param path: the path
     :type  path: Unicode string (path)
@@ -823,38 +825,19 @@ def delete_file(handler, path):
         except:
             pass
 
-def get_rel_path(path, from_path=None, absolute=False):
+def relative_path(path, from_file):
     """
-    Get a path relative to the CWD or ``from_path``.
+    Return the relative path of a file or directory, specified
+    as ``path`` relative to (the parent directory of) ``from file``.
 
-    :param path: the file path
-    :type  path: string (path)
-    :param from_path: the current directory; if None, use CWD
-    :type  from_path: string (path)
-    :param absolute: if True, output an absolute path
-    :type  absolute: bool
-    :rtype: string (path)
-    """
-    if path is None:
-        return None
-    if from_path is None:
-        current_directory = os.path.dirname(os.path.realpath(sys.argv[0]))
-    else:
-        current_directory = from_path
-    target = os.path.join(current_directory, path)
-    rel_path = os.path.relpath(target)
-    if absolute:
-        return os.path.abspath(rel_path)
-    else:
-        return rel_path
+    The returned path is relative to the current working directory.
 
-def get_abs_path(path, from_file):
-    """
-    Get a path relative to the parent directory of ``from_file``,
-    and return it as an absolute path.
+    Example: ::
 
-    This method is intented to be called with ``__file__``
-    as second argument.
+        path="res/foo.bar"
+        from_file="/root/abc/def/ghi.py"
+        cwd="/root"
+        => "abc/def/res/foo.bar"
 
     :param path: the file path
     :type  path: string (path)
@@ -862,7 +845,37 @@ def get_abs_path(path, from_file):
     :type  from_file: string (path)
     :rtype: string (path)
     """
-    return get_rel_path(path, os.path.dirname(from_file), True)
+    if path is None:
+        return None
+    abs_path_target = absolute_path(path, from_file)
+    abs_path_cwd = os.getcwd()
+    return os.path.relpath(abs_path_target, start=abs_path_cwd)
+
+def absolute_path(path, from_file):
+    """
+    Return the absolute path of a file or directory, specified
+    as ``path`` relative to (the parent directory of) ``from_file``.
+
+    This method is intented to be called with ``__file__``
+    as second argument.
+
+    Example: ::
+
+        path="res/foo.bar"
+        from_file="/abc/def/ghi.py"
+        => "/abc/def/res/foo.bar"
+
+    :param path: the file path
+    :type  path: string (path)
+    :param from_file: the reference file
+    :type  from_file: string (path)
+    :rtype: string (path)
+    """
+    if path is None:
+        return None
+    current_directory = os.path.dirname(from_file)
+    target = os.path.join(current_directory, path)
+    return os.path.abspath(target)
 
 def read_file_bytes(input_file_path):
     """

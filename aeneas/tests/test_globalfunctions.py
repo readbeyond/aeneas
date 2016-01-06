@@ -535,23 +535,18 @@ class TestGlobalFunctions(unittest.TestCase):
         gf.delete_file(handler, path)
         self.assertFalse(gf.file_exists(path))
 
-    def test_get_rel_path(self):
+    def test_relative_path(self):
         tests = [
-            ("res", "aeneas/tools/", "aeneas/tools/res"),
-            ("res/foo", "aeneas/tools/", "aeneas/tools/res/foo"),
-            ("res/foo/bar.baz", "aeneas/tools/", "aeneas/tools/res/foo/bar.baz"),
-            ("../tests", "aeneas/tools/", "aeneas/tests"),
-            ("../tests/foo", "aeneas/tools/", "aeneas/tests/foo"),
-            ("../tests/foo/bar.baz", "aeneas/tools/", "aeneas/tests/foo/bar.baz"),
-            ("../..", "aeneas/tools/", "."),
-            ("res", ".", "res"),
-            ("res/foo", ".", "res/foo"),
-            ("res/foo/bar.baz", ".", "res/foo/bar.baz"),
+            ("res", "aeneas/tools/somefile.py", "aeneas/tools/res"),
+            ("res/foo", "aeneas/tools/somefile.py", "aeneas/tools/res/foo"),
+            ("res/bar.baz", "aeneas/tools/somefile.py", "aeneas/tools/res/bar.baz"),
+            ("res/bar/baz/foo", "aeneas/tools/somefile.py", "aeneas/tools/res/bar/baz/foo"),
+            ("res/bar/baz/foo.bar", "aeneas/tools/somefile.py", "aeneas/tools/res/bar/baz/foo.bar")
         ]
         for test in tests:
-            self.assertEqual(gf.get_rel_path(test[0], test[1], False), test[2])
+            self.assertEqual(gf.relative_path(test[0], test[1]), test[2])
 
-    def test_get_abs_path(self):
+    def test_absolute_path(self):
         base = os.path.dirname(os.path.realpath(sys.argv[0]))
         tests = [
             ("res", "aeneas/tools/somefile.py", os.path.join(base, "aeneas/tools/res")),
@@ -562,7 +557,7 @@ class TestGlobalFunctions(unittest.TestCase):
             ("res/bar.baz", "/aeneas/tools/somefile.py", "/aeneas/tools/res/bar.baz"),
         ]
         for test in tests:
-            self.assertEqual(gf.get_abs_path(test[0], test[1]), test[2])
+            self.assertEqual(gf.absolute_path(test[0], test[1]), test[2])
 
     def test_read_file_bytes(self):
         handler, path = gf.tmp_file()

@@ -42,13 +42,13 @@ class ExecuteTaskCLI(AbstractCLIProgram):
     and a configuration string.
     """
 
-    AUDIO_FILE = gf.get_rel_path("res/audio.mp3")
+    AUDIO_FILE = gf.relative_path("res/audio.mp3", __file__)
 
     DEMOS = {
         u"--example-json" : {
             u"description": u"input: plain text, output: JSON",
             u"audio": AUDIO_FILE,
-            u"text": gf.get_rel_path("res/plain.txt"),
+            u"text": gf.relative_path("res/plain.txt", __file__),
             u"config": u"task_language=en|is_text_type=plain|os_task_file_format=json",
             u"syncmap": "output/sonnet.json",
             u"options": u""
@@ -56,7 +56,7 @@ class ExecuteTaskCLI(AbstractCLIProgram):
         u"--example-srt" : {
             u"description": u"input: subtitles text, output: SRT",
             u"audio": AUDIO_FILE,
-            u"text": gf.get_rel_path("res/subtitles.txt"),
+            u"text": gf.relative_path("res/subtitles.txt", __file__),
             u"config": u"task_language=en|is_text_type=subtitles|os_task_file_format=srt",
             u"syncmap": "output/sonnet.srt",
             u"options": u""
@@ -64,7 +64,7 @@ class ExecuteTaskCLI(AbstractCLIProgram):
         u"--example-smil" : {
             u"description": u"input: unparsed text, output: SMIL",
             u"audio": AUDIO_FILE,
-            u"text": gf.get_rel_path("res/page.xhtml"),
+            u"text": gf.relative_path("res/page.xhtml", __file__),
             u"config": u"task_language=en|is_text_type=unparsed|is_text_unparsed_id_regex=f[0-9]+|is_text_unparsed_id_sort=numeric|os_task_file_format=smil|os_task_file_smil_audio_ref=p001.mp3|os_task_file_smil_page_ref=p001.xhtml",
             u"syncmap": "output/sonnet.smil",
             u"options": u""
@@ -72,7 +72,7 @@ class ExecuteTaskCLI(AbstractCLIProgram):
         u"--example-youtube" : {
             u"description": u"input: audio from YouTube, output: TXT",
             u"audio": "https://www.youtube.com/watch?v=rU4a7AA8wM0",
-            u"text": gf.get_rel_path("res/plain.txt"),
+            u"text": gf.relative_path("res/plain.txt", __file__),
             u"config": u"task_language=en|is_text_type=plain|os_task_file_format=txt",
             u"syncmap": "output/sonnet.txt",
             u"options": u"-y"

@@ -29,7 +29,7 @@ class ReadAudioCLI(AbstractCLIProgram):
     """
     Read audio file properties.
     """
-    AUDIO_FILE = gf.get_rel_path("res/audio.mp3")
+    AUDIO_FILE = gf.relative_path("res/audio.mp3", __file__)
 
     NAME = gf.file_name_without_extension(__file__)
 

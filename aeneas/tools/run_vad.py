@@ -34,7 +34,7 @@ class RunVADCLI(AbstractCLIProgram):
     Extract a list of speech intervals from the given audio file,
     using the MFCC energy-based VAD algorithm.
     """
-    INPUT_FILE = gf.get_rel_path("res/audio.mp3")
+    INPUT_FILE = gf.relative_path("res/audio.mp3", __file__)
     OUTPUT_BOTH = "output/both.txt"
     OUTPUT_NONSPEECH = "output/nonspeech.txt"
     OUTPUT_SPEECH = "output/speech.txt"

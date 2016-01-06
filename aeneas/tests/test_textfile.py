@@ -16,8 +16,8 @@ import aeneas.globalfunctions as gf
 
 class TestTextFile(unittest.TestCase):
 
-    NOT_EXISTING_PATH = gf.get_abs_path("not_existing.txt", __file__)
-    NOT_WRITEABLE_PATH = gf.get_abs_path("x/y/z/not_writeable.txt", __file__)
+    NOT_EXISTING_PATH = gf.absolute_path("not_existing.txt", __file__)
+    NOT_WRITEABLE_PATH = gf.absolute_path("x/y/z/not_writeable.txt", __file__)
     EMPTY_FILE_PATH = "res/inputtext/empty.txt"
     BLANK_FILE_PATH = "res/inputtext/blank.txt"
     PLAIN_FILE_PATH = "res/inputtext/sonnet_plain.txt"
@@ -32,10 +32,10 @@ class TestTextFile(unittest.TestCase):
     ID_REGEX_PARAMETERS_BAD = {
         gc.PPN_TASK_OS_FILE_ID_REGEX : u"word"
     }
-    TRANSLITERATION_MAP_FILE_PATH = gf.get_abs_path("res/transliteration/transliteration.map", __file__)
+    TRANSLITERATION_MAP_FILE_PATH = gf.absolute_path("res/transliteration/transliteration.map", __file__)
 
     def load(self, input_file_path=PLAIN_FILE_PATH, fmt=TextFileFormat.PLAIN, expected_length=15, parameters=None):
-        tfl = TextFile(gf.get_abs_path(input_file_path, __file__), fmt, parameters)
+        tfl = TextFile(gf.absolute_path(input_file_path, __file__), fmt, parameters)
         self.assertEqual(len(tfl), expected_length)
         return tfl
 

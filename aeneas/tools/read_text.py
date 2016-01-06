@@ -28,10 +28,10 @@ class ReadTextCLI(AbstractCLIProgram):
     """
     Read text fragments from file.
     """
-    TEXT_FILE_PARSED = gf.get_rel_path("res/parsed.txt")
-    TEXT_FILE_PLAIN = gf.get_rel_path("res/plain.txt")
-    TEXT_FILE_SUBTITLES = gf.get_rel_path("res/subtitles.txt")
-    TEXT_FILE_UNPARSED = gf.get_rel_path("res/unparsed.xhtml")
+    TEXT_FILE_PARSED = gf.relative_path("res/parsed.txt", __file__)
+    TEXT_FILE_PLAIN = gf.relative_path("res/plain.txt", __file__)
+    TEXT_FILE_SUBTITLES = gf.relative_path("res/subtitles.txt", __file__)
+    TEXT_FILE_UNPARSED = gf.relative_path("res/unparsed.xhtml", __file__)
 
     NAME = gf.file_name_without_extension(__file__)
 

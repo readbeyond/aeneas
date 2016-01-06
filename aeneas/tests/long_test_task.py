@@ -13,8 +13,8 @@ class TestExecuteTask(unittest.TestCase):
     def execute(self, config_string, audio_path, text_path):
         handler, tmp_path = gf.tmp_file()
         task = Task(config_string)
-        task.audio_file_path_absolute = gf.get_abs_path(audio_path, __file__)
-        task.text_file_path_absolute = gf.get_abs_path(text_path, __file__)
+        task.audio_file_path_absolute = gf.absolute_path(audio_path, __file__)
+        task.text_file_path_absolute = gf.absolute_path(text_path, __file__)
         executor = ExecuteTask(task)
         executor.execute()
         task.sync_map_file_path_absolute = tmp_path

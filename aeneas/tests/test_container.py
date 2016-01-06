@@ -10,13 +10,13 @@ import aeneas.globalfunctions as gf
 
 class TestContainer(unittest.TestCase):
 
-    NOT_EXISTING = gf.get_abs_path("not_existing.zip", __file__)
+    NOT_EXISTING = gf.absolute_path("not_existing.zip", __file__)
     EMPTY_FILES = [
-        gf.get_abs_path("res/container/empty_file.epub", __file__),
-        gf.get_abs_path("res/container/empty_file.tar", __file__),
-        gf.get_abs_path("res/container/empty_file.tar.bz2", __file__),
-        gf.get_abs_path("res/container/empty_file.tar.gz", __file__),
-        gf.get_abs_path("res/container/empty_file.zip", __file__)
+        gf.absolute_path("res/container/empty_file.epub", __file__),
+        gf.absolute_path("res/container/empty_file.tar", __file__),
+        gf.absolute_path("res/container/empty_file.tar.bz2", __file__),
+        gf.absolute_path("res/container/empty_file.tar.gz", __file__),
+        gf.absolute_path("res/container/empty_file.zip", __file__)
     ]
 
     EXPECTED_ENTRIES = [
@@ -31,37 +31,37 @@ class TestContainer(unittest.TestCase):
 
     FILES = {
         "epub": {
-            "path": gf.get_abs_path("res/container/job.epub", __file__),
+            "path": gf.absolute_path("res/container/job.epub", __file__),
             "format": ContainerFormat.EPUB,
             "config_size": 599
          },
         "tar": {
-            "path": gf.get_abs_path("res/container/job.tar", __file__),
+            "path": gf.absolute_path("res/container/job.tar", __file__),
             "format": ContainerFormat.TAR,
             "config_size": 599
          },
         "tar_bz2": {
-            "path": gf.get_abs_path("res/container/job.tar.bz2", __file__),
+            "path": gf.absolute_path("res/container/job.tar.bz2", __file__),
             "format": ContainerFormat.TAR_BZ2,
             "config_size": 599
          },
         "tar": {
-            "path": gf.get_abs_path("res/container/job.tar.gz", __file__),
+            "path": gf.absolute_path("res/container/job.tar.gz", __file__),
             "format": ContainerFormat.TAR_GZ,
             "config_size": 599
          },
         "unpacked": {
-            "path": gf.get_abs_path("res/container/job", __file__),
+            "path": gf.absolute_path("res/container/job", __file__),
             "format": ContainerFormat.UNPACKED,
             "config_size": 599
          },
         "zip": {
-            "path": gf.get_abs_path("res/container/job.zip", __file__),
+            "path": gf.absolute_path("res/container/job.zip", __file__),
             "format": ContainerFormat.ZIP,
             "config_size": 599
          },
         "zip_utf8": {
-            "path": gf.get_abs_path("res/container/job_utf8.zip", __file__),
+            "path": gf.absolute_path("res/container/job_utf8.zip", __file__),
             "format": ContainerFormat.ZIP,
             "config_size": 633
          },

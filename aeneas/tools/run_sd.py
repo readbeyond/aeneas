@@ -32,10 +32,10 @@ class RunSDCLI(AbstractCLIProgram):
     """
     Detect the audio head and/or tail of the given audio file.
     """
-    AUDIO_FILE = gf.get_rel_path("res/audio.mp3")
+    AUDIO_FILE = gf.relative_path("res/audio.mp3", __file__)
     PARAMETERS_HEAD = "--min-head=0.0 --max-head=5.0"
     PARAMETERS_TAIL = "--min-tail=1.0 --max-tail=5.0"
-    TEXT_FILE = gf.get_rel_path("res/parsed.txt")
+    TEXT_FILE = gf.relative_path("res/parsed.txt", __file__)
 
     NAME = gf.file_name_without_extension(__file__)
 

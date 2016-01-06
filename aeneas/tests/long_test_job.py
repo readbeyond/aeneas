@@ -9,7 +9,7 @@ import aeneas.globalfunctions as gf
 class TestExecuteJob(unittest.TestCase):
 
     def execute(self, path):
-        input_path = gf.get_abs_path(path, __file__)
+        input_path = gf.absolute_path(path, __file__)
         output_path = gf.tmp_directory()
         executor = ExecuteJob(job=None)
         executor.load_job_from_container(input_path)

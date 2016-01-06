@@ -42,9 +42,9 @@ class ValidateCLI(AbstractCLIProgram):
     5. a job TXT configuration file
     6. a job XML configuration file
     """
-    CONFIG_FILE_TXT = gf.get_rel_path("res/config.txt")
-    CONFIG_FILE_XML = gf.get_rel_path("res/config.xml")
-    CONTAINER_FILE = gf.get_rel_path("res/job.zip")
+    CONFIG_FILE_TXT = gf.relative_path("res/config.txt", __file__)
+    CONFIG_FILE_XML = gf.relative_path("res/config.xml", __file__)
+    CONTAINER_FILE = gf.relative_path("res/job.zip", __file__)
     JOB_CONFIG_STRING = u"job_language=it|os_job_file_name=output.zip|os_job_file_container=zip|is_hierarchy_type=flat"
     TASK_CONFIG_STRING = u"task_language=it|is_text_type=plain|os_task_file_name=output.txt|os_task_file_format=txt"
     WRONG_CONFIG_STRING = u"job_language=it|invalid=string"
