@@ -203,9 +203,9 @@ class SD(object):
             else:
                 self._log(u"An unexpected exception occurred while detecting tail:", Logger.WARNING)
             self._log([u"%s", exc], Logger.WARNING)
-        return value 
+        return value
 
-    # TODO simplify this function 
+    # TODO simplify this function
     def _detect_start(self, min_start_length, max_start_length, metric, backwards=False):
         """ Detect start """
 

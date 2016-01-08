@@ -46,16 +46,17 @@ def custom_tmp_dir():
     """
     Return the path of the temporary directory to use.
 
-    On Linux and OS X, return the value of
+    On POSIX OSes (Linux and OS X), return the value of
     :class:`aeneas.globalconstants.TMP_PATH`
     (e.g., ``/tmp/``).
 
     On Windows, return ``None``, so that ``tempfile``
-    will use the environment directory.
+    will use the directory specified by the
+    environment/user TMP/TEMP variable.
 
     :rtype: string (path)
     """
-    if sys.platform in ["linux", "linux2", "darwin"]:
+    if is_posix():
         return gc.TMP_PATH
     return None
 
@@ -586,11 +587,38 @@ def split_url(url):
 
 def is_posix():
     """
-    Return ``True`` if the running on a POSIX OS.
+    Return ``True`` if running on a POSIX OS.
 
     :rtype: bool
     """
+    # from https://docs.python.org/2/library/os.html#os.name
+    # the registered values of os.name are:
+    # "posix", "nt", "os2", "ce", "java", "riscos"
     return os.name == "posix"
+
+def is_linux():
+    """
+    Return ``True`` if running on Linux.
+
+    :rtype: bool
+    """
+    return (is_posix()) and (os.uname()[0] == "Linux")
+
+def is_osx():
+    """
+    Return ``True`` if running on Mac OS X (Darwin).
+
+    :rtype: bool
+    """
+    return (is_posix()) and (os.uname()[0] == "Darwin")
+
+def is_windows():
+    """
+    Return ``True`` if running on Windows.
+
+    :rtype: bool
+    """
+    return os.name == "nt"
 
 def fix_slash(path):
     """
@@ -650,7 +678,7 @@ def can_run_c_extension(name=None):
     elif name == "cew":
         return can_run_cew()
     else:
-        if (os.name == "posix") and (os.uname()[0] == "Linux"):
+        if is_linux():
             # Linux
             return can_run_cdtw() and can_run_cmfcc() and can_run_cew()
         else:

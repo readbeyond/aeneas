@@ -442,6 +442,18 @@ class TestGlobalFunctions(unittest.TestCase):
         # TODO
         pass
 
+    def test_is_linux(self):
+        # TODO
+        pass
+
+    def test_is_osx(self):
+        # TODO
+        pass
+
+    def test_is_windows(self):
+        # TODO
+        pass
+
     def test_fix_slash(self):
         # TODO
         pass

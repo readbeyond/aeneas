@@ -46,15 +46,19 @@ def get_abs_path(rel_path):
 
 def step1():
     print_info(u"Test 1/8 (shell encoding)")
+    print_info(u"  Checking whether your shell has UTF-8 support...")
     is_utf8 = True
     if sys.stdin.encoding not in ["UTF-8", "UTF8"]:
-        print_warning(u"  The default input encoding is not UTF-8.")
+        print_warning(u"  The default input encoding of your shell is not UTF-8.")
         is_utf8 = False
     if sys.stdout.encoding not in ["UTF-8", "UTF8"]:
-        print_warning(u"  The default output encoding is not UTF-8.")
+        print_warning(u"  The default output encoding of your shell is not UTF-8.")
         is_utf8 = False
-    if not is_utf8:
-        print_warning(u"  If you plan to use aeneas on the command line, you might want to set 'PYTHONIOENCODING=UTF-8' in your shell.")
+    if is_utf8:
+        print_info(u"  Checking whether your shell has UTF-8 support... succeeded.")
+    else:
+        print_warning(u"  If you plan to use aeneas on the command line,")
+        print_warning(u"  you might want to set/export 'PYTHONIOENCODING=UTF-8' in your shell.")
         return False
     return True
 
@@ -67,8 +71,8 @@ def step2():
         return True
     except ImportError:
         print_error(u"  Unable to import package aeneas.")
-        print_error(u"  Check that you have installed the following Python (2.7.x) packages:")
-        print_error(u"  1. BeautifulSoup")
+        print_error(u"  Check that you have installed the following Python packages:")
+        print_error(u"  1. BeautifulSoup4")
         print_error(u"  2. lxml")
         print_error(u"  3. numpy")
     except Exception as e:
@@ -169,7 +173,7 @@ def stepC3():
     print_info(u"Test 8/8 (cew)")
     if not ((os.name == "posix") and (os.uname()[0] == "Linux")):
         print_info(u"  Python C Extension cew is not available for your OS")
-        print_info(u"  You can still run aeneas, but it will be a bit slower than Linux")
+        print_info(u"  You can still run aeneas, but it will be a bit slower (than Linux)")
         return True
     try:
         import aeneas.cew
