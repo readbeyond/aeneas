@@ -87,7 +87,7 @@ System Requirements
 1. a reasonably recent machine (recommended 4 GB RAM, 2 GHz 64bit CPU)
 2. ``ffmpeg`` and ``ffprobe`` executables available in your ``$PATH``
 3. ``espeak`` executable available in your ``$PATH``
-4. Python 2.7.x or 3.4.x or later
+4. Python 2.7 (Linux, OS X, Windows) or 3.4 or later (Linux, OS X)
 5. Python modules ``BeautifulSoup4``, ``lxml``, and ``numpy``
 6. (Optional, strongly recommended) Python C headers to compile the
    Python C extensions
@@ -102,30 +102,62 @@ need to install additional voices for ``espeak``, depending on the
 language(s) you work on. (Installing *all* the codecs and *all* the
 voices available might be a good idea.)
 
-If installing **aeneas** natively on your OS proves difficult, you are
-strongly encouraged to use
-`aeneas-vagrant <https://github.com/readbeyond/aeneas-vagrant>`__, which
-provides **aeneas** inside a virtualized Debian image running under
-`VirtualBox <https://www.virtualbox.org/>`__ and
-`Vagrant <http://www.vagrantup.com/>`__, which can be installed on any
-modern OS (Linux, Mac OS X, Windows).
-
 Supported Platforms
 ~~~~~~~~~~~~~~~~~~~
 
 **aeneas** has been developed and tested on **Debian 64bit**, which is
-the **only supported OS** at the moment. (Do you need official support
-for another OS? Consider `sponsoring <#supporting>`__ this project!)
+the **only supported OS** at the moment.
 
-However, **aeneas** has been confirmed to work on other Linux
-distributions (Gentoo, Ubuntu, Slackware), on Mac OS X 10.9 and 10.10,
-and on Windows Vista/7/8.1/10.
+(Do you need official support for another OS? Consider
+`sponsoring <#supporting>`__ this project!)
 
-Whatever your OS is, make sure ``ffmpeg``, ``ffprobe`` (which is part of
-``ffmpeg`` distribution), and ``espeak`` are properly installed and
-callable by the ``subprocess`` Python module. A way to ensure the latter
-consists in adding these three executables to your ``PATH`` environment
-variable.
+However, **aeneas** has been confirmed to work on the following systems:
+
++------------------+-------------+--------------+------------------+
+| OS               | 32/64 bit   | Python 2.7   | Python 3.4/3.5   |
++==================+=============+==============+==================+
+| Debian           | 64          | Yes          | Yes              |
++------------------+-------------+--------------+------------------+
+| Debian           | 32          | Yes          | Yes              |
++------------------+-------------+--------------+------------------+
+| Ubuntu           | 64          | Yes          | Yes              |
++------------------+-------------+--------------+------------------+
+| Gentoo           | 64          | Yes          | Unknown          |
++------------------+-------------+--------------+------------------+
+| Slackware        | 64          | Yes          | Unknown          |
++------------------+-------------+--------------+------------------+
+| Mac OS X 10.9    | 64          | Yes (1)      | Unknown (1)      |
++------------------+-------------+--------------+------------------+
+| Mac OS X 10.10   | 64          | Yes (1)      | Unknown (1)      |
++------------------+-------------+--------------+------------------+
+| Windows Vista    | 32          | Yes (1)      | Yes (1, 2)       |
++------------------+-------------+--------------+------------------+
+| Windows 7        | 64          | Yes (1)      | Yes (1, 2)       |
++------------------+-------------+--------------+------------------+
+| Windows 8.1      | 64          | Yes (1)      | Unknown (1, 2)   |
++------------------+-------------+--------------+------------------+
+| Windows 10       | 64          | Yes (1)      | Yes (1, 2)       |
++------------------+-------------+--------------+------------------+
+
+**Notes** (1) The ``cew`` Python C extension to speed up text synthesis
+is available only on Linux at the moment. (2) On Windows and Python
+3.4/3.5, compiling the Python C extensions is quite complex; however,
+running **aeneas** in pure Python mode has been confirmed to work.
+
+In any case, **aeneas** should work on any OS, at least in pure Python
+mode, provided that:
+
+1. the required Python modules ``BeautifulSoup4``, ``lxml``, and
+   ``numpy`` are installed, and
+2. ``ffmpeg``, ``ffprobe`` (which is part of ``ffmpeg`` distribution),
+   and ``espeak`` are installed and callable by the ``subprocess``
+   Python module. A way to ensure the latter consists in adding these
+   three executables to your ``PATH`` environment variable.
+
+All strings and text files read by **aeneas** are expected to be UTF-8
+encoded, and all text files written by **aeneas** are UTF-8 encoded.
+Therefore, it is strongly recommended to run the **aeneas** CLI tools on
+a shell with UTF-8 encoding and to convert any input text file to UTF-8.
 
 If installing **aeneas** natively on your OS proves difficult, you are
 strongly encouraged to use
@@ -134,10 +166,6 @@ provides **aeneas** inside a virtualized Debian image running under
 `VirtualBox <https://www.virtualbox.org/>`__ and
 `Vagrant <http://www.vagrantup.com/>`__, which can be installed on any
 modern OS (Linux, Mac OS X, Windows).
-
-It is strongly recommended to run the **aeneas** CLI tools on a shell
-with UTF-8 encoding. Also note that all strings and files read/written
-by **aeneas** are expected to be UTF-8 encoded.
 
 Installation
 ~~~~~~~~~~~~
@@ -147,7 +175,7 @@ Using pip (OS Independent)
 
 1. Make sure you have ``ffmpeg``, ``ffprobe`` (usually provided by the
    ``ffmpeg`` package), and ``espeak`` installed and available on your
-   command line. You also need Python 2.x and its "developer" package
+   command line. You also need Python and its "developer" package
    containing the C headers (``python-dev`` or similar).
 
 2. Install ``aeneas`` system-wise with ``pip``:
@@ -180,7 +208,7 @@ Linux
    If you have another Linux distribution, just make sure you have
    ``ffmpeg``, ``ffprobe`` (usually provided by the ``ffmpeg`` package),
    and ``espeak`` installed and available on your command line. You also
-   need Python 2.x and its "developer" package containing the C headers
+   need Python and its "developer" package containing the C headers
    (``python-dev`` or similar).
 
 2. Clone the ``aeneas`` repo, install Python dependencies, and compile C
@@ -217,6 +245,11 @@ PDF <http://software.sil.org/scriptureappbuilder/resources/>`__, based
 on `these
 directions <https://groups.google.com/d/msg/aeneas-forced-alignment/p9cb1FA0X0I/8phzUgIqBAAJ>`__,
 written by Richard Margetts.
+
+Please note that on Windows it is recommended to run **aeneas** with
+Python 2.7, since compiling the C extensions on Python 3.4 or 3.5
+requires `a complex setup
+process <http://stackoverflow.com/questions/29909330/microsoft-visual-c-compiler-for-python-3-4>`__.
 
 Mac OS X
 ^^^^^^^^
@@ -435,7 +468,7 @@ TODO List
    ``ffprobe`` executables
 -  Multilevel sync map granularity (e.g., multilevel SMIL output)
 -  Better documentation
--  Testing other approaches, like DMM/HMM/NN (e.g., using HTK or Kaldi)
+-  Testing other approaches, like GMM/HMM/NN (e.g., using HTK or Kaldi)
 -  Publishing the package on Debian repo
 
 Would you like to see one of the above points done? Consider
@@ -622,8 +655,8 @@ downloading audio from YouTube
 **November 2015**: release of v1.3.2, for the first time available also
 on `PyPI <https://pypi.python.org/pypi/aeneas/>`__
 
-**January 2016**: release of v1.4.0, supporting both Python 2.7.x and
-3.4 or later
+**January 2016**: release of v1.4.0, supporting both Python 2.7 and 3.4
+or later
 
 Acknowledgments
 ---------------

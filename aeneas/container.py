@@ -211,7 +211,7 @@ class Container(object):
         :rtype: bool
         """
         normalized = os.path.normpath(entry)
-        if normalized.startswith("/") or normalized.startswith("../"):
+        if normalized.startswith(os.sep) or normalized.startswith(".." + os.sep):
             self._log([u"Entry '%s' is not safe", entry])
             return False
         self._log([u"Entry '%s' is safe", entry])

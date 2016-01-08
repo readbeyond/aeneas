@@ -291,7 +291,7 @@ class AbstractCLIProgram(object):
         if len(args) < 1:
             return self.print_help()
 
-        # store actual arguments 
+        # store actual arguments
         self.actual_arguments = args
 
         self.logger = Logger(tee=self.verbose, tee_show_datetime=self.very_verbose)

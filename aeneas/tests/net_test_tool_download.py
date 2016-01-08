@@ -4,7 +4,7 @@
 import os
 import unittest
 
-from aeneas.tools.download import DownloadCLI 
+from aeneas.tools.download import DownloadCLI
 import aeneas.globalfunctions as gf
 
 class TestDownloadCLI(unittest.TestCase):
@@ -57,7 +57,7 @@ class TestDownloadCLI(unittest.TestCase):
         self.execute([
             ("", "https://www.youtube.com/watch?v=rU4a7AA8wM0"),
         ], 2)
-  
+
     def test_download_missing_2(self):
         self.execute([
             ("out", "sonnet.m4a")
