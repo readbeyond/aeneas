@@ -48,13 +48,8 @@ echo "[INFO] B.2 Installing espeak... done"
 echo "[INFO] B.3 Installing common libs using apt-get..."
 apt-get install -y build-essential
 apt-get install -y flac libasound2-dev libsndfile1-dev vorbis-tools
-apt-get install -y python-beautifulsoup4 python-dev python-lxml python-numpy
+apt-get install -y libxml2-dev libxslt-dev
+apt-get install -y python-dev python-pip
 echo "[INFO] B.3 Installing common libs using apt-get... done"
-
-echo "[INFO] C.1 Installing Python modules using pip..."
-# these Debian packages provide pip and the C headers needed to compile lxml
-apt-get install -y python-pip libxml2-dev libxslt-dev
-pip install BeautifulSoup4 lxml numpy pafy
-echo "[INFO] C.1 Installing Python modules using pip... done"
 
 echo "[INFO] Congratulations, now you can use aeneas!"

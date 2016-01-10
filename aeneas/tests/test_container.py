@@ -188,18 +188,18 @@ class TestContainer(unittest.TestCase):
     def test_read_entry_not_existing(self):
         cont = Container(self.NOT_EXISTING)
         with self.assertRaises(TypeError):
-            self.assertEqual(cont.read_entry(self.EXPECTED_ENTRIES[0]), None)
+            self.assertIsNone(cont.read_entry(self.EXPECTED_ENTRIES[0]))
 
     def test_read_entry_empty_file(self):
         for f in self.EMPTY_FILES:
             cont = Container(f)
             with self.assertRaises(OSError):
-                self.assertEqual(cont.read_entry(self.EXPECTED_ENTRIES[0]), None)
+                self.assertIsNone(cont.read_entry(self.EXPECTED_ENTRIES[0]))
 
     def test_read_entry_empty_directory(self):
         output_path = gf.tmp_directory()
         cont = Container(output_path)
-        self.assertEqual(cont.read_entry(self.EXPECTED_ENTRIES[0]), None)
+        self.assertIsNone(cont.read_entry(self.EXPECTED_ENTRIES[0]))
         gf.delete_directory(output_path)
 
     def test_read_entry_existing(self):
@@ -208,24 +208,24 @@ class TestContainer(unittest.TestCase):
             f = self.FILES[key]
             cont = Container(f["path"])
             result = cont.read_entry(entry)
-            self.assertNotEqual(result, None)
+            self.assertIsNotNone(result)
             self.assertEqual(len(result), f["config_size"])
 
     def test_find_entry_not_existing(self):
         cont = Container(self.NOT_EXISTING)
         with self.assertRaises(TypeError):
-            self.assertEqual(cont.find_entry(self.EXPECTED_ENTRIES[0]), None)
+            self.assertIsNone(cont.find_entry(self.EXPECTED_ENTRIES[0]))
 
     def test_find_entry_empty_file(self):
         for f in self.EMPTY_FILES:
             cont = Container(f)
             with self.assertRaises(OSError):
-                self.assertEqual(cont.find_entry(self.EXPECTED_ENTRIES[0]), None)
+                self.assertIsNone(cont.find_entry(self.EXPECTED_ENTRIES[0]))
 
     def test_find_entry_empty_directory(self):
         output_path = gf.tmp_directory()
         cont = Container(output_path)
-        self.assertEqual(cont.find_entry(self.EXPECTED_ENTRIES[0]), None)
+        self.assertIsNone(cont.find_entry(self.EXPECTED_ENTRIES[0]))
         gf.delete_directory(output_path)
 
     def test_find_entry_existing(self):
@@ -250,7 +250,7 @@ class TestContainer(unittest.TestCase):
             f = self.FILES[key]
             cont = Container(f["path"])
             result = cont.read_entry(entry)
-            self.assertEqual(result, None)
+            self.assertIsNone(result)
 
     def test_find_entry_missing(self):
         entry = "config_not_existing.txt"

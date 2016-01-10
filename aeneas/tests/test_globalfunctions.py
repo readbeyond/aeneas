@@ -20,7 +20,7 @@ class TestGlobalFunctions(unittest.TestCase):
         if sys.platform in ["linux", "linux2", "darwin"]:
             self.assertEqual(tmp_dir, gc.TMP_PATH)
         else:
-            self.assertEqual(tmp_dir, None)
+            self.assertIsNone(tmp_dir)
 
     def test_tmp_directory(self):
         tmp_dir = gf.tmp_directory()
@@ -39,7 +39,6 @@ class TestGlobalFunctions(unittest.TestCase):
 
     def test_file_extension(self):
         tests = [
-            (None, None),
             ("", ""),
             ("/", ""),
             ("/foo", ""),
@@ -57,12 +56,12 @@ class TestGlobalFunctions(unittest.TestCase):
             ("foo/bar/baz", ""),
             ("foo/bar/.baz", ""),
         ]
+        self.assertIsNone(gf.file_extension(None))
         for test in tests:
             self.assertEqual(gf.file_extension(test[0]), test[1])
 
     def test_file_name_without_extension(self):
         tests = [
-            (None, None),
             ("", ""),
             ("/", ""),
             ("/foo", "foo"),
@@ -80,6 +79,7 @@ class TestGlobalFunctions(unittest.TestCase):
             ("foo/bar/baz", "baz"),
             ("foo/bar/.baz", ".baz"),
         ]
+        self.assertIsNone(gf.file_name_without_extension(None))
         for test in tests:
             self.assertEqual(gf.file_name_without_extension(test[0]), test[1])
 
@@ -178,7 +178,6 @@ class TestGlobalFunctions(unittest.TestCase):
 
     def test_config_txt_to_string(self):
         tests = [
-            (None, None),
             (u"", u""),
             (u"k1=v1", u"k1=v1"),
             (u"k1=v1\n\n", u"k1=v1"),
@@ -187,6 +186,7 @@ class TestGlobalFunctions(unittest.TestCase):
             (u" k1=v1\n k2=v2 \n\n\nk3=v3 \n", u"k1=v1|k2=v2|k3=v3"),
             (u"k1=v1\nk2\nk3=v3", "k1=v1|k2|k3=v3"),
         ]
+        self.assertIsNone(gf.config_txt_to_string(None))
         for test in tests:
             self.assertEqual(gf.config_txt_to_string(test[0]), test[1])
 
@@ -667,11 +667,11 @@ class TestGlobalFunctions(unittest.TestCase):
 
     def test_safe_str(self):
         tests = [
-            (None, None),
             (u"", ""),
             (u"foo", "foo"),
             (u"foà", "foà"),
         ]
+        self.assertIsNone(gf.safe_str(None))
         for test in tests:
             self.assertEqual(gf.safe_str(test[0]), test[1])
 
@@ -688,7 +688,6 @@ class TestGlobalFunctions(unittest.TestCase):
 
     def test_safe_unicode(self):
         tests = [
-            (None, None),
             ("", u""),
             ("foo", u"foo"),
             ("foà", u"foà"),
@@ -696,18 +695,19 @@ class TestGlobalFunctions(unittest.TestCase):
             (u"foo", u"foo"),
             (u"foà", u"foà"),
         ]
+        self.assertIsNone(gf.safe_unicode(None))
         for test in tests:
             self.assertEqual(gf.safe_unicode(test[0]), test[1])
 
     def test_safe_bytes(self):
         tests = [
-            (None, None),
             ("", b""),
             ("foo", b"foo"),
             (b"", b""),
             (b"foo", b"foo"),
             (b"fo\x99", b"fo\x99"),
         ]
+        self.assertIsNone(gf.safe_bytes(None))
         for test in tests:
             self.assertEqual(gf.safe_bytes(test[0]), test[1])
 

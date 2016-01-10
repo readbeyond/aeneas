@@ -85,13 +85,13 @@ class TestAnalyzeContainer(unittest.TestCase):
     def test_container_not_existing(self):
         analyzer = AnalyzeContainer(Container(self.NOT_EXISTING_PATH))
         job = analyzer.analyze()
-        self.assertEqual(job, None)
+        self.assertIsNone(job)
 
     def test_analyze_empty_container(self):
         for f in self.EMPTY_CONTAINERS:
             analyzer = AnalyzeContainer(Container(f))
             job = analyzer.analyze()
-            self.assertEqual(job, None)
+            self.assertIsNone(job)
 
     def test_analyze(self):
         for f in self.FILES:
@@ -102,19 +102,19 @@ class TestAnalyzeContainer(unittest.TestCase):
     def test_wizard_container_not_existing(self):
         analyzer = AnalyzeContainer(Container(self.NOT_EXISTING_PATH))
         job = analyzer.analyze(config_string=u"foo")
-        self.assertEqual(job, None)
+        self.assertIsNone(job)
 
     def test_wizard_analyze_empty_container(self):
         for f in self.EMPTY_CONTAINERS:
             analyzer = AnalyzeContainer(Container(f))
             job = analyzer.analyze(config_string=u"foo")
-            self.assertEqual(job, None)
+            self.assertIsNone(job)
 
     def test_wizard_analyze_valid(self):
         f = self.FILES[0]
         analyzer = AnalyzeContainer(Container(gf.absolute_path(f["path"], __file__)))
         job = analyzer.analyze(config_string=self.CONFIG_STRING)
-        self.assertNotEqual(job, None)
+        self.assertIsNotNone(job)
         self.assertEqual(len(job), f["length"])
 
 if __name__ == '__main__':
