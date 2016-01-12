@@ -1,7 +1,7 @@
 Changelog
 =========
 
-v1.4.0 (2016-01-??)
+v1.4.0 (2016-01-15)
 -------------------
 
 #. Now running on both Python 2.7.x and Python 3.4.x or later, including C extensions
@@ -19,6 +19,7 @@ v1.4.0 (2016-01-??)
 #. Added unit tests for ``aeneas.tools.*`` (``--tool-tests``)
 #. Added unit tests for ``executejob.py`` and ``executetask.py`` (``--long-tests``)
 #. Added unit tests for ``downloader.py`` and ``aeneas.tools.download`` (``--net-tests``)
+#. Better and more unit tests
 #. Changed all ``IOError`` to ``OSError``, per Python 3 recommendation
 #. Changed ``parameters=None`` default value in the constructor of ``FFMPEGWrapper``
 #. Renamed ``AudioFileMonoWAV`` to ``AudioFileMonoWAVE``

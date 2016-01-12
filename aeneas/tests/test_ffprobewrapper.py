@@ -47,11 +47,11 @@ class TestFFPROBEWrapper(unittest.TestCase):
 
     def test_mp3_properties(self):
         properties = self.load("res/audioformats/p001.mp3")
-        self.assertNotEqual(properties['bit_rate'], None)
-        self.assertNotEqual(properties['channels'], None)
-        self.assertNotEqual(properties['codec_name'], None)
-        self.assertNotEqual(properties['duration'], None)
-        self.assertNotEqual(properties['sample_rate'], None)
+        self.assertIsNotNone(properties["bit_rate"])
+        self.assertIsNotNone(properties["channels"])
+        self.assertIsNotNone(properties["codec_name"])
+        self.assertIsNotNone(properties["duration"])
+        self.assertIsNotNone(properties["sample_rate"])
 
     def test_path_none(self):
         with self.assertRaises(TypeError):
@@ -68,7 +68,7 @@ class TestFFPROBEWrapper(unittest.TestCase):
     def test_formats(self):
         for f in self.FILES:
             properties = self.load(f["path"])
-            self.assertNotEqual(properties['duration'], None)
+            self.assertIsNotNone(properties["duration"])
 
 if __name__ == '__main__':
     unittest.main()

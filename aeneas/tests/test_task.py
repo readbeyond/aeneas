@@ -32,7 +32,11 @@ class TestTask(unittest.TestCase):
     def setter(self, attribute, value):
         taskconf = TaskConfiguration()
         setattr(taskconf, attribute, value)
-        self.assertEqual(getattr(taskconf, attribute), value)
+        read_value = getattr(taskconf, attribute)
+        if value is None:
+            self.assertIsNone(read_value)
+        else:
+            self.assertEqual(read_value, value)
 
     def set_text_file(self, path, fmt, expected, id_regex=None, class_regex=None, id_sort=None):
         task = Task()
@@ -46,13 +50,17 @@ class TestTask(unittest.TestCase):
         if id_sort is not None:
             task.configuration.is_text_unparsed_id_sort = id_sort
         task.text_file_path_absolute = gf.absolute_path(path, __file__)
-        self.assertNotEqual(task.text_file, None)
+        self.assertIsNotNone(task.text_file)
         self.assertEqual(len(task.text_file), expected)
 
     def tc_from_string(self, config_string, properties):
         taskconf = TaskConfiguration(config_string)
-        for prop in properties:
-            self.assertEqual(getattr(taskconf, prop[0]), prop[1])
+        for prop, value in properties:
+            read_value = getattr(taskconf, prop)
+            if value is None:
+                self.assertIsNone(read_value)
+            else:
+                self.assertEqual(read_value, value)
 
     def tc_from_string_some_invalid(self, config_string, expected_description):
         properties = [
@@ -71,7 +79,7 @@ class TestTask(unittest.TestCase):
 
     def test_task_empty_configuration(self):
         task = Task()
-        self.assertEqual(task.configuration, None)
+        self.assertIsNone(task.configuration)
 
     def test_task_string_configuration_invalid(self):
         with self.assertRaises(TypeError):
@@ -83,31 +91,31 @@ class TestTask(unittest.TestCase):
 
     def test_task_string_configuration_unicode(self):
         task = Task(u"task_language=en")
-        self.assertNotEqual(task.configuration, None)
+        self.assertIsNotNone(task.configuration)
 
     def test_task_set_configuration(self):
         task = Task()
         taskconf = TaskConfiguration()
         task.configuration = taskconf
-        self.assertNotEqual(task.configuration, None)
+        self.assertIsNotNone(task.configuration)
 
     def test_task_empty_on_creation(self):
         task = Task()
-        self.assertEqual(task.configuration, None)
-        self.assertEqual(task.text_file, None)
-        self.assertEqual(task.audio_file, None)
-        self.assertEqual(task.sync_map, None)
-        self.assertEqual(task.audio_file_path, None)
-        self.assertEqual(task.audio_file_path_absolute, None)
-        self.assertEqual(task.text_file_path, None)
-        self.assertEqual(task.text_file_path_absolute, None)
-        self.assertEqual(task.sync_map_file_path, None)
-        self.assertEqual(task.sync_map_file_path_absolute, None)
+        self.assertIsNone(task.configuration)
+        self.assertIsNone(task.text_file)
+        self.assertIsNone(task.audio_file)
+        self.assertIsNone(task.sync_map)
+        self.assertIsNone(task.audio_file_path)
+        self.assertIsNone(task.audio_file_path_absolute)
+        self.assertIsNone(task.text_file_path)
+        self.assertIsNone(task.text_file_path_absolute)
+        self.assertIsNone(task.sync_map_file_path)
+        self.assertIsNone(task.sync_map_file_path_absolute)
 
     def test_set_audio_file_path_absolute(self):
         task = Task()
         task.audio_file_path_absolute = gf.absolute_path("res/container/job/assets/p001.mp3", __file__)
-        self.assertNotEqual(task.audio_file, None)
+        self.assertIsNotNone(task.audio_file)
         self.assertEqual(task.audio_file.file_size, 426735)
         self.assertAlmostEqual(task.audio_file.audio_length, 53.3, places=1)
 
@@ -188,7 +196,7 @@ class TestTask(unittest.TestCase):
         handler, output_file_path = gf.tmp_file(suffix=".txt")
         task.sync_map_file_path_absolute = output_file_path
         path = task.output_sync_map_file()
-        self.assertNotEqual(path, None)
+        self.assertIsNotNone(path)
         self.assertEqual(path, output_file_path)
         gf.delete_file(handler, output_file_path)
 
@@ -289,30 +297,30 @@ class TestTask(unittest.TestCase):
     def test_tc_from_string_with_optional(self):
         config_string = u"task_description=Test description|task_language=it|task_custom_id=customid|is_audio_file_head_length=20|is_audio_file_process_length=100|os_task_file_format=smil|os_task_file_name=output.smil|os_task_file_smil_audio_ref=../audio/audio001.mp3|os_task_file_smil_page_ref=../text/page001.xhtml"
         properties = [
-            ["language", Language.IT],
-            ["description", u"Test description"],
-            ["custom_id", u"customid"],
-            ["is_audio_file_head_length", u"20"],
-            ["is_audio_file_process_length", u"100"],
-            ["os_file_format", SyncMapFormat.SMIL],
-            ["os_file_name", u"output.smil"],
-            ["os_file_smil_audio_ref", u"../audio/audio001.mp3"],
-            ["os_file_smil_page_ref", u"../text/page001.xhtml"],
+            ("language", Language.IT),
+            ("description", u"Test description"),
+            ("custom_id", u"customid"),
+            ("is_audio_file_head_length", u"20"),
+            ("is_audio_file_process_length", u"100"),
+            ("os_file_format", SyncMapFormat.SMIL),
+            ("os_file_name", u"output.smil"),
+            ("os_file_smil_audio_ref", u"../audio/audio001.mp3"),
+            ("os_file_smil_page_ref", u"../text/page001.xhtml"),
         ]
         self.tc_from_string(config_string, properties)
 
     def test_tc_from_string_no_optional(self):
         config_string = u"task_description=Test description|task_language=it|task_custom_id=customid|is_audio_file_head_length=20|is_audio_file_process_length=100|os_task_file_format=txt|os_task_file_name=output.txt"
         properties = [
-            ["language", Language.IT],
-            ["description", u"Test description"],
-            ["custom_id", u"customid"],
-            ["is_audio_file_head_length", u"20"],
-            ["is_audio_file_process_length", u"100"],
-            ["os_file_format", SyncMapFormat.TXT],
-            ["os_file_name", u"output.txt"],
-            ["os_file_smil_audio_ref", None],
-            ["os_file_smil_page_ref", None],
+            ("language", Language.IT),
+            ("description", u"Test description"),
+            ("custom_id", u"customid"),
+            ("is_audio_file_head_length", u"20"),
+            ("is_audio_file_process_length", u"100"),
+            ("os_file_format", SyncMapFormat.TXT),
+            ("os_file_name", u"output.txt"),
+            ("os_file_smil_audio_ref", None),
+            ("os_file_smil_page_ref", None),
         ]
         self.tc_from_string(config_string, properties)
 

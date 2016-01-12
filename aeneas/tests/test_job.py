@@ -18,7 +18,11 @@ class TestJob(unittest.TestCase):
     def setter(self, attribute, value):
         jobconf = JobConfiguration()
         setattr(jobconf, attribute, value)
-        self.assertEqual(getattr(jobconf, attribute), value)
+        read_value = getattr(jobconf, attribute)
+        if value is None:
+            self.assertIsNone(read_value)
+        else:
+            self.assertEqual(read_value, value)
 
     def test_job_logger(self):
         logger = Logger()
@@ -34,7 +38,7 @@ class TestJob(unittest.TestCase):
 
     def test_job_empty_configuration(self):
         job = Job()
-        self.assertEqual(job.configuration, None)
+        self.assertIsNone(job.configuration)
 
     def test_job_string_configuration_invalid(self):
         with self.assertRaises(TypeError):
@@ -46,13 +50,13 @@ class TestJob(unittest.TestCase):
 
     def test_job_string_configuration_unicode(self):
         job = Job(u"job_language=en")
-        self.assertNotEqual(job.configuration, None)
+        self.assertIsNotNone(job.configuration)
 
     def test_job_set_configuration(self):
         job = Job()
         jobconf = JobConfiguration()
         job.configuration = jobconf
-        self.assertNotEqual(job.configuration, None)
+        self.assertIsNotNone(job.configuration)
 
     def test_job_append_task(self):
         job = Job()
@@ -191,9 +195,9 @@ class TestJob(unittest.TestCase):
         self.assertEqual(jobconf.language, Language.IT)
         self.assertEqual(jobconf.description, u"Test description")
         self.assertEqual(jobconf.is_text_file_format, TextFileFormat.PLAIN)
-        self.assertEqual(jobconf.is_text_unparsed_class_regex, None)
-        self.assertEqual(jobconf.is_text_unparsed_id_regex, None)
-        self.assertEqual(jobconf.is_text_unparsed_id_sort, None)
+        self.assertIsNone(jobconf.is_text_unparsed_class_regex)
+        self.assertIsNone(jobconf.is_text_unparsed_id_regex)
+        self.assertIsNone(jobconf.is_text_unparsed_id_sort)
 
 if __name__ == '__main__':
     unittest.main()

@@ -19,7 +19,7 @@ class TestExecuteTask(unittest.TestCase):
         executor.execute()
         task.sync_map_file_path_absolute = tmp_path
         result_path = task.output_sync_map_file()
-        self.assertNotEqual(result_path, None)
+        self.assertIsNotNone(result_path)
         self.assertEqual(result_path, tmp_path)
         self.assertGreater(len(gf.read_file_bytes(result_path)), 0)
         gf.delete_file(handler, tmp_path)
@@ -67,6 +67,8 @@ class TestExecuteTask(unittest.TestCase):
                 "res/container/job/assets/p001.mp3",
                 "res/inputtext/sonnet_plain.txt"
             )
+
+    # TODO more tests
 
 if __name__ == '__main__':
     unittest.main()

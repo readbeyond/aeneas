@@ -149,21 +149,21 @@ class TestAudioFileMonoWAVE(unittest.TestCase):
     def test_load_data(self):
         audiofile = self.load(self.AUDIO_FILE_PATH_MFCC)
         audiofile.load_data()
-        self.assertNotEqual(audiofile.audio_data, None)
+        self.assertIsNotNone(audiofile.audio_data)
         audiofile.clear_data()
 
     def test_clear_data(self):
         audiofile = self.load(self.AUDIO_FILE_PATH_MFCC)
         audiofile.load_data()
         audiofile.clear_data()
-        self.assertEqual(audiofile.audio_data, None)
+        self.assertIsNone(audiofile.audio_data)
 
     def test_extract_mfcc(self):
         audiofile = self.load(self.AUDIO_FILE_PATH_MFCC)
         audiofile.load_data()
         audiofile.extract_mfcc()
         audiofile.clear_data()
-        self.assertNotEqual(audiofile.audio_mfcc, None)
+        self.assertIsNone(audiofile.audio_data)
         self.assertEqual(audiofile.audio_mfcc.shape[0], 13)
         self.assertEqual(audiofile.audio_mfcc.shape[1], 1332)
 
