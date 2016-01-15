@@ -15,10 +15,10 @@ that is a list of non-overlapping nonspeech time intervals.
 .. versionadded:: 1.0.4
 """
 
+from __future__ import absolute_import
+from __future__ import print_function
 import numpy
-import os
 
-from aeneas.audiofile import AudioFileMonoWAV
 from aeneas.logger import Logger
 import aeneas.globalconstants as gc
 
@@ -26,10 +26,10 @@ __author__ = "Alberto Pettarin"
 __copyright__ = """
     Copyright 2012-2013, Alberto Pettarin (www.albertopettarin.it)
     Copyright 2013-2015, ReadBeyond Srl   (www.readbeyond.it)
-    Copyright 2015,      Alberto Pettarin (www.albertopettarin.it)
+    Copyright 2015-2016, Alberto Pettarin (www.albertopettarin.it)
     """
 __license__ = "GNU AGPL v3"
-__version__ = "1.3.3"
+__version__ = "1.4.0"
 __email__ = "aeneas@readbeyond.it"
 __status__ = "Production"
 
@@ -65,7 +65,7 @@ class VAD(object):
     :type  logger: :class:`aeneas.logger.Logger`
     """
 
-    TAG = "VAD"
+    TAG = u"VAD"
 
     def __init__(
             self,
@@ -138,22 +138,19 @@ class VAD(object):
         Compute the time intervals containing speech and nonspeech,
         and store them internally in the corresponding properties.
         """
-        self._log("Computing VAD for wave")
-        self.speech, self.nonspeech = self._compute_vad()
-
-    def _compute_vad(self):
+        self._log(u"Computing VAD for wave")
         labels = []
         energy_vector = self.wave_mfcc[0]
         energy_threshold = numpy.min(energy_vector) + self.energy_threshold
         current_time = 0
         time_step = 1.0 / self.frame_rate
-        self._log(["Time step: %.3f", time_step])
+        self._log([u"Time step: %.3f", time_step])
         last_index = len(energy_vector) - 1
-        self._log(["Last frame index: %d", last_index])
+        self._log([u"Last frame index: %d", last_index])
 
         # decide whether each frame has speech or not,
         # based only on its energy
-        self._log("Assigning initial labels")
+        self._log(u"Assigning initial labels")
         for current_energy in energy_vector:
             start_time = current_time
             end_time = start_time + time_step
@@ -166,12 +163,14 @@ class VAD(object):
         # to start a new nonspeech interval, there must be
         # at least self.min_nonspeech_length nonspeech frames ahead
         # spotty False values immersed in True runs are changed to True
-        self._log("Smoothing labels")
+        self._log(u"Smoothing labels")
         in_nonspeech = True
         if len(labels) > self.min_nonspeech_length:
             for i in range(len(labels) - self.min_nonspeech_length):
-                if ((not labels[i][3]) and
-                        (self._nonspeech_ahead(labels, i, in_nonspeech))):
+                if (
+                        (not labels[i][3]) and
+                        (self._nonspeech_ahead(labels, i, in_nonspeech))
+                ):
                     labels[i][3] = False
                     in_nonspeech = True
                 else:
@@ -185,9 +184,9 @@ class VAD(object):
             for i in range(first_index_not_set, last_index + 1):
                 labels[i][3] = speech_at_the_end
 
-        self._log("Extending speech intervals before and after")
-        self._log(["Extend before: %d", self.extend_before])
-        self._log(["Extend after: %d", self.extend_after])
+        self._log(u"Extending speech intervals before and after")
+        self._log([u"Extend before: %d", self.extend_before])
+        self._log([u"Extend after: %d", self.extend_after])
         in_speech = False
         run_starts = []
         run_ends = []
@@ -206,23 +205,21 @@ class VAD(object):
         adj_ends = [min(x + self.extend_after, last_index) for x in run_ends]
         speech_indices = zip(adj_starts, adj_ends)
 
-        self._log("Generating speech and nonspeech list of intervals")
+        self._log(u"Generating speech and nonspeech list of intervals")
         speech = []
         nonspeech = []
         nonspeech_time = 0
-        for speech_interval in speech_indices:
-            start, end = speech_interval
+        for start, end in speech_indices:
             if nonspeech_time < start:
-                nonspeech.append(
-                    [labels[nonspeech_time][0], labels[start - 1][1]]
-                )
+                nonspeech.append([labels[nonspeech_time][0], labels[start - 1][1]])
             speech.append([labels[start][0], labels[end][1]])
             nonspeech_time = end + 1
         if nonspeech_time < last_index:
             nonspeech.append([labels[nonspeech_time][0], labels[last_index][1]])
 
-        self._log("Returning speech and nonspeech list of intervals")
-        return speech, nonspeech
+        self._log(u"Setting speech and nonspeech list of intervals")
+        self.speech = speech
+        self.nonspeech = nonspeech
 
     # TODO check if a numpy sliding window is faster
     def _nonspeech_ahead(self, array, current_index, in_nonspeech):

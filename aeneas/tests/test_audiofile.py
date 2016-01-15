@@ -2,11 +2,10 @@
 # coding=utf-8
 
 import os
-import tempfile
 import unittest
 
 from aeneas.audiofile import AudioFile
-from aeneas.audiofile import AudioFileMonoWAV
+from aeneas.audiofile import AudioFileMonoWAVE
 from aeneas.audiofile import AudioFileUnsupportedFormatError
 import aeneas.globalfunctions as gf
 
@@ -83,22 +82,27 @@ class TestAudioFile(unittest.TestCase):
     ]
 
     def load(self, path):
-        return AudioFile(gf.get_abs_path(path, __file__))
+        return AudioFile(gf.absolute_path(path, __file__))
 
     def test_read_on_none(self):
-        audiofile = self.load(None) 
-        with self.assertRaises(IOError):
+        audiofile = self.load(None)
+        with self.assertRaises(OSError):
             audiofile.read_properties()
 
     def test_read_on_non_existing_path(self):
         audiofile = self.load("not_existing.mp3")
-        with self.assertRaises(IOError):
+        with self.assertRaises(OSError):
             audiofile.read_properties()
 
     def test_read_on_empty(self):
         audiofile = self.load(self.AUDIO_FILE_EMPTY)
         with self.assertRaises(AudioFileUnsupportedFormatError):
             audiofile.read_properties()
+
+    def test_str(self):
+        audiofile = self.load(self.FILES[0]["path"])
+        audiofile.read_properties()
+        ignored = str(audiofile)
 
     def test_read(self):
         for f in self.FILES:
@@ -112,7 +116,7 @@ class TestAudioFile(unittest.TestCase):
 
 
 
-class TestAudioFileMonoWAV(unittest.TestCase):
+class TestAudioFileMonoWAVE(unittest.TestCase):
 
     AUDIO_FILE_PATH_MFCC = "res/cmfcc/audio.wav"
     AUDIO_FILE_EMPTY = "res/audioformats/p001.empty"
@@ -120,16 +124,16 @@ class TestAudioFileMonoWAV(unittest.TestCase):
     NOT_EXISTING_FILE = "res/audioformats/x/y/z/not_existing.wav"
 
     def load(self, path):
-        return AudioFileMonoWAV(gf.get_abs_path(path, __file__))
+        return AudioFileMonoWAVE(gf.absolute_path(path, __file__))
 
     def test_load_on_none(self):
         audiofile = self.load(None)
-        with self.assertRaises(IOError):
+        with self.assertRaises(OSError):
             audiofile.load_data()
 
     def test_load_on_non_existing_path(self):
         audiofile = self.load(self.NOT_EXISTING_FILE)
-        with self.assertRaises(IOError):
+        with self.assertRaises(OSError):
             audiofile.load_data()
 
     def test_load_on_empty(self):
@@ -145,21 +149,21 @@ class TestAudioFileMonoWAV(unittest.TestCase):
     def test_load_data(self):
         audiofile = self.load(self.AUDIO_FILE_PATH_MFCC)
         audiofile.load_data()
-        self.assertNotEqual(audiofile.audio_data, None)
+        self.assertIsNotNone(audiofile.audio_data)
         audiofile.clear_data()
 
     def test_clear_data(self):
         audiofile = self.load(self.AUDIO_FILE_PATH_MFCC)
         audiofile.load_data()
         audiofile.clear_data()
-        self.assertEqual(audiofile.audio_data, None)
+        self.assertIsNone(audiofile.audio_data)
 
     def test_extract_mfcc(self):
         audiofile = self.load(self.AUDIO_FILE_PATH_MFCC)
         audiofile.load_data()
         audiofile.extract_mfcc()
         audiofile.clear_data()
-        self.assertNotEqual(audiofile.audio_mfcc, None)
+        self.assertIsNone(audiofile.audio_data)
         self.assertEqual(audiofile.audio_mfcc.shape[0], 13)
         self.assertEqual(audiofile.audio_mfcc.shape[1], 1332)
 
@@ -220,17 +224,17 @@ class TestAudioFileMonoWAV(unittest.TestCase):
             audiofile.clear_data()
 
     def test_write_not_existing_path(self):
-        output_file_path = gf.get_abs_path(self.NOT_EXISTING_FILE, __file__)
+        output_file_path = gf.absolute_path(self.NOT_EXISTING_FILE, __file__)
         audiofile = self.load(self.AUDIO_FILE_PATH_MFCC)
         audiofile.load_data()
-        with self.assertRaises(IOError):
+        with self.assertRaises(OSError):
             audiofile.write(output_file_path)
 
     def test_write(self):
         audiofile = self.load(self.AUDIO_FILE_PATH_MFCC)
         audiofile.load_data()
         data = audiofile.audio_data
-        handler, output_file_path = tempfile.mkstemp(suffix=".wav")
+        handler, output_file_path = gf.tmp_file(suffix=".wav")
         audiofile.write(output_file_path)
         audiocopy = self.load(output_file_path)
         audiocopy.load_data()

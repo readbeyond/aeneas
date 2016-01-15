@@ -1,4 +1,4 @@
-<?xml version='1.0' encoding='ASCII'?>
+<?xml version='1.0' encoding='UTF-8'?>
 <map>
   <fragment id="f000001" begin="0.000" end="2.680">
     <line>I</line>
@@ -8,7 +8,7 @@
     <line>we desire increase,</line>
   </fragment>
   <fragment id="f000003" begin="5.880" end="9.200">
-    <line>That thereby beauty&#8217;s rose</line>
+    <line>That thereby beauty’s rose</line>
     <line>might never die,</line>
   </fragment>
   <fragment id="f000004" begin="9.200" end="11.960">
@@ -24,7 +24,7 @@
     <line>to thine own bright eyes,</line>
   </fragment>
   <fragment id="f000007" begin="18.520" end="22.760">
-    <line>Feed&#8217;st thy light&#8217;s flame</line>
+    <line>Feed’st thy light’s flame</line>
     <line>with self-substantial fuel,</line>
   </fragment>
   <fragment id="f000008" begin="22.760" end="25.680">
@@ -37,7 +37,7 @@
   </fragment>
   <fragment id="f000010" begin="31.240" end="34.400">
     <line>Thou that art now</line>
-    <line>the world&#8217;s fresh ornament,</line>
+    <line>the world’s fresh ornament,</line>
   </fragment>
   <fragment id="f000011" begin="34.400" end="36.640">
     <line>And only herald to the gaudy spring,</line>
@@ -47,14 +47,14 @@
     <line>buriest thy content,</line>
   </fragment>
   <fragment id="f000013" begin="40.640" end="43.640">
-    <line>And tender churl mak&#8217;st waste in niggarding:</line>
+    <line>And tender churl mak’st waste in niggarding:</line>
   </fragment>
   <fragment id="f000014" begin="43.640" end="48.080">
     <line>Pity the world,</line>
     <line>or else this glutton be,</line>
   </fragment>
   <fragment id="f000015" begin="48.080" end="53.240">
-    <line>To eat the world&#8217;s due,</line>
+    <line>To eat the world’s due,</line>
     <line>by the grave and thee.</line>
   </fragment>
 </map>

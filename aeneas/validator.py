@@ -5,7 +5,9 @@
 A validator to assess whether user input is well-formed.
 """
 
-import codecs
+from __future__ import absolute_import
+from __future__ import print_function
+import io
 
 from aeneas.analyzecontainer import AnalyzeContainer
 from aeneas.container import Container
@@ -25,10 +27,10 @@ __author__ = "Alberto Pettarin"
 __copyright__ = """
     Copyright 2012-2013, Alberto Pettarin (www.albertopettarin.it)
     Copyright 2013-2015, ReadBeyond Srl   (www.readbeyond.it)
-    Copyright 2015,      Alberto Pettarin (www.albertopettarin.it)
+    Copyright 2015-2016, Alberto Pettarin (www.albertopettarin.it)
     """
 __license__ = "GNU AGPL v3"
-__version__ = "1.3.3"
+__version__ = "1.4.0"
 __email__ = "aeneas@readbeyond.it"
 __status__ = "Production"
 
@@ -39,7 +41,7 @@ class Validator(object):
     Note that all strings are ``str`` objects.
     """
 
-    TAG = "Validator"
+    TAG = u"Validator"
 
     ALLOWED_VALUES = [
         (
@@ -231,441 +233,256 @@ class Validator(object):
         :type  input_file_path: string (path)
         :rtype: :class:`aeneas.validator.ValidatorResult`
         """
-        self._log(["Checking encoding of file '%s'", input_file_path])
+        self._log([u"Checking encoding of file '%s'", input_file_path])
         self.result = ValidatorResult()
-
-        self._log("Checking file exists")
-        self._check_file_exists(input_file_path)
-        if not self.result.passed:
+        if not gf.file_can_be_read(input_file_path):
+            self._failed(u"File '%s' cannot be read." % (input_file_path))
             return self.result
-
-        try:
-            file_object = None
-            file_object = codecs.open(input_file_path, "r", encoding="utf-8")
-            file_object.readlines()
-        except UnicodeError:
-            self._failed("The given file is not UTF-8 encoded.")
-        finally:
-            if file_object is not None:
-                file_object.close()
+        with io.open(input_file_path, "rb") as file_object:
+            bstring = file_object.read()
+            self._check_utf8_encoding(bstring)
         return self.result
 
-    def check_string_well_encoded(self, string):
+    def check_raw_string(self, string, is_bstring=True):
         """
-        Check whether the given string is properly UTF-8 encoded
-        and it does not contain reserved characters.
+        Check whether the given string
+        is properly UTF-8 encoded (if is_bytes is True),
+        it is not empty, and
+        it does not contain reserved characters.
 
         :param string: the string to be checked
-        :type  string: string
+        :type  string: byte string or Unicode string
+        :param is_bstring: if True, string is a byte string
+        :type  is_bstring: bool
         :rtype: :class:`aeneas.validator.ValidatorResult`
         """
-        self._log("Checking that the given string is well encoded")
+        self._log(u"Checking the given byte string")
         self.result = ValidatorResult()
-        self._check_string_encoding(string)
+        if is_bstring:
+            self._check_utf8_encoding(string)
+            if not self.result.passed:
+                return self.result
+            string = gf.safe_unicode(string)
+        self._check_not_empty(string)
         if not self.result.passed:
             return self.result
         self._check_reserved_characters(string)
         return self.result
 
-    def check_job_configuration(self, config_string):
+    def check_configuration_string(
+            self,
+            config_string,
+            is_job=True,
+            external_name=False
+    ):
         """
-        Check whether the given job configuration string is well-formed
+        Check whether the given job or task configuration string
+        is well-formed (if is_bstring is True)
         and it has all the required parameters.
 
         :param config_string: the string to be checked
-        :type  config_string: string
+        :type  config_string: byte string or Unicode string
+        :param is_job: if True, config_string is a job config string
+        :type  is_job: bool
+        :param external_name: if True, the task name is provided externally,
+                              and it is not required to appear
+                              in the config string
+        :type  external_name: bool
         :rtype: :class:`aeneas.validator.ValidatorResult`
         """
-        self._log("Checking job configuration")
+        if is_job:
+            self._log(u"Checking job configuration string")
+        else:
+            self._log(u"Checking task configuration string")
         self.result = ValidatorResult()
-        self._check_configuration_string(config_string, self.JOB_REQUIRED_PARAMETERS)
-        return self.result
-
-    def check_task_configuration(self, config_string, external_name=False):
-        """
-        Check whether the given task configuration string is well-formed
-        and it has all the required parameters.
-
-        :param config_string: the string to be checked
-        :type  config_string: string
-        :rtype: :class:`aeneas.validator.ValidatorResult`
-        """
-        self._log("Checking task configuration")
-        self.result = ValidatorResult()
-        if external_name:
+        if is_job:
+            required_parameters = self.JOB_REQUIRED_PARAMETERS
+        elif external_name:
             required_parameters = self.TASK_REQUIRED_PARAMETERS_EXTERNAL_NAME
         else:
             required_parameters = self.TASK_REQUIRED_PARAMETERS
-        self._check_configuration_string(config_string, required_parameters)
+        is_bstring = gf.is_bytes(config_string)
+        if is_bstring:
+            self._log(u"Checking that config_string is well formed")
+            self.check_raw_string(config_string, is_bstring=True)
+            if not self.result.passed:
+                return self.result
+            config_string = gf.safe_unicode(config_string)
+        self._log(u"Checking required parameters")
+        parameters = gf.config_string_to_dict(config_string, self.result)
+        self._check_required_parameters(required_parameters, parameters)
+        self._log([u"Checking config_string: returning %s", self.result.passed])
         return self.result
 
-    def check_container(self, container_path, container_format=None):
+    def check_config_txt(self, contents, is_config_string=False):
+        """
+        Check whether the given TXT config file contents
+        (if is_config_string is False) or
+        TXT config string (if is_config_string is True)
+        is well-formed (if is_bstring is True)
+        and it has all the required parameters.
+
+        :param contents: the TXT config file contents or TXT config string
+        :type  contents: byte string or Unicode string
+        :param is_config_string: if True, contents is a config string
+        :type  is_config_string: bool
+        :rtype: :class:`aeneas.validator.ValidatorResult`
+        """
+        self._log(u"Checking contents TXT config file")
+        self.result = ValidatorResult()
+        is_bstring = gf.is_bytes(contents)
+        if is_bstring:
+            self._log(u"Checking that contents is well formed")
+            self.check_raw_string(contents, is_bstring=True)
+            if not self.result.passed:
+                return self.result
+            contents = gf.safe_unicode(contents)
+        if not is_config_string:
+            self._log(u"Converting file contents to config string")
+            contents = gf.config_txt_to_string(contents)
+        self._log(u"Checking required parameters")
+        required_parameters = self.TXT_REQUIRED_PARAMETERS
+        parameters = gf.config_string_to_dict(contents, self.result)
+        self._check_required_parameters(required_parameters, parameters)
+        self._log([u"Checking contents: returning %s", self.result.passed])
+        return self.result
+
+    def check_config_xml(self, contents):
+        """
+        Check whether the given XML config file contents
+        is well-formed (if is_bstring is True)
+        and it has all the required parameters.
+
+        :param contents: the XML config file contents or XML config string
+        :type  contents: byte string or Unicode string
+        :param is_config_string: if True, contents is a config string
+        :type  is_config_string: bool
+        :rtype: :class:`aeneas.validator.ValidatorResult`
+        """
+        self._log(u"Checking contents XML config file")
+        self.result = ValidatorResult()
+        contents = gf.safe_bytes(contents)
+        self._log(u"Checking that contents is well formed")
+        self.check_raw_string(contents, is_bstring=True)
+        if not self.result.passed:
+            return self.result
+        self._log(u"Checking required parameters for job")
+        job_parameters = gf.config_xml_to_dict(contents, self.result, parse_job=True)
+        self._check_required_parameters(self.XML_JOB_REQUIRED_PARAMETERS, job_parameters)
+        if not self.result.passed:
+            return self.result
+        self._log(u"Checking required parameters for task")
+        tasks_parameters = gf.config_xml_to_dict(contents, self.result, parse_job=False)
+        for parameters in tasks_parameters:
+            self._log([u"Checking required parameters for task: '%s'", parameters])
+            self._check_required_parameters(self.XML_TASK_REQUIRED_PARAMETERS, parameters)
+            if not self.result.passed:
+                return self.result
+        return self.result
+
+    def check_container(self, container_path, container_format=None, config_string=None):
         """
         Check whether the given container is well-formed.
 
         :param container_path: the path of the container to be checked
         :type  container_path: string (path)
         :param container_format: the format of the container
-        :type  container_format: string (from ContainerFormat enumeration)
-        :rtype: :class:`aeneas.validator.ValidatorResult`
-        """
-        self._log(["Checking container '%s'", container_path])
-        self.result = ValidatorResult()
-
-        self._log("Checking container exists")
-        self._check_file_exists(container_path, True)
-        if not self.result.passed:
-            return self.result
-
-        self._log("Checking container has config file")
-        container = Container(container_path, container_format)
-        try:
-            if container.has_config_xml:
-                self._log("Container has XML config file")
-                self._check_container_with_xml_config(
-                    container=container,
-                    config_contents=None
-                )
-            elif container.has_config_txt:
-                self._log("Container has TXT config file")
-                self._check_container_with_txt_config_string(
-                    container=container,
-                    config_string=None
-                )
-            else:
-                self._failed("Container does not have a TXT or XML configuration file.")
-        except IOError:
-            self._failed("Unable to read the contents of the container.")
-        return self.result
-
-    def check_container_from_wizard(
-            self,
-            container_path,
-            config_string,
-            container_format=None
-        ):
-        """
-        Check whether the given container and configuration strings
-        from the wizard are well-formed.
-
-        :param container_path: the path of the container to be checked
-        :type  container_path: string (path)
+        :type  container_format: :class:`aeneas.container.ContainerFormat` enum
         :param config_string: the configuration string generated by the wizard
         :type  config_string: string
-        :param container_format: the format of the container
-        :type  container_format: string (from ContainerFormat enumeration)
         :rtype: :class:`aeneas.validator.ValidatorResult`
         """
-        self._log("Checking container from wizard")
+        self._log([u"Checking container '%s'", container_path])
         self.result = ValidatorResult()
+
+        if not (gf.file_exists(container_path) or gf.directory_exists(container_path)):
+            self._failed(u"Container '%s' not found." % container_path)
+            return self.result
 
         container = Container(container_path, container_format)
-        self._check_container_with_txt_config_string(
-            container=container,
-            config_string=config_string
-        )
+        try:
+            self._log(u"Checking container has config file")
+            if config_string is not None:
+                self._log(u"Container with config string from wizard")
+                self.check_config_txt(config_string, is_config_string=True)
+            elif container.has_config_xml:
+                self._log(u"Container has XML config file")
+                contents = container.read_entry(container.entry_config_xml)
+                if contents is None:
+                    self._failed(u"Unable to read the contents of XML config file.")
+                    return self.result
+                self.check_config_xml(contents)
+            elif container.has_config_txt:
+                self._log(u"Container has TXT config file")
+                contents = container.read_entry(container.entry_config_txt)
+                if contents is None:
+                    self._failed(u"Unable to read the contents of TXT config file.")
+                    return self.result
+                self.check_config_txt(contents, is_config_string=False)
+            else:
+                self._failed(u"Container does not have a TXT or XML configuration file.")
 
-        self._log(["Checking container from wizard: returning %s", self.result.passed])
-        return self.result
-
-    def check_contents_txt_config_file(
-            self,
-            config_contents,
-            convert_to_string=True
-        ):
-        """
-        Check whether the given TXT config contents (or config string)
-        is well formed and contains all the requested parameters.
-
-        :param config_contents:
-        :type  config_contents: string
-        :param convert_to_string: the ``config_contents`` must be converted
-                                  to a config string
-        :type convert_to_string: bool
-        :rtype: :class:`aeneas.validator.ValidatorResult`
-        """
-        self._log("Checking contents TXT config file")
-        self.result = ValidatorResult()
-
-        config_string = config_contents
-        if convert_to_string:
-            self._log("Converting file contents to config string")
-            config_string = gf.config_txt_to_string(config_contents)
-
-        self._log("Checking that string is well encoded")
-        if not self.check_string_well_encoded(config_string):
-            self._failed("The TXT config is not well encoded")
-            return self.result
-
-        self._log("Checking required parameters")
-        parameters = gf.config_string_to_dict(config_string, self.result)
-        self._check_required_parameters(self.TXT_REQUIRED_PARAMETERS, parameters)
-
-        return self.result
-
-    def check_contents_xml_config_file(self, config_contents):
-        """
-        Check whether the given XML config contents
-        is well formed and contains all the requested parameters.
-
-        :param config_contents:
-        :type  config_contents: string
-        :rtype: :class:`aeneas.validator.ValidatorResult`
-        """
-        self._log("Checking contents XML config file")
-        self.result = ValidatorResult()
-
-        self.check_string_well_encoded(config_contents)
-        if not self.result.passed:
-            return self.result
-
-        self._log("Checking required parameters for job")
-        job_parameters = gf.config_xml_to_dict(
-            config_contents,
-            self.result,
-            parse_job=True
-        )
-        self._check_required_parameters(
-            self.XML_JOB_REQUIRED_PARAMETERS,
-            job_parameters
-        )
-        if not self.result.passed:
-            return self.result
-
-        self._log("Checking required parameters for task")
-        tasks_parameters = gf.config_xml_to_dict(
-            config_contents,
-            self.result,
-            parse_job=False
-        )
-        for parameters in tasks_parameters:
-            self._log(["Checking required parameters for task: '%s'", parameters])
-            self._check_required_parameters(
-                self.XML_TASK_REQUIRED_PARAMETERS,
-                parameters
-            )
+            self._log(u"Checking we have a valid job in the container")
             if not self.result.passed:
                 return self.result
+            self._log(u"Analyze the contents of the container")
+            analyzer = AnalyzeContainer(container)
+            if config_string is not None:
+                job = analyzer.analyze(config_string=config_string)
+            else:
+                job = analyzer.analyze()
+            self._check_analyzed_job(job, container)
 
+        except OSError:
+            self._failed(u"Unable to read the contents of the container.")
         return self.result
-
-    def _check_file_exists(self, path, allow_directory=False):
-        """
-        Check whether a file exists at the given path.
-
-        :param path: the path of the file to be checked
-        :type  path: string (path)
-        :param allow_directory: if ``True``, allow directory
-        :type  allow_directory: bool
-        """
-        self._log(["Checking file/directory '%s' exists (%s)", path, allow_directory])
-        exists = gf.file_exists(path)
-        if allow_directory:
-            exists = exists or gf.directory_exists(path)
-        if not exists:
-            self._failed("No file found at path '%s'." % path)
-
-    def _check_configuration_string(self, config_string, required_parameters):
-        """
-        Check config_string from job or task.
-
-        :param config_string: the string to be checked
-        :type  config_string: string
-        :param required_parameters: the list of strings representing
-                                    the required parameter names
-        :type  required_parameters: list of strings
-        :rtype: :class:`aeneas.validator.ValidatorResult`
-        """
-        self._log(["Checking config_string '%s'", config_string])
-
-        self._log("Checking that string is well encoded")
-        self.check_string_well_encoded(config_string)
-        if not self.result.passed:
-            return self.result
-
-        self._log("Checking required parameters")
-        parameters = gf.config_string_to_dict(config_string, self.result)
-        self._check_required_parameters(required_parameters, parameters)
-
-        self._log(["Checking config_string: returning %s", self.result.passed])
-        return self.result
-
-    def _check_container_with_txt_config_string(
-            self,
-            container,
-            config_string=None
-        ):
-        """
-        Check whether the given container with TXT (INI-like)
-        configuration is well-formed.
-
-        :param container: the container
-        :type  container: Container
-        :param config_string: the TXT (INI-like) configuration string
-        :type  config_string: string
-        """
-        self._log("Checking container with TXT config file")
-
-        # if no config string was passed, try to read it from container
-        if config_string is None:
-            self._log("Trying to read config file from container")
-            config_in_container = True
-            config_contents = container.read_entry(container.entry_config_txt)
-            if config_contents is None:
-                self._failed("Unable to read the contents of TXT config file.")
-                return
-            self._log("Config file found in container")
-        else:
-            self._log("Config string passed as parameter")
-            config_contents = config_string
-            config_in_container = False
-
-        # check the txt config contents or string
-        self.check_contents_txt_config_file(
-            config_contents,
-            config_in_container
-        )
-        if not self.result.passed:
-            return
-
-        # analyze the container
-        self._log("Analyze the contents of the container")
-        analyzer = AnalyzeContainer(container)
-        if config_in_container:
-            job = analyzer.analyze()
-        else:
-            job = analyzer.analyze_from_wizard(config_string)
-        self._check_analyzed_job(job, container)
-
-        # return result
-        self._log(["Checking container with TXT config file: returning %s", self.result.passed])
-
-    def _check_container_with_xml_config(
-            self,
-            container,
-            config_contents=None
-        ):
-        """
-        Check whether the given container with XML configuration is well-formed.
-
-        :param container: the container
-        :type  container: Container
-        :param config_contents: the contents of the XML config file
-        :type  config_contents: string
-        """
-        self._log("Checking container with XML config file")
-
-        # if no config contents was passed, try to read them from container
-        if config_contents is None:
-            self._log("Trying to read config file from container")
-            config_contents = container.read_entry(container.entry_config_xml)
-            if config_contents is None:
-                self._failed("Unable to read the contents of XML config file.")
-                return
-
-        # check the txt config contents or string
-        self.check_contents_xml_config_file(config_contents)
-        if not self.result.passed:
-            return
-
-        # analyze the container
-        self._log("Analyze the contents of the container")
-        analyzer = AnalyzeContainer(container)
-        job = analyzer.analyze()
-        self._check_analyzed_job(job, container)
-
-        # return result
-        self._log(["Checking container: returning %s", self.result.passed])
-
-    def _check_analyzed_job(self, job, container):
-        """
-        Check that the job object generated from the given container
-        is well formed, that it has at least one task,
-        and that the text file of each task has the correct encoding.
-        Log messages into result.
-
-        :param job: the Job object generated from container
-        :type  job: Job
-        :param container: the Container object
-        :type  container: Container
-        """
-        self._log("Checking the Job object generated from container")
-
-        # we must have a valid Job object
-        self._log("Checking the Job is not None")
-        if job is None:
-            self._failed("Unable to create a Job from the container.")
-            return
-
-        # we must have at least one Task
-        self._log("Checking the Job has at least one Task")
-        if len(job) == 0:
-            self._failed("Unable to create at least one Task from the container.")
-            return
-
-        # each Task text file must be well encoded
-        self._log("Checking each Task text file is well encoded")
-        for task in job.tasks:
-            self._log(["Checking Task text file '%s'", task.text_file_path])
-            text_file_contents = container.read_entry(task.text_file_path)
-            if (text_file_contents is None) or (len(text_file_contents) == 0):
-                self._failed("Text file '%s' is empty" % task.text_file_path)
-                return
-            self._check_string_encoding(text_file_contents)
-            if not self.result.passed:
-                self._failed("Text file '%s' is not properly encoded" % task.text_file_path)
-                return
-            self._log(["Checking Task text file '%s': passed", task.text_file_path])
-        self._log("Checking each Task text file is well encoded: passed")
-
-
 
     def _failed(self, msg):
         """
         Log a validation failure.
 
         :param msg: the error message
-        :type  msg: string
+        :type  msg: Unicode string
         """
         self._log(msg)
         self.result.passed = False
         self.result.add_error(msg)
-        self._log("Failed")
+        self._log(u"Failed")
 
-    def _check_string_encoding(self, string):
+    def _check_utf8_encoding(self, bstring):
         """
-        Check whether the given string is UTF-8 encoded.
+        Check whether the given sequence of bytes
+        is properly encoded in UTF-8.
+
+        :param bstring: the string to be checked
+        :type  bstring: byte string
+        """
+        if not gf.is_bytes(bstring):
+            self._failed(u"The given string is not a sequence of bytes")
+            return
+        if not gf.is_utf8_encoded(bstring):
+            self._failed(u"The given string is not encoded in UTF-8.")
+
+    def _check_not_empty(self, string):
+        """
+        Check whether the given string has zero length.
 
         :param string: the string to be checked
-        :type  string: string
+        :type  string: byte string or Unicode string
         """
-        if not isinstance(string, str):
-            self._failed("The given string is not an instance of str")
-            return
         if len(string) == 0:
-            self._failed("The given string has zero length")
-            return
-        try:
-            string.decode("utf-8")
-        except UnicodeDecodeError:
-            self._failed("The given string is not UTF-8 encoded.")
+            self._failed(u"The given string has zero length")
 
-    def _check_reserved_characters(self, string):
+    def _check_reserved_characters(self, ustring):
         """
-        Check whether the given string contains reserved characters.
+        Check whether the given Unicode string contains reserved characters.
 
-        :param string: the string to be checked
-        :type  string: string
+        :param ustring: the string to be checked
+        :type  ustring: Unicode string
         """
-        try:
-            for char in gc.CONFIG_RESERVED_CHARACTERS:
-                if char in string:
-                    self._failed("The given string contains the reserved character '%s'." % char)
-                    return
-        except UnicodeError:
-            self._log("Unexpected UnicodeError", Logger.CRITICAL)
-            self._failed("The given string contains non-UTF-8 characters")
-            return
+        forbidden = [c for c in gc.CONFIG_RESERVED_CHARACTERS if c in ustring]
+        if len(forbidden) > 0:
+            self._failed(u"The given string contains the reserved characters '%s'." % u" ".join(forbidden))
 
     def _check_allowed_values(self, parameters):
         """
@@ -675,15 +492,14 @@ class Validator(object):
         :param parameters: the given parameters
         :type  parameters: dict
         """
-        for cav in self.ALLOWED_VALUES:
-            key, allowed_values = cav
-            self._log(["Checking allowed values for parameter '%s'", key])
+        for key, allowed_values in self.ALLOWED_VALUES:
+            self._log([u"Checking allowed values for parameter '%s'", key])
             if key in parameters:
                 value = parameters[key]
-                if not value in allowed_values:
-                    self._failed("Parameter '%s' has value '%s' which is not allowed." % (key, value))
+                if value not in allowed_values:
+                    self._failed(u"Parameter '%s' has value '%s' which is not allowed." % (key, value))
                     return
-        self._log("Passed")
+        self._log(u"Passed")
 
     def _check_implied_parameters(self, parameters):
         """
@@ -696,9 +512,8 @@ class Validator(object):
         :param parameters: the given parameters
         :type  parameters: dict
         """
-        for cip in self.IMPLIED_PARAMETERS:
-            key, values, implied_keys = cip
-            self._log(["Checking implied parameters by '%s'='%s'", key, values])
+        for key, values, implied_keys in self.IMPLIED_PARAMETERS:
+            self._log([u"Checking implied parameters by '%s'='%s'", key, values])
             if (key in parameters) and (parameters[key] in values):
                 found = False
                 for implied_key in implied_keys:
@@ -706,12 +521,12 @@ class Validator(object):
                         found = True
                 if not found:
                     if len(implied_keys) == 1:
-                        msg = "Parameter '%s' is required when '%s'='%s'." % (implied_keys[0], key, parameters[key])
+                        msg = u"Parameter '%s' is required when '%s'='%s'." % (implied_keys[0], key, parameters[key])
                     else:
-                        msg = "At least one of [%s] is required when '%s'='%s'." % (",".join(implied_keys), key, parameters[key])
+                        msg = u"At least one of [%s] is required when '%s'='%s'." % (",".join(implied_keys), key, parameters[key])
                     self._failed(msg)
                     return
-        self._log("Passed")
+        self._log(u"Passed")
 
     def _check_required_parameters(
             self,
@@ -728,28 +543,63 @@ class Validator(object):
         :param parameters: parameters specified by the user
         :type  parameters: dict
         """
-        self._log(["Checking required parameters '%s'", required_parameters])
-        self._log("Checking required parameters")
-
-        self._log("Checking input parameters are not empty")
+        self._log([u"Checking required parameters '%s'", required_parameters])
+        self._log(u"Checking input parameters are not empty")
         if (parameters is None) or (len(parameters) == 0):
-            self._failed("No parameters supplied.")
+            self._failed(u"No parameters supplied.")
             return
-
-        self._log("Checking no required parameter is missing")
+        self._log(u"Checking no required parameter is missing")
         for req_param in required_parameters:
-            if not req_param in parameters:
-                self._failed("Required parameter '%s' not set." % req_param)
+            if req_param not in parameters:
+                self._failed(u"Required parameter '%s' not set." % req_param)
                 return
-
-        self._log("Checking all parameter values are allowed")
+        self._log(u"Checking all parameter values are allowed")
         self._check_allowed_values(parameters)
-
-        self._log("Checking all implied parameters are present")
+        self._log(u"Checking all implied parameters are present")
         self._check_implied_parameters(parameters)
-
         return self.result
 
+    def _check_analyzed_job(self, job, container):
+        """
+        Check that the job object generated from the given container
+        is well formed, that it has at least one task,
+        and that the text file of each task has the correct encoding.
+        Log messages into result.
+
+        :param job: the Job object generated from container
+        :type  job: Job
+        :param container: the Container object
+        :type  container: Container
+        """
+        self._log(u"Checking the Job object generated from container")
+
+        self._log(u"Checking that the Job is not None")
+        if job is None:
+            self._failed(u"Unable to create a Job from the container.")
+            return
+
+        self._log(u"Checking that the Job has at least one Task")
+        if len(job) == 0:
+            self._failed(u"Unable to create at least one Task from the container.")
+            return
+
+        self._log(u"Checking that each Task text file is well formed")
+        for task in job.tasks:
+            self._log([u"Checking Task text file '%s'", task.text_file_path])
+            text_file_bstring = container.read_entry(task.text_file_path)
+            if (text_file_bstring is None) or (len(text_file_bstring) == 0):
+                self._failed(u"Text file '%s' is empty" % task.text_file_path)
+                return
+            self._check_utf8_encoding(text_file_bstring)
+            if not self.result.passed:
+                self._failed(u"Text file '%s' is not encoded in UTF-8" % task.text_file_path)
+                return
+            self._check_not_empty(text_file_bstring)
+            if not self.result.passed:
+                self._failed(u"Text file '%s' is empty" % task.text_file_path)
+                return
+            self._log([u"Checking Task text file '%s': passed", task.text_file_path])
+        self._log(u"Checking each Task text file is well formed: passed")
 
 
 
@@ -758,18 +608,22 @@ class ValidatorResult(object):
     A structure to contain the result of a validation.
     """
 
-    TAG = "ValidatorResult"
+    TAG = u"ValidatorResult"
 
     def __init__(self):
         self.passed = True
         self.warnings = []
         self.errors = []
 
+    def __unicode__(self):
+        msg = [
+            u"Passed: %s" % self.passed,
+            self.pretty_print(warnings=True)
+        ]
+        return u"\n".join(msg)
+
     def __str__(self):
-        accumulator = ""
-        accumulator += "Passed: %s\n" % self.passed
-        accumulator += self.pretty_print(True)
-        return accumulator
+        return gf.safe_str(self.__unicode__())
 
     def pretty_print(self, warnings=False):
         """
@@ -777,18 +631,18 @@ class ValidatorResult(object):
 
         :param warnings: if ``True``, also print warnings.
         :type  warnings: bool
-        :rtype: str
+        :rtype: Unicode string
         """
-        accumulator = ""
+        msg = []
         if (warnings) and (len(self.warnings) > 0):
-            accumulator += "Warnings:\n"
+            msg.append(u"Warnings:")
             for warning in self.warnings:
-                accumulator += "  %s\n" % warning
+                msg.append(u"  %s" % warning)
         if len(self.errors) > 0:
-            accumulator += "Errors:\n"
+            msg.append(u"Errors:")
             for error in self.errors:
-                accumulator += "  %s\n" % error
-        return accumulator
+                msg.append(u"  %s" % error)
+        return u"\n".join(msg)
 
     @property
     def passed(self):

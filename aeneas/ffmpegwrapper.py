@@ -5,7 +5,8 @@
 Wrapper around ``ffmpeg`` to convert audio files.
 """
 
-import os
+from __future__ import absolute_import
+from __future__ import print_function
 import subprocess
 
 from aeneas.logger import Logger
@@ -16,10 +17,10 @@ __author__ = "Alberto Pettarin"
 __copyright__ = """
     Copyright 2012-2013, Alberto Pettarin (www.albertopettarin.it)
     Copyright 2013-2015, ReadBeyond Srl   (www.readbeyond.it)
-    Copyright 2015,      Alberto Pettarin (www.albertopettarin.it)
+    Copyright 2015-2016, Alberto Pettarin (www.albertopettarin.it)
     """
 __license__ = "GNU AGPL v3"
-__version__ = "1.3.3"
+__version__ = "1.4.0"
 __email__ = "aeneas@readbeyond.it"
 __status__ = "Production"
 
@@ -31,13 +32,18 @@ class FFMPEGWrapper(object):
 
         $ ffmpeg -i /path/to/input.mp3 [parameters] /path/to/output.wav
 
-    :param parameters: list of parameters (not counting input and output paths)
-                       to be passed to ``ffmpeg``.
-                       Default: ``FFMPEG_PARAMETERS_DEFAULT``.
+    :param parameters: list of parameters to be passed to ``ffmpeg``,
+                       not including input and output paths
+                       and the corresponding ``-i`` and ``-o`` flags.
+                       Default: ``None``, meaning that
+                       ``FFMPEG_PARAMETERS_DEFAULT`` will be used.
     :type  parameters: list of strings
     :param logger: the logger object
     :type  logger: :class:`aeneas.logger.Logger`
     """
+
+    FFMPEG_SAMPLE_8000 = ["-ar", "8000"]
+    """ Single parameter for ``ffmpeg``: 8000 Hz sampling """
 
     FFMPEG_SAMPLE_16000 = ["-ar", "16000"]
     """ Single parameter for ``ffmpeg``: 16000 Hz sampling """
@@ -57,42 +63,49 @@ class FFMPEGWrapper(object):
     FFMPEG_OVERWRITE = ["-y"]
     """ Single parameter for ``ffmpeg``: force overwriting output file """
 
-    FFMPEG_FORMAT_WAV = ["-f", "wav"]
+    FFMPEG_FORMAT_WAVE = ["-f", "wav"]
     """ Single parameter for ``ffmpeg``: produce output in ``wav`` format
     (must be the second to last argument to ``ffmpeg``,
     just before path of the output file) """
 
     FFMPEG_PARAMETERS_SAMPLE_KEEP = (
-        FFMPEG_MONO + FFMPEG_OVERWRITE + FFMPEG_FORMAT_WAV
+        FFMPEG_MONO + FFMPEG_OVERWRITE + FFMPEG_FORMAT_WAVE
     )
     """ Set of parameters for ``ffmpeg`` without changing the sampling rate """
 
+    FFMPEG_PARAMETERS_SAMPLE_8000 = (
+        FFMPEG_MONO + FFMPEG_SAMPLE_8000 + FFMPEG_OVERWRITE + FFMPEG_FORMAT_WAVE
+    )
+    """ Set of parameters for ``ffmpeg`` with 16000 Hz sampling """
+
     FFMPEG_PARAMETERS_SAMPLE_16000 = (
-        FFMPEG_MONO + FFMPEG_SAMPLE_16000 + FFMPEG_OVERWRITE + FFMPEG_FORMAT_WAV
+        FFMPEG_MONO + FFMPEG_SAMPLE_16000 + FFMPEG_OVERWRITE + FFMPEG_FORMAT_WAVE
     )
     """ Set of parameters for ``ffmpeg`` with 16000 Hz sampling """
 
     FFMPEG_PARAMETERS_SAMPLE_22050 = (
-        FFMPEG_MONO + FFMPEG_SAMPLE_22050 + FFMPEG_OVERWRITE + FFMPEG_FORMAT_WAV
+        FFMPEG_MONO + FFMPEG_SAMPLE_22050 + FFMPEG_OVERWRITE + FFMPEG_FORMAT_WAVE
     )
     """ Set of parameters for ``ffmpeg`` with 22050 Hz sampling """
 
     FFMPEG_PARAMETERS_SAMPLE_44100 = (
-        FFMPEG_MONO + FFMPEG_SAMPLE_44100 + FFMPEG_OVERWRITE + FFMPEG_FORMAT_WAV
+        FFMPEG_MONO + FFMPEG_SAMPLE_44100 + FFMPEG_OVERWRITE + FFMPEG_FORMAT_WAVE
     )
     """ Set of parameters for ``ffmpeg`` with 44100 Hz sampling """
 
     FFMPEG_PARAMETERS_DEFAULT = FFMPEG_PARAMETERS_SAMPLE_22050
     """ Default set of parameters for ``ffmpeg`` """
 
-    TAG = "FFMPEGWrapper"
+    TAG = u"FFMPEGWrapper"
 
-    def __init__(self, parameters=FFMPEG_PARAMETERS_DEFAULT, logger=None):
+    def __init__(self, parameters=None, logger=None):
         self.parameters = parameters
+        if self.parameters is None:
+            self.parameters = self.FFMPEG_PARAMETERS_DEFAULT
         self.logger = logger
         if self.logger is None:
             self.logger = Logger()
-        self._log(["Initialized with parameters '%s'", self.parameters])
+        self._log([u"Initialized with parameters '%s'", self.parameters])
 
     def _log(self, message, severity=Logger.DEBUG):
         """ Log """
@@ -146,47 +159,47 @@ class FFMPEGWrapper(object):
         :param process_length: process these many seconds of the audio file
         :type  process_length: float
 
-        :raise IOError: if ``input_file_path`` does not exist or ``output_file_path`` cannot be written
+        :raise OSError: if ``input_file_path`` does not exist
+                        or ``output_file_path`` cannot be written
         """
         # test if we can read the input file
-        if not gf.file_exists(input_file_path):
-            self._log(["Input file '%s' does not exist", input_file_path], Logger.CRITICAL)
-            raise IOError("Input audio file does not exist")
+        if not gf.file_can_be_read(input_file_path):
+            self._log([u"Input file '%s' cannot be read", input_file_path], Logger.CRITICAL)
+            raise OSError("Input file cannot be read")
 
         # test if we can write the output file
         if not gf.file_can_be_written(output_file_path):
-            self._log(["Output file '%s' cannot be written", output_file_path], Logger.CRITICAL)
-            raise IOError("Output audio file cannot be written")
+            self._log([u"Output file '%s' cannot be written", output_file_path], Logger.CRITICAL)
+            raise OSError("Output file cannot be written")
 
         # call ffmpeg
-        arguments = []
-        arguments += [gc.FFMPEG_PATH]
-        arguments += ["-i", input_file_path]
+        arguments = [gc.FFMPEG_PATH, "-i", input_file_path]
         if head_length is not None:
-            arguments += ["-ss", head_length]
+            arguments.extend(["-ss", head_length])
         if process_length is not None:
-            arguments += ["-t", process_length]
-        arguments += self.parameters
-        arguments += [output_file_path]
-        self._log(["Calling with arguments '%s'", arguments])
+            arguments.extend(["-t", process_length])
+        arguments.extend(self.parameters)
+        arguments.append(output_file_path)
+        self._log([u"Calling with arguments '%s'", arguments])
         proc = subprocess.Popen(
             arguments,
             stdout=subprocess.PIPE,
             stdin=subprocess.PIPE,
-            stderr=subprocess.PIPE)
+            stderr=subprocess.PIPE
+        )
         proc.communicate()
         proc.stdout.close()
         proc.stdin.close()
         proc.stderr.close()
-        self._log("Call completed")
+        self._log(u"Call completed")
 
         # check if the output file exists
         if not gf.file_exists(output_file_path):
-            self._log(["Output file '%s' was not written", output_file_path], Logger.CRITICAL)
-            raise IOError("Output file was not written")
+            self._log([u"Output file '%s' was not written", output_file_path], Logger.CRITICAL)
+            raise OSError("Output file was not written")
 
         # returning the output file path
-        self._log(["Returning output file path '%s'", output_file_path])
+        self._log([u"Returning output file path '%s'", output_file_path])
         return output_file_path
 
 

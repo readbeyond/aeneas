@@ -16,8 +16,8 @@ import aeneas.globalfunctions as gf
 
 class TestTextFile(unittest.TestCase):
 
-    NOT_EXISTING_PATH = gf.get_abs_path("not_existing.txt", __file__)
-    NOT_WRITEABLE_PATH = gf.get_abs_path("x/y/z/not_writeable.txt", __file__)
+    NOT_EXISTING_PATH = gf.absolute_path("not_existing.txt", __file__)
+    NOT_WRITEABLE_PATH = gf.absolute_path("x/y/z/not_writeable.txt", __file__)
     EMPTY_FILE_PATH = "res/inputtext/empty.txt"
     BLANK_FILE_PATH = "res/inputtext/blank.txt"
     PLAIN_FILE_PATH = "res/inputtext/sonnet_plain.txt"
@@ -27,15 +27,15 @@ class TestTextFile(unittest.TestCase):
         gc.PPN_JOB_IS_TEXT_UNPARSED_ID_SORT : IDSortingAlgorithm.UNSORTED,
     }
     ID_REGEX_PARAMETERS = {
-        gc.PPN_TASK_OS_FILE_ID_REGEX : "word%06d"
+        gc.PPN_TASK_OS_FILE_ID_REGEX : u"word%06d"
     }
     ID_REGEX_PARAMETERS_BAD = {
-        gc.PPN_TASK_OS_FILE_ID_REGEX : "word"
+        gc.PPN_TASK_OS_FILE_ID_REGEX : u"word"
     }
-    TRANSLITERATION_MAP_FILE_PATH = gf.get_abs_path("res/transliteration/transliteration.map", __file__)
+    TRANSLITERATION_MAP_FILE_PATH = gf.absolute_path("res/transliteration/transliteration.map", __file__)
 
     def load(self, input_file_path=PLAIN_FILE_PATH, fmt=TextFileFormat.PLAIN, expected_length=15, parameters=None):
-        tfl = TextFile(gf.get_abs_path(input_file_path, __file__), fmt, parameters)
+        tfl = TextFile(gf.absolute_path(input_file_path, __file__), fmt, parameters)
         self.assertEqual(len(tfl), expected_length)
         return tfl
 
@@ -67,7 +67,7 @@ class TestTextFile(unittest.TestCase):
 
     def test_tf_identifier_str(self):
         with self.assertRaises(TypeError):
-            tf = TextFragment(identifier="foo")
+            tf = TextFragment(identifier=b"foo")
 
     def test_tf_identifier_unicode(self):
         tf = TextFragment(identifier=u"foo")
@@ -87,11 +87,11 @@ class TestTextFile(unittest.TestCase):
 
     def test_tf_lines_invalid_str(self):
         with self.assertRaises(TypeError):
-            tf = TextFragment(lines=["foo"])
+            tf = TextFragment(lines=[b"foo"])
 
     def test_tf_lines_invalid_str_mixed(self):
         with self.assertRaises(TypeError):
-            tf = TextFragment(lines=[u"foo", "bar", u"baz"])
+            tf = TextFragment(lines=[u"foo", b"bar", u"baz"])
 
     def test_tf_lines_unicode(self):
         tf = TextFragment(lines=[u"foo"])
@@ -114,7 +114,7 @@ class TestTextFile(unittest.TestCase):
         self.assertEqual(len(tfl), 0)
 
     def test_file_path_not_existing(self):
-        with self.assertRaises(IOError):
+        with self.assertRaises(OSError):
             tfl = TextFile(file_path=self.NOT_EXISTING_PATH)
 
     def test_invalid_format(self):
@@ -134,7 +134,7 @@ class TestTextFile(unittest.TestCase):
         tfl = TextFile()
         tfl.fragments = []
         self.assertEqual(len(tfl), 0)
-    
+
     def test_invalid_fragment(self):
         tfl = TextFile()
         with self.assertRaises(TypeError):
@@ -170,7 +170,7 @@ class TestTextFile(unittest.TestCase):
             self.load(path, TextFileFormat.SUBTITLES, 15, self.ID_REGEX_PARAMETERS)
 
     def test_read_subtitles_id_regex_bad(self):
-        with self.assertRaises(TypeError):
+        with self.assertRaises(ValueError):
             for path in [
                     "res/inputtext/sonnet_subtitles_with_end_newline.txt",
                     "res/inputtext/sonnet_subtitles_no_end_newline.txt",
@@ -186,7 +186,7 @@ class TestTextFile(unittest.TestCase):
         self.load("res/inputtext/sonnet_plain.txt", TextFileFormat.PLAIN, 15, self.ID_REGEX_PARAMETERS)
 
     def test_read_plain_id_regex_bad(self):
-        with self.assertRaises(TypeError):
+        with self.assertRaises(ValueError):
             self.load("res/inputtext/sonnet_plain.txt", TextFileFormat.PLAIN, 15, self.ID_REGEX_PARAMETERS_BAD)
 
     def test_read_plain_utf8(self):
@@ -196,7 +196,7 @@ class TestTextFile(unittest.TestCase):
         self.load("res/inputtext/sonnet_plain_utf8.txt", TextFileFormat.PLAIN, 15, self.ID_REGEX_PARAMETERS)
 
     def test_read_plain_utf8_id_regex_bad(self):
-        with self.assertRaises(TypeError):
+        with self.assertRaises(ValueError):
             self.load("res/inputtext/sonnet_plain_utf8.txt", TextFileFormat.PLAIN, 15, self.ID_REGEX_PARAMETERS_BAD)
 
     def test_read_parsed(self):
@@ -312,11 +312,11 @@ class TestTextFile(unittest.TestCase):
     def test_read_from_list_with_ids(self):
         tfl = TextFile()
         text_list = [
-            [u"a1", u"fragment 1"],
-            [u"b2", u"fragment 2"],
-            [u"c3", u"fragment 3"],
-            [u"d4", u"fragment 4"],
-            [u"e5", u"fragment 5"]
+            (u"a1", u"fragment 1"),
+            (u"b2", u"fragment 2"),
+            (u"c3", u"fragment 3"),
+            (u"d4", u"fragment 4"),
+            (u"e5", u"fragment 5")
         ]
         tfl.read_from_list_with_ids(text_list)
         self.assertEqual(len(tfl), 5)
@@ -419,7 +419,7 @@ class TestTextFile(unittest.TestCase):
         self.filter_transliterate([u"worm"], [u"worm"])
 
     def test_filter_transliterate_error(self):
-        with self.assertRaises(IOError):
+        with self.assertRaises(OSError):
             self.filter_transliterate([u"worm"], [u"worm"], self.NOT_EXISTING_PATH)
 
     def test_filter_transliterate_replace_empty(self):
@@ -447,12 +447,12 @@ class TestTextFile(unittest.TestCase):
         self.filter_transliterate([u"TUTTE"], [u"wwwwE"])
 
     def test_filter_transliterate_replace_codepoint_length(self):
-        self.filter_transliterate([u"x" + unichr(0x8) + u"z"], [u"xaz"])
-        self.filter_transliterate([u"x" + unichr(0x88) + u"z"], [u"xaz"])
-        self.filter_transliterate([u"x" + unichr(0x888) + u"z"], [u"xaz"])
-        self.filter_transliterate([u"x" + unichr(0x8888) + u"z"], [u"xaz"])
-        self.filter_transliterate([u"x" + unichr(0x88888) + u"z"], [u"xaz"])
-        self.filter_transliterate([u"x" + unichr(0x108888) + u"z"], [u"xaz"])
+        self.filter_transliterate([u"x" + u"\u0008" + u"z"], [u"xaz"])
+        self.filter_transliterate([u"x" + u"\u0088" + u"z"], [u"xaz"])
+        self.filter_transliterate([u"x" + u"\u0888" + u"z"], [u"xaz"])
+        self.filter_transliterate([u"x" + u"\u8888" + u"z"], [u"xaz"])
+        self.filter_transliterate([u"x" + u"\U00088888" + u"z"], [u"xaz"])
+        self.filter_transliterate([u"x" + u"\U00108888" + u"z"], [u"xaz"])
 
 
 

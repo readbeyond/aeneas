@@ -4,7 +4,7 @@
 """
 Check whether the setup of aeneas was successful.
 
-Requires the audio file aeneas/tools/res/audio.mp3
+Requires the audio file ``aeneas/tools/res/audio.mp3``.
 
 Running this script makes sense only
 if you git-cloned the original GitHub repository
@@ -12,71 +12,92 @@ and/or if you are interested in contributing to the
 development of aeneas.
 """
 
+from __future__ import absolute_import
+from __future__ import print_function
 import os
+import sys
 import tempfile
 
 __author__ = "Alberto Pettarin"
 __copyright__ = """
     Copyright 2012-2013, Alberto Pettarin (www.albertopettarin.it)
     Copyright 2013-2015, ReadBeyond Srl   (www.readbeyond.it)
-    Copyright 2015,      Alberto Pettarin (www.albertopettarin.it)
+    Copyright 2015-2016, Alberto Pettarin (www.albertopettarin.it)
     """
 __license__ = "GNU AGPL 3"
-__version__ = "1.3.3"
+__version__ = "1.4.0"
 __email__ = "aeneas@readbeyond.it"
 __status__ = "Production"
 
 SETUP_COMMAND = "'python setup.py build_ext --inplace'"
 
-def on_error(msg):
-    print "[ERRO] %s" % msg
+def print_error(msg):
+    print(u"[ERRO] %s" % (msg))
 
-def on_info(msg):
-    print "[INFO] %s" % msg
+def print_info(msg):
+    print(u"[INFO] %s" % (msg))
 
-def on_warning(msg):
-    print "[WARN] %s" % msg
+def print_warning(msg):
+    print(u"[WARN] %s" % (msg))
 
 def get_abs_path(rel_path):
     file_dir = os.path.dirname(__file__)
     return os.path.join(file_dir, rel_path)
 
 def step1():
-    on_info("Test 1/7 (import)...")
-    try:
-        on_info("  Trying to import package aeneas...")
-        import aeneas
-        on_info("  Trying to import package aeneas... succeeded.")
-        return True
-    except ImportError:
-        on_error("  Unable to import package aeneas.")
-        on_error("  Check that you have installed the following Python (2.7.x) packages:")
-        on_error("  1. BeautifulSoup")
-        on_error("  2. lxml")
-        on_error("  3. numpy")
-    except:
-        pass
-    return False
+    print_info(u"Test 1/8 (shell encoding)")
+    print_info(u"  Checking whether your shell has UTF-8 support...")
+    is_utf8 = True
+    if sys.stdin.encoding not in ["UTF-8", "UTF8"]:
+        print_warning(u"  The default input encoding of your shell is not UTF-8.")
+        is_utf8 = False
+    if sys.stdout.encoding not in ["UTF-8", "UTF8"]:
+        print_warning(u"  The default output encoding of your shell is not UTF-8.")
+        is_utf8 = False
+    if is_utf8:
+        print_info(u"  Checking whether your shell has UTF-8 support... succeeded.")
+    else:
+        print_warning(u"  If you plan to use aeneas on the command line,")
+        print_warning(u"  you might want to set/export 'PYTHONIOENCODING=UTF-8' in your shell.")
+        return False
+    return True
 
 def step2():
-    on_info("Test 2/7 (ffprobe)...")
+    print_info(u"Test 2/8 (import)")
     try:
-        on_info("  Trying to call ffprobe...")
+        print_info(u"  Trying to import package aeneas...")
+        import aeneas
+        print_info(u"  Trying to import package aeneas... succeeded.")
+        return True
+    except ImportError:
+        print_error(u"  Unable to import package aeneas.")
+        print_error(u"  Check that you have installed the following Python packages:")
+        print_error(u"  1. BeautifulSoup4")
+        print_error(u"  2. lxml")
+        print_error(u"  3. numpy")
+    except Exception as e:
+        print_error(e)
+    return False
+
+def step3():
+    print_info(u"Test 3/8 (ffprobe)")
+    try:
+        print_info(u"  Trying to call ffprobe...")
         from aeneas.ffprobewrapper import FFPROBEWrapper
         file_path = get_abs_path("aeneas/tools/res/audio.mp3")
         prober = FFPROBEWrapper()
         properties = prober.read_properties(file_path)
-        on_info("  Trying to call ffprobe... succeeded.")
+        print_info(u"  Trying to call ffprobe... succeeded.")
         return True
     except:
-        on_error("  Unable to call ffprobe.")
-        on_error("  Please make sure you have ffprobe installed correctly and that it is in your $PATH.")
+        print_error(u"  Unable to call ffprobe.")
+        print_error(u"  Please make sure you have ffprobe installed correctly and that it is in your $PATH.")
     return False
 
-def step3():
-    on_info("Test 3/7 (ffmpeg)...")
+def step4():
+    print_info(u"Test 4/8 (ffmpeg)")
     try:
-        on_info("  Trying to call ffmpeg...")
+        print_info(u"  Trying to call ffmpeg...")
         from aeneas.ffmpegwrapper import FFMPEGWrapper
         import aeneas.globalfunctions as gf
         input_file_path = get_abs_path("aeneas/tools/res/audio.mp3")
@@ -85,20 +106,20 @@ def step3():
         result = converter.convert(input_file_path, output_file_path)
         gf.delete_file(handler, output_file_path)
         if result:
-            on_info("  Trying to call ffmpeg... succeeded.")
+            print_info(u"  Trying to call ffmpeg... succeeded.")
             return True
         else:
-            on_error("  Unable to call ffmpeg.")
-            on_error("  Please make sure you have ffmpeg installed correctly and that it is in your $PATH.")
+            print_error(u"  Unable to call ffmpeg.")
+            print_error(u"  Please make sure you have ffmpeg installed correctly and that it is in your $PATH.")
     except:
-        on_error("  Unable to call ffmpeg.")
-        on_error("  Please make sure you have ffmpeg installed correctly and that it is in your $PATH.")
+        print_error(u"  Unable to call ffmpeg.")
+        print_error(u"  Please make sure you have ffmpeg installed correctly and that it is in your $PATH.")
     return False
 
-def step4():
-    on_info("Test 4/7 (espeak)...")
+def step5():
+    print_info(u"Test 5/8 (espeak)")
     try:
-        on_info("  Trying to call espeak...")
+        print_info(u"  Trying to call espeak...")
         from aeneas.espeakwrapper import ESPEAKWrapper
         from aeneas.language import Language
         import aeneas.globalfunctions as gf
@@ -114,80 +135,78 @@ def step4():
         )
         gf.delete_file(handler, output_file_path)
         if result:
-            on_info("  Trying to call espeak... succeeded.")
+            print_info(u"  Trying to call espeak... succeeded.")
             return True
         else:
-            on_error("  Unable to call espeak.")
-            on_error("  Please make sure you have espeak installed correctly and that it is in your $PATH.")
+            print_error(u"  Unable to call espeak.")
+            print_error(u"  Please make sure you have espeak installed correctly and that it is in your $PATH.")
     except:
-        on_error("  Unable to call espeak.")
-        on_error("  Please make sure you have espeak installed correctly and that it is in your $PATH.")
+        print_error(u"  Unable to call espeak.")
+        print_error(u"  Please make sure you have espeak installed correctly and that it is in your $PATH.")
     return False
 
 def stepC1():
-    on_info("Test 5/7 (cdtw)...")
+    print_info(u"Test 6/8 (cdtw)")
     try:
         import aeneas.cdtw
-        on_info("  Python C Extension cdtw correctly loaded")
+        print_info(u"  Python C Extension cdtw correctly loaded")
         return True
     except:
-        on_warning("  Unable to load Python C Extension cdtw")
-        on_warning("  You can still run aeneas, but it will much slower")
-        on_warning("  Try running %s to compile the cdtw module" % SETUP_COMMAND)
+        print_warning(u"  Unable to load Python C Extension cdtw")
+        print_warning(u"  You can still run aeneas, but it will much slower")
+        print_warning(u"  Try running %s to compile the cdtw module" % SETUP_COMMAND)
     return False
 
 def stepC2():
-    on_info("Test 6/7 (cmfcc)...")
+    print_info(u"Test 7/8 (cmfcc)")
     try:
         import aeneas.cmfcc
-        on_info("  Python C Extension cmfcc correctly loaded")
+        print_info(u"  Python C Extension cmfcc correctly loaded")
         return True
     except:
-        on_warning("  Unable to load Python C Extension cmfcc")
-        on_warning("  You can still run aeneas, but it will be a bit slower")
-        on_warning("  Try running %s to compile the cmfcc module" % SETUP_COMMAND)
+        print_warning(u"  Unable to load Python C Extension cmfcc")
+        print_warning(u"  You can still run aeneas, but it will be a bit slower")
+        print_warning(u"  Try running %s to compile the cmfcc module" % SETUP_COMMAND)
     return False
 
 def stepC3():
-    on_info("Test 7/7 (cew)...")
+    print_info(u"Test 8/8 (cew)")
     if not ((os.name == "posix") and (os.uname()[0] == "Linux")):
-        on_info("  Python C Extension cew is not available for your OS")
-        on_info("  You can still run aeneas, but it will be a bit slower than Linux")
-        return True 
+        print_info(u"  Python C Extension cew is not available for your OS")
+        print_info(u"  You can still run aeneas, but it will be a bit slower (than Linux)")
+        return True
     try:
         import aeneas.cew
-        on_info("  Python C Extension cew correctly loaded")
+        print_info(u"  Python C Extension cew correctly loaded")
         return True
     except:
-        on_warning("  Unable to load Python C Extension cew")
-        on_warning("  You can still run aeneas, but it will be a bit slower")
-        on_warning("  Try running %s to compile the cew module" % SETUP_COMMAND)
+        print_warning(u"  Unable to load Python C Extension cew")
+        print_warning(u"  You can still run aeneas, but it will be a bit slower")
+        print_warning(u"  Try running %s to compile the cew module" % SETUP_COMMAND)
     return False
 
 def main():
-    if not step1():
-        return
-
+    step1()
     if not step2():
-        return
-
+        sys.exit(1)
     if not step3():
-        return
-
+        sys.exit(1)
     if not step4():
-        return
-
+        sys.exit(1)
+    if not step5():
+        sys.exit(1)
     has_cdtw = stepC1()
     has_cmfcc = stepC2()
     has_cew = stepC3()
-
     if has_cdtw and has_cmfcc and has_cew:
-        on_info("Congratulations, all dependencies are met and core C extensions are available.")
+        print_info(u"Congratulations, all dependencies are met and core C extensions are available.")
+        print_info(u"Enjoy running aeneas!")
+        sys.exit(0)
     else:
-        on_warning("All dependencies are met, but at least one core C extension has not been compiled.")
-        on_warning("Try running %s to compile the C extensions." % SETUP_COMMAND)
-
-    on_info("Enjoy running aeneas!")
+        print_warning(u"All dependencies are met, but at least one core C extension has not been compiled.")
+        print_warning(u"Try running %s to compile the C extensions." % SETUP_COMMAND)
+        print_info(u"Enjoy running aeneas!")
+        sys.exit(2)
 
 
 

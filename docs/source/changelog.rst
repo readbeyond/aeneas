@@ -1,6 +1,33 @@
 Changelog
 =========
 
+v1.4.0 (2016-01-15)
+-------------------
+
+#. Now running on both Python 2.7.x and Python 3.4.x or later, including C extensions
+#. For XML-based sync map formats, now using ``UTF-8`` encoding instead of ``ASCII``
+#. Unified ``aeneas.tools.*`` structure, with better help messages and exit codes
+#. All ``aeneas.tools.*`` can be run interactively or called from Python code by passing a list of arguments
+#. ``aeneas.tools.convert_syncmap`` has slightly different option names
+#. ``aeneas.tools.read_text`` has a different order of arguments and different option names
+#. ``aeneas.tools.synthesize_text`` has a different order of arguments and different option names
+#. ``aeneas.tools.run_sd`` has a different order of arguments and different option names
+#. Added ``bin/`` scripts
+#. Added a flag to disable checking a language code string against listed (supported) ones, allowing for testing with custom espeak voices
+#. Ported the unit test launcher ``run_all_unit_tests.py`` in Python, with more options than ``unittest discover``
+#. Added unit test ``aeneas.tests.test_idsortingalgorithm``
+#. Added unit tests for ``aeneas.tools.*`` (``--tool-tests``)
+#. Added unit tests for ``executejob.py`` and ``executetask.py`` (``--long-tests``)
+#. Added unit tests for ``downloader.py`` and ``aeneas.tools.download`` (``--net-tests``)
+#. Better and more unit tests
+#. Changed all ``IOError`` to ``OSError``, per Python 3 recommendation
+#. Changed ``parameters=None`` default value in the constructor of ``FFMPEGWrapper``
+#. Renamed ``AudioFileMonoWAV`` to ``AudioFileMonoWAVE``
+#. Renamed ``best_audio`` parameter to ``largest_audio`` in ``downloader.py`` and in ``aeneas.tools.execute_task`` and ``aeneas.tools.download``
+#. Renamed ``get_rel_path`` (resp., ``get_abs_path``) into ``relative_path`` (resp., ``absolute_path``) in ``aeneas.globalfunctions``
+#. Fixed a potential bug in ``relative_path``: now getting the cwd path using ``os.getcwd()``
+#. Fixed a bug in ``cew.c`` triggered when passing espeak voices with variants (e.g., ``en-gb``)
+
 v1.3.3 (2015-12-20)
 -------------------
 

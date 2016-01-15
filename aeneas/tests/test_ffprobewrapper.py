@@ -42,23 +42,23 @@ class TestFFPROBEWrapper(unittest.TestCase):
     def load(self, input_file_path):
         prober = FFPROBEWrapper()
         return prober.read_properties(
-            gf.get_abs_path(input_file_path, __file__)
+            gf.absolute_path(input_file_path, __file__)
         )
 
     def test_mp3_properties(self):
         properties = self.load("res/audioformats/p001.mp3")
-        self.assertNotEqual(properties['bit_rate'], None)
-        self.assertNotEqual(properties['channels'], None)
-        self.assertNotEqual(properties['codec_name'], None)
-        self.assertNotEqual(properties['duration'], None)
-        self.assertNotEqual(properties['sample_rate'], None)
+        self.assertIsNotNone(properties["bit_rate"])
+        self.assertIsNotNone(properties["channels"])
+        self.assertIsNotNone(properties["codec_name"])
+        self.assertIsNotNone(properties["duration"])
+        self.assertIsNotNone(properties["sample_rate"])
 
     def test_path_none(self):
         with self.assertRaises(TypeError):
             self.load(None)
 
     def test_path_not_existing(self):
-        with self.assertRaises(IOError):
+        with self.assertRaises(OSError):
             self.load(self.NOT_EXISTING_PATH)
 
     def test_file_empty(self):
@@ -68,7 +68,7 @@ class TestFFPROBEWrapper(unittest.TestCase):
     def test_formats(self):
         for f in self.FILES:
             properties = self.load(f["path"])
-            self.assertNotEqual(properties['duration'], None)
+            self.assertIsNotNone(properties["duration"])
 
 if __name__ == '__main__':
     unittest.main()

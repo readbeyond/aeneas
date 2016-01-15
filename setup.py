@@ -6,25 +6,31 @@ Set aeneas package up
 """
 
 from setuptools import setup, Extension
+import os
+import sys
 
 __author__ = "Alberto Pettarin"
 __copyright__ = """
     Copyright 2012-2013, Alberto Pettarin (www.albertopettarin.it)
     Copyright 2013-2015, ReadBeyond Srl   (www.readbeyond.it)
-    Copyright 2015,      Alberto Pettarin (www.albertopettarin.it)
+    Copyright 2015-2016, Alberto Pettarin (www.albertopettarin.it)
     """
 __license__ = "GNU AGPL 3"
-__version__ = "1.3.3"
+__version__ = "1.4.0"
 __email__ = "aeneas@readbeyond.it"
 __status__ = "Production"
 
-EXTENSIONS = []
-INCLUDE_DIRS = []
-#try:
-from numpy import get_include
-from numpy.distutils import misc_util
-import os
+try:
+    from numpy import get_include
+    from numpy.distutils import misc_util
+except ImportError:
+    print("[ERRO] You must install numpy before installing aeneas")
+    print("[INFO] Try the following command:")
+    print("[INFO] $ sudo pip install numpy")
+    sys.exit(1)
+
 INCLUDE_DIRS = [misc_util.get_numpy_include_dirs()]
+
 EXTENSION_CDTW = Extension("aeneas.cdtw", ["aeneas/cdtw.c"], include_dirs=[get_include()])
 EXTENSION_CEW = Extension("aeneas.cew", ["aeneas/cew.c"], libraries=["espeak"])
 EXTENSION_CMFCC = Extension("aeneas.cmfcc", ["aeneas/cmfcc.c"], include_dirs=[get_include()])
@@ -32,23 +38,32 @@ EXTENSIONS = [EXTENSION_CDTW, EXTENSION_CMFCC]
 if (os.name == "posix") and (os.uname()[0] == "Linux"):
     # cew is available only for Linux at the moment
     EXTENSIONS.append(EXTENSION_CEW)
-#except:
-#    pass
 
 setup(
     name="aeneas",
     packages=["aeneas", "aeneas.tools"],
     package_data={"aeneas": ["res/*", "speak_lib.h"], "aeneas.tools": ["res/*"]},
-    version="1.3.3.0",
+    version="1.4.0.0",
     description="aeneas is a Python library and a set of tools to automagically synchronize audio and text",
     author="Alberto Pettarin",
     author_email="alberto@albertopettarin.it",
     url="https://github.com/readbeyond/aeneas",
     license="GNU Affero General Public License v3 (AGPL v3)",
     long_description=open("README.rst", "r").read(),
-    setup_requires=["numpy>=1.9"],
-    install_requires=["BeautifulSoup>=3.0", "lxml>=3.0", "numpy>=1.9"],
+    install_requires=[
+        "BeautifulSoup4>=4.4",
+        "lxml>=3.0",
+        "numpy>=1.9"
+    ],
     extras_require={"pafy": ["pafy>=0.3"]},
+    scripts=[
+        "bin/aeneas_convert_syncmap",
+        "bin/aeneas_download",
+        "bin/aeneas_execute_job",
+        "bin/aeneas_execute_task",
+        "bin/aeneas_synthesize_text",
+        "bin/aeneas_validate",
+    ],
     keywords=[
         "CSV",
         "DTW",
@@ -96,6 +111,9 @@ setup(
         "Programming Language :: Python",
         "Programming Language :: Python :: 2",
         "Programming Language :: Python :: 2.7",
+        "Programming Language :: Python :: 3",
+        "Programming Language :: Python :: 3.4",
+        "Programming Language :: Python :: 3.5",
         "Topic :: Education",
         "Topic :: Multimedia",
         "Topic :: Multimedia :: Sound/Audio",

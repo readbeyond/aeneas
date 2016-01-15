@@ -1,7 +1,6 @@
 #!/usr/bin/env python
 # coding=utf-8
 
-import tempfile
 import unittest
 
 from aeneas.language import Language
@@ -10,7 +9,7 @@ import aeneas.globalfunctions as gf
 class TestCEW(unittest.TestCase):
 
     def test_cew_synthesize_single(self):
-        handler, output_file_path = tempfile.mkstemp(suffix=".wav")
+        handler, output_file_path = gf.tmp_file(suffix=".wav")
         try:
             import aeneas.cew
             sr, begin, end = aeneas.cew.cew_synthesize_single(
@@ -26,7 +25,7 @@ class TestCEW(unittest.TestCase):
         gf.delete_file(handler, output_file_path)
 
     def test_cew_synthesize_multiple(self):
-        handler, output_file_path = tempfile.mkstemp(suffix=".wav")
+        handler, output_file_path = gf.tmp_file(suffix=".wav")
         try:
             c_quit_after = 0.0
             c_backwards = 0

@@ -6,10 +6,12 @@
 to automagically synchronize audio and text.
 """
 
+from __future__ import absolute_import
+from __future__ import print_function
 from aeneas.adjustboundaryalgorithm import AdjustBoundaryAlgorithm
 from aeneas.analyzecontainer import AnalyzeContainer
 from aeneas.audiofile import AudioFile
-from aeneas.audiofile import AudioFileMonoWAV
+from aeneas.audiofile import AudioFileMonoWAVE
 from aeneas.audiofile import AudioFileUnsupportedFormatError
 from aeneas.container import Container
 from aeneas.container import ContainerFormat
@@ -53,10 +55,10 @@ __author__ = "Alberto Pettarin"
 __copyright__ = """
     Copyright 2012-2013, Alberto Pettarin (www.albertopettarin.it)
     Copyright 2013-2015, ReadBeyond Srl   (www.readbeyond.it)
-    Copyright 2015,      Alberto Pettarin (www.albertopettarin.it)
+    Copyright 2015-2016, Alberto Pettarin (www.albertopettarin.it)
     """
 __license__ = "GNU AGPL v3"
-__version__ = "1.3.3"
+__version__ = "1.4.0"
 __email__ = "aeneas@readbeyond.it"
 __status__ = "Production"
 

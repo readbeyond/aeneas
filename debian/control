@@ -2,12 +2,12 @@ Source: aeneas
 Section: python
 X-Python-Version: >= 2.7
 Priority: optional
-Maintainer: Alberto Pettarin <aeneas@readbeyond.it>
+Maintainer: Alberto Pettarin <alberto@readbeyond.it>
 Build-Depends: debhelper (>= 9.0.0),
                dh-python,
                python-all-dev,
                python-setuptools,
-               python-numpy, python-lxml, python-beautifulsoup,
+               python-numpy, python-lxml, python-bs4,
                libasound2-dev, libsndfile1-dev, libespeak-dev
 Standards-Version: 3.9.5
 Homepage: https://github.com/readbeyond/aeneas

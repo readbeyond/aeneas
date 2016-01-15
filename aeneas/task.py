@@ -7,8 +7,9 @@ an audio file and a list of text fragments
 to be synchronized.
 """
 
+from __future__ import absolute_import
+from __future__ import print_function
 import os
-import uuid
 
 from aeneas.audiofile import AudioFile
 from aeneas.logger import Logger
@@ -20,10 +21,10 @@ __author__ = "Alberto Pettarin"
 __copyright__ = """
     Copyright 2012-2013, Alberto Pettarin (www.albertopettarin.it)
     Copyright 2013-2015, ReadBeyond Srl   (www.readbeyond.it)
-    Copyright 2015,      Alberto Pettarin (www.albertopettarin.it)
+    Copyright 2015-2016, Alberto Pettarin (www.albertopettarin.it)
     """
 __license__ = "GNU AGPL v3"
-__version__ = "1.3.3"
+__version__ = "1.4.0"
 __email__ = "aeneas@readbeyond.it"
 __status__ = "Production"
 
@@ -35,17 +36,20 @@ class Task(object):
 
     :param config_string: the task configuration string
     :type  config_string: string
+    :param logger: the logger object
+    :type  logger: :class:`aeneas.logger.Logger`
 
-    :raises TypeError: if ``config_string`` is not ``None`` and not an instance of ``str`` or ``unicode``
+    :raises TypeError: if ``config_string`` is not ``None`` and
+                       it is not a Unicode string
     """
 
-    TAG = "Task"
+    TAG = u"Task"
 
     def __init__(self, config_string=None, logger=None):
         self.logger = logger
         if self.logger is None:
             self.logger = Logger()
-        self.identifier = str(uuid.uuid4()).lower()
+        self.identifier = gf.uuid_string()
         self.configuration = None
         self.audio_file_path = None # relative to input container root
         self.audio_file_path_absolute = None # concrete path, file will be read from this!
@@ -63,17 +67,21 @@ class Task(object):
         """ Log """
         self.logger.log(message, severity, self.TAG)
 
+    def __unicode__(self):
+        msg = [
+            u"%s: '%s'" % (gc.RPN_TASK_IDENTIFIER, self.identifier),
+            u"Configuration:\n%s" % self.configuration.__unicode__(),
+            u"Audio file path: %s" % self.audio_file_path,
+            u"Audio file path (absolute): %s" % self.audio_file_path_absolute,
+            u"Text file path: %s" % self.text_file_path,
+            u"Text file path (absolute): %s" % self.text_file_path_absolute,
+            u"Sync map file path: %s" % self.sync_map_file_path,
+            u"Sync map file path (absolute): %s" % self.sync_map_file_path_absolute
+        ]
+        return u"\n".join(msg)
+
     def __str__(self):
-        accumulator = ""
-        accumulator += "%s: '%s'\n" % (gc.RPN_TASK_IDENTIFIER, self.identifier)
-        accumulator += "Configuration:\n%s\n" % str(self.configuration)
-        accumulator += "Audio file path: %s\n" % self.audio_file_path
-        accumulator += "Audio file path (absolute): %s\n" % self.audio_file_path_absolute
-        accumulator += "Text file path: %s\n" % self.text_file_path
-        accumulator += "Text file path (absolute): %s\n" % self.text_file_path_absolute
-        accumulator += "Sync map file path: %s\n" % self.sync_map_file_path
-        accumulator += "Sync map file path (absolute): %s\n" % self.sync_map_file_path_absolute
-        return accumulator
+        return gf.safe_str(self.__unicode__())
 
     @property
     def identifier(self):
@@ -147,41 +155,39 @@ class Task(object):
         :rtype: string (path)
         """
         if self.sync_map is None:
-            self._log("sync_map is None", Logger.CRITICAL)
+            self._log(u"sync_map is None", Logger.CRITICAL)
             raise TypeError("sync_map object has not been set")
 
-        if (
-                (container_root_path is not None) and
-                (self.sync_map_file_path is None)
-            ):
-            self._log("The (internal) path of the sync map has been set", Logger.CRITICAL)
+        if (container_root_path is not None) and (self.sync_map_file_path is None):
+            self._log(u"The (internal) path of the sync map has been set", Logger.CRITICAL)
             raise TypeError("The (internal) path of the sync map has been set")
 
-        self._log(["container_root_path is %s", container_root_path])
-        self._log(["self.sync_map_file_path is %s", self.sync_map_file_path])
-        self._log(["self.sync_map_file_path_absolute is %s", self.sync_map_file_path_absolute])
+        self._log([u"container_root_path is %s", container_root_path])
+        self._log([u"self.sync_map_file_path is %s", self.sync_map_file_path])
+        self._log([u"self.sync_map_file_path_absolute is %s", self.sync_map_file_path_absolute])
 
         if (container_root_path is not None) and (self.sync_map_file_path is not None):
             path = os.path.join(container_root_path, self.sync_map_file_path)
         elif self.sync_map_file_path_absolute:
             path = self.sync_map_file_path_absolute
         gf.ensure_parent_directory(path)
-        self._log(["Output sync map to %s", path])
+        self._log([u"Output sync map to %s", path])
 
         sync_map_format = self.configuration.os_file_format
         page_ref = self.configuration.os_file_smil_page_ref
         audio_ref = self.configuration.os_file_smil_audio_ref
 
-        self._log(["sync_map_format is %s", sync_map_format])
-        self._log(["page_ref is %s", page_ref])
-        self._log(["audio_ref is %s", audio_ref])
+        self._log([u"sync_map_format is %s", sync_map_format])
+        self._log([u"page_ref is %s", page_ref])
+        self._log([u"audio_ref is %s", audio_ref])
 
-        self._log("Calling sync_map.write...")
-        parameters = dict()
-        parameters[gc.PPN_TASK_OS_FILE_SMIL_PAGE_REF] = page_ref
-        parameters[gc.PPN_TASK_OS_FILE_SMIL_AUDIO_REF] = audio_ref
+        self._log(u"Calling sync_map.write...")
+        parameters = {
+            gc.PPN_TASK_OS_FILE_SMIL_PAGE_REF : page_ref,
+            gc.PPN_TASK_OS_FILE_SMIL_AUDIO_REF : audio_ref
+        }
         self.sync_map.write(sync_map_format, path, parameters)
-        self._log("Calling sync_map.write... done")
+        self._log(u"Calling sync_map.write... done")
         return path
 
     def _populate_audio_file(self):
@@ -189,36 +195,37 @@ class Task(object):
         Create the ``self.audio_file`` object by reading
         the audio file at ``self.audio_file_path_absolute``.
         """
-        self._log("Populate audio file...")
+        self._log(u"Populate audio file...")
         if self.audio_file_path_absolute is not None:
-            self._log(["audio_file_path_absolute is '%s'", self.audio_file_path_absolute])
+            self._log([u"audio_file_path_absolute is '%s'", self.audio_file_path_absolute])
             self.audio_file = AudioFile(
                 file_path=self.audio_file_path_absolute,
                 logger=self.logger
             )
             self.audio_file.read_properties()
         else:
-            self._log("audio_file_path_absolute is None")
-        self._log("Populate audio file... done")
+            self._log(u"audio_file_path_absolute is None")
+        self._log(u"Populate audio file... done")
 
     def _populate_text_file(self):
         """
         Create the ``self.text_file`` object by reading
         the text file at ``self.text_file_path_absolute``.
         """
-        self._log("Populate text file...")
+        self._log(u"Populate text file...")
         if (
                 (self.text_file_path_absolute is not None) and
                 (self.configuration.language is not None)
             ):
-            parameters = dict()
-            # the following might be None
-            parameters[gc.PPN_TASK_IS_TEXT_FILE_IGNORE_REGEX] = self.configuration.is_text_file_ignore_regex
-            parameters[gc.PPN_TASK_IS_TEXT_FILE_TRANSLITERATE_MAP] = self.configuration.is_text_file_transliterate_map
-            parameters[gc.PPN_TASK_IS_TEXT_UNPARSED_CLASS_REGEX] = self.configuration.is_text_unparsed_class_regex
-            parameters[gc.PPN_TASK_IS_TEXT_UNPARSED_ID_REGEX] = self.configuration.is_text_unparsed_id_regex
-            parameters[gc.PPN_TASK_IS_TEXT_UNPARSED_ID_SORT] = self.configuration.is_text_unparsed_id_sort
-            parameters[gc.PPN_TASK_OS_FILE_ID_REGEX] = self.configuration.os_file_id_regex
+            # the following values might be None
+            parameters = {
+                gc.PPN_TASK_IS_TEXT_FILE_IGNORE_REGEX : self.configuration.is_text_file_ignore_regex,
+                gc.PPN_TASK_IS_TEXT_FILE_TRANSLITERATE_MAP : self.configuration.is_text_file_transliterate_map,
+                gc.PPN_TASK_IS_TEXT_UNPARSED_CLASS_REGEX :self.configuration.is_text_unparsed_class_regex,
+                gc.PPN_TASK_IS_TEXT_UNPARSED_ID_REGEX : self.configuration.is_text_unparsed_id_regex,
+                gc.PPN_TASK_IS_TEXT_UNPARSED_ID_SORT : self.configuration.is_text_unparsed_id_sort,
+                gc.PPN_TASK_OS_FILE_ID_REGEX : self.configuration.os_file_id_regex
+            }
             self.text_file = TextFile(
                 file_path=self.text_file_path_absolute,
                 file_format=self.configuration.is_text_file_format,
@@ -227,8 +234,8 @@ class Task(object):
             )
             self.text_file.set_language(self.configuration.language)
         else:
-            self._log("text_file_path_absolute and/or language is None")
-        self._log("Populate text file... done")
+            self._log(u"text_file_path_absolute and/or language is None")
+        self._log(u"Populate text file... done")
 
 
 
@@ -240,65 +247,64 @@ class TaskConfiguration(object):
     :param config_string: the task configuration string
     :type  config_string: string
 
-    :raises TypeError: if ``config_string`` is not ``None`` and not an instance of ``str`` or ``unicode``
+    :raises TypeError: if ``config_string`` is not ``None`` and
+                       it is not a Unicode string
     """
 
-    TAG = "TaskConfiguration"
+    TAG = u"TaskConfiguration"
+
+    # TODO use __dict__ directly?
+    FIELD_NAMES = [
+        gc.PPN_TASK_DESCRIPTION,
+        gc.PPN_TASK_LANGUAGE,
+        gc.PPN_TASK_CUSTOM_ID,
+        gc.PPN_TASK_ADJUST_BOUNDARY_ALGORITHM,
+        gc.PPN_TASK_ADJUST_BOUNDARY_AFTERCURRENT_VALUE,
+        gc.PPN_TASK_ADJUST_BOUNDARY_BEFORENEXT_VALUE,
+        gc.PPN_TASK_ADJUST_BOUNDARY_OFFSET_VALUE,
+        gc.PPN_TASK_ADJUST_BOUNDARY_PERCENT_VALUE,
+        gc.PPN_TASK_ADJUST_BOUNDARY_RATE_VALUE,
+        gc.PPN_TASK_IS_AUDIO_FILE_DETECT_HEAD_MIN,
+        gc.PPN_TASK_IS_AUDIO_FILE_DETECT_HEAD_MAX,
+        gc.PPN_TASK_IS_AUDIO_FILE_DETECT_TAIL_MIN,
+        gc.PPN_TASK_IS_AUDIO_FILE_DETECT_TAIL_MAX,
+        gc.PPN_TASK_IS_AUDIO_FILE_HEAD_LENGTH,
+        gc.PPN_TASK_IS_AUDIO_FILE_PROCESS_LENGTH,
+        gc.PPN_TASK_IS_AUDIO_FILE_TAIL_LENGTH,
+        gc.PPN_TASK_IS_TEXT_FILE_FORMAT,
+        gc.PPN_TASK_IS_TEXT_FILE_IGNORE_REGEX,
+        gc.PPN_TASK_IS_TEXT_FILE_TRANSLITERATE_MAP,
+        gc.PPN_TASK_IS_TEXT_UNPARSED_CLASS_REGEX,
+        gc.PPN_TASK_IS_TEXT_UNPARSED_ID_REGEX,
+        gc.PPN_TASK_IS_TEXT_UNPARSED_ID_SORT,
+        gc.PPN_TASK_OS_FILE_FORMAT,
+        gc.PPN_TASK_OS_FILE_ID_REGEX,
+        gc.PPN_TASK_OS_FILE_NAME,
+        gc.PPN_TASK_OS_FILE_SMIL_AUDIO_REF,
+        gc.PPN_TASK_OS_FILE_SMIL_PAGE_REF,
+        gc.PPN_TASK_OS_FILE_HEAD_TAIL_FORMAT
+    ]
 
     def __init__(self, config_string=None):
-        if (
-                (config_string is not None) and
-                (not isinstance(config_string, str)) and
-                (not isinstance(config_string, unicode))
-        ):
-            raise TypeError("config_string is not an instance of str or unicode")
-        # task fields
-        self.field_names = [
-            gc.PPN_TASK_DESCRIPTION,
-            gc.PPN_TASK_LANGUAGE,
-            gc.PPN_TASK_CUSTOM_ID,
+        if (config_string is not None) and (not gf.is_unicode(config_string)):
+            raise TypeError("config_string is not a Unicode string")
 
-            gc.PPN_TASK_ADJUST_BOUNDARY_ALGORITHM,
-            gc.PPN_TASK_ADJUST_BOUNDARY_AFTERCURRENT_VALUE,
-            gc.PPN_TASK_ADJUST_BOUNDARY_BEFORENEXT_VALUE,
-            gc.PPN_TASK_ADJUST_BOUNDARY_OFFSET_VALUE,
-            gc.PPN_TASK_ADJUST_BOUNDARY_PERCENT_VALUE,
-            gc.PPN_TASK_ADJUST_BOUNDARY_RATE_VALUE,
-
-            gc.PPN_TASK_IS_AUDIO_FILE_DETECT_HEAD_MIN,
-            gc.PPN_TASK_IS_AUDIO_FILE_DETECT_HEAD_MAX,
-            gc.PPN_TASK_IS_AUDIO_FILE_DETECT_TAIL_MIN,
-            gc.PPN_TASK_IS_AUDIO_FILE_DETECT_TAIL_MAX,
-            gc.PPN_TASK_IS_AUDIO_FILE_HEAD_LENGTH,
-            gc.PPN_TASK_IS_AUDIO_FILE_PROCESS_LENGTH,
-            gc.PPN_TASK_IS_AUDIO_FILE_TAIL_LENGTH,
-            gc.PPN_TASK_IS_TEXT_FILE_FORMAT,
-            gc.PPN_TASK_IS_TEXT_FILE_IGNORE_REGEX,
-            gc.PPN_TASK_IS_TEXT_FILE_TRANSLITERATE_MAP,
-            gc.PPN_TASK_IS_TEXT_UNPARSED_CLASS_REGEX,
-            gc.PPN_TASK_IS_TEXT_UNPARSED_ID_REGEX,
-            gc.PPN_TASK_IS_TEXT_UNPARSED_ID_SORT,
-
-            gc.PPN_TASK_OS_FILE_FORMAT,
-            gc.PPN_TASK_OS_FILE_ID_REGEX,
-            gc.PPN_TASK_OS_FILE_NAME,
-            gc.PPN_TASK_OS_FILE_SMIL_AUDIO_REF,
-            gc.PPN_TASK_OS_FILE_SMIL_PAGE_REF,
-            gc.PPN_TASK_OS_FILE_HEAD_TAIL_FORMAT
-        ]
-        self.fields = dict()
-        for key in self.field_names:
+        # create task fields
+        self.fields = {}
+        for key in self.FIELD_NAMES:
             self.fields[key] = None
 
         # populate values from config_string
         if config_string is not None:
             properties = gf.config_string_to_dict(config_string)
-            for key in properties:
-                if key in self.field_names:
-                    self.fields[key] = properties[key]
+            for key in set(properties.keys()) & set(self.FIELD_NAMES):
+                self.fields[key] = properties[key]
+
+    def __unicode__(self):
+        return u"\n".join([u"%s: '%s'" % (fn, self.fields[fn]) for fn in self.FIELD_NAMES])
 
     def __str__(self):
-        return "\n".join(["%s: '%s'" % (fn, self.fields[fn]) for fn in self.field_names])
+        return gf.safe_str(self.__unicode__())
 
     def config_string(self):
         """
@@ -306,7 +312,9 @@ class TaskConfiguration(object):
 
         :rtype: string
         """
-        return (gc.CONFIG_STRING_SEPARATOR_SYMBOL).join(["%s%s%s" % (fn, gc.CONFIG_STRING_ASSIGNMENT_SYMBOL, self.fields[fn]) for fn in self.field_names if self.fields[fn] is not None])
+        return (gc.CONFIG_STRING_SEPARATOR_SYMBOL).join(
+            ["%s%s%s" % (fn, gc.CONFIG_STRING_ASSIGNMENT_SYMBOL, self.fields[fn]) for fn in self.FIELD_NAMES if self.fields[fn] is not None]
+        )
 
     @property
     def description(self):
@@ -325,7 +333,7 @@ class TaskConfiguration(object):
         """
         The language of the task.
 
-        :rtype: string (from the :class:`aeneas.language.Language` enumeration)
+        :rtype: :class:`aeneas.language.Language` enum
         """
         return self.fields[gc.PPN_TASK_LANGUAGE]
     @language.setter
@@ -352,7 +360,7 @@ class TaskConfiguration(object):
 
         .. versionadded:: 1.0.4
 
-        :rtype: string (from the :class:`aeneas.adjustboundaryalgorithm.AdjustBoundaryAlgorithm` enumeration)
+        :rtype: :class:`aeneas.adjustboundaryalgorithm.AdjustBoundaryAlgorithm` enum
         """
         return self.fields[gc.PPN_TASK_ADJUST_BOUNDARY_ALGORITHM]
     @adjust_boundary_algorithm.setter
@@ -510,7 +518,7 @@ class TaskConfiguration(object):
         The algorithm to sort text fragments by their ``id`` attributes.
         It applies to unparsed text files only.
 
-        :rtype: string (from the :class:`aeneas.idsortingalgorithm.IDSortingAlgorithm` enumeration)
+        :rtype: :class:`aeneas.idsortingalgorithm.IDSortingAlgorithm` enum
         """
         return self.fields[gc.PPN_TASK_IS_TEXT_UNPARSED_ID_SORT]
     @is_text_unparsed_id_sort.setter
@@ -655,7 +663,7 @@ class TaskConfiguration(object):
         """
         The format of the sync map output for the task.
 
-        :rtype: string (from :class:`aeneas.syncmap.SyncMapFormat`)
+        :rtype: :class:`aeneas.syncmap.SyncMapFormat` enum
         """
         return self.fields[gc.PPN_TASK_OS_FILE_FORMAT]
     @os_file_format.setter
@@ -720,7 +728,7 @@ class TaskConfiguration(object):
         """
         The format of the head and tail of the sync map output for the task.
 
-        :rtype: string (from :class:`aeneas.syncmap.SyncMapHeadTailFormat`)
+        :rtype: :class:`aeneas.syncmap.SyncMapHeadTailFormat` enum
         """
         return self.fields[gc.PPN_TASK_OS_FILE_HEAD_TAIL_FORMAT]
     @os_file_head_tail_format.setter

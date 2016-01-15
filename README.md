@@ -2,8 +2,8 @@
 
 **aeneas** is a Python library and a set of tools to automagically synchronize audio and text.
 
-* Version: 1.3.3
-* Date: 2015-12-20
+* Version: 1.4.0
+* Date: 2016-01-15
 * Developed by: [ReadBeyond](http://www.readbeyond.it/)
 * Lead Developer: [Alberto Pettarin](http://www.albertopettarin.it/)
 * License: the GNU Affero General Public License Version 3 (AGPL v3)
@@ -75,10 +75,11 @@ or raw CSV/SSV/TSV/TXT/XML for further processing.
 1. a reasonably recent machine (recommended 4 GB RAM, 2 GHz 64bit CPU)
 2. `ffmpeg` and `ffprobe` executables available in your `$PATH`
 3. `espeak` executable available in your `$PATH`
-4. Python 2.7.x
-5. Python modules `BeautifulSoup`, `lxml`, and `numpy`
-6. (Optional, but strongly recommended) Python C headers to compile the Python C extensions
-7. (Optional, required only for downloading audio from YouTube) Python module `pafy`
+4. Python 2.7 (Linux, OS X, Windows) or 3.4 or later (Linux, OS X)
+5. Python modules `BeautifulSoup4`, `lxml`, and `numpy`
+6. (Optional, strongly recommended) Python C headers to compile the Python C extensions
+7. (Optional, strongly recommended if you plan to use the CLI tools) A shell supporting UTF-8
+8. (Optional, only required if you plan to download audio from YouTube) Python module `pafy`
 
 Depending on the format(s) of audio files you work with,
 you might need to install additional audio codecs for `ffmpeg`.
@@ -87,38 +88,59 @@ for `espeak`, depending on the language(s) you work on.
 (Installing _all_ the codecs and _all_ the voices available
 might be a good idea.)
 
-If installing the above dependencies proves difficult on your OS,
-you are strongly encouraged to use
-[aeneas-vagrant](https://github.com/readbeyond/aeneas-vagrant),
-which provides **aeneas** inside a virtualized Debian image
-running under [VirtualBox](https://www.virtualbox.org/)
-and [Vagrant](http://www.vagrantup.com/).
-
 ### Supported Platforms
 
 **aeneas** has been developed and tested on **Debian 64bit**,
 which is the **only supported OS** at the moment.
+
 (Do you need official support for another OS?
 Consider [sponsoring](#supporting) this project!)
 
-However, **aeneas** has been confirmed to work
-on other Linux distributions (Ubuntu, Slackware),
-on Mac OS X 10.9 and 10.10,
-and on Windows Vista/7/8.1/10.
+However, **aeneas** has been confirmed to work on the following systems:
 
-Whatever your OS is, make sure
-`ffmpeg`, `ffprobe` (which is part of `ffmpeg` distribution), and `espeak`
-are properly installed and
-callable by the `subprocess` Python module.
+| OS             | 32/64 bit | Python 2.7 | Python 3.4/3.5  |
+|----------------|-----------|------------|-----------------|
+| Debian         | 64        | Yes        | Yes             |
+| Debian         | 32        | Yes        | Yes             |
+| Ubuntu         | 64        | Yes        | Yes             |
+| Gentoo         | 64        | Yes        | Unknown         |
+| Slackware      | 64        | Yes        | Unknown         |
+| Mac OS X 10.9  | 64        | Yes (1)    | Unknown (1)     |
+| Mac OS X 10.10 | 64        | Yes (1)    | Unknown (1)     |
+| Mac OS X 10.11 | 64        | Yes (1)    | Unknown (1)     |
+| Windows Vista  | 32        | Yes (1)    | Yes (1, 2)      |
+| Windows 7      | 64        | Yes (1)    | Yes (1, 2)      |
+| Windows 8.1    | 64        | Yes (1)    | Unknown (1, 2)  |
+| Windows 10     | 64        | Yes (1)    | Yes (1, 2)      |
+
+**Notes**
+(1) The ``cew`` Python C extension to speed up text synthesis
+is available only on Linux at the moment.
+(2) On Windows and Python 3.4/3.5, compiling the Python C extensions
+is quite complex; however, running **aeneas** in pure Python mode
+has been confirmed to work.
+
+Anyway, **aeneas** should work on any OS, at least in pure Python mode,
+provided that:
+
+1. the required Python modules `BeautifulSoup4`, `lxml`, and `numpy` are installed, and
+2.  `ffmpeg`, `ffprobe` (which is part of `ffmpeg` distribution), and `espeak`
+are installed and callable by the `subprocess` Python module.
 A way to ensure the latter consists
 in adding these three executables to your `PATH` environment variable.
+
+All strings and text files read by **aeneas** are expected to be UTF-8 encoded,
+and all text files written by **aeneas** are UTF-8 encoded.
+Therefore, it is strongly recommended to run the **aeneas** CLI tools
+on a shell with UTF-8 encoding and to convert any input text file to UTF-8.
 
 If installing **aeneas** natively on your OS proves difficult,
 you are strongly encouraged to use
 [aeneas-vagrant](https://github.com/readbeyond/aeneas-vagrant),
 which provides **aeneas** inside a virtualized Debian image
 running under [VirtualBox](https://www.virtualbox.org/)
-and [Vagrant](http://www.vagrantup.com/).
+and [Vagrant](http://www.vagrantup.com/), which can be installed
+on any modern OS (Linux, Mac OS X, Windows).
 
 ### Installation
 
@@ -127,7 +149,7 @@ and [Vagrant](http://www.vagrantup.com/).
 1. Make sure you have
     `ffmpeg`, `ffprobe` (usually provided by the `ffmpeg` package),
     and `espeak` installed and available on your command line.
-    You also need Python 2.x and its "developer" package
+    You also need Python and its "developer" package
     containing the C headers (`python-dev` or similar).
 
 2. Install `aeneas` system-wise with `pip`:
@@ -160,7 +182,7 @@ you can install all the dependencies by downloading and running
     just make sure you have
     `ffmpeg`, `ffprobe` (usually provided by the `ffmpeg` package),
     and `espeak` installed and available on your command line.
-    You also need Python 2.x and its "developer" package
+    You also need Python and its "developer" package
     containing the C headers (`python-dev` or similar).
 
 2. Clone the `aeneas` repo, install Python dependencies, and compile C extensions:
@@ -194,6 +216,10 @@ contained in the
 based on
 [these directions](https://groups.google.com/d/msg/aeneas-forced-alignment/p9cb1FA0X0I/8phzUgIqBAAJ),
 written by Richard Margetts.
+
+Please note that on Windows it is recommended to run **aeneas**
+with Python 2.7, since compiling the C extensions on Python 3.4 or 3.5
+requires [a complex setup process](http://stackoverflow.com/questions/29909330/microsoft-visual-c-compiler-for-python-3-4).
 
 #### Mac OS X
 
@@ -282,55 +308,55 @@ Feel free to jump to step 9 if you already have
 1. Install `aeneas` as described above. (Only the first time!)
 
 2. Open a command prompt/shell/terminal and go to the root directory
-of the aeneas repository, that is, the one containing the `README.md` and `VERSION` files.
-(This step is not needed if you installed `aeneas` with `pip`,
-since you will have the `aeneas` module available system-wise.)
+   of the aeneas repository, that is, the one containing the `README.md` and `VERSION` files.
+   (This step is not needed if you installed `aeneas` with `pip`,
+   since you will have the `aeneas` module available system-wise.)
 
 3. To compute a synchronization map `map.json` for a pair
-(`audio.mp3`, `text.txt` in `plain` text format), you can run:
+   (`audio.mp3`, `text.txt` in `plain` text format), you can run:
 
     ```bash
     $ python -m aeneas.tools.execute_task audio.mp3 text.txt "task_language=en|os_task_file_format=json|is_text_type=plain" map.json
     ```
 
-    The third parameter (the _configuration string_) can specify several parameters/options.
-    See the [documentation](http://www.readbeyond.it/aeneas/docs/)
-    or use the `-h` switch for details.
-
-4. To compute a synchronization map `map.smil` for a pair
-(`audio.mp3`, `page.xhtml` containing fragments marked by `id` attributes like `f001`),
-you can run:
+   To compute a synchronization map `map.smil` for a pair
+   (`audio.mp3`, `page.xhtml` containing fragments marked by `id` attributes like `f001`),
+   you can run:
 
     ```bash
     $ python -m aeneas.tools.execute_task audio.mp3 page.xhtml "task_language=en|os_task_file_format=smil|os_task_file_smil_audio_ref=audio.mp3|os_task_file_smil_page_ref=page.xhtml|is_text_type=unparsed|is_text_unparsed_id_regex=f[0-9]+|is_text_unparsed_id_sort=numeric" map.smil
     ```
 
-5. If you have several tasks to run,
-you can create a job container and a configuration file,
-and run them all at once:
+   The third parameter (the _configuration string_) can specify several other parameters/options.
+   See the [documentation](http://www.readbeyond.it/aeneas/docs/)
+   or use the `-h` switch for details.
+
+4. If you have several tasks to run,
+   you can create a job container and a configuration file,
+   and run them all at once:
 
     ```bash
     $ python -m aeneas.tools.execute_job job.zip /tmp/
     ```
     
-    File `job.zip` should contain a `config.txt` or `config.xml`
-    configuration file, providing **aeneas**
-    with all the information needed to parse the input assets
-    and format the output sync map files.
-    See the [documentation](http://www.readbeyond.it/aeneas/docs/)
-    or use the `-h` switch for details.
+   File `job.zip` should contain a `config.txt` or `config.xml`
+   configuration file, providing **aeneas**
+   with all the information needed to parse the input assets
+   and format the output sync map files.
+   See the [documentation](http://www.readbeyond.it/aeneas/docs/)
+   or use the `-h` switch for details.
 
-You might want to run `execute_task` or `execute_job`
-with `-h` to get an usage message and some examples:
+5. You might want to run `execute_task` or `execute_job`
+   with `-h` to get an usage message and some examples:
 
-```bash
-$ python -m aeneas.tools.execute_task -h
-$ python -m aeneas.tools.execute_job -h
-```
+    ```bash
+    $ python -m aeneas.tools.execute_task -h
+    $ python -m aeneas.tools.execute_job -h
+    ```
 
-See the [documentation](http://www.readbeyond.it/aeneas/docs/)
-for an introduction to the concepts of `task` and  `job`,
-and for the list of all the available options.
+   See the [documentation](http://www.readbeyond.it/aeneas/docs/)
+   for an introduction to the concepts of `task` and  `job`,
+   and for the list of all the available options.
 
 
 ## Documentation
@@ -366,9 +392,10 @@ Changelog: [http://www.readbeyond.it/aeneas/docs/changelog.html](http://www.read
 * Code suitable for a Web app deployment (e.g., on-demand AWS instances)
 * Adjustable splitting times, including a max character/second constraint for CC applications
 * Automated detection of audio head/tail
-* MFCC and DTW computed as Python C extensions to reduce the processing time
+* MFCC and DTW computed via Python C extensions to reduce the processing time
 * On Linux, `espeak` called via a Python C extension for faster audio synthesis
 * Output an HTML file (from `finetuneas` project) for fine tuning the sync map manually
+
 
 ## Limitations and Missing Features 
 
@@ -377,17 +404,18 @@ Changelog: [http://www.readbeyond.it/aeneas/docs/changelog.html](http://www.read
 * No protection against memory trashing if you feed extremely long audio files
 * On Mac OS X and Windows, audio synthesis might be slow if you have thousands of text fragments
 
+
 ## TODO List
 
 * Improving robustness against music in background
-* Isolate non-speech intervals (music, prolonged silence)
+* Isolating non-speech intervals (music, prolonged silence)
 * Automated text fragmentation based on audio analysis
 * Auto-tuning DTW parameters
 * Reporting the alignment score
 * Improving (removing?) dependency from `espeak`, `ffmpeg`, `ffprobe` executables
 * Multilevel sync map granularity (e.g., multilevel SMIL output)
 * Better documentation
-* Testing other approaches, like HMM
+* Testing other approaches, like GMM/HMM/NN (e.g., using HTK or Kaldi)
 * Publishing the package on Debian repo
 
 Would you like to see one of the above points done?
@@ -571,6 +599,9 @@ of downloading audio from YouTube
 **November 2015**: release of v1.3.2,
 for the first time available
 also on [PyPI](https://pypi.python.org/pypi/aeneas/)
+
+**January 2016**: release of v1.4.0,
+supporting both Python 2.7 and 3.4 or later
 
 ## Acknowledgments
 

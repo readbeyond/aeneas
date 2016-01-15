@@ -8,6 +8,8 @@ the boundary point between two fragments.
 .. versionadded:: 1.0.4
 """
 
+from __future__ import absolute_import
+from __future__ import print_function
 import copy
 
 from aeneas.logger import Logger
@@ -16,10 +18,10 @@ __author__ = "Alberto Pettarin"
 __copyright__ = """
     Copyright 2012-2013, Alberto Pettarin (www.albertopettarin.it)
     Copyright 2013-2015, ReadBeyond Srl   (www.readbeyond.it)
-    Copyright 2015,      Alberto Pettarin (www.albertopettarin.it)
+    Copyright 2015-2016, Alberto Pettarin (www.albertopettarin.it)
     """
 __license__ = "GNU AGPL v3"
-__version__ = "1.3.3"
+__version__ = "1.4.0"
 __email__ = "aeneas@readbeyond.it"
 __status__ = "Production"
 
@@ -29,7 +31,7 @@ class AdjustBoundaryAlgorithm(object):
     the boundary point between two consecutive fragments.
 
     :param algorithm: the boundary adjustment algorithm to be used
-    :type  algorithm: string (from :class:`aeneas.adjustboundaryalgorithm.AdjustBoundaryAlgorithm` enumeration)
+    :type  algorithm: :class:`aeneas.adjustboundaryalgorithm.AdjustBoundaryAlgorithm` enum
     :param text_map: a text map list [[start, end, id, text], ..., []]
     :type  text_map: list
     :param speech: a list of time intervals [[s_1, e_1,], ..., [s_k, e_k]]
@@ -102,7 +104,7 @@ class AdjustBoundaryAlgorithm(object):
     TOLERANCE = 0.001
     """ Tolerance when comparing floats """
 
-    TAG = "AdjustBoundaryAlgorithm"
+    TAG = u"AdjustBoundaryAlgorithm"
 
     def __init__(
             self,
@@ -181,11 +183,11 @@ class AdjustBoundaryAlgorithm(object):
         return self.text_map
 
     def _adjust_auto(self):
-        self._log("Called _adjust_auto: returning text_map unchanged")
+        self._log(u"Called _adjust_auto: returning text_map unchanged")
         return self.text_map
 
     def _adjust_offset(self):
-        self._log("Called _adjust_offset")
+        self._log(u"Called _adjust_offset")
         try:
             for index in range(1, len(self.text_map)):
                 current = self.text_map[index]
@@ -197,7 +199,7 @@ class AdjustBoundaryAlgorithm(object):
                 previous[1] += offset
                 current[0] += offset
         except:
-            self._log("Exception in _adjust_offset: returning text_map unchanged")
+            self._log(u"Exception in _adjust_offset: returning text_map unchanged")
         return self.text_map
 
     def _adjust_percent(self):
@@ -236,7 +238,7 @@ class AdjustBoundaryAlgorithm(object):
         # TODO numpy-fy this loop?
         for index in range(len(self.text_map) - 1):
             current_boundary = self.text_map[index][1]
-            self._log(["current_boundary: %.3f", current_boundary])
+            self._log([u"current_boundary: %.3f", current_boundary])
             # the tolerance comparison seems necessary
             while (
                     (nsi_index < len(self.nonspeech)) and
@@ -251,21 +253,19 @@ class AdjustBoundaryAlgorithm(object):
                 nsi = self.nonspeech[nsi_index]
                 nsi_index += 1
             if nsi:
-                self._log(["  in interval %.3f %.3f", nsi[0], nsi[1]])
+                self._log([u"  in interval %.3f %.3f", nsi[0], nsi[1]])
                 new_time = new_time_function(current_boundary, nsi)
-                self._log(["  new_time: %.3f", new_time])
+                self._log([u"  new_time: %.3f", new_time])
                 new_start = self.text_map[index][0]
                 new_end = self.text_map[index + 1][1]
                 if self._time_in_interval(new_time, new_start, new_end):
-                    self._log(["  updating %.3f => %.3f", current_boundary, new_time])
+                    self._log([u"  updating %.3f => %.3f", current_boundary, new_time])
                     self.text_map[index][1] = new_time
                     self.text_map[index + 1][0] = new_time
                 else:
-                    #print "  new_time outside: no adjustment performed"
-                    self._log("  new_time outside: no adjustment performed")
+                    self._log(u"  new_time outside: no adjustment performed")
             else:
-                #print "  no nonspeech interval found: no adjustment performed"
-                self._log("  no nonspeech interval found: no adjustment performed")
+                self._log(u"  no nonspeech interval found: no adjustment performed")
         return self.text_map
 
     def _len(self, string):
@@ -394,38 +394,38 @@ class AdjustBoundaryAlgorithm(object):
         # TODO numpy-fy this loop?
         for index in range(len(self.text_map)):
             fragment = self.text_map[index]
-            self._log(["Fragment %d", index])
+            self._log([u"Fragment %d", index])
             rate = self._compute_rate(index)
-            self._log(["  %.3f %.3f => %.3f", fragment[0], fragment[1], rate])
+            self._log([u"  %.3f %.3f => %.3f", fragment[0], fragment[1], rate])
             if rate > self.value:
-                self._log("  too fast")
+                self._log(u"  too fast")
                 faster.append(index)
 
         if len(self.text_map) == 1:
-            self._log("Only one fragment, and it is too fast")
+            self._log(u"Only one fragment, and it is too fast")
             return self.text_map
 
         if len(faster) == 0:
-            self._log(["No fragment faster than max rate %.3f", self.value])
+            self._log([u"No fragment faster than max rate %.3f", self.value])
             return self.text_map
 
         # TODO numpy-fy this loop?
         # try fixing faster fragments
-        self._log("Fixing faster fragments...")
+        self._log(u"Fixing faster fragments...")
         for index in faster:
-            self._log(["Fixing faster fragment %d ...", index])
+            self._log([u"Fixing faster fragment %d ...", index])
             if aggressive:
                 try:
                     self._rateaggressive_fix_fragment(index)
                 except:
-                    self._log("Exception in _rateaggressive_fix_fragment")
+                    self._log(u"Exception in _rateaggressive_fix_fragment")
             else:
                 try:
                     self._rate_fix_fragment(index)
                 except:
-                    self._log("Exception in _rate_fix_fragment")
-            self._log(["Fixing faster fragment %d ... done", index])
-        self._log("Fixing faster fragments... done")
+                    self._log(u"Exception in _rate_fix_fragment")
+            self._log([u"Fixing faster fragment %d ... done", index])
+        self._log(u"Fixing faster fragments... done")
         return self.text_map
 
     def _rate_fix_fragment(self, index):
@@ -442,50 +442,50 @@ class AdjustBoundaryAlgorithm(object):
         next_slack = self._compute_slack(index + 1)
         if previous_slack is not None:
             previous = self.text_map[index - 1]
-            self._log(["  previous:       %.3f %.3f => %.3f", previous[0], previous[1], self._compute_rate(index - 1)])
-            self._log(["  previous slack: %.3f", previous_slack])
+            self._log([u"  previous:       %.3f %.3f => %.3f", previous[0], previous[1], self._compute_rate(index - 1)])
+            self._log([u"  previous slack: %.3f", previous_slack])
         if current_slack is not None:
-            self._log(["  current:        %.3f %.3f => %.3f", current_start, current_end, current_rate])
-            self._log(["  current  slack: %.3f", current_slack])
+            self._log([u"  current:        %.3f %.3f => %.3f", current_start, current_end, current_rate])
+            self._log([u"  current  slack: %.3f", current_slack])
         if next_slack is not None:
             nextf = self.text_map[index]
-            self._log(["  next:           %.3f %.3f => %.3f", nextf[0], nextf[1], self._compute_rate(index + 1)])
-            self._log(["  next     slack: %.3f", next_slack])
+            self._log([u"  next:           %.3f %.3f => %.3f", nextf[0], nextf[1], self._compute_rate(index + 1)])
+            self._log([u"  next     slack: %.3f", next_slack])
 
         # try expanding into the previous fragment
         new_start = current_start
         new_end = current_end
         if (previous_slack is not None) and (previous_slack > 0):
-            self._log("  can expand into previous")
+            self._log(u"  can expand into previous")
             nsi = self._find_interval_containing(self.nonspeech, current[0])
             previous = self.text_map[index - 1]
             if nsi is not None:
                 if nsi[0] > previous[0]:
-                    self._log(["  found suitable nsi: %.3f %.3f", nsi[0], nsi[1]])
+                    self._log([u"  found suitable nsi: %.3f %.3f", nsi[0], nsi[1]])
                     previous_slack = min(current[0] - nsi[0], previous_slack)
-                    self._log(["  previous slack after min: %.3f", previous_slack])
+                    self._log([u"  previous slack after min: %.3f", previous_slack])
                     if previous_slack + current_slack >= 0:
-                        self._log("  enough slack to completely fix")
+                        self._log(u"  enough slack to completely fix")
                         steal_from_previous = -current_slack
                         succeeded = True
                     else:
-                        self._log("  not enough slack to completely fix")
+                        self._log(u"  not enough slack to completely fix")
                         steal_from_previous = previous_slack
                     new_start = current_start - steal_from_previous
                     self.text_map[index - 1][1] = new_start
                     self.text_map[index][0] = new_start
                     new_rate = self._compute_rate(index)
-                    self._log(["    old: %.3f %.3f => %.3f", current_start, current_end, current_rate])
-                    self._log(["    new: %.3f %.3f => %.3f", new_start, new_end, new_rate])
+                    self._log([u"    old: %.3f %.3f => %.3f", current_start, current_end, current_rate])
+                    self._log([u"    new: %.3f %.3f => %.3f", new_start, new_end, new_rate])
                 else:
-                    self._log("  nsi found is not suitable")
+                    self._log(u"  nsi found is not suitable")
             else:
-                self._log("  no nsi found")
+                self._log(u"  no nsi found")
         else:
-            self._log("  cannot expand into previous")
+            self._log(u"  cannot expand into previous")
 
         if succeeded:
-            self._log("  succeeded: returning")
+            self._log(u"  succeeded: returning")
             return
 
         # recompute current fragment
@@ -497,39 +497,39 @@ class AdjustBoundaryAlgorithm(object):
         new_start = current_start
         new_end = current_end
         if (next_slack is not None) and (next_slack > 0):
-            self._log("  can expand into next")
+            self._log(u"  can expand into next")
             nsi = self._find_interval_containing(self.nonspeech, current[1])
             previous = self.text_map[index - 1]
             if nsi is not None:
                 if nsi[0] > previous[0]:
-                    self._log(["  found suitable nsi: %.3f %.3f", nsi[0], nsi[1]])
+                    self._log([u"  found suitable nsi: %.3f %.3f", nsi[0], nsi[1]])
                     next_slack = min(nsi[1] - current[1], next_slack)
-                    self._log(["  next slack after min: %.3f", next_slack])
+                    self._log([u"  next slack after min: %.3f", next_slack])
                     if next_slack + current_slack >= 0:
-                        self._log("  enough slack to completely fix")
+                        self._log(u"  enough slack to completely fix")
                         steal_from_next = -current_slack
                         succeeded = True
                     else:
-                        self._log("  not enough slack to completely fix")
+                        self._log(u"  not enough slack to completely fix")
                         steal_from_next = next_slack
                     new_end = current_end + steal_from_next
                     self.text_map[index][1] = new_end
                     self.text_map[index + 1][0] = new_end
                     new_rate = self._compute_rate(index)
-                    self._log(["    old: %.3f %.3f => %.3f", current_start, current_end, current_rate])
-                    self._log(["    new: %.3f %.3f => %.3f", new_start, new_end, new_rate])
+                    self._log([u"    old: %.3f %.3f => %.3f", current_start, current_end, current_rate])
+                    self._log([u"    new: %.3f %.3f => %.3f", new_start, new_end, new_rate])
                 else:
-                    self._log("  nsi found is not suitable")
+                    self._log(u"  nsi found is not suitable")
             else:
-                self._log("  no nsi found")
+                self._log(u"  no nsi found")
         else:
-            self._log("  cannot expand into next")
+            self._log(u"  cannot expand into next")
 
         if succeeded:
-            self._log("  succeeded: returning")
+            self._log(u"  succeeded: returning")
             return
 
-        self._log("  not succeeded, returning")
+        self._log(u"  not succeeded, returning")
 
     def _rateaggressive_fix_fragment(self, index):
         """
@@ -543,11 +543,11 @@ class AdjustBoundaryAlgorithm(object):
         current_slack = self._compute_slack(index)
         next_slack = self._compute_slack(index + 1)
         if previous_slack is not None:
-            self._log(["  previous slack: %.3f", previous_slack])
+            self._log([u"  previous slack: %.3f", previous_slack])
         if current_slack is not None:
-            self._log(["  current  slack: %.3f", current_slack])
+            self._log([u"  current  slack: %.3f", current_slack])
         if next_slack is not None:
-            self._log(["  next     slack: %.3f", next_slack])
+            self._log([u"  next     slack: %.3f", next_slack])
         steal_from_previous = 0
         steal_from_next = 0
         if (
@@ -556,42 +556,42 @@ class AdjustBoundaryAlgorithm(object):
                 (previous_slack > 0) and
                 (next_slack > 0)
             ):
-            self._log("  can expand into both previous and next")
+            self._log(u"  can expand into both previous and next")
             total_slack = previous_slack + next_slack
-            self._log(["  total    slack: %.3f", total_slack])
+            self._log([u"  total    slack: %.3f", total_slack])
             if total_slack + current_slack >= 0:
-                self._log("  enough total slack to completely fix")
+                self._log(u"  enough total slack to completely fix")
                 # partition the needed slack proportionally
                 previous_percentage = previous_slack / total_slack
-                self._log(["    previous percentage: %.3f", previous_percentage])
+                self._log([u"    previous percentage: %.3f", previous_percentage])
                 steal_from_previous = -current_slack * previous_percentage
                 steal_from_next = -current_slack - steal_from_previous
             else:
-                self._log("  not enough total slack to completely fix")
+                self._log(u"  not enough total slack to completely fix")
                 # consume all the available slack
                 steal_from_previous = previous_slack
                 steal_from_next = next_slack
         elif (previous_slack is not None) and (previous_slack > 0):
-            self._log("  can expand into previous only")
+            self._log(u"  can expand into previous only")
             if previous_slack + current_slack >= 0:
-                self._log("  enough previous slack to completely fix")
+                self._log(u"  enough previous slack to completely fix")
                 steal_from_previous = -current_slack
             else:
-                self._log("  not enough previous slack to completely fix")
+                self._log(u"  not enough previous slack to completely fix")
                 steal_from_previous = previous_slack
         elif (next_slack is not None) and (next_slack > 0):
-            self._log("  can expand into next only")
+            self._log(u"  can expand into next only")
             if next_slack + current_slack >= 0:
-                self._log("  enough next slack to completely fix")
+                self._log(u"  enough next slack to completely fix")
                 steal_from_next = -current_slack
             else:
-                self._log("  not enough next slack to completely fix")
+                self._log(u"  not enough next slack to completely fix")
                 steal_from_next = next_slack
         else:
-            self._log(["  fragment %d cannot be fixed", index])
+            self._log([u"  fragment %d cannot be fixed", index])
 
-        self._log(["    steal from previous: %.3f", steal_from_previous])
-        self._log(["    steal from next:     %.3f", steal_from_next])
+        self._log([u"    steal from previous: %.3f", steal_from_previous])
+        self._log([u"    steal from next:     %.3f", steal_from_next])
         new_start = current_start - steal_from_previous
         new_end = current_end + steal_from_next
         if index - 1 >= 0:
@@ -601,8 +601,8 @@ class AdjustBoundaryAlgorithm(object):
         if index + 1 < len(self.text_map):
             self.text_map[index + 1][0] = new_end
         new_rate = self._compute_rate(index)
-        self._log(["    old: %.3f %.3f => %.3f", current_start, current_end, current_rate])
-        self._log(["    new: %.3f %.3f => %.3f", new_start, new_end, new_rate])
+        self._log([u"    old: %.3f %.3f => %.3f", current_start, current_end, current_rate])
+        self._log([u"    new: %.3f %.3f => %.3f", new_start, new_end, new_rate])
 
 
 

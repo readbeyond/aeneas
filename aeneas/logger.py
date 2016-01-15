@@ -5,16 +5,21 @@
 A logger class to help with debugging and performance tests.
 """
 
+from __future__ import absolute_import
+from __future__ import print_function
 import datetime
+import sys
+
+import aeneas.globalfunctions as gf
 
 __author__ = "Alberto Pettarin"
 __copyright__ = """
     Copyright 2012-2013, Alberto Pettarin (www.albertopettarin.it)
     Copyright 2013-2015, ReadBeyond Srl   (www.readbeyond.it)
-    Copyright 2015,      Alberto Pettarin (www.albertopettarin.it)
+    Copyright 2015-2016, Alberto Pettarin (www.albertopettarin.it)
     """
 __license__ = "GNU AGPL v3"
-__version__ = "1.3.3"
+__version__ = "1.4.0"
 __email__ = "aeneas@readbeyond.it"
 __status__ = "Production"
 
@@ -26,6 +31,8 @@ class Logger(object):
     :type  tee: bool
     :param indentation: the initial indentation of the log
     :type  indentation: int
+    :param tee_show_datetime: if ``True``, print date and time when teeing
+    :type  tee_show_datetime: bool
     """
 
     DEBUG = "DEBU"
@@ -40,25 +47,27 @@ class Logger(object):
     CRITICAL = "CRIT"
     """ ``CRITICAL`` severity """
 
-    def __init__(self, tee=False, indentation=0):
+    def __init__(self, tee=False, indentation=0, tee_show_datetime=True):
         self.entries = []
         self.tee = tee
         self.indentation = indentation
+        self.tee_show_datetime = tee_show_datetime
 
     def __len__(self):
         return len(self.entries)
 
-    #@property
-    #def entries(self):
-    #    """
-    #    The entries currently in the log.
-    #
-    #    :rtype: list of :class:`aeneas.logger._LogEntry`
-    #    """
-    #    return self.__entries
-    #@entries.setter
-    #def entries(self, entries):
-    #    self.__entries = entries
+    def __unicode__(self):
+        return self.pretty_print()
+
+    def __str__(self):
+        return gf.safe_str(self.__unicode__())
+
+    def __repr__(self):
+        return u"Logger(tee=%s, indentation=%d, tee_show_datetime=%s)" % (
+            self.tee,
+            self.indentation,
+            self.tee_show_datetime
+        )
 
     @property
     def tee(self):
@@ -73,6 +82,18 @@ class Logger(object):
         self.__tee = tee
 
     @property
+    def tee_show_datetime(self):
+        """
+        If ``True``, print date and time when teeing.
+
+        :rtype: bool
+        """
+        return self.__tee_show_datetime
+    @tee_show_datetime.setter
+    def tee_show_datetime(self, tee_show_datetime):
+        self.__tee_show_datetime = tee_show_datetime
+
+    @property
     def indentation(self):
         """
         The current indentation of the log.
@@ -85,17 +106,33 @@ class Logger(object):
     def indentation(self, indentation):
         self.__indentation = indentation
 
-    def log(self, message, severity=INFO, tag=""):
+    def pretty_print(self, as_list=False, show_datetime=True):
+        """
+        Return a Unicode string pretty print of the log entries.
+
+        :param as_list: if ``True``, return a list of Unicode strings,
+                        one for each entry, instead of a Unicode string
+        :type  as_list: bool
+        :param show_datetime: if ``True``, show the date and time of the entries
+        :type  show_datetime: bool
+        :rtype: Unicode string or list of Unicode strings
+        """
+        ppl = [entry.pretty_print(show_datetime) for entry in self.entries]
+        if as_list:
+            return ppl
+        return u"\n".join(ppl)
+
+    def log(self, message, severity=INFO, tag=u""):
         """
         Add a given message to the log.
 
         :param message: the message to be added
-        :type  message: string or list
+        :type  message: Unicode string
         :param severity: the severity of the message
-        :type  severity: string (from the :class:`aeneas.logger.Logger` enum)
+        :type  severity: :class:`aeneas.logger.Logger` enum
         :param tag: the tag associated with the message;
                     usually, the name of the class generating the entry
-        :type  tag: string
+        :type  tag: Unicode string
         """
         entry = _LogEntry(
             severity=severity,
@@ -106,53 +143,7 @@ class Logger(object):
         )
         self.entries.append(entry)
         if self.tee:
-            print self._pretty_print(entry)
-
-    def _sanitize(self, message):
-        """
-        Sanitize the given message,
-        dealing with unicode and/or multiple arguments,
-        and string formatting
-
-        :param message: the log message to be sanitized
-        :type  message: string, unicode or list
-
-        :rtype: string
-        """
-        sanitized = message
-        if isinstance(sanitized, list):
-            if len(sanitized) == 0:
-                sanitized = "Empty log message"
-            elif len(sanitized) == 1:
-                sanitized = sanitized[0]
-            else:
-                model = self._safe_unicode_to_str(sanitized[0])
-                args = tuple()
-                for arg in sanitized[1:]:
-                    if isinstance(arg, unicode) or isinstance(arg, str):
-                        args += (self._safe_unicode_to_str(arg),)
-                    else:
-                        args += (arg,)
-                sanitized = model % args
-        return self._safe_unicode_to_str(sanitized)
-
-    def _safe_unicode_to_str(self, value):
-        """
-        Safely convert a string or unicode value
-        to string.
-
-        :param value: the value to be converted
-        :type  value: string or unicode
-
-        :rtype: string
-        """
-        sanitized = value
-        if isinstance(sanitized, unicode):
-            try:
-                sanitized = sanitized.encode("utf-8")
-            except UnicodeError:
-                sanitized = sanitized.encode("ascii", "replace")
-        return sanitized
+            gf.safe_print(entry.pretty_print(show_datetime=self.tee_show_datetime))
 
     def clear(self):
         """
@@ -160,34 +151,31 @@ class Logger(object):
         """
         self.entries = []
 
-    def _pretty_print(self, entry):
+    @classmethod
+    def _sanitize(cls, message):
         """
-        Returns a string containing the pretty printing
-        of a given log entry.
+        Sanitize the given message,
+        dealing with multiple arguments
+        and/or string formatting.
 
-        :param entry: the log entry
-        :type  entry: :class:`aeneas.logger._LogEntry`
-        :rtype: string
+        :param message: the log message to be sanitized
+        :type  message: Unicode string or list of Unicode strings
+        :rtype: Unicode string
         """
-        return "[%s] %s %s%s: %s" % (
-            entry.severity,
-            str(entry.time),
-            " " * entry.indentation,
-            entry.tag,
-            entry.message
-        )
-
-    def to_list_of_strings(self):
-        """
-        Return the log entries as a list of pretty printed strings.
-
-        :rtype: list of strings
-        """
-        return [self._pretty_print(entry) for entry in self.entries]
+        if isinstance(message, list):
+            if len(message) == 0:
+                sanitized = u"Empty log message"
+            elif len(message) == 1:
+                sanitized = message[0]
+            else:
+                sanitized = message[0] % tuple(message[1:])
+        else:
+            sanitized = message
+        if not gf.is_unicode(sanitized):
+            raise TypeError("The given log message is not a Unicode string")
+        return sanitized
 
 
-    def __str__(self):
-        return "\n".join(self.to_list_of_strings())
 
 class _LogEntry(object):
     """
@@ -201,12 +189,36 @@ class _LogEntry(object):
         self.indentation = indentation
         self.time = time
 
+    def pretty_print(self, show_datetime=True):
+        """
+        Returns a Unicode string containing
+        the pretty printing of a given log entry.
+
+        :param show_datetime: if ``True``, print the date and time of the entry
+        :type  show_datetime: bool
+        :rtype: Unicode string
+        """
+        if show_datetime:
+            return u"[%s] %s %s%s: %s" % (
+                self.severity,
+                gf.object_to_unicode(self.time),
+                u" " * self.indentation,
+                self.tag,
+                self.message
+            )
+        return u"[%s] %s%s: %s" % (
+            self.severity,
+            u" " * self.indentation,
+            self.tag,
+            self.message
+        )
+
     @property
     def message(self):
         """
         The message of this log entry.
 
-        :rtype: string
+        :rtype: Unicode string
         """
         return self.__message
     @message.setter
@@ -218,7 +230,7 @@ class _LogEntry(object):
         """
         The severity of this log entry.
 
-        :rtype: string (from the :class:`aeneas.logger.Logger` enum)
+        :rtype: :class:`aeneas.logger.Logger` enum
         """
         return self.__severity
     @severity.setter
@@ -230,7 +242,7 @@ class _LogEntry(object):
         """
         The tag of this log entry.
 
-        :rtype: string
+        :rtype: Unicode string
         """
         return self.__tag
     @tag.setter
@@ -242,7 +254,7 @@ class _LogEntry(object):
         """
         The indentation of this log entry.
 
-        :rtype: string
+        :rtype: Unicode string
         """
         return self.__indentation
     @indentation.setter
@@ -252,7 +264,7 @@ class _LogEntry(object):
     @property
     def time(self):
         """
-        The time of this log entry.
+        The date and time of this log entry.
 
         :rtype: datetime.time
         """

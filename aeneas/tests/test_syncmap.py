@@ -1,7 +1,6 @@
 #!/usr/bin/env python
 # coding=utf-8
 
-import tempfile
 import unittest
 
 from aeneas.language import Language
@@ -13,9 +12,9 @@ import aeneas.globalfunctions as gf
 
 class TestSyncMap(unittest.TestCase):
 
-    NOT_EXISTING_SRT = gf.get_abs_path("not_existing.srt", __file__)
-    EXISTING_SRT = gf.get_abs_path("res/syncmaps/sonnet001.srt", __file__)
-    NOT_WRITEABLE_SRT = gf.get_abs_path("x/y/z/not_writeable.srt", __file__)
+    NOT_EXISTING_SRT = gf.absolute_path("not_existing.srt", __file__)
+    EXISTING_SRT = gf.absolute_path("res/syncmaps/sonnet001.srt", __file__)
+    NOT_WRITEABLE_SRT = gf.absolute_path("x/y/z/not_writeable.srt", __file__)
 
     PARAMETERS = {
         gc.PPN_TASK_OS_FILE_SMIL_PAGE_REF: "sonnet001.xhtml",
@@ -25,7 +24,7 @@ class TestSyncMap(unittest.TestCase):
 
     def read(self, fmt, multiline=False, utf8=False, parameters=PARAMETERS):
         syn = SyncMap()
-        if multiline and unicode:
+        if multiline and utf8:
             path = "res/syncmaps/sonnet001_mu."
         elif multiline:
             path = "res/syncmaps/sonnet001_m."
@@ -33,13 +32,13 @@ class TestSyncMap(unittest.TestCase):
             path = "res/syncmaps/sonnet001_u."
         else:
             path = "res/syncmaps/sonnet001."
-        syn.read(fmt, gf.get_abs_path(path + fmt, __file__), parameters=parameters)
+        syn.read(fmt, gf.absolute_path(path + fmt, __file__), parameters=parameters)
         return syn
 
     def write(self, fmt, multiline=False, utf8=False, parameters=PARAMETERS):
         suffix = "." + fmt
         syn = self.read(SyncMapFormat.XML, multiline, utf8, self.PARAMETERS)
-        handler, output_file_path = tempfile.mkstemp(suffix=suffix)
+        handler, output_file_path = gf.tmp_file(suffix=suffix)
         syn.write(fmt, output_file_path, parameters)
         gf.delete_file(handler, output_file_path)
 
@@ -69,28 +68,32 @@ class TestSyncMap(unittest.TestCase):
 
     def test_read_not_existing_path(self):
         syn = SyncMap()
-        with self.assertRaises(IOError):
+        with self.assertRaises(OSError):
             syn.read(SyncMapFormat.SRT, self.NOT_EXISTING_SRT)
 
     def test_read(self):
         for fmt in SyncMapFormat.ALLOWED_VALUES:
             syn = self.read(fmt)
             self.assertEqual(len(syn), 15)
+            ignored = str(syn)
 
     def test_read_m(self):
         for fmt in SyncMapFormat.ALLOWED_VALUES:
             syn = self.read(fmt, multiline=True)
             self.assertEqual(len(syn), 15)
+            ignored = str(syn)
 
     def test_read_u(self):
         for fmt in SyncMapFormat.ALLOWED_VALUES:
             syn = self.read(fmt, utf8=True)
             self.assertEqual(len(syn), 15)
+            ignored = str(syn)
 
     def test_read_mu(self):
         for fmt in SyncMapFormat.ALLOWED_VALUES:
             syn = self.read(fmt, multiline=True, utf8=True)
             self.assertEqual(len(syn), 15)
+            ignored = str(syn)
 
     def test_write_none(self):
         syn = SyncMap()
@@ -104,7 +107,7 @@ class TestSyncMap(unittest.TestCase):
 
     def test_write_not_existing_path(self):
         syn = SyncMap()
-        with self.assertRaises(IOError):
+        with self.assertRaises(OSError):
             syn.write(SyncMapFormat.SRT, self.NOT_WRITEABLE_SRT)
 
     def test_write(self):
@@ -148,6 +151,15 @@ class TestSyncMap(unittest.TestCase):
         fmt = SyncMapFormat.TTML
         parameters = {"language": Language.EN}
         self.write(fmt, parameters=parameters)
+
+    def test_output_html_for_tuning(self):
+        syn = self.read(SyncMapFormat.XML, multiline=True, utf8=True)
+        handler, output_file_path = gf.tmp_file(suffix=".html")
+        audio_file_path = "foo.mp3"
+        syn.output_html_for_tuning(audio_file_path, output_file_path, None)
+        gf.delete_file(handler, output_file_path)
+
+
 
 if __name__ == '__main__':
     unittest.main()

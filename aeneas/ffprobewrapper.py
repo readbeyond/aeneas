@@ -5,7 +5,8 @@
 Wrapper around ``ffprobe`` to read the properties of an audio file.
 """
 
-import os
+from __future__ import absolute_import
+from __future__ import print_function
 import re
 import subprocess
 
@@ -17,10 +18,10 @@ __author__ = "Alberto Pettarin"
 __copyright__ = """
     Copyright 2012-2013, Alberto Pettarin (www.albertopettarin.it)
     Copyright 2013-2015, ReadBeyond Srl   (www.readbeyond.it)
-    Copyright 2015,      Alberto Pettarin (www.albertopettarin.it)
+    Copyright 2015-2016, Alberto Pettarin (www.albertopettarin.it)
     """
 __license__ = "GNU AGPL v3"
-__version__ = "1.3.3"
+__version__ = "1.4.0"
 __email__ = "aeneas@readbeyond.it"
 __status__ = "Production"
 
@@ -102,7 +103,7 @@ class FFPROBEWrapper(object):
     ]
     """ ``ffprobe`` parameters """
 
-    STDERR_DURATION_REGEX = r"Duration: ([0-9]*):([0-9]*):([0-9]*)\.([0-9]*)"
+    STDERR_DURATION_REGEX = re.compile(r"Duration: ([0-9]*):([0-9]*):([0-9]*)\.([0-9]*)")
     """ Regex to match ``ffprobe`` stderr duration values """
 
     STDOUT_BEGIN_STREAM = "[STREAM]"
@@ -123,7 +124,7 @@ class FFPROBEWrapper(object):
     STDOUT_SAMPLE_RATE = "sample_rate"
     """ ``ffprobe`` stdout sample rate keyword """
 
-    TAG = "FFPROBEWrapper"
+    TAG = u"FFPROBEWrapper"
 
     def __init__(self, logger=None):
         self.logger = logger
@@ -185,7 +186,7 @@ class FFPROBEWrapper(object):
         :rtype: dict
 
         :raises TypeError: if ``audio_file_path`` is None
-        :raises IOError: if the file at ``audio_file_path`` cannot be read
+        :raises OSError: if the file at ``audio_file_path`` cannot be read
         :raises FFPROBEParsingError: if the call to ``ffprobe`` does not produce any output
         :raises FFPROBEUnsupportedFormatError: if the file has a format not supported by ``ffprobe``
         """
@@ -193,89 +194,86 @@ class FFPROBEWrapper(object):
         # test if we can read the file at audio_file_path
         if audio_file_path is None:
             raise TypeError("The audio file path is None")
-        if not os.path.isfile(audio_file_path):
-            self._log(["Input file '%s' cannot be read", audio_file_path], Logger.CRITICAL)
-            raise IOError("Input file cannot be read")
+        if not gf.file_can_be_read(audio_file_path):
+            self._log([u"Input file '%s' cannot be read", audio_file_path], Logger.CRITICAL)
+            raise OSError("Input file cannot be read")
 
         # call ffprobe
-        arguments = []
-        arguments += [gc.FFPROBE_PATH]
-        arguments += self.FFPROBE_PARAMETERS
-        arguments += [audio_file_path]
-        self._log(["Calling with arguments '%s'", arguments])
+        arguments = [gc.FFPROBE_PATH]
+        arguments.extend(self.FFPROBE_PARAMETERS)
+        arguments.append(audio_file_path)
+        self._log([u"Calling with arguments '%s'", arguments])
         proc = subprocess.Popen(
             arguments,
             stdout=subprocess.PIPE,
             stdin=subprocess.PIPE,
-            stderr=subprocess.PIPE)
+            stderr=subprocess.PIPE
+        )
         (stdoutdata, stderrdata) = proc.communicate()
         proc.stdout.close()
         proc.stdin.close()
         proc.stderr.close()
-        self._log("Call completed")
+        self._log(u"Call completed")
 
         # if no output, raise error
         if (stdoutdata is None) or (len(stderrdata) == 0):
-            self._log("No output produced by ffprobe", Logger.CRITICAL)
+            self._log(u"No output produced by ffprobe", Logger.CRITICAL)
             raise FFPROBEParsingError("No output produced by ffprobe")
 
+        # decode stdoutdata and stderrdata to Unicode string
+        try:
+            stdoutdata = gf.safe_unicode(stdoutdata)
+            stderrdata = gf.safe_unicode(stderrdata)
+        except UnicodeDecodeError:
+            self._log(u"Error decoding stdout/stderr.")
+            raise FFPROBEParsingError("Unable to decode ffprobe out/err")
+
         # dictionary for the results
-        results = dict()
-        results[self.STDOUT_CHANNELS] = None
-        results[self.STDOUT_CODEC_NAME] = None
-        results[self.STDOUT_DURATION] = None
-        results[self.STDOUT_SAMPLE_RATE] = None
+        results = {
+            self.STDOUT_CHANNELS : None,
+            self.STDOUT_CODEC_NAME : None,
+            self.STDOUT_DURATION : None,
+            self.STDOUT_SAMPLE_RATE : None
+        }
 
         # scan the first audio stream the ffprobe stdout output
         # TODO more robust parsing
         # TODO deal with multiple audio streams
         for line in stdoutdata.splitlines():
             if line == self.STDOUT_END_STREAM:
-                self._log("Reached end of the stream")
+                self._log(u"Reached end of the stream")
                 break
             elif len(line.split("=")) == 2:
                 key, value = line.split("=")
                 results[key] = value
-                self._log(["Found property '%s'='%s'", key, value])
+                self._log([u"Found property '%s'='%s'", key, value])
 
         # convert duration to float
         if self.STDOUT_DURATION in results:
-            self._log(["Found duration: '%s'", results[self.STDOUT_DURATION]])
+            self._log([u"Found duration: '%s'", results[self.STDOUT_DURATION]])
             results[self.STDOUT_DURATION] = gf.safe_float(
                 results[self.STDOUT_DURATION],
                 None
             )
         else:
-            self._log("No duration found in stdout", Logger.WARNING)
+            self._log(u"No duration found in stdout", Logger.WARNING)
 
-        # TODO this is ugly
         # if audio_length is still None, try scanning ffprobe stderr output
-        try:
-            if results[self.STDOUT_DURATION] is None:
-                pattern = re.compile(self.STDERR_DURATION_REGEX)
-                for line in stderrdata.splitlines():
-                    match = pattern.search(line)
-                    if match is not None:
-                        self._log(["Found matching line '%s'", line])
-                        v_h = int(match.group(1))
-                        v_m = int(match.group(2))
-                        v_s = int(match.group(3))
-                        v_f = float("0." + match.group(4))
-                        v_length = v_h * 3600 + v_m * 60 + v_s + v_f
-                        results[self.STDOUT_DURATION] = v_length
-                        self._log(["Extracted duration '%f'", v_length])
-                        break
-        except ValueError:
-            self._log("ValueError exception while parsing stderr")
-        except TypeError:
-            self._log("TypeError exception while parsing stderr")
+        if results[self.STDOUT_DURATION] is None:
+            for line in stderrdata.splitlines():
+                match = self.STDERR_DURATION_REGEX.search(line)
+                if match is not None:
+                    self._log([u"Found matching line '%s'", line])
+                    results[self.STDOUT_DURATION] = gf.time_from_hhmmssmmm(line)
+                    self._log([u"Extracted duration '%f'", results[self.STDOUT_DURATION]])
+                    break
 
         if results[self.STDOUT_DURATION] is None:
-            self._log("No duration found in stdout or stderr (unsupported audio file format?)", Logger.CRITICAL)
+            self._log(u"No duration found in stdout or stderr (unsupported audio file format?)", Logger.CRITICAL)
             raise FFPROBEUnsupportedFormatError("Unsupported audio file format")
 
         # return dictionary
-        self._log("Returning dict")
+        self._log(u"Returning dict")
         return results
 
 

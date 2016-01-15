@@ -7,6 +7,8 @@ a single ``wav`` file,
 along with the corresponding time anchors.
 """
 
+from __future__ import absolute_import
+from __future__ import print_function
 from aeneas.espeakwrapper import ESPEAKWrapper
 from aeneas.logger import Logger
 from aeneas.textfile import TextFile
@@ -16,10 +18,10 @@ __author__ = "Alberto Pettarin"
 __copyright__ = """
     Copyright 2012-2013, Alberto Pettarin (www.albertopettarin.it)
     Copyright 2013-2015, ReadBeyond Srl   (www.readbeyond.it)
-    Copyright 2015,      Alberto Pettarin (www.albertopettarin.it)
+    Copyright 2015-2016, Alberto Pettarin (www.albertopettarin.it)
     """
 __license__ = "GNU AGPL v3"
-__version__ = "1.3.3"
+__version__ = "1.4.0"
 __email__ = "aeneas@readbeyond.it"
 __status__ = "Production"
 
@@ -33,7 +35,7 @@ class Synthesizer(object):
     :type  logger: :class:`aeneas.logger.Logger`
     """
 
-    TAG = "Synthesizer"
+    TAG = u"Synthesizer"
 
     def __init__(self, logger=None):
         self.logger = logger
@@ -50,7 +52,8 @@ class Synthesizer(object):
             audio_file_path,
             quit_after=None,
             backwards=False,
-            force_pure_python=False
+            force_pure_python=False,
+            allow_unlisted_languages=False
     ):
         """
         Synthesize the text contained in the given fragment list
@@ -63,35 +66,41 @@ class Synthesizer(object):
         :param quit_after: stop synthesizing as soon as
                            reaching this many seconds
         :type  quit_after: float
-        :param backwards: synthesizing from the end of the text file
+        :param backwards: if ``True``, synthesizing from the end of the text file
         :type  backwards: bool
-        :param force_pure_python: force using the pure Python version
+        :param force_pure_python: if ``True``, force using the pure Python version
         :type  force_pure_python: bool
+        :param allow_unlisted_languages: if ``True``, do not emit an error
+                                         if ``text_file`` contains fragments
+                                         with language not listed in
+                                         :class:`aeneas.language.Language`
+        :type  allow_unlisted_languages: bool
 
         :raise TypeError: if ``text_file`` is ``None`` or not an instance of ``TextFile``
-        :raise IOError: if ``audio_file_path`` cannot be written
+        :raise OSError: if ``audio_file_path`` cannot be written
         """
         if text_file is None:
             raise TypeError("text_file is None")
         if not isinstance(text_file, TextFile):
             raise TypeError("text_file is not an instance of TextFile")
         if not gf.file_can_be_written(audio_file_path):
-            raise IOError("audio_file_path cannot be written")
+            raise OSError("audio_file_path cannot be written")
 
         # at the moment only espeak TTS is supported
-        self._log("Synthesizing using espeak...")
+        self._log(u"Synthesizing using espeak...")
         espeak = ESPEAKWrapper(logger=self.logger)
         result = espeak.synthesize_multiple(
             text_file=text_file,
             output_file_path=audio_file_path,
             quit_after=quit_after,
             backwards=backwards,
-            force_pure_python=force_pure_python
+            force_pure_python=force_pure_python,
+            allow_unlisted_languages=allow_unlisted_languages
         )
-        self._log("Synthesizing using espeak... done")
+        self._log(u"Synthesizing using espeak... done")
 
         if not gf.file_exists(audio_file_path):
-            raise IOError("audio_file_path was not written")
+            raise OSError("audio_file_path was not written")
 
         return result
 
