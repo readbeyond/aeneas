@@ -39,7 +39,7 @@ __copyright__ = """
     Copyright 2015-2016, Alberto Pettarin (www.albertopettarin.it)
     """
 __license__ = "GNU AGPL v3"
-__version__ = "1.4.0"
+__version__ = "1.4.1"
 __email__ = "aeneas@readbeyond.it"
 __status__ = "Production"
 
@@ -84,6 +84,11 @@ class SyncMapFormat(object):
         f003,5.678,7.890,Third fragment text
 
     .. versionadded:: 1.2.0
+    """
+
+    DFXP = "dfxp"
+    """
+    Alias for TTML
     """
 
     JSON = "json"
@@ -147,6 +152,25 @@ class SyncMapFormat(object):
     .. versionadded:: 1.2.0
     """
 
+    SBV = "sbv"
+    """
+    SubViewer (SBV/SUB) caption/subtitle format,
+    with multiple lines per fragment are separated by a newline character::
+
+        [SUBTITLE]
+        00:00:00.000,00:00:01.234
+        First fragment text
+
+        00:00:01.234,00:00:05.678
+        Second fragment text
+        Second line of second fragment
+
+        00:00:05.678,00:00:07.890
+        Third fragment text
+        Second line of third fragment
+
+    """
+
     SMIL = "smil"
     """
     Alias for SMILH
@@ -208,7 +232,7 @@ class SyncMapFormat(object):
 
     SRT = "srt"
     """
-    SRT caption/subtitle format
+    SubRip (SRT) caption/subtitle format
     (it might have multiple lines per fragment)::
 
         1
@@ -260,6 +284,23 @@ class SyncMapFormat(object):
         5.678 7.890 f003 "Third fragment text"
 
     .. versionadded:: 1.2.0
+    """
+
+    SUB = "sub"
+    """
+    SubViewer (SBV/SUB) caption/subtitle format,
+    with multiple lines per fragment are separated by [br]::
+
+        [SUBTITLE]
+        00:00:00.000,00:00:01.234
+        First fragment text
+
+        00:00:01.234,00:00:05.678
+        Second fragment text[br]Second line of second fragment
+
+        00:00:05.678,00:00:07.890
+        Third fragment text[br]Second line of third fragment
+
     """
 
     TAB = "tab"
@@ -433,8 +474,10 @@ class SyncMapFormat(object):
         CSV,
         CSVH,
         CSVM,
+        DFXP,
         JSON,
         RBSE,
+        SBV,
         SMIL,
         SMILH,
         SMILM,
@@ -442,6 +485,7 @@ class SyncMapFormat(object):
         SSV,
         SSVH,
         SSVM,
+        SUB,
         TAB,
         TSV,
         TSVH,
@@ -656,8 +700,10 @@ class SyncMap(object):
             SyncMapFormat.CSV: partial(self._read_csv, parse_time=gf.time_from_ssmmm),
             SyncMapFormat.CSVH: partial(self._read_csv, parse_time=gf.time_from_hhmmssmmm),
             SyncMapFormat.CSVM: partial(self._read_csv, parse_time=gf.time_from_ssmmm),
+            SyncMapFormat.DFXP: self._read_ttml,
             SyncMapFormat.JSON: self._read_json,
             SyncMapFormat.RBSE: self._read_rbse,
+            SyncMapFormat.SBV: partial(self._read_sub, use_newline=True),
             SyncMapFormat.SMIL: self._read_smil,
             SyncMapFormat.SMILH: self._read_smil,
             SyncMapFormat.SMILM: self._read_smil,
@@ -665,6 +711,7 @@ class SyncMap(object):
             SyncMapFormat.SSV: partial(self._read_ssv, parse_time=gf.time_from_ssmmm),
             SyncMapFormat.SSVH: partial(self._read_ssv, parse_time=gf.time_from_hhmmssmmm),
             SyncMapFormat.SSVM: partial(self._read_ssv, parse_time=gf.time_from_ssmmm),
+            SyncMapFormat.SUB: partial(self._read_sub, use_newline=False),
             SyncMapFormat.TAB: partial(self._read_tsv, parse_time=gf.time_from_ssmmm),
             SyncMapFormat.TSV: partial(self._read_tsv, parse_time=gf.time_from_ssmmm),
             SyncMapFormat.TSVH: partial(self._read_tsv, parse_time=gf.time_from_hhmmssmmm),
@@ -722,8 +769,10 @@ class SyncMap(object):
             SyncMapFormat.CSV: partial(self._write_csv, format_time=gf.time_to_ssmmm),
             SyncMapFormat.CSVH: partial(self._write_csv, format_time=gf.time_to_hhmmssmmm),
             SyncMapFormat.CSVM: partial(self._write_csv, format_time=gf.time_to_ssmmm),
+            SyncMapFormat.DFXP: partial(self._write_ttml, parameters=parameters),
             SyncMapFormat.JSON: self._write_json,
             SyncMapFormat.RBSE: self._write_rbse,
+            SyncMapFormat.SBV: partial(self._write_sub, use_newline=True),
             SyncMapFormat.SMIL: partial(self._write_smil, format_time=gf.time_to_hhmmssmmm, parameters=parameters),
             SyncMapFormat.SMILH: partial(self._write_smil, format_time=gf.time_to_hhmmssmmm, parameters=parameters),
             SyncMapFormat.SMILM: partial(self._write_smil, format_time=gf.time_to_ssmmm, parameters=parameters),
@@ -731,6 +780,7 @@ class SyncMap(object):
             SyncMapFormat.SSV: partial(self._write_ssv, format_time=gf.time_to_ssmmm),
             SyncMapFormat.SSVH: partial(self._write_ssv, format_time=gf.time_to_hhmmssmmm),
             SyncMapFormat.SSVM: partial(self._write_ssv, format_time=gf.time_to_ssmmm),
+            SyncMapFormat.SUB: partial(self._write_sub, use_newline=False),
             SyncMapFormat.TAB: partial(self._write_tsv, format_time=gf.time_to_ssmmm),
             SyncMapFormat.TSV: partial(self._write_tsv, format_time=gf.time_to_ssmmm),
             SyncMapFormat.TSVH: partial(self._write_tsv, format_time=gf.time_to_hhmmssmmm),
@@ -889,14 +939,14 @@ class SyncMap(object):
                     if end is None:
                         end = gf.time_from_ssmmm(child.get("clipEnd"))
             self.append_fragment(
-                 SyncMapFragment(
-                     text_fragment=TextFragment(
-                         identifier=identifier,
-                         lines=[u""] # TODO read text from additional text_file?
-                     ),
-                     begin=begin,
-                     end=end
-                 )
+                SyncMapFragment(
+                    text_fragment=TextFragment(
+                        identifier=identifier,
+                        lines=[u""] # TODO read text from additional text_file?
+                    ),
+                    begin=begin,
+                    end=end
+                )
             )
 
     def _write_smil(self, output_file, format_time, parameters):
@@ -959,14 +1009,14 @@ class SyncMap(object):
                         if len(fragment_lines) == 0:
                             fragment_lines = [u""]
                         self.append_fragment(
-                             SyncMapFragment(
-                                 text_fragment=TextFragment(
-                                     identifier=identifier,
-                                     lines=fragment_lines
-                                 ),
-                                 begin=begin,
-                                 end=end
-                             )
+                            SyncMapFragment(
+                                text_fragment=TextFragment(
+                                    identifier=identifier,
+                                    lines=fragment_lines
+                                ),
+                                begin=begin,
+                                end=end
+                            )
                         )
             i += 1
 
@@ -984,6 +1034,71 @@ class SyncMap(object):
             msg.extend(text.lines)
             msg.append(u"")
             i += 1
+        # add an extra \n at the end
+        msg.append(u"")
+        output_file.write(u"\n".join(msg))
+
+    def _read_sub(self, input_file, use_newline=False):
+        """ Read from SUB file """
+        lines = input_file.readlines()
+        i = 0
+        identifier_index = 1
+        in_subtitle = False
+        # TODO read [INFORMATION] header?
+        while i < len(lines):
+            line = lines[i].strip()
+            if len(line) > 0:
+                if (not in_subtitle) and (line == u"[SUBTITLE]"):
+                    in_subtitle = True
+                if in_subtitle:
+                    timings = line.split(",")
+                    if len(timings) == 2:
+                        identifier = u"f" + str(identifier_index).zfill(6)
+                        identifier_index += 1
+                        begin = gf.time_from_hhmmssmmm(timings[0])
+                        end = gf.time_from_hhmmssmmm(timings[1])
+                        fragment_lines = []
+                        while (i + 1 < len(lines)) and (len(line) > 0):
+                            i += 1
+                            line = lines[i].strip()
+                            if use_newline:
+                                line_split = [l for l in [line] if len(l) > 0]
+                            else:
+                                line_split = [l for l in line.split(u"[br]") if len(l) > 0]
+                            if len(line_split) > 0:
+                                fragment_lines.extend(line_split)
+                        # should never happen, but just in case...
+                        if len(fragment_lines) == 0:
+                            fragment_lines = [u""]
+                        self.append_fragment(
+                            SyncMapFragment(
+                                text_fragment=TextFragment(
+                                    identifier=identifier,
+                                    lines=fragment_lines
+                                ),
+                                begin=begin,
+                                end=end
+                            )
+                        )
+            i += 1
+
+    def _write_sub(self, output_file, use_newline=False):
+        """ Write to SUB file """
+        msg = []
+        # TODO write [INFORMATION] header?
+        msg.append(u"[SUBTITLE]")
+        for fragment in self.fragments:
+            text = fragment.text_fragment
+            msg.append(u"%s,%s" % (
+                gf.time_to_hhmmssmmm(fragment.begin),
+                gf.time_to_hhmmssmmm(fragment.end)
+            ))
+            if use_newline:
+                msg.extend(text.lines)
+            else:
+                msg.append(u"[br]".join(text.lines))
+            msg.append(u"")
+        msg.append(u"[END SUBTITLE]")
         # add an extra \n at the end
         msg.append(u"")
         output_file.write(u"\n".join(msg))
