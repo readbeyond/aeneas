@@ -1,14 +1,32 @@
 Changelog
 =========
 
-v1.4.1 (2016-??-??)
+v1.4.1 (2016-02-13)
 -------------------
 
 #. Added ``DFXP`` sync map output format, alias for ``TTML``
 #. Added ``SBV`` sync map output format (SubViewer format with newline, used by YouTube)
 #. Added ``SUB`` sync map output format (SubViewer format with ``[br]``)
+#. Added ``aeneas.diagnostics`` to perform setup check, modified ``aeneas_check_setup.py`` accordingly
 #. Marked Czech (``cs``) language as tested
-#. Fixed numpy deprecated API warning for C extensions
+#. Optimizated computation of MFCCs if no head/tail has been cut
+#. Fixed the ``numpy deprecated API warning`` for C extensions
+#. Fixed a few bugs and cleaned the source code of the ``cmfcc`` C extension, added a C driver program
+#. Cleaned the source code of the ``cew`` C extension, added a C driver program
+#. Cleaned the source code of the ``cdtw`` C extension, added a C driver program
+#. Added ``cwave`` C extension (currently not used), added a C driver program
+#. Added ``write`` method to ``Logger`` to dump log to file
+#. Added ``ConfigurationObject`` to represent a dictionary with a fixed set of keys, default values, and aliases
+#. Now ``JobConfiguration`` and ``TaskConfiguration`` extend ``ConfigurationObject``
+#. Added ``RuntimeConfiguration``, extending ``ConfigurationObject``, to keep the runtime settings, tunable by (expert) users
+#. Added to ``AbstractCLIProgram`` support for specifying log file path
+#. Added to ``AbstractCLIProgram`` support for specifying runtime configuration
+#. Changed ``FFMPEG_PARAMETERS_DEFAULT`` in ``ffmpeg.py`` to ``FFMPEG_PARAMETERS_SAMPLE_16000`` (i.e., from 22050 Hz to 16000 Hz)
+#. Added support for specifying the temporary directory path in the ``RuntimeConfiguration``
+#. Refactored ``mfcc.py`` to better fit into the library structure
+#. Moved the original ``mfcc.py`` into the ``thirdparty/`` directory for clarity and attribution
+#. Nicer ``aeneas_check_setup.py`` script
+#. More unit tests covering runtime configuration options
 
 v1.4.0 (2016-01-15)
 -------------------

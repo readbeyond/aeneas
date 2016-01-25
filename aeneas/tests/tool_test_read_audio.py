@@ -29,17 +29,33 @@ class TestReadAudioCLI(unittest.TestCase):
         self.execute([("", "--help")], 2)
         self.execute([("", "--version")], 2)
 
-    def test_probe(self):
+    def test_read_audio(self):
         self.execute([
             ("in", "../tools/res/audio.wav")
         ], 0)
 
-    def test_probe_mp3(self):
+    def test_read_audio_mp3(self):
         self.execute([
             ("in", "../tools/res/audio.mp3")
         ], 0)
 
-    def test_probe_cannot_read(self):
+    def test_read_audio_path(self):
+        path = os.path.expanduser("~")
+        path = os.path.join(path, ".bin/myffprobe")
+        if gf.file_exists(path):
+            self.execute([
+                ("in", "../tools/res/audio.wav"),
+                ("", "-r=\"ffprobe_path=%s\"" % path)
+            ], 0)
+
+    def test_read_audio_path_bad(self):
+        path = "/foo/bar/ffprobe"
+        self.execute([
+            ("in", "../tools/res/audio.wav"),
+            ("", "-r=\"ffprobe_path=%s\"" % path)
+        ], 1)
+
+    def test_read_audio_cannot_read(self):
         self.execute([
             ("", "/foo/bar/baz.wav")
         ], 1)

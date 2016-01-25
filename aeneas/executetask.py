@@ -15,6 +15,7 @@ from aeneas.dtw import DTWAligner
 from aeneas.ffmpegwrapper import FFMPEGWrapper
 from aeneas.language import Language
 from aeneas.logger import Logger
+from aeneas.runtimeconfiguration import RuntimeConfiguration
 from aeneas.sd import SD
 from aeneas.syncmap import SyncMap
 from aeneas.syncmap import SyncMapFragment
@@ -22,7 +23,6 @@ from aeneas.syncmap import SyncMapHeadTailFormat
 from aeneas.synthesizer import Synthesizer
 from aeneas.textfile import TextFragment
 from aeneas.vad import VAD
-import aeneas.globalconstants as gc
 import aeneas.globalfunctions as gf
 
 __author__ = "Alberto Pettarin"
@@ -58,33 +58,30 @@ class ExecuteTask(object):
 
     :param task: the task to be executed
     :type  task: :class:`aeneas.task.Task`
+    :param rconf: a runtime configuration. Default: ``None``, meaning that
+                  default settings will be used.
+    :type  rconf: :class:`aeneas.runtimeconfiguration.RuntimeConfiguration`
     :param logger: the logger object
     :type  logger: :class:`aeneas.logger.Logger`
     """
 
     TAG = u"ExecuteTask"
 
-    def __init__(self, task, logger=None):
+    def __init__(self, task, rconf=None, logger=None):
         self.task = task
         self.cleanup_info = []
-        self.logger = logger
-        if self.logger is None:
-            self.logger = Logger()
+        self.logger = logger or Logger()
+        self.rconf = rconf or RuntimeConfiguration()
 
     def _log(self, message, severity=Logger.DEBUG):
         """ Log """
         self.logger.log(message, severity, self.TAG)
 
-    def execute(self, allow_unlisted_languages=False):
+    def execute(self):
         """
         Execute the task.
         The sync map produced will be stored inside the task object.
 
-        :param allow_unlisted_languages: if ``True``, do not emit an error
-                                         if ``text_file`` contains fragments
-                                         with language not listed in
-                                        :class:`aeneas.language.Language`
-        :type  allow_unlisted_languages: bool
         :raise ExecuteTaskInputError: if there is a problem with the input parameters
         :raise ExecuteTaskExecutionError: if there is a problem during the task execution
         """
@@ -98,12 +95,22 @@ class ExecuteTask(object):
                 (self.task.audio_file.audio_length <= 0)
             ):
             self._failed(u"The task seems to have an invalid audio file", False)
+        if (
+                (self.rconf["task_max_a_len"] > 0) and
+                (self.task.audio_file.audio_length > self.rconf["task_max_a_len"])
+            ):
+            self._failed(u"The task audio file is too long", False)
 
         # check that we have the TextFile object
         if self.task.text_file is None:
             self._failed(u"The task does not seem to have its text file set", False)
         if len(self.task.text_file) == 0:
             self._failed(u"The task text file seems to have no text fragments", False)
+        if (
+                (self.rconf["task_max_t_len"] > 0) and
+                (len(self.task.text_file) > self.rconf["task_max_t_len"])
+            ):
+            self._failed(u"The task text file has too many text fragments", False)
         if self.task.text_file.chars == 0:
             self._failed(u"The task text file seems to have empty text", False)
 
@@ -134,21 +141,24 @@ class ExecuteTask(object):
             #          overwriting real_path
             #          at the end, read_path will not have the head/tail
             self._log(u"STEP %d BEGIN" % (step_index))
-            self._cut_head_tail(real_full_path)
+            real_wave_modified = self._cut_head_tail(real_full_path)
             real_trimmed_path = real_full_path
             self._log(u"STEP %d END" % (step_index))
             step_index += 1
 
             # STEP 3 : synthesize text to wave
             self._log(u"STEP %d BEGIN" % (step_index))
-            synt_handler, synt_path, synt_anchors = self._synthesize(allow_unlisted_languages)
+            synt_handler, synt_path, synt_anchors = self._synthesize()
             self.cleanup_info.append([synt_handler, synt_path])
             self._log(u"STEP %d END" % (step_index))
             step_index += 1
 
             # STEP 4 : align waves
             self._log(u"STEP %d BEGIN" % (step_index))
-            wave_map = self._align_waves(real_trimmed_path, synt_path)
+            if real_wave_modified:
+                wave_map = self._align_waves(real_trimmed_path, synt_path, None, None)
+            else:
+                wave_map = self._align_waves(real_trimmed_path, synt_path, real_full_wave_full_mfcc, real_full_wave_length)
             self._log(u"STEP %d END" % (step_index))
             step_index += 1
 
@@ -233,9 +243,9 @@ class ExecuteTask(object):
         handler = None
         path = None
         self._log(u"Creating an output tmp file")
-        handler, path = gf.tmp_file(suffix=".wav")
+        handler, path = gf.tmp_file(suffix=u".wav", root=self.rconf["tmp_path"])
         self._log(u"Creating a FFMPEGWrapper")
-        ffmpeg = FFMPEGWrapper(logger=self.logger)
+        ffmpeg = FFMPEGWrapper(rconf=self.rconf, logger=self.logger)
         self._log(u"Converting...")
         ffmpeg.convert(
             input_file_path=self.task.audio_file_path_absolute,
@@ -255,7 +265,7 @@ class ExecuteTask(object):
         2. audio length
         """
         self._log(u"Extracting MFCCs from real full wave")
-        audio_file = AudioFileMonoWAVE(audio_file_path, logger=self.logger)
+        audio_file = AudioFileMonoWAVE(audio_file_path, rconf=self.rconf, logger=self.logger)
         audio_file.extract_mfcc()
         self._log(u"Extracting MFCCs from real full wave: succeeded")
         return (audio_file.audio_mfcc, audio_file.audio_length)
@@ -265,16 +275,20 @@ class ExecuteTask(object):
         Set the audio file head or tail,
         suitably cutting the audio file on disk,
         and setting the corresponding parameters in the task configuration.
+
+        Return ``True`` if head or tail has been cut;
+        otherwise return ``False`` (real wave file not modified)
+
+        :rtype: bool
         """
         self._log(u"Setting head and/or tail")
-        configuration = self.task.configuration
-        head_length = configuration.is_audio_file_head_length
-        process_length = configuration.is_audio_file_process_length
-        tail_length = configuration.is_audio_file_tail_length
-        detect_head_min = configuration.is_audio_file_detect_head_min
-        detect_head_max = configuration.is_audio_file_detect_head_max
-        detect_tail_min = configuration.is_audio_file_detect_tail_min
-        detect_tail_max = configuration.is_audio_file_detect_tail_max
+        head_length = self.task.configuration["i_a_head"]
+        process_length = self.task.configuration["i_a_process"]
+        tail_length = self.task.configuration["i_a_tail"]
+        detect_head_max = self.task.configuration["i_a_head_max"]
+        detect_head_min = self.task.configuration["i_a_head_min"]
+        detect_tail_max = self.task.configuration["i_a_tail_max"]
+        detect_tail_min = self.task.configuration["i_a_tail_min"]
 
         # explicit head or process?
         explicit = (
@@ -294,89 +308,92 @@ class ExecuteTask(object):
         if not (explicit or detect):
             # nothing to do
             self._log(u"No explicit head/process or detect head/tail")
+            self._log(u"Setting head and/or tail: succeeded")
+            return False
+
+        # we need to cut head/tail, hence load the audio data
+        audio_file = AudioFileMonoWAVE(audio_file_path, rconf=self.rconf, logger=self.logger)
+        audio_file.load_data()
+
+        if explicit:
+            self._log(u"Explicit head, process, or tail")
         else:
-            # we need to load the audio data
-            audio_file = AudioFileMonoWAVE(audio_file_path, logger=self.logger)
-            audio_file.load_data()
+            self._log(u"No explicit head, process, or tail => detecting head/tail")
 
-            if explicit:
-                self._log(u"Explicit head, process, or tail")
-            else:
-                self._log(u"No explicit head, process, or tail => detecting head/tail")
+            head = 0.0
+            if (detect_head_min is not None) or (detect_head_max is not None):
+                self._log(u"Detecting head...")
+                detect_head_min = gf.safe_float(detect_head_min, SD.MIN_HEAD_LENGTH)
+                detect_head_max = gf.safe_float(detect_head_max, SD.MAX_HEAD_LENGTH)
+                self._log([u"detect_head_min is %.3f", detect_head_min])
+                self._log([u"detect_head_max is %.3f", detect_head_max])
+                start_detector = SD(audio_file, self.task.text_file, rconf=self.rconf, logger=self.logger)
+                head = start_detector.detect_head(detect_head_min, detect_head_max)
+                self._log([u"Detected head: %.3f", head])
 
-                head = 0.0
-                if (detect_head_min is not None) or (detect_head_max is not None):
-                    self._log(u"Detecting head...")
-                    detect_head_min = gf.safe_float(detect_head_min, gc.SD_MIN_HEAD_LENGTH)
-                    detect_head_max = gf.safe_float(detect_head_max, gc.SD_MAX_HEAD_LENGTH)
-                    self._log([u"detect_head_min is %.3f", detect_head_min])
-                    self._log([u"detect_head_max is %.3f", detect_head_max])
-                    start_detector = SD(audio_file, self.task.text_file, logger=self.logger)
-                    head = start_detector.detect_head(detect_head_min, detect_head_max)
-                    self._log([u"Detected head: %.3f", head])
+            tail = 0.0
+            if (detect_tail_min is not None) or (detect_tail_max is not None):
+                self._log(u"Detecting tail...")
+                detect_tail_max = gf.safe_float(detect_tail_max, SD.MAX_TAIL_LENGTH)
+                detect_tail_min = gf.safe_float(detect_tail_min, SD.MIN_TAIL_LENGTH)
+                self._log([u"detect_tail_min is %.3f", detect_tail_min])
+                self._log([u"detect_tail_max is %.3f", detect_tail_max])
+                start_detector = SD(audio_file, self.task.text_file, rconf=self.rconf, logger=self.logger)
+                tail = start_detector.detect_tail(detect_tail_min, detect_tail_max)
+                self._log([u"Detected tail: %.3f", tail])
 
-                tail = 0.0
-                if (detect_tail_min is not None) or (detect_tail_max is not None):
-                    self._log(u"Detecting tail...")
-                    detect_tail_max = gf.safe_float(detect_tail_max, gc.SD_MAX_TAIL_LENGTH)
-                    detect_tail_min = gf.safe_float(detect_tail_min, gc.SD_MIN_TAIL_LENGTH)
-                    self._log([u"detect_tail_min is %.3f", detect_tail_min])
-                    self._log([u"detect_tail_max is %.3f", detect_tail_max])
-                    start_detector = SD(audio_file, self.task.text_file, logger=self.logger)
-                    tail = start_detector.detect_tail(detect_tail_min, detect_tail_max)
-                    self._log([u"Detected tail: %.3f", tail])
+            head_length = max(0, head)
+            process_length = max(0, audio_file.audio_length - tail - head)
+            tail_length = audio_file.audio_length - head_length - process_length
 
-                head_length = max(0, head)
-                process_length = max(0, audio_file.audio_length - tail - head)
-                tail_length = audio_file.audio_length - head_length - process_length
+            # we need to set these values
+            # in the config object for later use
+            self.task.configuration["i_a_head"] = head_length
+            self.task.configuration["i_a_process"] = process_length
+            self._log([u"Set head_length:    %.3f", head_length])
+            self._log([u"Set process_length: %.3f", process_length])
 
-                # we need to set these values
-                # in the config object for later use
-                self.task.configuration.is_audio_file_head_length = head_length
-                self.task.configuration.is_audio_file_process_length = process_length
-                self._log([u"Set head_length:    %.3f", head_length])
-                self._log([u"Set process_length: %.3f", process_length])
-
-            # in case we are reading from config object
-            if head_length is not None:
-                self._log(u"head_length is not None, converting to float")
-                head_length = float(head_length)
-            else:
-                self._log(u"head_length is None: setting it to 0.0")
-                head_length = 0.0
-            # note that process_length and tail_length are mutually exclusive
-            # with process_length having precedence over tail_length
-            if process_length is not None:
-                self._log(u"process_length is not None, converting to float")
-                process_length = float(process_length)
-                if tail_length is not None:
-                    self._log(u"tail_length is not None, but it will be ignored")
-                    tail_length = float(tail_length)
-            elif tail_length is not None:
-                self._log(u"tail_length is not None, converting to float")
+        # in case we are reading from config object
+        if head_length is not None:
+            self._log(u"head_length is not None, converting to float")
+            head_length = float(head_length)
+        else:
+            self._log(u"head_length is None: setting it to 0.0")
+            head_length = 0.0
+        # note that process_length and tail_length are mutually exclusive
+        # with process_length having precedence over tail_length
+        if process_length is not None:
+            self._log(u"process_length is not None, converting to float")
+            process_length = float(process_length)
+            if tail_length is not None:
+                self._log(u"tail_length is not None, but it will be ignored")
                 tail_length = float(tail_length)
-                self._log(u"computing process_length from tail_length")
-                process_length = audio_file.audio_length - head_length - tail_length
+        elif tail_length is not None:
+            self._log(u"tail_length is not None, converting to float")
+            tail_length = float(tail_length)
+            self._log(u"computing process_length from tail_length")
+            process_length = audio_file.audio_length - head_length - tail_length
 
-            self._log([u"is_audio_file_head_length is %s", str(head_length)])
-            self._log([u"is_audio_file_process_length is %s", str(process_length)])
-            self._log([u"is_audio_file_tail_length is %s", str(tail_length)])
+        self._log([u"is_audio_file_head_length is %s", str(head_length)])
+        self._log([u"is_audio_file_process_length is %s", str(process_length)])
+        self._log([u"is_audio_file_tail_length is %s", str(tail_length)])
 
-            self._log(u"Trimming audio data...")
-            audio_file.trim(head_length, process_length)
-            self._log(u"Trimming audio data... done")
+        self._log(u"Trimming audio data...")
+        audio_file.trim(head_length, process_length)
+        self._log(u"Trimming audio data... done")
 
-            self._log(u"Writing audio file...")
-            audio_file.write(audio_file_path)
-            self._log(u"Writing audio file... done")
+        self._log(u"Writing audio file...")
+        audio_file.write(audio_file_path)
+        self._log(u"Writing audio file... done")
 
-            self._log(u"Clearing audio data...")
-            audio_file.clear_data()
-            self._log(u"Clearing audio data... done")
+        self._log(u"Clearing audio data...")
+        audio_file.clear_data()
+        self._log(u"Clearing audio data... done")
 
         self._log(u"Setting head and/or tail: succeeded")
+        return True
 
-    def _synthesize(self, allow_unlisted_languages):
+    def _synthesize(self):
         """
         Synthesize text into a ``wav`` file.
 
@@ -394,21 +411,17 @@ class ExecuteTask(object):
         path = None
         anchors = None
         self._log(u"Creating an output tmp file")
-        handler, path = gf.tmp_file(suffix=".wav")
+        handler, path = gf.tmp_file(suffix=u".wav", root=self.rconf["tmp_path"])
         self._log(u"Creating Synthesizer object")
-        synt = Synthesizer(logger=self.logger)
+        synt = Synthesizer(rconf=self.rconf, logger=self.logger)
         self._log(u"Synthesizing...")
-        result = synt.synthesize(
-            self.task.text_file,
-            path,
-            allow_unlisted_languages=allow_unlisted_languages
-        )
+        result = synt.synthesize(self.task.text_file, path)
         anchors = result[0]
         self._log(u"Synthesizing... done")
         self._log(u"Synthesizing text: succeeded")
         return (handler, path, anchors)
 
-    def _align_waves(self, real_path, synt_path):
+    def _align_waves(self, real_path, synt_path, real_full_wave_full_mfcc=None, real_full_wave_length=None):
         """
         Align two ``wav`` files.
 
@@ -417,12 +430,22 @@ class ExecuteTask(object):
         corresponding time instants
         in the real and synt wave, respectively
         ``[real_time, synt_time]``
+
+        If ``real_full_wave_full_mfcc`` and ``real_full_wave_length``
+        are not None, use them instead of computing MFCCs again.
         """
         self._log(u"Aligning waves")
         self._log(u"Creating DTWAligner object")
-        aligner = DTWAligner(real_path, synt_path, logger=self.logger)
+        aligner = DTWAligner(real_path, synt_path, rconf=self.rconf, logger=self.logger)
         self._log(u"Computing MFCC...")
-        aligner.compute_mfcc()
+        if (real_full_wave_full_mfcc is not None) and (real_full_wave_length is not None):
+            self._log(u"Using real wave MFCCs already computed")
+            aligner.real_wave_full_mfcc = real_full_wave_full_mfcc
+            aligner.real_wave_length = real_full_wave_length
+            aligner.compute_mfcc(real_wave=False, synt_wave=True)
+        else:
+            self._log(u"Computing both real and synt wave MFCCs")
+            aligner.compute_mfcc(real_wave=True, synt_wave=True)
         self._log(u"Computing MFCC... done")
         self._log(u"Computing path...")
         aligner.compute_path()
@@ -489,7 +512,7 @@ class ExecuteTask(object):
         Return the translated text map
         """
         translated = []
-        head = gf.safe_float(self.task.configuration.is_audio_file_head_length, 0)
+        head = gf.safe_float(self.task.configuration["i_a_head"], 0)
         translated.append([0, head, None, None])
         end = 0
         for element in text_map:
@@ -513,7 +536,7 @@ class ExecuteTask(object):
         a list of triples ``[start_time, end_time, fragment_id]``
         """
         self._log(u"Adjusting boundaries")
-        algo = self.task.configuration.adjust_boundary_algorithm
+        algo = self.task.configuration["aba_algorithm"]
         value = None
         if algo is None:
             self._log(u"No adjust boundary algorithm specified: returning")
@@ -522,21 +545,21 @@ class ExecuteTask(object):
             self._log(u"Requested adjust boundary algorithm AUTO: returning")
             return text_map
         elif algo == AdjustBoundaryAlgorithm.AFTERCURRENT:
-            value = self.task.configuration.adjust_boundary_aftercurrent_value
+            value = self.task.configuration["aba_aftercurrent_value"]
         elif algo == AdjustBoundaryAlgorithm.BEFORENEXT:
-            value = self.task.configuration.adjust_boundary_beforenext_value
+            value = self.task.configuration["aba_beforenext_value"]
         elif algo == AdjustBoundaryAlgorithm.OFFSET:
-            value = self.task.configuration.adjust_boundary_offset_value
+            value = self.task.configuration["aba_offset_value"]
         elif algo == AdjustBoundaryAlgorithm.PERCENT:
-            value = self.task.configuration.adjust_boundary_percent_value
+            value = self.task.configuration["aba_percent_value"]
         elif algo == AdjustBoundaryAlgorithm.RATE:
-            value = self.task.configuration.adjust_boundary_rate_value
+            value = self.task.configuration["aba_rate_value"]
         elif algo == AdjustBoundaryAlgorithm.RATEAGGRESSIVE:
-            value = self.task.configuration.adjust_boundary_rate_value
-        self._log([u"Requested algo %s and value %s", algo, value])
+            value = self.task.configuration["aba_rate_value"]
+        self._log([u"Requested algo %s and value %s", algo, str(value)])
 
         self._log(u"Running VAD...")
-        vad = VAD(real_wave_full_mfcc, real_wave_length, logger=self.logger)
+        vad = VAD(real_wave_full_mfcc, real_wave_length, rconf=self.rconf, logger=self.logger)
         vad.compute_vad()
         self._log(u"Running VAD... done")
 
@@ -547,6 +570,7 @@ class ExecuteTask(object):
             speech=vad.speech,
             nonspeech=vad.nonspeech,
             value=value,
+            rconf=self.rconf,
             logger=self.logger
         )
         self._log(u"Adjusting boundaries...")
@@ -580,7 +604,7 @@ class ExecuteTask(object):
             self._log([u"Language read from text_file: %s", language])
 
         # get head/tail format
-        head_tail_format = self.task.configuration.os_file_head_tail_format
+        head_tail_format = self.task.configuration["o_h_t_format"]
         self._log([u"Head/tail format: %s", str(head_tail_format)])
 
         # add head sync map fragment if needed

@@ -36,7 +36,7 @@ In practice, the sync map will be output to a file with a precise syntax.
 Currently, the following formats are supported:
 
 #. SMIL for EPUB 3 ebooks with Media Overlays,
-#. SRT/TTML/VTT for closed captioning,
+#. SBV/SRT/SUB/TTML/VTT for closed captioning,
 #. JSON for consumption on the Web, and
 #. "raw" CSV/SSV/TSV/TXT/XML for further processing.
 
@@ -620,7 +620,9 @@ The ``aeneas`` package contains the following modules:
     adjustboundaryalgorithm
     analyzecontainer
     audiofile
+    configurationobject
     container
+    diagnostics
     downloader
     dtw
     espeakwrapper
@@ -633,6 +635,8 @@ The ``aeneas`` package contains the following modules:
     job
     language
     logger
+    mfcc
+    runtimeconfiguration
     sd
     syncmap
     synthesizer

@@ -16,7 +16,7 @@ from aeneas.container import ContainerFormat
 from aeneas.executetask import ExecuteTask
 from aeneas.job import Job
 from aeneas.logger import Logger
-from aeneas.validator import Validator
+from aeneas.runtimeconfiguration import RuntimeConfiguration
 import aeneas.globalfunctions as gf
 
 __author__ = "Alberto Pettarin"
@@ -78,6 +78,9 @@ class ExecuteJob(object):
 
     :param job: the job to be executed
     :type  job: :class:`aeneas.job.Job`
+    :param rconf: a runtime configuration. Default: ``None``, meaning that
+                  default settings will be used.
+    :type  rconf: :class:`aeneas.runtimeconfiguration.RuntimeConfiguration`
     :param logger: the logger object
     :type  logger: :class:`aeneas.logger.Logger`
 
@@ -86,13 +89,12 @@ class ExecuteJob(object):
 
     TAG = u"ExecuteJob"
 
-    def __init__(self, job=None, logger=None):
+    def __init__(self, job=None, rconf=None, logger=None):
         self.job = job
         self.working_directory = None
         self.tmp_directory = None
-        self.logger = logger
-        if self.logger is None:
-            self.logger = Logger()
+        self.logger = logger or Logger()
+        self.rconf = rconf or RuntimeConfiguration()
         if job is not None:
             self.load_job(self.job)
 
@@ -133,7 +135,7 @@ class ExecuteJob(object):
 
         # create working directory where the input container
         # will be decompressed
-        self.working_directory = gf.tmp_directory()
+        self.working_directory = gf.tmp_directory(root=self.rconf["tmp_path"])
         self._log([u"Created working directory '%s'", self.working_directory])
 
         try:
@@ -181,18 +183,13 @@ class ExecuteJob(object):
             self.clean()
             self._failed(u"Error while setting absolute paths for tasks: %s" % exc, "input")
 
-    def execute(self, allow_unlisted_languages=False):
+    def execute(self):
         """
         Execute the job, that is, execute all of its tasks.
 
         Each produced sync map will be stored
         inside the corresponding task object.
 
-        :param allow_unlisted_languages: if ``True``, do not emit an error
-                                         if ``text_file`` contains fragments
-                                         with language not listed in
-                                        :class:`aeneas.language.Language`
-        :type  allow_unlisted_languages: bool
         :raise ExecuteJobExecutionError: if there is a problem during the job execution
         """
         self._log(u"Executing job")
@@ -201,14 +198,16 @@ class ExecuteJob(object):
             self._failed(u"The job object is None", "execution")
         if len(self.job) == 0:
             self._failed(u"The job has no tasks", "execution")
+        if (self.rconf["job_max_tasks"] > 0) and (len(self.job) > self.rconf["job_max_tasks"]):
+            self._failed(u"The job has too many tasks", "execution")
         self._log([u"Number of tasks: '%d'", len(self.job)])
 
         for task in self.job.tasks:
             try:
-                custom_id = task.configuration.custom_id
+                custom_id = task.configuration["custom_id"]
                 self._log([u"Executing task '%s'...", custom_id])
-                executor = ExecuteTask(task, logger=self.logger)
-                executor.execute(allow_unlisted_languages=allow_unlisted_languages)
+                executor = ExecuteTask(task, rconf=self.rconf, logger=self.logger)
+                executor.execute()
                 self._log([u"Executing task '%s'... done", custom_id])
             except Exception as exc:
                 self._failed(u"Error while executing task '%s': %s" % (custom_id, exc), "execution")
@@ -239,11 +238,11 @@ class ExecuteJob(object):
         # will be created
         # this temporary directory will be compressed into
         # the output container
-        self.tmp_directory = gf.tmp_directory()
+        self.tmp_directory = gf.tmp_directory(root=self.rconf["tmp_path"])
         self._log([u"Created temporary directory '%s'", self.tmp_directory])
 
         for task in self.job.tasks:
-            custom_id = task.configuration.custom_id
+            custom_id = task.configuration["custom_id"]
 
             # check if the task has sync map and sync map file path
             if task.sync_map_file_path is None:
@@ -260,9 +259,9 @@ class ExecuteJob(object):
                 self._failed(u"Error while outputting sync map for task '%s': %s" % (custom_id, exc), "output")
 
         # get output container info
-        output_container_format = self.job.configuration.os_container_format
+        output_container_format = self.job.configuration["o_container_format"]
         self._log([u"Output container format: '%s'", output_container_format])
-        output_file_name = self.job.configuration.os_file_name
+        output_file_name = self.job.configuration["o_name"]
         if ((output_container_format != ContainerFormat.UNPACKED) and
                 (not output_file_name.endswith(output_container_format))):
             self._log(u"Adding extension to output_file_name")

@@ -39,6 +39,22 @@ class TestFFPROBEWrapperCLI(unittest.TestCase):
             ("in", "../tools/res/audio.mp3")
         ], 0)
 
+    def test_probe_path(self):
+        path = os.path.expanduser("~")
+        path = os.path.join(path, ".bin/myffprobe")
+        if gf.file_exists(path):
+            self.execute([
+                ("in", "../tools/res/audio.wav"),
+                ("", "-r=\"ffprobe_path=%s\"" % path)
+            ], 0)
+
+    def test_probe_path_bad(self):
+        path = "/foo/bar/ffprobe"
+        self.execute([
+            ("in", "../tools/res/audio.wav"),
+            ("", "-r=\"ffprobe_path=%s\"" % path)
+        ], 1)
+
     def test_probe_cannot_read(self):
         self.execute([
             ("", "/foo/bar/baz.wav")

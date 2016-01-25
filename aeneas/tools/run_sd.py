@@ -52,7 +52,6 @@ class RunSDCLI(AbstractCLIProgram):
             u"parsed %s en %s %s %s" % (TEXT_FILE, AUDIO_FILE, PARAMETERS_HEAD, PARAMETERS_TAIL),
         ],
         "options": [
-            u"--allow-unlisted-language : allow using a language code not officially supported",
             u"--class-regex=REGEX : extract text from elements with class attribute matching REGEX (unparsed)",
             u"--id-regex=REGEX : extract text from elements with id attribute matching REGEX (unparsed)",
             u"--max-head=DUR : audio head has at most DUR seconds",
@@ -94,8 +93,7 @@ class RunSDCLI(AbstractCLIProgram):
             return self.ERROR_EXIT_CODE
 
         language = gf.safe_unicode(self.actual_arguments[2])
-        unlisted_language = self.has_option(u"--allow-unlisted-language")
-        if (not language in Language.ALLOWED_VALUES) and (not unlisted_language):
+        if (not language in Language.ALLOWED_VALUES) and (not self.rconf["allow_unlisted_languages"]):
             self.print_error(u"Language '%s' is not supported" % (language))
             return self.ERROR_EXIT_CODE
 
@@ -112,17 +110,17 @@ class RunSDCLI(AbstractCLIProgram):
 
         self.print_info(u"Reading audio...")
         try:
-            tmp_handler, tmp_file_path = gf.tmp_file(suffix=".wav")
-            converter = FFMPEGWrapper(logger=self.logger)
+            tmp_handler, tmp_file_path = gf.tmp_file(suffix=u".wav", root=self.rconf["tmp_path"])
+            converter = FFMPEGWrapper(rconf=self.rconf, logger=self.logger)
             converter.convert(audio_file_path, tmp_file_path)
         except Exception as exc:
             self.print_error(u"An unexpected Exception occurred while converting the audio file:")
             self.print_error(u"%s" % exc)
             return self.ERROR_EXIT_CODE
         try:
-            audio_file = AudioFileMonoWAVE(tmp_file_path, logger=self.logger)
+            audio_file = AudioFileMonoWAVE(tmp_file_path, rconf=self.rconf, logger=self.logger)
         except Exception as exc:
-            self.print_error(u"An unexpected Exception occurred while converting the audio file:")
+            self.print_error(u"An unexpected Exception occurred while reading the converted audio file:")
             self.print_error(u"%s" % exc)
             return self.ERROR_EXIT_CODE
         self.print_info(u"Reading audio... done")
@@ -133,7 +131,7 @@ class RunSDCLI(AbstractCLIProgram):
         max_tail = gf.safe_float(self.has_option_with_value(u"--max-tail"), None)
 
         self.print_info(u"Detecting audio interval...")
-        start_detector = SD(audio_file, text_file, logger=self.logger)
+        start_detector = SD(audio_file, text_file, rconf=self.rconf, logger=self.logger)
         start, end = start_detector.detect_interval(min_head, max_head, min_tail, max_tail)
         self.print_info(u"Detecting audio interval... done")
 

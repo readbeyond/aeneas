@@ -1,13 +1,15 @@
 # aeneas 
 
-**aeneas** is a Python library and a set of tools to automagically synchronize audio and text.
+**aeneas** is a Python library and a set of tools to automagically synchronize audio and text (aka forced alignment).
 
 * Version: 1.4.1
-* Date: 2016-??-??
+* Date: 2016-02-13
 * Developed by: [ReadBeyond](http://www.readbeyond.it/)
 * Lead Developer: [Alberto Pettarin](http://www.albertopettarin.it/)
 * License: the GNU Affero General Public License Version 3 (AGPL v3)
 * Contact: [aeneas@readbeyond.it](mailto:aeneas@readbeyond.it)
+* Quick Links: [Home](http://www.readbeyond.it/aeneas/) - [GitHub](https://github.com/readbeyond/aeneas/) - [PyPI](https://pypi.python.org/pypi/aeneas/) - [API Docs](http://www.readbeyond.it/aeneas/docs/) - [Web App](http://aeneasweb.org)
+ 
 
 1. [Goal](#goal)
 2. [System Requirements, Supported Platforms and Installation](#system-requirements-supported-platforms-and-installation)
@@ -31,6 +33,7 @@
     3. [Contributing](#contributing)
 11. [Development History](#development-history)
 12. [Acknowledgments](#acknowledgments)
+
 
 ## Goal
 
@@ -63,7 +66,7 @@ To eat the world's due, by the grave and thee.        => [00:00:48.000, 00:00:53
 ```
 
 This synchronization map can be output to file in several formats:
-SMIL for EPUB 3, SRT/TTML/VTT for closed captioning,
+SMIL for EPUB 3, SBV/SRT/SUB/TTML/VTT for closed captioning,
 JSON/RBSE for Web usage,
 or raw CSV/SSV/TSV/TXT/XML for further processing.
 
@@ -387,7 +390,7 @@ Changelog: [http://www.readbeyond.it/aeneas/docs/changelog.html](http://www.read
 * Possibility of downloading the audio file from a YouTube video
 * Batch processing
 * Output sync map formats: CSV, JSON, RBSE, SMIL, SSV, TSV, TTML, TXT, VTT, XML
-* Tested languages: BG, CA, CY, DA, DE, EL, EN, EO, ES, ET, FA, FI, FR, GA, GRC, HR, HU, IS, IT, LA, LT, LV, NL, NO, RO, RU, PL, PT, SK, SR, SV, SW, TR, UK
+* Tested languages: BG, CA, CY, CS, DA, DE, EL, EN, EO, ES, ET, FA, FI, FR, GA, GRC, HR, HU, IS, IT, LA, LT, LV, NL, NO, RO, RU, PL, PT, SK, SR, SV, SW, TR, UK
 * Robust against misspelled/mispronounced words, local rearrangements of words, background noise/sporadic spikes
 * Code suitable for a Web app deployment (e.g., on-demand AWS instances)
 * Adjustable splitting times, including a max character/second constraint for CC applications
@@ -456,7 +459,7 @@ See the [LICENSE](https://raw.githubusercontent.com/readbeyond/aeneas/master/LIC
 
 The pure Python code for computing the MFCCs
 `aeneas/mfcc.py`
-is a verbatim copy from the
+is a modified version from the
 [CMU Sphinx3 project](http://cmusphinx.sourceforge.net/).
 See [licenses/sphinx3.txt](https://raw.githubusercontent.com/readbeyond/aeneas/master/licenses/sphinx3.txt) for details.
 
@@ -467,7 +470,7 @@ is a verbatim copy from the
 included here to avoid installing the whole `scipy` package.
 See [licenses/scipy.txt](https://raw.githubusercontent.com/readbeyond/aeneas/master/licenses/scipy.txt) for details.
 
-The C header `speak_lib.h` for `espeak`
+The C header `speak_lib.h` for the Python C extension `cew`
 is a verbatim copy from the
 [espeak project](http://espeak.sourceforge.net/).
 See [licenses/eSpeak.txt](https://raw.githubusercontent.com/readbeyond/aeneas/master/licenses/eSpeak.txt) for details.
@@ -475,7 +478,7 @@ See [licenses/eSpeak.txt](https://raw.githubusercontent.com/readbeyond/aeneas/ma
 The HTML file `aeneas/res/finetuneas.html`
 is a verbatim copy from the
 [finetuneas project](https://github.com/ozdefir/finetuneas),
-courtesy of Firat Özdemir.
+courtesy of Firat Ozdemir.
 See [licenses/finetuneas.txt](https://raw.githubusercontent.com/readbeyond/aeneas/master/licenses/finetuneas.txt) for details.
 
 Audio files contained in the unit tests `aeneas/tests/res/` directory

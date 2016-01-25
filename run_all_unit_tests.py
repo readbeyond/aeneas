@@ -47,11 +47,17 @@ class NOPStream(object):
 
 def main():
     """ Perform tests """
-    sort_tests = ("--sort" in sys.argv)
-    verbose = ("--verbose" in sys.argv)
-    long_tests = ("--long-tests" in sys.argv)
-    net_tests = ("--net-tests" in sys.argv)
-    tool_tests = ("--tool-tests" in sys.argv)
+    if ("--help" in sys.argv) or ("-h" in sys.argv):
+        print("")
+        print("Usage: python %s [--long-tests|--net-tests|--tool-tests] [--sort] [--verbose]" % sys.argv[0])
+        print("")
+        sys.exit(0)
+
+    sort_tests = ("--sort" in sys.argv) or ("-s" in sys.argv)
+    verbose = ("--verbose" in sys.argv) or ("-v" in sys.argv)
+    long_tests = ("--long-tests" in sys.argv) or ("-l" in sys.argv)
+    net_tests = ("--net-tests" in sys.argv) or ("-n" in sys.argv)
+    tool_tests = ("--tool-tests" in sys.argv) or ("-t" in sys.argv)
 
     if long_tests:
         pattern = LONG_PATTERN
@@ -118,9 +124,12 @@ def main():
     print("")
     if total_errors + total_failures == 0:
         print("[INFO] Tests completed: all passed!")
+        print("")
+        sys.exit(0)
     else:
         print("[INFO] Tests completed: errors or failures found!")
-    print("")
+        print("")
+        sys.exit(1)
 
 
 

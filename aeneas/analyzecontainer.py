@@ -14,6 +14,7 @@ from aeneas.container import Container
 from aeneas.hierarchytype import HierarchyType
 from aeneas.job import Job
 from aeneas.logger import Logger
+from aeneas.runtimeconfiguration import RuntimeConfiguration
 from aeneas.task import Task
 import aeneas.globalconstants as gc
 import aeneas.globalfunctions as gf
@@ -35,6 +36,9 @@ class AnalyzeContainer(object):
 
     :param container: the container to be analyzed
     :type  container: :class:`aeneas.container.Container`
+    :param rconf: a runtime configuration. Default: ``None``, meaning that
+                  default settings will be used.
+    :type  rconf: :class:`aeneas.runtimeconfiguration.RuntimeConfiguration`
     :param logger: the logger object
     :type  logger: :class:`aeneas.logger.Logger`
 
@@ -43,14 +47,13 @@ class AnalyzeContainer(object):
 
     TAG = u"AnalyzeContainer"
 
-    def __init__(self, container, logger=None):
+    def __init__(self, container, rconf=None, logger=None):
         if container is None:
             raise TypeError("container is None")
         if not isinstance(container, Container):
             raise TypeError("container is not an instance of Container")
-        self.logger = logger
-        if self.logger is None:
-            self.logger = Logger()
+        self.logger = logger or Logger()
+        self.rconf = rconf or RuntimeConfiguration()
         self.container = container
 
     def _log(self, message, severity=Logger.DEBUG):
@@ -346,17 +349,17 @@ class AnalyzeContainer(object):
         parameters = gf.config_string_to_dict(config_string)
         self._log(u"Creating task")
         task = Task(config_string, logger=self.logger)
-        task.configuration.description = "Task %s" % task_info[0]
-        self._log([u"Task description: %s", task.configuration.description])
+        task.configuration["description"] = "Task %s" % task_info[0]
+        self._log([u"Task description: %s", task.configuration["description"]])
         try:
-            task.configuration.language = parameters[gc.PPN_TASK_LANGUAGE]
-            self._log([u"Set language from task: '%s'", task.configuration.language])
+            task.configuration["language"] = parameters[gc.PPN_TASK_LANGUAGE]
+            self._log([u"Set language from task: '%s'", task.configuration["language"]])
         except KeyError:
-            task.configuration.language = parameters[gc.PPN_JOB_LANGUAGE]
-            self._log([u"Set language from job: '%s'", task.configuration.language])
+            task.configuration["language"] = parameters[gc.PPN_JOB_LANGUAGE]
+            self._log([u"Set language from job: '%s'", task.configuration["language"]])
         custom_id = task_info[0]
-        task.configuration.custom_id = custom_id
-        self._log([u"Task custom_id: %s", task.configuration.custom_id])
+        task.configuration["custom_id"] = custom_id
+        self._log([u"Task custom_id: %s", task.configuration["custom_id"]])
         task.text_file_path = task_info[1]
         self._log([u"Task text file path: %s", task.text_file_path])
         task.audio_file_path = task_info[2]
@@ -365,18 +368,18 @@ class AnalyzeContainer(object):
             sync_map_root_directory,
             job_os_hierarchy_type,
             custom_id,
-            task.configuration.os_file_name
+            task.configuration["o_name"]
         )
         self._log([u"Task sync map file path: %s", task.sync_map_file_path])
 
         self._log(u"Replacing placeholder in os_file_smil_audio_ref")
-        task.configuration.os_file_smil_audio_ref = self._replace_placeholder(
-            task.configuration.os_file_smil_audio_ref,
+        task.configuration["o_smil_audio_ref"] = self._replace_placeholder(
+            task.configuration["o_smil_audio_ref"],
             custom_id
         )
         self._log(u"Replacing placeholder in os_file_smil_page_ref")
-        task.configuration.os_file_smil_page_ref = self._replace_placeholder(
-            task.configuration.os_file_smil_page_ref,
+        task.configuration["o_smil_page_ref"] = self._replace_placeholder(
+            task.configuration["o_smil_page_ref"],
             custom_id
         )
         self._log(u"Returning task")

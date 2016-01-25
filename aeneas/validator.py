@@ -17,6 +17,7 @@ from aeneas.hierarchytype import HierarchyType
 from aeneas.idsortingalgorithm import IDSortingAlgorithm
 from aeneas.language import Language
 from aeneas.logger import Logger
+from aeneas.runtimeconfiguration import RuntimeConfiguration
 from aeneas.syncmap import SyncMapFormat
 from aeneas.syncmap import SyncMapHeadTailFormat
 from aeneas.textfile import TextFileFormat
@@ -39,6 +40,12 @@ class Validator(object):
     A validator to assess whether user input is well-formed.
 
     Note that all strings are ``str`` objects.
+    
+    :param rconf: a runtime configuration. Default: ``None``, meaning that
+                  default settings will be used.
+    :type  rconf: :class:`aeneas.runtimeconfiguration.RuntimeConfiguration`
+    :param logger: the logger object
+    :type  logger: :class:`aeneas.logger.Logger`
     """
 
     TAG = u"Validator"
@@ -215,11 +222,10 @@ class Validator(object):
         gc.PPN_TASK_OS_FILE_FORMAT,
     ]
 
-    def __init__(self, logger=None):
+    def __init__(self, rconf=None, logger=None):
         self.result = None
-        self.logger = logger
-        if self.logger is None:
-            self.logger = Logger()
+        self.logger = logger or Logger()
+        self.rconf = rconf or RuntimeConfiguration()
 
     def _log(self, message, severity=Logger.DEBUG):
         """ Log """
@@ -582,6 +588,15 @@ class Validator(object):
         if len(job) == 0:
             self._failed(u"Unable to create at least one Task from the container.")
             return
+
+        if self.rconf["job_max_tasks"] > 0:
+            self._log(u"Checking that the Job does not have too many Tasks")
+            if len(job) > self.rconf["job_max_tasks"]:
+                self._failed(u"The Job has %d Tasks, more than the maximum allowed (%d)." % (
+                    len(job),
+                    self.rconf["job_max_tasks"]
+                ))
+                return
 
         self._log(u"Checking that each Task text file is well formed")
         for task in job.tasks:

@@ -18,9 +18,9 @@ class TestGlobalFunctions(unittest.TestCase):
     def test_custom_tmp_dir(self):
         tmp_dir = gf.custom_tmp_dir()
         if sys.platform in ["linux", "linux2", "darwin"]:
-            self.assertEqual(tmp_dir, gc.TMP_PATH)
+            self.assertEqual(tmp_dir, gc.RC_TMP_PATH_DEFAULT_POSIX)
         else:
-            self.assertIsNone(tmp_dir)
+            self.assertEqual(tmp_dir, gc.RC_TMP_PATH_DEFAULT_NONPOSIX)
 
     def test_tmp_directory(self):
         tmp_dir = gf.tmp_directory()

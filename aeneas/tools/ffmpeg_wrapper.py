@@ -9,6 +9,7 @@ from __future__ import absolute_import
 from __future__ import print_function
 import sys
 
+from aeneas.ffmpegwrapper import FFMPEGPathError
 from aeneas.ffmpegwrapper import FFMPEGWrapper
 from aeneas.tools.abstract_cli_program import AbstractCLIProgram
 import aeneas.globalfunctions as gf
@@ -60,10 +61,13 @@ class FFMPEGWrapperCLI(AbstractCLIProgram):
             return self.ERROR_EXIT_CODE
 
         try:
-            converter = FFMPEGWrapper(logger=self.logger)
+            converter = FFMPEGWrapper(rconf=self.rconf, logger=self.logger)
             converter.convert(input_file_path, output_file_path)
             self.print_info(u"Converted '%s' into '%s'" % (input_file_path, output_file_path))
             return self.NO_ERROR_EXIT_CODE
+        except FFMPEGPathError:
+            self.print_error(u"Unable to call the ffmpeg executable '%s'" % (self.rconf["ffmpeg_path"]))
+            self.print_error(u"Make sure the path to ffmpeg is correct")
         except OSError:
             self.print_error(u"Cannot convert file '%s' into '%s'" % (input_file_path, output_file_path))
             self.print_error(u"Make sure the input file has a format supported by ffmpeg")

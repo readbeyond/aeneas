@@ -47,37 +47,51 @@ def custom_tmp_dir():
     Return the path of the temporary directory to use.
 
     On POSIX OSes (Linux and OS X), return the value of
-    :class:`aeneas.globalconstants.TMP_PATH`
+    :class:`aeneas.globalconstants.RC_TMP_PATH_DEFAULT_POSIX`
     (e.g., ``/tmp/``).
 
-    On Windows, return ``None``, so that ``tempfile``
+    On non-POSIX OSes, return the value of
+    :class:`aeneas.globalconstants.RC_TMP_PATH_DEFAULT_NONPOSIX`
+    (i.e., ``None``), so that ``tempfile``
     will use the directory specified by the
     environment/user TMP/TEMP variable.
 
     :rtype: string (path)
     """
     if is_posix():
-        return gc.TMP_PATH
-    return None
+        return gc.RC_TMP_PATH_DEFAULT_POSIX
+    return gc.RC_TMP_PATH_DEFAULT_NONPOSIX
 
-def tmp_directory():
+def tmp_directory(root=None):
     """
     Return the path of a temporary directory created by ``tempfile``.
 
+    :param root: path to the root temporary directory;
+                 if ``None``, the default temporary directory
+                 will be used instead
+    :type  root: Unicode string (path)
     :rtype: string (path)
     """
-    return tempfile.mkdtemp(dir=custom_tmp_dir())
+    if root is None:
+        root = custom_tmp_dir()
+    return tempfile.mkdtemp(dir=root)
 
-def tmp_file(suffix=u""):
+def tmp_file(suffix=u"", root=None):
     """
     Return a (handler, path) tuple
     for a temporary file with given suffix created by ``tempfile``.
 
     :param suffix: the suffix (e.g., the extension) of the file
     :type  suffix: Unicode string
+    :param root: path to the root temporary directory;
+                 if ``None``, the default temporary directory
+                 will be used instead
+    :type  root: Unicode string (path)
     :rtype: tuple
     """
-    return tempfile.mkstemp(suffix=suffix, dir=custom_tmp_dir())
+    if root is None:
+        root = custom_tmp_dir()
+    return tempfile.mkstemp(suffix=suffix, dir=root)
 
 def file_extension(path):
     """
@@ -652,21 +666,21 @@ def can_run_c_extension(name=None):
     def can_run_cdtw():
         """ Python C extension for computing DTW """
         try:
-            import aeneas.cdtw
+            import aeneas.cdtw.cdtw
             return True
         except ImportError:
             return False
     def can_run_cmfcc():
         """ Python C extension for computing MFCC """
         try:
-            import aeneas.cmfcc
+            import aeneas.cmfcc.cmfcc
             return True
         except ImportError:
             return False
     def can_run_cew():
         """ Python C extension for synthesizing with espeak """
         try:
-            import aeneas.cew
+            import aeneas.cew.cew
             return True
         except ImportError:
             return False
@@ -691,7 +705,7 @@ def run_c_extension_with_fallback(
         c_function,
         py_function,
         args,
-        force_pure_python=False
+        c_extension=True
 ):
     """
     Run a function calling a C extension, falling back
@@ -705,8 +719,9 @@ def run_c_extension_with_fallback(
     :type  c_function: function
     :param py_function: the (Python) function providing the fallback
     :type  py_function: function
-    :param force_pure_python: if ``True``, force running the pure Python code
-    :type  force_pure_python: bool
+    :param c_extension: if ``True``, try running the C extension first;
+                        if ``False``, directly run the pure Python fallback
+    :type  c_extension: bool
     :rtype: depends on the extension being called
 
     :raise RuntimeError: if both the C extension and
@@ -715,23 +730,21 @@ def run_c_extension_with_fallback(
     .. versionadded:: 1.4.0
     """
     computed = False
-    if force_pure_python:
-        log_function(u"Force using pure Python code")
-    else:
-        if gc.USE_C_EXTENSIONS:
-            log_function(u"C extensions enabled in gc")
-            if can_run_c_extension(extension):
-                log_function([u"C extensions enabled in gc and %s can be loaded", extension])
-                computed, result = c_function(*args)
-            else:
-                log_function([u"C extensions enabled in gc but %s cannot be loaded", extension])
+    if c_extension:
+        log_function(u"C extensions enabled")
+        if can_run_c_extension(extension):
+            log_function([u"C extensions enabled and %s can be loaded", extension])
+            computed, result = c_function(*args)
         else:
-            log_function(u"C extensions disabled in gc")
+            log_function([u"C extensions enabled but %s cannot be loaded", extension])
+    else:
+        log_function(u"C extensions disabled")
     if not computed:
         log_function(u"Running the pure Python code")
         computed, result = py_function(*args)
     if not computed:
-        raise RuntimeError("Both the C extension and the pure Python code did not succeed.")
+        # TODO create a more meaningful message
+        raise RuntimeError("Both the C extension and the pure Python code failed. (Wrong arguments? Input too big?)")
     return result
 
 def file_can_be_read(path):

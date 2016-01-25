@@ -542,9 +542,7 @@ class SyncMap(object):
 
     def __init__(self, logger=None):
         self.fragments = []
-        self.logger = Logger()
-        if logger is not None:
-            self.logger = logger
+        self.logger = logger or Logger()
 
     def _log(self, message, severity=Logger.DEBUG):
         """ Log """

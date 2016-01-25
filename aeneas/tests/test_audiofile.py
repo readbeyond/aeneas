@@ -165,13 +165,13 @@ class TestAudioFileMonoWAVE(unittest.TestCase):
         audiofile.clear_data()
         self.assertIsNone(audiofile.audio_data)
         self.assertEqual(audiofile.audio_mfcc.shape[0], 13)
-        self.assertEqual(audiofile.audio_mfcc.shape[1], 1332)
+        self.assertEqual(audiofile.audio_mfcc.shape[1], 1331)
 
     def test_length(self):
         audiofile = self.load(self.AUDIO_FILE_PATH_MFCC)
         audiofile.load_data()
         audiofile.clear_data()
-        self.assertAlmostEqual(audiofile.audio_length, 53.3, places=1) # 53.315918
+        self.assertAlmostEqual(audiofile.audio_length, 53.3, places=1) # 53.266
 
     def test_append_data(self):
         audiofile = self.load(self.AUDIO_FILE_PATH_MFCC)

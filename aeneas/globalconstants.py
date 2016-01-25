@@ -18,40 +18,7 @@ __email__ = "aeneas@readbeyond.it"
 __status__ = "Production"
 
 
-### PATHS ###
-
-#ESPEAK_PATH = "/usr/bin/espeak"
-ESPEAK_PATH = "espeak"
-""" Path to the ``espeak`` executable """
-
-#FFMPEG_PATH = "/usr/bin/ffmpeg"
-FFMPEG_PATH = "ffmpeg"
-""" Path to the ``ffmpeg`` executable """
-
-#FFPROBE_PATH = "/usr/bin/ffprobe"
-FFPROBE_PATH = "ffprobe"
-""" Path to the ``ffprobe`` executable """
-
-TMP_PATH = "/tmp/"
-""" Path to the temporary directory """
-
-
 ### CONSTANTS ###
-
-ALIGNER_MARGIN = 60
-""" Aligner margin, in seconds, for striped algorithms.
-Default: ``60``, corresponding to ``60s`` ahead and behind
-(i.e., ``120s`` total margin). """
-
-ALIGNER_USE_EXACT_ALGORITHM_WHEN_MARGIN_TOO_LARGE = True
-""" Use the exact DTW algorithm, instead of a striped algorithm,
-if the aligner margin is larger than the synthesized audio file.
-Default: ``True``. """
-
-ALIGNER_USE_IN_PLACE_ALGORITHMS = True
-""" Use the in place algorithm for computing the DTW accumulated cost matrix,
-effectively halving the memory used.
-Default: ``True``. """
 
 CONFIG_TXT_FILE_NAME = "config.txt"
 """ File name for the TXT configuration file in containers """
@@ -74,27 +41,20 @@ CONFIG_STRING_SEPARATOR_SYMBOL = "|"
 CONFIG_STRING_ASSIGNMENT_SYMBOL = "="
 """ Assignment symbol in config string ``key=value`` pairs """
 
-MFCC_FRAME_RATE = 25
-""" MFCC frame rate, in steps per second.
-Default: ``25``, corresponding to steps of ``40ms`` length.
-
-.. versionadded:: 1.1.0
-"""
-
 PARSED_TEXT_SEPARATOR = "|"
 """ Separator for input text files in parsed format """
 
 # reserved parameter names (RPN)
 RPN_JOB_IDENTIFIER = "job_identifier"
 """
-Key for the identifier of a job
+The identifier of a job. Reserved.
 
 Usage: reserved
 """
 
 RPN_TASK_IDENTIFIER = "task_identifier"
 """
-Key for the identifier of a task
+The identifier of a task. Reserved.
 
 Usage: reserved
 """
@@ -102,7 +62,7 @@ Usage: reserved
 # public parameter names (PPN)
 PPN_JOB_DESCRIPTION = "job_description"
 """
-Key for the description of a job
+A human-readable description of the job.
 
 Usage: config string, TXT config file, XML config file
 
@@ -116,7 +76,7 @@ Example::
 
 PPN_JOB_LANGUAGE = "job_language"
 """
-Key for the language of a job
+The language of the job.
 
 Usage: config string, TXT config file, XML config file
 
@@ -130,8 +90,7 @@ Example::
 
 PPN_JOB_IS_AUDIO_FILE_NAME_REGEX = "is_audio_file_name_regex"
 """
-Key for the regex for matching the audio file name
-of tasks in input containers
+The regex to match audio files in this job.
 
 Usage: config string, TXT config file
 
@@ -146,8 +105,8 @@ Example::
 
 PPN_JOB_IS_AUDIO_FILE_RELATIVE_PATH = "is_audio_file_relative_path"
 """
-Key for the path, relative to the task root directory,
-where the audio files should be searched in input containers
+The path, relative to the task root directory,
+where the audio files should be searched in input containers.
 
 Usage: config string, TXT config file
 
@@ -163,8 +122,8 @@ Example::
 
 PPN_JOB_IS_HIERARCHY_PREFIX = "is_hierarchy_prefix"
 """
-Key for the path, relative to the position of the TXT/XML config file,
-to be considered the task root directory, in input containers
+The path, relative to the position of the TXT/XML config file,
+to be considered the task root directory, in input containers.
 
 Usage: config string, TXT config file
 
@@ -179,7 +138,7 @@ Example::
 
 PPN_JOB_IS_HIERARCHY_TYPE = "is_hierarchy_type"
 """
-Key for the type of input container structure
+The type of hierarchy of the input job container.
 
 Usage: config string, TXT config file
 
@@ -194,8 +153,9 @@ Example::
 
 PPN_JOB_IS_TASK_DIRECTORY_NAME_REGEX = "is_task_dir_name_regex"
 """
-Key for the regex for matching the task directory names
-in input containers with paged hierarchy
+The regex to match task directory names
+within the base task directory in input containers.
+Applies to paged hierarchies only.
 
 Usage: config string, TXT config file
 
@@ -210,7 +170,7 @@ Example::
 
 PPN_JOB_IS_TEXT_FILE_FORMAT = "is_text_type"
 """
-Key for the format of text files in input containers
+The text file format of text files in input containers.
 
 Usage: config string, TXT config file, XML config file
 
@@ -226,8 +186,8 @@ Example::
 
 PPN_JOB_IS_TEXT_FILE_NAME_REGEX = "is_text_file_name_regex"
 """
-Key for the regex for matching the text file name
-of tasks in input containers
+The regex for matching the text file name
+of tasks in input containers.
 
 Usage: config string, TXT config file
 
@@ -242,8 +202,8 @@ Example::
 
 PPN_JOB_IS_TEXT_FILE_RELATIVE_PATH = "is_text_file_relative_path"
 """
-Key for the path, relative to the task root directory,
-where the text files should be searched in input containers
+The path, relative to the task root directory,
+where the text files should be searched in input containers.
 
 Usage: config string, TXT config file
 
@@ -259,9 +219,9 @@ Example::
 
 PPN_JOB_IS_TEXT_UNPARSED_CLASS_REGEX = "is_text_unparsed_class_regex"
 """
-Key for the regex for matching the ``class`` attribute
+The regex for matching the ``class`` attribute
 of XML elements containing text fragments to be extracted
-from ``unparsed`` text files
+from ``unparsed`` text files.
 
 Usage: config string, TXT config file, XML config file
 
@@ -277,9 +237,9 @@ Example::
 
 PPN_JOB_IS_TEXT_UNPARSED_ID_REGEX = "is_text_unparsed_id_regex"
 """
-Key for the regex for matching the ``id`` attribute
+The regex for matching the ``id`` attribute
 of XML elements containing text fragments to be extracted
-from ``unparsed`` text files
+from ``unparsed`` text files.
 
 Usage: config string, TXT config file, XML config file
 
@@ -294,8 +254,8 @@ Example::
 
 PPN_JOB_IS_TEXT_UNPARSED_ID_SORT = "is_text_unparsed_id_sort"
 """
-Key for the sorting algorithm to be used to sort the text fragments
-extracted from ``unparsed`` text files, based on their ``id`` attributes
+The sorting algorithm to be used to sort the text fragments
+extracted from ``unparsed`` text files, based on their ``id`` attributes.
 
 Usage: config string, TXT config file, XML config file
 
@@ -311,7 +271,7 @@ Example::
 
 PPN_JOB_OS_CONTAINER_FORMAT = "os_job_file_container"
 """
-Key for the format of the output container
+The format of the output container.
 
 Usage: config string, TXT config file, XML config file
 
@@ -325,7 +285,7 @@ Example::
 
 PPN_JOB_OS_FILE_NAME = "os_job_file_name"
 """
-Key for the file name of the output container
+The file name of the output container.
 
 Usage: config string, TXT config file, XML config file
 
@@ -339,8 +299,8 @@ Example::
 
 PPN_JOB_OS_HIERARCHY_PREFIX = "os_job_file_hierarchy_prefix"
 """
-Key for the path of the root directory of the output container,
-under which the task directories will be created
+The path of the root directory of the output container,
+under which the task directories will be created.
 
 Usage: config string, TXT config file, XML config file
 
@@ -354,7 +314,7 @@ Example::
 
 PPN_JOB_OS_HIERARCHY_TYPE = "os_job_file_hierarchy_type"
 """
-Key for the type of output container structure
+The type of output container structure.
 
 Usage: config string, TXT config file, XML config file
 
@@ -383,7 +343,7 @@ Example::
 
 PPN_TASK_CUSTOM_ID = "task_custom_id"
 """
-Key for the custom identifier of a task
+The custom, human-readable identifier of a task.
 
 Usage: config string, XML config file
 
@@ -397,7 +357,7 @@ Example::
 
 PPN_TASK_DESCRIPTION = "task_description"
 """
-Key for the description of a task
+The description of a task.
 
 Usage: config string, XML config file
 
@@ -411,7 +371,7 @@ Example::
 
 PPN_TASK_LANGUAGE = "task_language"
 """
-Key for the language of a task
+The language of a task.
 
 Usage: config string, XML config file
 
@@ -425,7 +385,8 @@ Example::
 
 PPN_TASK_ADJUST_BOUNDARY_ALGORITHM = "task_adjust_boundary_algorithm"
 """
-Key for the algorithm to adjust the boundary point between two fragments
+The algorithm to be run to adjust the fragment boundaries.
+If ``None`` or ``auto``, keep the current boundaries.
 
 Usage: config string, TXT config file, XML config file
 
@@ -446,8 +407,11 @@ Example::
 
 PPN_TASK_ADJUST_BOUNDARY_AFTERCURRENT_VALUE = "task_adjust_boundary_aftercurrent_value"
 """
-Key for the delay, in seconds, associated
-with ``task_adjust_boundary_algorithm=aftercurrent``
+The new boundary between two consecutive fragments
+will be set at ``value`` seconds
+after the end of the first fragment.
+
+Requires ``task_adjust_boundary_algorithm=aftercurrent``.
 
 Usage: config string, TXT config file, XML config file
 
@@ -462,8 +426,11 @@ Example::
 
 PPN_TASK_ADJUST_BOUNDARY_BEFORENEXT_VALUE = "task_adjust_boundary_beforenext_value"
 """
-Key for the delay, in seconds, associated
-with ``task_adjust_boundary_algorithm=beforenext``
+The new boundary between two consecutive fragments
+will be set at ``value`` seconds
+before the beginning of the second fragment.
+
+Requires ``task_adjust_boundary_algorithm=beforenext``.
 
 Usage: config string, TXT config file, XML config file
 
@@ -478,8 +445,12 @@ Example::
 
 PPN_TASK_ADJUST_BOUNDARY_OFFSET_VALUE = "task_adjust_boundary_offset_value"
 """
-Key for the percentage associated
-with ``task_adjust_boundary_algorithm=offset``
+The new boundary between two consecutive fragments
+will be set at ``value`` seconds from the current value.
+A negative ``value`` will move the boundary back,
+a positive ``value`` will move the boundary forward.
+
+Requires ``task_adjust_boundary_algorithm=offset``.
 
 Usage: config string, TXT config file, XML config file
 
@@ -495,8 +466,12 @@ Example::
 
 PPN_TASK_ADJUST_BOUNDARY_PERCENT_VALUE = "task_adjust_boundary_percent_value"
 """
-Key for the percentage associated
-with ``task_adjust_boundary_algorithm=percent``
+The new boundary between two consecutive fragments
+will be set at this ``value`` percent
+of the nonspeech interval between the two fragments.
+The value must be between ``0`` and ``100``.
+
+Requires ``task_adjust_boundary_algorithm=percent``.
 
 Usage: config string, TXT config file, XML config file
 
@@ -514,9 +489,12 @@ Example::
 
 PPN_TASK_ADJUST_BOUNDARY_RATE_VALUE = "task_adjust_boundary_rate_value"
 """
-Key for the rate, in characters/second, associated
-with ``task_adjust_boundary_algorithm=rate`` and
-``task_adjust_boundary_algorithm=rateaggressive``
+The new boundary will be set trying to keep the rate
+of all the fragments below this ``value`` characters/second.
+The value must be greater than ``0``.
+
+Requires ``task_adjust_boundary_algorithm=rate`` or
+``task_adjust_boundary_algorithm=rateaggressive``.
 
 Usage: config string, TXT config file, XML config file
 
@@ -531,8 +509,14 @@ Example::
 
 PPN_TASK_IS_AUDIO_FILE_DETECT_HEAD_MAX = "is_audio_file_detect_head_max"
 """
-Detect the head length of the audio file,
-using the provided value as an upper bound
+When synchronizing, auto detect the head of the audio file,
+using the provided value as an upper bound, and disregard
+these many seconds from the beginning of the audio file.
+
+If the ``is_audio_file_head_length`` parameter is also provided,
+the auto detection will not take place.
+
+NOTE: This is an experimental feature, use with caution.
 
 Usage: config string, XML config file
 
@@ -547,8 +531,14 @@ Example::
 
 PPN_TASK_IS_AUDIO_FILE_DETECT_HEAD_MIN = "is_audio_file_detect_head_min"
 """
-Detect the head length of the audio file,
-using the provided value as a lower bound
+When synchronizing, auto detect the head of the audio file,
+using the provided value as a lower bound, and disregard
+these many seconds from the beginning of the audio file.
+
+If the ``is_audio_file_head_length`` parameter is also provided,
+the auto detection will not take place.
+
+NOTE: This is an experimental feature, use with caution.
 
 Usage: config string, XML config file
 
@@ -563,8 +553,16 @@ Example::
 
 PPN_TASK_IS_AUDIO_FILE_DETECT_TAIL_MAX = "is_audio_file_detect_tail_max"
 """
-Detect the tail length of the audio file,
-using the provided value as an upper bound
+When synchronizing, auto detect the tail of the audio file,
+using the provided value as an upper bound, and disregard
+these many seconds from the end of the audio file.
+
+If the ``is_audio_file_process_length`` parameter or
+the ``is_audio_file_tail_length`` parameter
+are also provided,
+the auto detection will not take place.
+
+NOTE: This is an experimental feature, use with caution.
 
 Usage: config string, XML config file
 
@@ -579,8 +577,16 @@ Example::
 
 PPN_TASK_IS_AUDIO_FILE_DETECT_TAIL_MIN = "is_audio_file_detect_tail_min"
 """
-Detect the tail length of the audio file,
-using the provided value as an upper bound
+When synchronizing, auto detect the tail of the audio file,
+using the provided value as a lower bound, and disregard
+these many seconds from the end of the audio file.
+
+If the ``is_audio_file_process_length`` parameter or
+the ``is_audio_file_tail_length`` parameter
+are also provided,
+the auto detection will not take place.
+
+NOTE: This is an experimental feature, use with caution.
 
 Usage: config string, XML config file
 
@@ -595,8 +601,8 @@ Example::
 
 PPN_TASK_IS_AUDIO_FILE_HEAD_LENGTH = "is_audio_file_head_length"
 """
-Key for the number of seconds, from the beginning of the audio file
-of the task, to be ignored
+When synchronizing, disregard
+these many seconds from the beginning of the audio file.
 
 Usage: config string, XML config file
 
@@ -610,7 +616,9 @@ Example::
 
 PPN_TASK_IS_AUDIO_FILE_PROCESS_LENGTH = "is_audio_file_process_length"
 """
-Key for the number of seconds of the audio file of the task to process
+When synchronizing, process only these many seconds
+from the audio file, starting at the beginning of the file
+or at the end of the head.
 
 Usage: config string, XML config file
 
@@ -624,8 +632,13 @@ Example::
 
 PPN_TASK_IS_AUDIO_FILE_TAIL_LENGTH = "is_audio_file_tail_length"
 """
-Key for the number of seconds, from the end of the audio file
-of the task, to be ignored
+When synchronizing, disregard
+these many seconds from the end of the audio file.
+
+Note that if both ``is_audio_file_process_length``
+and ``is_audio_file_tail_length`` are provided,
+only the former will be taken into account,
+and ``is_audio_file_tail_length`` will be ignored.
 
 Usage: config string, XML config file
 
@@ -639,7 +652,7 @@ Example::
 
 PPN_TASK_IS_TEXT_FILE_FORMAT = "is_text_type"
 """
-Key for the format of the text file of the task
+The format of the input text file.
 
 Usage: config string, TXT config file, XML config file
 
@@ -655,8 +668,7 @@ Example::
 
 PPN_TASK_IS_TEXT_FILE_IGNORE_REGEX = "is_text_file_ignore_regex"
 """
-Key for the regex matching the text to be ignored,
-for the purpose of the alignment.
+The regex to match text to be ignored for alignment purposes.
 The output sync map file will contain the original text.
 
 Usage: config string, TXT config file, XML config file
@@ -671,9 +683,8 @@ Example::
 
 PPN_TASK_IS_TEXT_FILE_TRANSLITERATE_MAP = "is_text_file_transliterate_map"
 """
-Key for the path of the transliteration map file
-which will be used to delete/replace characters in the input text file
-for the purpose of the alignment.
+The path to the transliteration map file to be used to delete/replace
+characters in the input text file for alignment purposes.
 The output sync map file will contain the original text.
 
 Usage: config string, TXT config file, XML config file
@@ -688,9 +699,8 @@ Example::
 
 PPN_TASK_IS_TEXT_UNPARSED_CLASS_REGEX = "is_text_unparsed_class_regex"
 """
-Key for the regex for matching the ``class`` attribute
-of XML elements containing text fragments to be extracted
-from the ``unparsed`` text file of the task
+The regex to match ``class`` attributes for text fragments.
+It applies to ``unparsed`` text files only.
 
 Usage: config string, TXT config file, XML config file
 
@@ -706,9 +716,8 @@ Example::
 
 PPN_TASK_IS_TEXT_UNPARSED_ID_REGEX = "is_text_unparsed_id_regex"
 """
-Key for the regex for matching the ``id`` attribute
-of XML elements containing text fragments to be extracted
-from the ``unparsed`` text file of the task
+The regex to match ``id`` attributes for text fragments.
+It applies to ``unparsed`` text files only.
 
 Usage: config string, TXT config file, XML config file
 
@@ -723,8 +732,8 @@ Example::
 
 PPN_TASK_IS_TEXT_UNPARSED_ID_SORT = "is_text_unparsed_id_sort"
 """
-Key for the sorting algorithm to be used to sort the text fragments
-extracted from ``unparsed`` text files, based on their ``id`` attributes
+The algorithm to sort text fragments by their ``id`` attributes.
+It applies to unparsed text files only.
 
 Usage: config string, TXT config file, XML config file
 
@@ -740,7 +749,7 @@ Example::
 
 PPN_TASK_OS_FILE_FORMAT = "os_task_file_format"
 """
-Key for the format of the sync map output file
+The format of the sync map output for the task.
 
 Usage: config string, TXT config file, XML config file
 
@@ -756,12 +765,16 @@ Example::
 
 PPN_TASK_OS_FILE_ID_REGEX = "os_task_file_id_regex"
 """
-Key for the regex to be used for the fragment identifiers
+The regex to be used for the fragment identifiers
 of the sync map output file.
+
 This parameter will be used only
 when the input text file has `plain` or `subtitles` format;
 for `parsed` and `unparsed` input text files, the identifiers
 contained in the input text file will be used instead.
+
+When specified, the value must contain an interger placeholder,
+for example ``%d`` or ``%06d``.
 
 Usage: config string, TXT config file, XML config file
 
@@ -777,7 +790,11 @@ Example::
 
 PPN_TASK_OS_FILE_NAME = "os_task_file_name"
 """
-Key for the file name of the sync map output file
+The name of the sync map file output for the task.
+
+If processing a Job,
+the value might contain the ``PPV_OS_TASK_PREFIX`` placeholder,
+that will be replaced by a suitable path string.
 
 Usage: config string, TXT config file, XML config file
 
@@ -791,8 +808,9 @@ Example::
 
 PPN_TASK_OS_FILE_SMIL_AUDIO_REF = "os_task_file_smil_audio_ref"
 """
-Key for the ``src`` attribute of ``<audio>`` elements
-in the output sync map file in SMIL format
+The value of the ``src`` attribute for the ``<audio>`` element
+in the output sync map.
+It applies to ``SMIL`` sync maps only.
 
 Usage: config string, TXT config file, XML config file
 
@@ -807,8 +825,9 @@ Example::
 
 PPN_TASK_OS_FILE_SMIL_PAGE_REF = "os_task_file_smil_page_ref"
 """
-Key for the ``src`` attribute of ``<text>`` elements
-in the output sync map file in SMIL format
+The value of the ``src`` attribute for the ``<text>`` element
+in the output sync map.
+It applies to ``SMIL`` sync maps only.
 
 Usage: config string, TXT config file, XML config file
 
@@ -823,7 +842,7 @@ Example::
 
 PPN_TASK_OS_FILE_HEAD_TAIL_FORMAT = "os_task_file_head_tail_format"
 """
-Key for the format of the head/tail in the sync map output file
+The format of the head and tail of the sync map output for the task.
 
 Usage: config string, TXT config file, XML config file
 
@@ -881,67 +900,130 @@ Example::
 
 """
 
-SD_MAX_HEAD_LENGTH = 10.0
-"""
-Try detecting audio heads up to this many seconds.
-Default: ``10.0``.
 
-.. versionadded:: 1.2.0
-"""
 
-SD_MIN_HEAD_LENGTH = 0.0
-"""
-Try detecting audio heads of at least this many seconds.
-Default: ``0.0``.
+### RUNTIMECONFIGURATION ###
 
-.. versionadded:: 1.2.0
-"""
+RC_ALLOW_UNLISTED_LANGUAGES = "allow_unlisted_languages"
+""" If ``True``, allow using a language code not listed in ``languages.py``;
+otherwise, raise an error if the user attempts to use a language not listed.
+Default: ``True``. """
 
-SD_MAX_TAIL_LENGTH = 10.0
-"""
-Try detecting audio tails up to this many seconds.
-Default: ``10.0``.
+RC_C_EXTENSIONS = "c_extensions"
+""" If ``True`` and Python C extensions are available, use them.
+Otherwise, use pure Python code.
+Default: ``True``. """
 
-.. versionadded:: 1.2.0
-"""
+RC_DTW_ALGORITM = "dtw_algorithm"
+""" DTW aligner algorithm.
+Default: ``stripe``. """
 
-SD_MIN_TAIL_LENGTH = 0.0
-"""
-Try detecting audio tails of at least this many seconds.
-Default: ``0.0``.
+RC_DTW_MARGIN = "dtw_margin"
+""" DTW aligner margin, in seconds, for the ``stripe`` algorithm.
+Default: ``60``, corresponding to ``60s`` ahead and behind
+(i.e., ``120s`` total margin). """
 
-.. versionadded:: 1.2.0
-"""
+RC_ESPEAK_PATH = "espeak_path"
+""" Path to the ``espeak`` executable.
+Default: ``espeak``. """
 
-USE_C_EXTENSIONS = True
-"""
-Try to use the C extensions instead of pure Python code.
-If the C extensions are not available, the pure Python code
-will be run instead.
-Default: ``True``.
+RC_FFMPEG_PATH = "ffmpeg_path"
+""" Path to the ``ffmpeg`` executable.
+Default: ``ffmpeg``. """
 
-.. versionadded:: 1.1.0
-"""
+RC_FFMPEG_SAMPLE_RATE = "ffmpeg_sample_rate"
+""" Sample rate for ``ffmpeg``, in Hertz.
+Default: ``16000``. """
 
-VAD_EXTEND_SPEECH_INTERVAL_AFTER = 0
+RC_FFPROBE_PATH = "ffprobe_path"
+""" Path to the ``ffprobe`` executable.
+Default: ``ffprobe``. """
+
+RC_JOB_MAX_TASKS = "job_max_tasks"
+""" Maximum number of Tasks of a Job.
+If a Job has more Tasks than this value,
+it will not be executed and an error will be raised.
+Use ``0`` for disabling this check.
+Default: ``0`` (disabled). """
+
+RC_MFCC_FILTERS = "mfcc_filters"
+""" Number of filters for extracting MFCCs.
+Default: ``40``. """
+
+RC_MFCC_SIZE = "mfcc_size"
+""" Number of MFCCs to extract, including the 0th.
+Default: ``13``. """
+
+RC_MFCC_FFT_ORDER = "mfcc_fft_order"
+""" Order of the RFFT for extracting MFCCs.
+It must be a power of two.
+Default: ``512``. """
+
+RC_MFCC_LOWER_FREQUENCY = "mfcc_lower_frequency"
+""" Lower frequency to be used for extracting MFCCs, in Hertz.
+Default: ``133.3333``. """
+
+RC_MFCC_UPPER_FREQUENCY = "mfcc_upper_frequency"
+""" Upper frequency to be used for extracting MFCCs, in Hertz.
+Default: ``6855.4976``. """
+
+RC_MFCC_EMPHASIS_FACTOR = "mfcc_emphasis_factor"
+""" Emphasis factor to be applied to MFCCs.
+Default: ``0.970``. """
+
+RC_MFCC_WINDOW_LENGTH = "mfcc_window_length"
+""" Length of the window for extracting MFCCs, in seconds.
+It is usual to set it between 1.5 and 4 times
+the value of ``RC_MFCC_WINDOW_SHIFT``.
+Default: ``0.100``. """
+
+RC_MFCC_WINDOW_SHIFT = "mfcc_window_shift"
+""" Shift of the window for extracting MFCCs, in seconds.
+This parameter is basically the time step
+of the synchronization maps output.
+Default: ``0.040``. """
+
+RC_TASK_MAX_AUDIO_LENGTH = "task_max_audio_length"
+""" Maximum length of the audio file of a Task, in seconds.
+If a Task has an audio file longer than this value,
+it will not be executed and an error will be raised.
+Use ``0`` for disabling this check.
+Default: ``7200`` seconds. """
+
+RC_TASK_MAX_TEXT_LENGTH = "task_max_text_length"
+""" Maximum number of text fragments in the text file of a Task.
+If a Task has more text fragments than this value,
+it will not be executed and an error will be raised.
+Use ``0`` for disabling this check.
+Default: ``0`` (disabled). """
+
+RC_TMP_PATH = "tmp_path"
+""" Path to the temporary directory to be used.
+Default: ``None``, meaning that the default temporary directory
+will be set by ``RC_TMP_PATH_DEFAULT_POSIX``
+or ``RC_TMP_PATH_DEFAULT_NONPOSIX``. """
+
+RC_VAD_EXTEND_SPEECH_INTERVAL_AFTER = "vad_extend_speech_after"
 """
 Extend to the right (after/future)
 a speech interval found by the VAD algorithm,
-by this many frames. Default: ``0``.
+by this many seconds.
+Default: ``0`` seconds.
 
 .. versionadded:: 1.0.4
 """
 
-VAD_EXTEND_SPEECH_INTERVAL_BEFORE = 0
+RC_VAD_EXTEND_SPEECH_INTERVAL_BEFORE = "vad_extend_speech_before"
 """
 Extend to the left (before/past)
 a speech interval found by the VAD algorithm,
-by this many frames. Default: ``0``.
+by this many seconds.
+Default: ``0`` seconds.
 
 .. versionadded:: 1.0.4
 """
 
-VAD_LOG_ENERGY_THRESHOLD = 0.699
+RC_VAD_LOG_ENERGY_THRESHOLD = "vad_log_energy_threshold"
 """
 Threshold for the VAD algorithm to decide
 that a given frame contains speech.
@@ -953,14 +1035,25 @@ to be considered a speech frame.
 .. versionadded:: 1.0.4
 """
 
-VAD_MIN_NONSPEECH_LENGTH = 5
+RC_VAD_MIN_NONSPEECH_LENGTH = "vad_min_nonspeech_length"
 """
-Minimum number of nonspeech frames the VAD algorithm must encounter
-to create a nonspeech interval. Default: ``5``,
-corresponding to ``200ms`` at the default frame rate.
+Minimum length, in seconds, of a nonspeech interval.
+Default: ``0.200`` seconds.
 
 .. versionadded:: 1.0.4
 """
+
+
+
+### DEFAULT VALUES ###
+
+RC_TMP_PATH_DEFAULT_POSIX = "/tmp/"
+""" Default temporary directory path for POSIX OSes. """
+
+RC_TMP_PATH_DEFAULT_NONPOSIX = None
+""" Default temporary directory path for non-POSIX OSes.
+Set to ``None`` so that ``tempfile`` will select
+the most approriate temporary directory root path. """
 
 
 
