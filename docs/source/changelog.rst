@@ -8,6 +8,7 @@ v1.4.1 (2016-??-??)
 #. Added ``SBV`` sync map output format (SubViewer format with newline, used by YouTube)
 #. Added ``SUB`` sync map output format (SubViewer format with ``[br]``)
 #. Marked Czech (``cs``) language as tested
+#. Fixed numpy deprecated API warning for C extensions
 
 v1.4.0 (2016-01-15)
 -------------------
