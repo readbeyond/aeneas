@@ -6,14 +6,16 @@ __author__ = "Alberto Pettarin"
 __copyright__ = """
     Copyright 2012-2013, Alberto Pettarin (www.albertopettarin.it)
     Copyright 2013-2015, ReadBeyond Srl   (www.readbeyond.it)
-    Copyright 2015,      Alberto Pettarin (www.albertopettarin.it)
+    Copyright 2015-2016, Alberto Pettarin (www.albertopettarin.it)
     """
 __license__ = "GNU AGPL v3"
-__version__ = "1.4.0"
+__version__ = "1.4.1"
 __email__ = "aeneas@readbeyond.it"
 __status__ = "Production"
 
 */
+
+#define NPY_NO_DEPRECATED_API NPY_1_10_API_VERSION
 
 #include <Python.h>
 #include <numpy/arrayobject.h>
@@ -402,14 +404,17 @@ static PyObject *cmfcc_compute_mfcc(PyObject *self, PyObject *args) {
     }
 
     // convert to C contiguous array
-    signal = (PyArrayObject *) PyArray_ContiguousFromObject(signal_raw, PyArray_DOUBLE, 1, 1);
+    //signal = (PyArrayObject *) PyArray_ContiguousFromObject(signal_raw, PyArray_DOUBLE, 1, 1);
+    signal = (PyArrayObject *) PyArray_ContiguousFromObject(signal_raw, NPY_DOUBLE, 1, 1);
 
     // pointer to signal data
-    signal_ptr = (double *)signal->data;
+    //signal_ptr = (double *)signal->data;
+    signal_ptr = (double *)PyArray_DATA(signal);
     
     // get the number of samples of signal
     // NOTE: this is not the duration (in seconds), which is (n / sample_rate) !
-    signal_length = signal->dimensions[0];
+    //signal_length = signal->dimensions[0];
+    signal_length = PyArray_DIMS(signal)[0];
 
     // create Mel filter bank (2D matrix, filters_n x filter_bank_size)
     filters_n = ((fft_order / 2) + 1);
@@ -506,7 +511,8 @@ static PyObject *cmfcc_compute_mfcc(PyObject *self, PyObject *args) {
     // create mfcc object
     mfcc_dimensions[0] = number_of_frames;
     mfcc_dimensions[1] = mfcc_size;
-    mfcc = (PyArrayObject *) PyArray_SimpleNewFromData(2, mfcc_dimensions, PyArray_DOUBLE, mfcc_ptr);
+    //mfcc = (PyArrayObject *) PyArray_SimpleNewFromData(2, mfcc_dimensions, PyArray_DOUBLE, mfcc_ptr);
+    mfcc = (PyArrayObject *) PyArray_SimpleNewFromData(2, mfcc_dimensions, NPY_DOUBLE, mfcc_ptr);
     
     // return computed mfcc 
     return PyArray_Return(mfcc);

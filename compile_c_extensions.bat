@@ -7,10 +7,10 @@
 : Copyright:
 :     Copyright 2012-2013, Alberto Pettarin (www.albertopettarin.it)
 :     Copyright 2013-2015, ReadBeyond Srl   (www.readbeyond.it)
-:     Copyright 2015,      Alberto Pettarin (www.albertopettarin.it)
+:     Copyright 2015-2016, Alberto Pettarin (www.albertopettarin.it)
 :
 : Licence: GNU AGPL 3
-: Version: 1.4.0
+: Version: 1.4.1
 : Email:   aeneas@readbeyond.it
 : Status:  Production
 

@@ -6,14 +6,16 @@ __author__ = "Alberto Pettarin"
 __copyright__ = """
     Copyright 2012-2013, Alberto Pettarin (www.albertopettarin.it)
     Copyright 2013-2015, ReadBeyond Srl   (www.readbeyond.it)
-    Copyright 2015,      Alberto Pettarin (www.albertopettarin.it)
+    Copyright 2015-2016, Alberto Pettarin (www.albertopettarin.it)
     """
 __license__ = "GNU AGPL v3"
-__version__ = "1.4.0"
+__version__ = "1.4.1"
 __email__ = "aeneas@readbeyond.it"
 __status__ = "Production"
 
 */
+
+#define NPY_NO_DEPRECATED_API NPY_1_10_API_VERSION
 
 #include <Python.h>
 #include <numpy/arrayobject.h>
@@ -285,24 +287,24 @@ static PyObject *cdtw_compute_best_path(PyObject *self, PyObject *args) {
     }
 
     // convert to C contiguous array
-    mfcc1   = (PyArrayObject *) PyArray_ContiguousFromObject(mfcc1_raw,   PyArray_DOUBLE, 2, 2);
-    mfcc2   = (PyArrayObject *) PyArray_ContiguousFromObject(mfcc2_raw,   PyArray_DOUBLE, 2, 2);
-    norm2_1 = (PyArrayObject *) PyArray_ContiguousFromObject(norm2_1_raw, PyArray_DOUBLE, 1, 1);
-    norm2_2 = (PyArrayObject *) PyArray_ContiguousFromObject(norm2_2_raw, PyArray_DOUBLE, 1, 1);
+    mfcc1   = (PyArrayObject *) PyArray_ContiguousFromAny(mfcc1_raw,   NPY_DOUBLE, 2, 2);
+    mfcc2   = (PyArrayObject *) PyArray_ContiguousFromAny(mfcc2_raw,   NPY_DOUBLE, 2, 2);
+    norm2_1 = (PyArrayObject *) PyArray_ContiguousFromAny(norm2_1_raw, NPY_DOUBLE, 1, 1);
+    norm2_2 = (PyArrayObject *) PyArray_ContiguousFromAny(norm2_2_raw, NPY_DOUBLE, 1, 1);
 
     // check for conversion errors
     if ((mfcc1 == NULL) || (mfcc2 == NULL) || (norm2_1 == NULL) || (norm2_2 == NULL)) {
-        PyErr_SetString(PyExc_ValueError, "Error while converting arguments using PyArray_ContiguousFromObject");
+        PyErr_SetString(PyExc_ValueError, "Error while converting arguments using PyArray_ContiguousFromAny");
         return NULL;
     }
 
     // NOTE: if arrived here, the mfcc? and norm2_? have the correct number of dimensions (2 and 1, respectively)
    
     // get the dimensions of the input arguments
-    l1 = mfcc1->dimensions[0]; // number of MFCCs in the first wave
-    l2 = mfcc2->dimensions[0]; // number of MFCCs in the second wave
-    n  = mfcc1->dimensions[1]; // number of frames in the first wave
-    m  = mfcc2->dimensions[1]; // number of frames in the second wave
+    l1 = PyArray_DIMS(mfcc1)[0]; // number of MFCCs in the first wave
+    l2 = PyArray_DIMS(mfcc2)[0]; // number of MFCCs in the second wave
+    n  = PyArray_DIMS(mfcc1)[1]; // number of frames in the first wave
+    m  = PyArray_DIMS(mfcc2)[1];; // number of frames in the second wave
 
     // check that the number of MFCCs is the same for both waves
     if (l1 != l2) {
@@ -311,11 +313,11 @@ static PyObject *cdtw_compute_best_path(PyObject *self, PyObject *args) {
     }
 
     // check that the norm (1D) arrays have the correct number of elements
-    if (norm2_1->dimensions[0] != n) {
+    if (PyArray_DIMS(norm2_1)[0] != n) {
         PyErr_SetString(PyExc_ValueError, "The number of columns of mfcc1 must be equal to the number of elements of norm2_1");
         return NULL;
     }
-    if (norm2_2->dimensions[0] != m) {
+    if (PyArray_DIMS(norm2_2)[0] != m) {
         PyErr_SetString(PyExc_ValueError, "The number of columns of mfcc2 must be equal to the number of elements of norm2_2");
         return NULL;
     }
@@ -326,21 +328,21 @@ static PyObject *cdtw_compute_best_path(PyObject *self, PyObject *args) {
     }
     
     // pointer to cost matrix data
-    mfcc1_ptr   = (double *)mfcc1->data;
-    mfcc2_ptr   = (double *)mfcc2->data;
-    norm2_1_ptr = (double *)norm2_1->data;
-    norm2_2_ptr = (double *)norm2_2->data;
+    mfcc1_ptr   = (double *)PyArray_DATA(mfcc1);
+    mfcc2_ptr   = (double *)PyArray_DATA(mfcc2);
+    norm2_1_ptr = (double *)PyArray_DATA(norm2_1);
+    norm2_2_ptr = (double *)PyArray_DATA(norm2_2);
     
     // create cost matrix object
     cost_matrix_dimensions[0] = n;
     cost_matrix_dimensions[1] = delta;
-    cost_matrix = (PyArrayObject *)PyArray_SimpleNew(2, cost_matrix_dimensions, PyArray_DOUBLE);
-    cost_matrix_ptr = (double *)cost_matrix->data;
+    cost_matrix = (PyArrayObject *)PyArray_SimpleNew(2, cost_matrix_dimensions, NPY_DOUBLE);
+    cost_matrix_ptr = (double *)PyArray_DATA(cost_matrix);
 
     // create centers object
     centers_dimensions[0] = n;
-    centers = (PyArrayObject *)PyArray_SimpleNew(1, centers_dimensions, PyArray_INT32);
-    centers_ptr = (int *)centers->data;
+    centers = (PyArrayObject *)PyArray_SimpleNew(1, centers_dimensions, NPY_INT32);
+    centers_ptr = (int *)PyArray_DATA(centers);
 
     // create best path array of integers
     best_path_ptr = PyList_New(0);
@@ -396,24 +398,24 @@ static PyObject *cdtw_compute_cost_matrix_step(PyObject *self, PyObject *args) {
     }
 
     // convert to C contiguous array
-    mfcc1   = (PyArrayObject *) PyArray_ContiguousFromObject(mfcc1_raw,   PyArray_DOUBLE, 2, 2);
-    mfcc2   = (PyArrayObject *) PyArray_ContiguousFromObject(mfcc2_raw,   PyArray_DOUBLE, 2, 2);
-    norm2_1 = (PyArrayObject *) PyArray_ContiguousFromObject(norm2_1_raw, PyArray_DOUBLE, 1, 1);
-    norm2_2 = (PyArrayObject *) PyArray_ContiguousFromObject(norm2_2_raw, PyArray_DOUBLE, 1, 1);
+    mfcc1   = (PyArrayObject *) PyArray_ContiguousFromAny(mfcc1_raw,   NPY_DOUBLE, 2, 2);
+    mfcc2   = (PyArrayObject *) PyArray_ContiguousFromAny(mfcc2_raw,   NPY_DOUBLE, 2, 2);
+    norm2_1 = (PyArrayObject *) PyArray_ContiguousFromAny(norm2_1_raw, NPY_DOUBLE, 1, 1);
+    norm2_2 = (PyArrayObject *) PyArray_ContiguousFromAny(norm2_2_raw, NPY_DOUBLE, 1, 1);
 
     // check for conversion errors
     if ((mfcc1 == NULL) || (mfcc2 == NULL) || (norm2_1 == NULL) || (norm2_2 == NULL)) {
-        PyErr_SetString(PyExc_ValueError, "Error while converting arguments using PyArray_ContiguousFromObject");
+        PyErr_SetString(PyExc_ValueError, "Error while converting arguments using PyArray_ContiguousFromAny");
         return NULL;
     }
 
     // NOTE: if arrived here, the mfcc? and norm2_? have the correct number of dimensions (2 and 1, respectively)
    
     // get the dimensions of the input arguments
-    l1 = mfcc1->dimensions[0]; // number of MFCCs in the first wave
-    l2 = mfcc2->dimensions[0]; // number of MFCCs in the second wave
-    n  = mfcc1->dimensions[1]; // number of frames in the first wave
-    m  = mfcc2->dimensions[1]; // number of frames in the second wave
+    l1 = PyArray_DIMS(mfcc1)[0]; // number of MFCCs in the first wave
+    l2 = PyArray_DIMS(mfcc2)[0]; // number of MFCCs in the second wave
+    n  = PyArray_DIMS(mfcc1)[1]; // number of frames in the first wave
+    m  = PyArray_DIMS(mfcc2)[1];; // number of frames in the second wave
 
     // check that the number of MFCCs is the same for both waves
     if (l1 != l2) {
@@ -422,11 +424,11 @@ static PyObject *cdtw_compute_cost_matrix_step(PyObject *self, PyObject *args) {
     }
 
     // check that the norm (1D) arrays have the correct number of elements
-    if (norm2_1->dimensions[0] != n) {
+    if (PyArray_DIMS(norm2_1)[0] != n) {
         PyErr_SetString(PyExc_ValueError, "The number of columns of mfcc1 must be equal to the number of elements of norm2_1");
         return NULL;
     }
-    if (norm2_2->dimensions[0] != m) {
+    if (PyArray_DIMS(norm2_2)[0] != m) {
         PyErr_SetString(PyExc_ValueError, "The number of columns of mfcc2 must be equal to the number of elements of norm2_2");
         return NULL;
     }
@@ -437,21 +439,21 @@ static PyObject *cdtw_compute_cost_matrix_step(PyObject *self, PyObject *args) {
     }
 
     // pointer to cost matrix data
-    mfcc1_ptr   = (double *)mfcc1->data;
-    mfcc2_ptr   = (double *)mfcc2->data;
-    norm2_1_ptr = (double *)norm2_1->data;
-    norm2_2_ptr = (double *)norm2_2->data;
-    
+    mfcc1_ptr   = (double *)PyArray_DATA(mfcc1);
+    mfcc2_ptr   = (double *)PyArray_DATA(mfcc2);
+    norm2_1_ptr = (double *)PyArray_DATA(norm2_1);
+    norm2_2_ptr = (double *)PyArray_DATA(norm2_2);
+
     // create cost matrix object
     cost_matrix_dimensions[0] = n;
     cost_matrix_dimensions[1] = delta;
-    cost_matrix = (PyArrayObject *)PyArray_SimpleNew(2, cost_matrix_dimensions, PyArray_DOUBLE);
-    cost_matrix_ptr = (double *)cost_matrix->data;
+    cost_matrix = (PyArrayObject *)PyArray_SimpleNew(2, cost_matrix_dimensions, NPY_DOUBLE);
+    cost_matrix_ptr = (double *)PyArray_DATA(cost_matrix);
 
     // create centers object
     centers_dimensions[0] = n;
-    centers = (PyArrayObject *)PyArray_SimpleNew(1, centers_dimensions, PyArray_INT32);
-    centers_ptr = (int *)centers->data;
+    centers = (PyArrayObject *)PyArray_SimpleNew(1, centers_dimensions, NPY_INT32);
+    centers_ptr = (int *)PyArray_DATA(centers);
     
     // compute cost matrix
     _compute_cost_matrix(mfcc1_ptr, mfcc2_ptr, norm2_1_ptr, norm2_2_ptr, delta, cost_matrix_ptr, centers_ptr, n, m, l1);
@@ -494,24 +496,24 @@ static PyObject *cdtw_compute_accumulated_cost_matrix_step(PyObject *self, PyObj
     }
 
     // convert to C contiguous array
-    cost_matrix = (PyArrayObject *) PyArray_ContiguousFromObject(cost_matrix_raw, PyArray_DOUBLE, 2, 2);
-    centers     = (PyArrayObject *) PyArray_ContiguousFromObject(centers_raw,     PyArray_INT32,  1, 1);
+    cost_matrix = (PyArrayObject *) PyArray_ContiguousFromAny(cost_matrix_raw, NPY_DOUBLE, 2, 2);
+    centers     = (PyArrayObject *) PyArray_ContiguousFromAny(centers_raw,     NPY_INT32,  1, 1);
 
     // pointer to cost matrix data
-    cost_matrix_ptr = (double *)cost_matrix->data;
+    cost_matrix_ptr = (double *)PyArray_DATA(cost_matrix);
     
     // get the dimensions of the input arguments
-    n = cost_matrix->dimensions[0];
-    delta = cost_matrix->dimensions[1];
+    n = PyArray_DIMS(cost_matrix)[0];
+    delta = PyArray_DIMS(cost_matrix)[1];
 
     // check that the number of centers is the same as the number of rows of the cost_matrix
-    if (centers->dimensions[0] != n) {
+    if (PyArray_DIMS(centers)[0] != n) {
         PyErr_SetString(PyExc_ValueError, "The number of rows of cost_matrix must be equal to the number of elements of centers");
         return NULL;
     }
    
     // pointer to centers data
-    centers_ptr = (int *)centers->data;
+    centers_ptr = (int *)PyArray_DATA(centers);
     
     // create accumulated cost matrix object 
     accumulated_cost_matrix_dimensions[0] = n;
@@ -519,7 +521,7 @@ static PyObject *cdtw_compute_accumulated_cost_matrix_step(PyObject *self, PyObj
     accumulated_cost_matrix = (PyArrayObject *)PyArray_SimpleNew(2, accumulated_cost_matrix_dimensions, NPY_DOUBLE);
 
     // pointer to accumulated cost matrix data
-    accumulated_cost_matrix_ptr = (double *)accumulated_cost_matrix->data;
+    accumulated_cost_matrix_ptr = (double *)PyArray_DATA(accumulated_cost_matrix);
 
     // compute accumulated cost matrix
     _compute_accumulated_cost_matrix(cost_matrix_ptr, centers_ptr, n, delta, accumulated_cost_matrix_ptr);
@@ -556,24 +558,24 @@ static PyObject *cdtw_compute_best_path_step(PyObject *self, PyObject *args) {
     }
 
     // convert to C contiguous array
-    accumulated_cost_matrix = (PyArrayObject *) PyArray_ContiguousFromObject(accumulated_cost_matrix_raw, PyArray_DOUBLE, 2, 2);
-    centers                 = (PyArrayObject *) PyArray_ContiguousFromObject(centers_raw,                 PyArray_INT32,  1, 1);
+    accumulated_cost_matrix = (PyArrayObject *) PyArray_ContiguousFromAny(accumulated_cost_matrix_raw, NPY_DOUBLE, 2, 2);
+    centers                 = (PyArrayObject *) PyArray_ContiguousFromAny(centers_raw,                 NPY_INT32,  1, 1);
 
     // pointer to cost matrix data
-    accumulated_cost_matrix_ptr = (double *)accumulated_cost_matrix->data;
+    accumulated_cost_matrix_ptr = (double *)PyArray_DATA(accumulated_cost_matrix);
     
     // get the dimensions of the input arguments
-    n = accumulated_cost_matrix->dimensions[0];
-    delta = accumulated_cost_matrix->dimensions[1];
+    n = PyArray_DIMS(accumulated_cost_matrix)[0];
+    delta = PyArray_DIMS(accumulated_cost_matrix)[1];
 
     // check that the number of centers is the same as the number of rows of the accumulated_cost_matrix
-    if (centers->dimensions[0] != n) {
+    if (PyArray_DIMS(centers)[0] != n) {
         PyErr_SetString(PyExc_ValueError, "The number of rows of accumulated_cost_matrix must be equal to the number of elements of centers");
         return NULL;
     }
    
     // pointer to centers data
-    centers_ptr = (int *)centers->data;
+    centers_ptr = (int *)PyArray_DATA(centers);
     
     // create best path array of integers
     best_path_ptr = PyList_New(0);
