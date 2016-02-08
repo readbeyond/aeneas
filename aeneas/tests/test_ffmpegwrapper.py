@@ -5,6 +5,7 @@ import os
 import unittest
 
 from aeneas.ffmpegwrapper import FFMPEGWrapper
+from aeneas.runtimeconfiguration import RuntimeConfiguration
 import aeneas.globalfunctions as gf
 
 class TestFFMPEGWrapper(unittest.TestCase):
@@ -40,14 +41,14 @@ class TestFFMPEGWrapper(unittest.TestCase):
     NOT_EXISTING_PATH = "this_file_does_not_exist.mp3"
     EMPTY_FILE_PATH = "res/audioformats/p001.empty"
 
-    def convert(self, input_file_path, ofp=None, parameters=None):
+    def convert(self, input_file_path, ofp=None, runtime_configuration=None):
         if ofp is None:
             output_path = gf.tmp_directory()
             output_file_path = os.path.join(output_path, "audio.wav")
         else:
             output_file_path = ofp
         try:
-            converter = FFMPEGWrapper(parameters=parameters)
+            converter = FFMPEGWrapper(rconf=runtime_configuration)
             result = converter.convert(
                 gf.absolute_path(input_file_path, __file__),
                 output_file_path
@@ -65,10 +66,6 @@ class TestFFMPEGWrapper(unittest.TestCase):
         for f in self.FILES:
             self.convert(f["path"])
 
-    def test_convert_parameters(self):
-        for f in self.FILES:
-            self.convert(f["path"], parameters=FFMPEGWrapper.FFMPEG_PARAMETERS_SAMPLE_8000)
-
     def test_not_existing(self):
         with self.assertRaises(OSError):
             self.convert(self.NOT_EXISTING_PATH)
@@ -80,6 +77,11 @@ class TestFFMPEGWrapper(unittest.TestCase):
     def test_cannot_be_written(self):
         with self.assertRaises(OSError):
             self.convert(self.FILES[0]["path"], self.CANNOT_BE_WRITTEN_PATH)
+
+    def test_convert_rc(self):
+        rc = RuntimeConfiguration(u"ffmpeg_sample_rate=44100")
+        for f in self.FILES:
+            self.convert(f["path"], runtime_configuration=rc)
 
 if __name__ == '__main__':
     unittest.main()

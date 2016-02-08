@@ -99,9 +99,7 @@ class Container(object):
         self.file_path = file_path
         self.container_format = container_format
         self.actual_container = None
-        self.logger = logger
-        if self.logger is None:
-            self.logger = Logger()
+        self.logger = logger or Logger()
         self._log(u"Setting actual Container object")
         self._set_actual_container()
 
@@ -412,9 +410,7 @@ class _ContainerTAR(object):
     def __init__(self, file_path, variant, logger=None):
         self.file_path = file_path
         self.variant = variant
-        self.logger = logger
-        if self.logger is None:
-            self.logger = Logger()
+        self.logger = logger or Logger()
 
     def entries(self):
         try:
@@ -467,9 +463,7 @@ class _ContainerZIP(object):
 
     def __init__(self, file_path, logger=None):
         self.file_path = file_path
-        self.logger = logger
-        if self.logger is None:
-            self.logger = Logger()
+        self.logger = logger or Logger()
 
     def entries(self):
         try:
@@ -518,9 +512,7 @@ class _ContainerUnpacked(object):
 
     def __init__(self, file_path, logger=None):
         self.file_path = file_path
-        self.logger = logger
-        if self.logger is None:
-            self.logger = Logger()
+        self.logger = logger or Logger()
 
     def entries(self):
         try:

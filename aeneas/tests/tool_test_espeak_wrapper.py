@@ -36,6 +36,28 @@ class TestConvertSyncMapCLI(unittest.TestCase):
             ("out", "sonnet.wav")
         ], 0)
 
+    def test_synt_path(self):
+        path = os.path.expanduser("~")
+        path = os.path.join(path, ".bin/myespeak")
+        if gf.file_exists(path):
+            self.execute([
+                ("", "From fairest creatures we desire increase"),
+                ("", "en"),
+                ("out", "sonnet.wav"),
+                ("", "-r=\"espeak_path=%s\"" % path)
+            ], 0)
+
+    def test_synt_path_bad(self):
+        # wrong path raises RuntimeError
+        with self.assertRaises(RuntimeError):
+            path = "/foo/bar/espeak"
+            self.execute([
+                ("", "From fairest creatures we desire increase"),
+                ("", "en"),
+                ("out", "sonnet.wav"),
+                ("", "-r=\"c_extensions=False|espeak_path=%s\"" % path)
+            ], 1)
+
     def test_synt_multiple(self):
         self.execute([
             ("", "From|fairest|creatures|we|desire|increase"),
@@ -49,7 +71,7 @@ class TestConvertSyncMapCLI(unittest.TestCase):
             ("", "From fairest creatures we desire increase"),
             ("", "en"),
             ("out", "sonnet.wav"),
-            ("", "--pure")
+            ("", "-r=\"c_extensions=False\"")
         ], 0)
 
     def test_synt_missing_1(self):
@@ -83,7 +105,7 @@ class TestConvertSyncMapCLI(unittest.TestCase):
             ("", "From fairest creatures we desire increase"),
             ("", "en-zz"),
             ("out", "sonnet.wav"),
-            ("", "--allow-unlisted-language")
+            ("", "-r=\"allow_unlisted_languages=True\"")
         ], 0)
 
 

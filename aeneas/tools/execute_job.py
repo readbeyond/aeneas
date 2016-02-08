@@ -68,7 +68,6 @@ class ExecuteJobCLI(AbstractCLIProgram):
         if (len(self.actual_arguments)) > 2 and (not self.actual_arguments[2].startswith(u"-")):
             config_string = self.actual_arguments[2]
         validate = not self.has_option(u"--skip-validator")
-        unlisted_language = self.has_option(u"--allow-unlisted-language")
 
         if not self.check_input_file(container_path):
             return self.ERROR_EXIT_CODE
@@ -79,7 +78,7 @@ class ExecuteJobCLI(AbstractCLIProgram):
         if validate:
             try:
                 self.print_info(u"Validating the container (specify --skip-validator to bypass)...")
-                validator = Validator()
+                validator = Validator(rconf=self.rconf, logger=self.logger)
                 result = validator.check_container(container_path, config_string=config_string)
                 if not result.passed:
                     self.print_error(u"The given container is not valid:")
@@ -93,7 +92,7 @@ class ExecuteJobCLI(AbstractCLIProgram):
 
         try:
             self.print_info(u"Loading job from container...")
-            executor = ExecuteJob(logger=self.logger)
+            executor = ExecuteJob(rconf=self.rconf, logger=self.logger)
             executor.load_job_from_container(container_path, config_string)
             self.print_info(u"Loading job from container... done")
         except Exception as exc:
@@ -103,7 +102,7 @@ class ExecuteJobCLI(AbstractCLIProgram):
 
         try:
             self.print_info(u"Executing...")
-            executor.execute(allow_unlisted_languages=unlisted_language)
+            executor.execute()
             self.print_info(u"Executing... done")
         except Exception as exc:
             self.print_error(u"An unexpected Exception occurred while executing the job:")

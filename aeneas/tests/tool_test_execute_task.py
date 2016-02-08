@@ -91,8 +91,87 @@ class TestExecuteTaskCLI(unittest.TestCase):
             ("", "task_language=en-zz|is_text_type=subtitles|os_task_file_format=srt"),
             ("out", "sonnet.srt"),
             ("", "--skip-validator"),
-            ("", "--allow-unlisted-language")
+            ("", "-r=\"allow_unlisted_languages=True\"")
         ], 0)
+
+    def test_exec_srt_pure(self):
+        self.execute([
+            ("in", "../tools/res/audio.mp3"),
+            ("in", "../tools/res/subtitles.txt"),
+            ("", "task_language=en|is_text_type=subtitles|os_task_file_format=srt"),
+            ("out", "sonnet.srt"),
+            ("", "-r=\"c_extensions=False\"")
+        ], 0)
+
+    def test_exec_srt_dtw_margin(self):
+        self.execute([
+            ("in", "../tools/res/audio.mp3"),
+            ("in", "../tools/res/subtitles.txt"),
+            ("", "task_language=en|is_text_type=subtitles|os_task_file_format=srt"),
+            ("out", "sonnet.srt"),
+            ("", "-r=\"dtw_margin=30\"")
+        ], 0)
+
+    def test_exec_srt_dtw_algorithm(self):
+        self.execute([
+            ("in", "../tools/res/audio.mp3"),
+            ("in", "../tools/res/subtitles.txt"),
+            ("", "task_language=en|is_text_type=subtitles|os_task_file_format=srt"),
+            ("out", "sonnet.srt"),
+            ("", "-r=\"c_extensions=False|dtw_algorithm=exact\"")
+        ], 0)
+
+    def test_exec_srt_mfcc_window_shift(self):
+        self.execute([
+            ("in", "../tools/res/audio.mp3"),
+            ("in", "../tools/res/subtitles.txt"),
+            ("", "task_language=en|is_text_type=subtitles|os_task_file_format=srt"),
+            ("out", "sonnet.srt"),
+            ("", "-r=\"mfcc_window_length=0.250|mfcc_window_shift=0.100\"")
+        ], 0)
+
+    def test_exec_srt_path(self):
+        home = os.path.expanduser("~")
+        espeak_path = os.path.join(home, ".bin/myespeak")
+        ffmpeg_path = os.path.join(home, ".bin/myffmpeg")
+        ffprobe_path = os.path.join(home, ".bin/myffprobe")
+        if gf.file_exists(espeak_path) and gf.file_exists(ffmpeg_path) and gf.file_exists(ffprobe_path):
+            self.execute([
+                ("in", "../tools/res/audio.mp3"),
+                ("in", "../tools/res/subtitles.txt"),
+                ("", "task_language=en|is_text_type=subtitles|os_task_file_format=srt"),
+                ("out", "sonnet.srt"),
+                ("", "-r=\"espeak_path=%s|ffmpeg_path=%s|ffprobe_path=%s\"" % (espeak_path, ffmpeg_path, ffprobe_path))
+            ], 0)
+
+    def test_exec_srt_tmp_path(self):
+        tmp_path = gf.tmp_directory()
+        self.execute([
+            ("in", "../tools/res/audio.mp3"),
+            ("in", "../tools/res/subtitles.txt"),
+            ("", "task_language=en|is_text_type=subtitles|os_task_file_format=srt"),
+            ("out", "sonnet.srt"),
+            ("", "-r=\"tmp_path=%s\"" % (tmp_path))
+        ], 0)
+        gf.delete_directory(tmp_path)
+
+    def test_exec_srt_max_audio_length(self):
+        self.execute([
+            ("in", "../tools/res/audio.mp3"),
+            ("in", "../tools/res/subtitles.txt"),
+            ("", "task_language=en|is_text_type=subtitles|os_task_file_format=srt"),
+            ("out", "sonnet.srt"),
+            ("", "-r=\"task_max_audio_length=5.0\"")
+        ], 1)
+
+    def test_exec_srt_max_text_length(self):
+        self.execute([
+            ("in", "../tools/res/audio.mp3"),
+            ("in", "../tools/res/subtitles.txt"),
+            ("", "task_language=en|is_text_type=subtitles|os_task_file_format=srt"),
+            ("out", "sonnet.srt"),
+            ("", "-r=\"task_max_text_length=5\"")
+        ], 1)
 
     def test_exec_cannot_read_1(self):
         self.execute([

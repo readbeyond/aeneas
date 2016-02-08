@@ -304,9 +304,7 @@ class TextFile(object):
         self.file_format = file_format
         self.parameters = parameters
         self.fragments = []
-        self.logger = Logger()
-        if logger is not None:
-            self.logger = logger
+        self.logger = logger or Logger()
         if self.parameters is None:
             self.parameters = {}
         if (self.file_path is not None) and (self.file_format is not None):
@@ -744,9 +742,7 @@ class TextFilter(object):
 
     def __init__(self, logger=None):
         self.filters = []
-        self.logger = Logger()
-        if logger is not None:
-            self.logger = logger
+        self.logger = logger or Logger()
 
     def _log(self, message, severity=Logger.DEBUG):
         """ Log """
@@ -884,9 +880,7 @@ class TransliterationMap(object):
 
     def __init__(self, file_path, logger=None):
         self.trans_map = {}
-        self.logger = Logger()
-        if logger is not None:
-            self.logger = logger
+        self.logger = logger or Logger()
         self.file_path = file_path
 
     def _log(self, message, severity=Logger.DEBUG):

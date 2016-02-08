@@ -82,7 +82,7 @@ class ValidateCLI(AbstractCLIProgram):
             return self.print_help()
         mode = self.actual_arguments[0]
 
-        validator = Validator(logger=self.logger)
+        validator = Validator(rconf=self.rconf, logger=self.logger)
         if mode == u"config":
             config_file_path = self.actual_arguments[1]
             config_txt = None

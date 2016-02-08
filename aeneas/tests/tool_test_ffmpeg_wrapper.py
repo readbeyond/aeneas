@@ -41,6 +41,45 @@ class TestFFMPEGWrapperCLI(unittest.TestCase):
             ("out", "audio.wav")
         ], 0)
 
+    def test_convert_16000(self):
+        self.execute([
+            ("in", "../tools/res/audio.wav"),
+            ("out", "audio.wav"),
+            ("", "-r=\"ffmpeg_sample_rate=16000\"")
+        ], 0)
+
+    def test_convert_22050(self):
+        self.execute([
+            ("in", "../tools/res/audio.wav"),
+            ("out", "audio.wav"),
+            ("", "-r=\"ffmpeg_sample_rate=22050\"")
+        ], 0)
+
+    def test_convert_44100(self):
+        self.execute([
+            ("in", "../tools/res/audio.wav"),
+            ("out", "audio.wav"),
+            ("", "-r=\"ffmpeg_sample_rate=44100\"")
+        ], 0)
+
+    def test_convert_path(self):
+        path = os.path.expanduser("~")
+        path = os.path.join(path, ".bin/myffmpeg")
+        if gf.file_exists(path):
+            self.execute([
+                ("in", "../tools/res/audio.wav"),
+                ("out", "audio.wav"),
+                ("", "-r=\"ffmpeg_path=%s\"" % path)
+            ], 0)
+
+    def test_convert_path_bad(self):
+        path = "/foo/bar/ffmpeg"
+        self.execute([
+            ("in", "../tools/res/audio.wav"),
+            ("out", "audio.wav"),
+            ("", "-r=\"ffmpeg_path=%s\"" % path)
+        ], 1)
+
     def test_convert_missing_1(self):
         self.execute([
             ("in", "../tools/res/audio.wav")

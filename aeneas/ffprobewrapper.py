@@ -11,7 +11,7 @@ import re
 import subprocess
 
 from aeneas.logger import Logger
-import aeneas.globalconstants as gc
+from aeneas.runtimeconfiguration import RuntimeConfiguration
 import aeneas.globalfunctions as gf
 
 __author__ = "Alberto Pettarin"
@@ -25,17 +25,24 @@ __version__ = "1.4.1"
 __email__ = "aeneas@readbeyond.it"
 __status__ = "Production"
 
-class FFPROBEUnsupportedFormatError(Exception):
+class FFPROBEParsingError(Exception):
     """
-    Error raised when ``ffprobe`` cannot decode the format of the given file.
+    Error raised when the call to ``ffprobe`` does not produce any output.
     """
     pass
 
 
 
-class FFPROBEParsingError(Exception):
+class FFPROBEPathError(Exception):
     """
-    Error raised when the call to ``ffprobe`` does not produce any output.
+    Error raised when the path to ``ffprobe`` is not a valid executable.
+    """
+    pass
+
+
+class FFPROBEUnsupportedFormatError(Exception):
+    """
+    Error raised when ``ffprobe`` cannot decode the format of the given file.
     """
     pass
 
@@ -92,6 +99,9 @@ class FFPROBEWrapper(object):
             DISPOSITION:attached_pic=0
             [/STREAM]
 
+    :param rconf: a runtime configuration. Default: ``None``, meaning that
+                  default settings will be used.
+    :type  rconf: :class:`aeneas.runtimeconfiguration.RuntimeConfiguration`
     :param logger: the logger object
     :type  logger: :class:`aeneas.logger.Logger`
     """
@@ -126,10 +136,9 @@ class FFPROBEWrapper(object):
 
     TAG = u"FFPROBEWrapper"
 
-    def __init__(self, logger=None):
-        self.logger = logger
-        if logger is None:
-            self.logger = Logger()
+    def __init__(self, rconf=None, logger=None):
+        self.logger = logger or Logger()
+        self.rconf = rconf or RuntimeConfiguration()
 
     def _log(self, message, severity=Logger.DEBUG):
         """ Log """
@@ -188,6 +197,7 @@ class FFPROBEWrapper(object):
         :raises TypeError: if ``audio_file_path`` is None
         :raises OSError: if the file at ``audio_file_path`` cannot be read
         :raises FFPROBEParsingError: if the call to ``ffprobe`` does not produce any output
+        :raises FFPROBEPathError: if the path to the ``ffprobe`` executable cannot be called
         :raises FFPROBEUnsupportedFormatError: if the file has a format not supported by ``ffprobe``
         """
 
@@ -199,20 +209,24 @@ class FFPROBEWrapper(object):
             raise OSError("Input file cannot be read")
 
         # call ffprobe
-        arguments = [gc.FFPROBE_PATH]
+        arguments = [self.rconf["ffprobe_path"]]
         arguments.extend(self.FFPROBE_PARAMETERS)
         arguments.append(audio_file_path)
         self._log([u"Calling with arguments '%s'", arguments])
-        proc = subprocess.Popen(
-            arguments,
-            stdout=subprocess.PIPE,
-            stdin=subprocess.PIPE,
-            stderr=subprocess.PIPE
-        )
-        (stdoutdata, stderrdata) = proc.communicate()
-        proc.stdout.close()
-        proc.stdin.close()
-        proc.stderr.close()
+        try:
+            proc = subprocess.Popen(
+                arguments,
+                stdout=subprocess.PIPE,
+                stdin=subprocess.PIPE,
+                stderr=subprocess.PIPE
+            )
+            (stdoutdata, stderrdata) = proc.communicate()
+            proc.stdout.close()
+            proc.stdin.close()
+            proc.stderr.close()
+        except OSError:
+            self._log([u"Unable to call the '%s' ffprobe executable", self.rconf["ffprobe_path"]], Logger.CRITICAL)
+            raise FFPROBEPathError("Unable to call the specified ffprobe executable")
         self._log(u"Call completed")
 
         # if no output, raise error

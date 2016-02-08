@@ -45,7 +45,72 @@ class TestExtractMFCCCLI(unittest.TestCase):
         self.execute([
             ("in", "../tools/res/audio.wav"),
             ("out", "audio.wav.mfcc.txt"),
-            ("", "--pure")
+            ("", "-r=\"c_extensions=False\"")
+        ], 0)
+
+    def test_extract_mfcc_filters(self):
+        self.execute([
+            ("in", "../tools/res/audio.wav"),
+            ("out", "audio.wav.mfcc.txt"),
+            ("", "-r=\"mfcc_filters=26\""),
+        ], 0)
+
+    def test_extract_mfcc_size(self):
+        self.execute([
+            ("in", "../tools/res/audio.wav"),
+            ("out", "audio.wav.mfcc.txt"),
+            ("", "-r=\"mfcc_size=17\""),
+        ], 0)
+
+    def test_extract_mfcc_fft_order(self):
+        self.execute([
+            ("in", "../tools/res/audio.wav"),
+            ("out", "audio.wav.mfcc.txt"),
+            ("", "-r=\"mfcc_fft_order=1024\""),
+        ], 0)
+
+    def test_extract_mfcc_lower_frequency(self):
+        self.execute([
+            ("in", "../tools/res/audio.wav"),
+            ("out", "audio.wav.mfcc.txt"),
+            ("", "-r=\"mfcc_lower_frequency=100\""),
+        ], 0)
+
+    def test_extract_mfcc_upper_frequency(self):
+        self.execute([
+            ("in", "../tools/res/audio.wav"),
+            ("out", "audio.wav.mfcc.txt"),
+            ("", "-r=\"mfcc_upper_frequency=7000\""),
+        ], 0)
+
+    def test_extract_mfcc_upper_frequency_bad(self):
+        # upper frequency beyond Nyquist, raises RuntimeError
+        with self.assertRaises(RuntimeError):
+            self.execute([
+                ("in", "../tools/res/audio.wav"),
+                ("out", "audio.wav.mfcc.txt"),
+                ("", "-r=\"mfcc_upper_frequency=88200\""),
+            ], 1)
+
+    def test_extract_mfcc_emphasis_factor(self):
+        self.execute([
+            ("in", "../tools/res/audio.wav"),
+            ("out", "audio.wav.mfcc.txt"),
+            ("", "-r=\"mfcc_emphasis_factor=0.95\""),
+        ], 0)
+
+    def test_extract_mfcc_window_length(self):
+        self.execute([
+            ("in", "../tools/res/audio.wav"),
+            ("out", "audio.wav.mfcc.txt"),
+            ("", "-r=\"mfcc_window_length=0.200\""),
+        ], 0)
+
+    def test_extract_mfcc_window_shift(self):
+        self.execute([
+            ("in", "../tools/res/audio.wav"),
+            ("out", "audio.wav.mfcc.txt"),
+            ("", "-r=\"mfcc_window_shift=0.010\""),
         ], 0)
 
     def test_extract_missing_1(self):

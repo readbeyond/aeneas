@@ -29,26 +29,26 @@ class TestTask(unittest.TestCase):
         sync_map.append_fragment(SyncMapFragment(frag, 23.456, 34.567))
         return sync_map
 
-    def setter(self, attribute, value):
+    def setter(self, attribute, value, expected):
         taskconf = TaskConfiguration()
-        setattr(taskconf, attribute, value)
-        read_value = getattr(taskconf, attribute)
-        if value is None:
+        taskconf[attribute] = value
+        read_value = taskconf[attribute]
+        if expected is None:
             self.assertIsNone(read_value)
         else:
-            self.assertEqual(read_value, value)
+            self.assertEqual(read_value, expected)
 
     def set_text_file(self, path, fmt, expected, id_regex=None, class_regex=None, id_sort=None):
         task = Task()
         task.configuration = TaskConfiguration()
-        task.configuration.language = Language.EN
-        task.configuration.is_text_file_format = fmt
-        if id_regex is not None:
-            task.configuration.is_text_unparsed_id_regex = id_regex
+        task.configuration["language"] = Language.EN
+        task.configuration["i_t_format"] = fmt
         if class_regex is not None:
-            task.configuration.is_text_unparsed_class_regex = class_regex
+            task.configuration["i_t_unparsed_class_regex"] = class_regex
+        if id_regex is not None:
+            task.configuration["i_t_unparsed_id_regex"] = id_regex
         if id_sort is not None:
-            task.configuration.is_text_unparsed_id_sort = id_sort
+            task.configuration["i_t_unparsed_id_sort"] = id_sort
         task.text_file_path_absolute = gf.absolute_path(path, __file__)
         self.assertIsNotNone(task.text_file)
         self.assertEqual(len(task.text_file), expected)
@@ -56,7 +56,7 @@ class TestTask(unittest.TestCase):
     def tc_from_string(self, config_string, properties):
         taskconf = TaskConfiguration(config_string)
         for prop, value in properties:
-            read_value = getattr(taskconf, prop)
+            read_value = taskconf[prop]
             if value is None:
                 self.assertIsNone(read_value)
             else:
@@ -190,8 +190,8 @@ class TestTask(unittest.TestCase):
     def test_output_sync_map(self):
         task = Task()
         task.configuration = TaskConfiguration()
-        task.configuration.language = Language.EN
-        task.configuration.os_file_format = SyncMapFormat.TXT
+        task.configuration["language"] = Language.EN
+        task.configuration["o_format"] = SyncMapFormat.TXT
         task.sync_map = self.dummy_sync_map()
         handler, output_file_path = gf.tmp_file(suffix=".txt")
         task.sync_map_file_path_absolute = output_file_path
@@ -200,98 +200,102 @@ class TestTask(unittest.TestCase):
         self.assertEqual(path, output_file_path)
         gf.delete_file(handler, output_file_path)
 
-    def test_tc_language(self):
-        # NOTE the string parameter is "task_language"
-        self.setter("language", Language.IT)
-
-    def test_tc_description_str(self):
-        # NOTE the string parameter is "task_description"
-        self.setter("description", u"Test description")
+    def test_tc_custom_id(self):
+        self.setter("custom_id", u"customid", u"customid")
 
     def test_tc_description_unicode_ascii(self):
-        self.setter("description", u"Test description")
+        self.setter("description", u"Test description", u"Test description")
 
     def test_tc_description_unicode_unicode(self):
-        self.setter("description", u"Test àèìòù")
+        self.setter("description", u"Test àèìòù", u"Test àèìòù")
 
-    def test_tc_custom_id(self):
-        self.setter("custom_id", u"customid")
+    def test_tc_language(self):
+        self.setter("language", Language.IT, Language.IT)
 
     def test_tc_adjust_boundary_algorithm(self):
-        self.setter("adjust_boundary_algorithm", AdjustBoundaryAlgorithm.AUTO)
+        self.setter("aba_algorithm", AdjustBoundaryAlgorithm.AUTO, AdjustBoundaryAlgorithm.AUTO)
 
     def test_tc_adjust_boundary_aftercurrent_value(self):
-        self.setter("adjust_boundary_aftercurrent_value", u"0.100")
+        self.setter("aba_aftercurrent_value", u"0.100", 0.100)
 
     def test_tc_adjust_boundary_beforenext_value(self):
-        self.setter("adjust_boundary_beforenext_value", u"0.100")
+        self.setter("aba_beforenext_value", u"0.100", 0.100)
 
     def test_tc_adjust_boundary_offset_value(self):
-        self.setter("adjust_boundary_offset_value", u"0.100")
+        self.setter("aba_offset_value", u"0.100", 0.100)
 
     def test_tc_adjust_boundary_percent_value(self):
-        self.setter("adjust_boundary_percent_value", u"75")
+        self.setter("aba_percent_value", u"75", 75)
 
     def test_tc_adjust_boundary_rate_value(self):
-        self.setter("adjust_boundary_rate_value", u"22.5")
-
-    def test_tc_is_audio_file_detect_head_min(self):
-        self.setter("is_audio_file_detect_head_min", u"1.000")
+        self.setter("aba_rate_value", u"22.5", 22.5)
 
     def test_tc_is_audio_file_detect_head_max(self):
-        self.setter("is_audio_file_detect_head_max", u"10.000")
+        self.setter("i_a_head_max", u"10.000", 10.0)
 
-    def test_tc_is_audio_file_detect_tail_min(self):
-        self.setter("is_audio_file_detect_tail_min", u"1.000")
+    def test_tc_is_audio_file_detect_head_min(self):
+        self.setter("i_a_head_min", u"1.000", 1.0)
 
     def test_tc_is_audio_file_detect_tail_max(self):
-        self.setter("is_audio_file_detect_tail_max", u"5.000")
+        self.setter("i_a_tail_max", u"5.000", 5.0)
+
+    def test_tc_is_audio_file_detect_tail_min(self):
+        self.setter("i_a_tail_min", u"1.000", 1.0)
 
     def test_tc_is_audio_file_head_length(self):
-        self.setter("is_audio_file_head_length", u"20")
+        self.setter("i_a_head", u"20", 20.0)
 
     def test_tc_is_audio_file_process_length(self):
-        self.setter("is_audio_file_process_length", u"100")
+        self.setter("i_a_process", u"100", 100.0)
+
+    def test_tc_is_audio_file_tail_length(self):
+        self.setter("i_a_tail", u"20", 20.)
 
     def test_tc_is_text_file_format(self):
-        self.setter("is_text_file_format", TextFileFormat.PLAIN)
+        self.setter("i_t_format", TextFileFormat.PLAIN, TextFileFormat.PLAIN)
+
+    def test_tc_is_text_ignore_regex(self):
+        self.setter("i_t_ignore_regex", u"\[.*\]", u"\[.*\]")
+
+    def test_tc_is_text_transliterate_map(self):
+        self.setter("i_t_transliterate_map", u"/tmp/map.txt", u"/tmp/map.txt")
 
     def test_tc_is_text_unparsed_class_regex(self):
-        self.setter("is_text_unparsed_class_regex", u"f[0-9]*")
+        self.setter("i_t_unparsed_class_regex", u"f[0-9]*", u"f[0-9]*")
 
     def test_tc_is_text_unparsed_id_regex(self):
-        self.setter("is_text_unparsed_id_regex", u"ra")
+        self.setter("i_t_unparsed_id_regex", u"ra", u"ra")
 
     def test_tc_is_text_unparsed_id_sort(self):
-        self.setter("is_text_unparsed_id_sort", IDSortingAlgorithm.NUMERIC)
+        self.setter("i_t_unparsed_id_sort", IDSortingAlgorithm.NUMERIC, IDSortingAlgorithm.NUMERIC)
 
     def test_tc_os_file_format(self):
-        self.setter("os_file_format", SyncMapFormat.SMIL)
-
-    def test_tc_os_file_name(self):
-        self.setter("os_file_name", u"output.smil")
-
-    def test_tc_os_file_smil_audio_ref(self):
-        self.setter("os_file_smil_audio_ref", u"../audio/audio001.mp3")
-
-    def test_tc_os_file_smil_page_ref(self):
-        self.setter("os_file_smil_page_ref", u"../text/page001.xhtml")
+        self.setter("o_format", SyncMapFormat.SMIL, SyncMapFormat.SMIL)
 
     def test_tc_os_file_head_tail_format(self):
-        self.setter("os_file_head_tail_format", SyncMapHeadTailFormat.ADD)
+        self.setter("o_h_t_format", SyncMapHeadTailFormat.ADD, SyncMapHeadTailFormat.ADD)
+
+    def test_tc_os_file_name(self):
+        self.setter("o_name", u"output.smil", u"output.smil")
+
+    def test_tc_os_file_smil_audio_ref(self):
+        self.setter("o_smil_audio_ref", u"../audio/audio001.mp3", u"../audio/audio001.mp3")
+
+    def test_tc_os_file_smil_page_ref(self):
+        self.setter("o_smil_page_ref", u"../text/page001.xhtml", u"../text/page001.xhtml")
 
     def test_tc_config_string(self):
         taskconf = TaskConfiguration()
-        taskconf.language = Language.IT
-        taskconf.description = u"Test description"
-        taskconf.custom_id = u"customid"
-        taskconf.is_audio_file_head_length = u"20"
-        taskconf.is_audio_file_process_length = u"100"
-        taskconf.os_file_format = SyncMapFormat.SMIL
-        taskconf.os_file_name = u"output.smil"
-        taskconf.os_file_smil_audio_ref = u"../audio/audio001.mp3"
-        taskconf.os_file_smil_page_ref = u"../text/page001.xhtml"
-        expected = u"task_description=Test description|task_language=it|task_custom_id=customid|is_audio_file_head_length=20|is_audio_file_process_length=100|os_task_file_format=smil|os_task_file_name=output.smil|os_task_file_smil_audio_ref=../audio/audio001.mp3|os_task_file_smil_page_ref=../text/page001.xhtml"
+        taskconf["language"] = Language.IT
+        taskconf["description"] = u"Test description"
+        taskconf["custom_id"] = u"customid"
+        taskconf["i_a_head"] = u"20"
+        taskconf["i_a_process"] = u"100"
+        taskconf["o_format"] = SyncMapFormat.SMIL
+        taskconf["o_name"] = u"output.smil"
+        taskconf["o_smil_audio_ref"] = u"../audio/audio001.mp3"
+        taskconf["o_smil_page_ref"] = u"../text/page001.xhtml"
+        expected = u"is_audio_file_head_length=20|is_audio_file_process_length=100|os_task_file_format=smil|os_task_file_name=output.smil|os_task_file_smil_audio_ref=../audio/audio001.mp3|os_task_file_smil_page_ref=../text/page001.xhtml|task_custom_id=customid|task_description=Test description|task_language=it"
         self.assertEqual(taskconf.config_string(), expected)
 
     def test_tc_from_string_with_optional(self):
@@ -300,12 +304,12 @@ class TestTask(unittest.TestCase):
             ("language", Language.IT),
             ("description", u"Test description"),
             ("custom_id", u"customid"),
-            ("is_audio_file_head_length", u"20"),
-            ("is_audio_file_process_length", u"100"),
-            ("os_file_format", SyncMapFormat.SMIL),
-            ("os_file_name", u"output.smil"),
-            ("os_file_smil_audio_ref", u"../audio/audio001.mp3"),
-            ("os_file_smil_page_ref", u"../text/page001.xhtml"),
+            ("i_a_head", 20.0),
+            ("i_a_process", 100.0),
+            ("o_format", SyncMapFormat.SMIL),
+            ("o_name", u"output.smil"),
+            ("o_smil_audio_ref", u"../audio/audio001.mp3"),
+            ("o_smil_page_ref", u"../text/page001.xhtml"),
         ]
         self.tc_from_string(config_string, properties)
 
@@ -315,12 +319,12 @@ class TestTask(unittest.TestCase):
             ("language", Language.IT),
             ("description", u"Test description"),
             ("custom_id", u"customid"),
-            ("is_audio_file_head_length", u"20"),
-            ("is_audio_file_process_length", u"100"),
-            ("os_file_format", SyncMapFormat.TXT),
-            ("os_file_name", u"output.txt"),
-            ("os_file_smil_audio_ref", None),
-            ("os_file_smil_page_ref", None),
+            ("i_a_head", 20.0),
+            ("i_a_process", 100.0),
+            ("o_format", SyncMapFormat.TXT),
+            ("o_name", u"output.txt"),
+            ("o_smil_audio_ref", None),
+            ("o_smil_page_ref", None),
         ]
         self.tc_from_string(config_string, properties)
 

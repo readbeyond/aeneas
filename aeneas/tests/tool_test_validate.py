@@ -71,6 +71,13 @@ class TestValidateCLI(unittest.TestCase):
             ("in", "../tools/res/job_no_config.zip")
         ], 1)
 
+    def test_container_too_many_tasks(self):
+        self.execute([
+            ("", "container"),
+            ("in", "../tools/res/job.zip"),
+            ("", "-r=\"job_max_tasks=1\"")
+        ], 1)
+
     def test_job(self):
         self.execute([
             ("", "job"),
