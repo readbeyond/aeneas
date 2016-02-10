@@ -27,6 +27,7 @@ v1.4.1 (2016-02-13)
 #. Moved the original ``mfcc.py`` into the ``thirdparty/`` directory for clarity and attribution
 #. Nicer ``aeneas_check_setup.py`` script
 #. More unit tests covering runtime configuration options
+#. Slimmed the ``README.md`` down
 
 v1.4.0 (2016-01-15)
 -------------------

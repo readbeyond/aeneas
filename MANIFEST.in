@@ -4,6 +4,7 @@ include aeneas_check_setup.py
 recursive-include bin *
 recursive-include docs *
 prune docs/build
+include CHANGELOG
 include LICENSE
 recursive-include licenses *
 include README.md
@@ -11,3 +12,4 @@ include README.rst
 include requirements.txt
 recursive-include thirdparty *
 include VERSION
+recursive-include wiki *

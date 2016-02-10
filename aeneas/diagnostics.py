@@ -311,3 +311,25 @@ class Diagnostics(object):
 
 
 
+def main():
+    errors, warnings, c_ext_warnings = Diagnostics.check_all()
+    if errors:
+        sys.exit(1)
+    #print_info(u"")
+    if c_ext_warnings:
+        print_warning(u"All required dependencies are met but at least one available Python C extension is not compiled")
+        #print_info(u"You can still run aeneas but it will be slower")
+        #print_info(u"Enjoy running aeneas!")
+        sys.exit(2)
+    else:
+        print_success(u"All required dependencies are met and all available Python C extensions are compiled")
+        #print_info(u"Enjoy running aeneas!")
+        sys.exit(0)
+
+
+
+if __name__ == '__main__':
+    main()
+
+
+
