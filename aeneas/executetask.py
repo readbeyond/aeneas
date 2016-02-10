@@ -99,7 +99,10 @@ class ExecuteTask(object):
                 (self.rconf["task_max_a_len"] > 0) and
                 (self.task.audio_file.audio_length > self.rconf["task_max_a_len"])
             ):
-            self._failed(u"The task audio file is too long", False)
+            self._failed(u"The audio file of the task has length %.3f, more than the maximum allowed (%.3f)." % (
+                self.task.audio_file.audio_length,
+                self.rconf["task_max_a_len"]
+            ), False)
 
         # check that we have the TextFile object
         if self.task.text_file is None:
@@ -110,7 +113,10 @@ class ExecuteTask(object):
                 (self.rconf["task_max_t_len"] > 0) and
                 (len(self.task.text_file) > self.rconf["task_max_t_len"])
             ):
-            self._failed(u"The task text file has too many text fragments", False)
+            self._failed(u"The text file of the task has %d fragments, more than the maximum allowed (%d)." % (
+                len(self.task.text_file),
+                self.rconf["task_max_t_len"]
+            ), False)
         if self.task.text_file.chars == 0:
             self._failed(u"The task text file seems to have empty text", False)
 

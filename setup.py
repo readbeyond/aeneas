@@ -32,7 +32,7 @@ except ImportError:
 
 IS_LINUX = (os.name == "posix") and (os.uname()[0] == "Linux")
 
-SHORT_DESCRIPTION = "aeneas is a Python library and a set of tools to automagically synchronize audio and text"
+SHORT_DESCRIPTION = "aeneas is a Python/C library and a set of tools to automagically synchronize audio and text (aka forced alignment)"
 
 LONG_DESCRIPTION = io.open("README.rst", "r", encoding="utf-8").read()
 

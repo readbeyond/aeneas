@@ -199,7 +199,10 @@ class ExecuteJob(object):
         if len(self.job) == 0:
             self._failed(u"The job has no tasks", "execution")
         if (self.rconf["job_max_tasks"] > 0) and (len(self.job) > self.rconf["job_max_tasks"]):
-            self._failed(u"The job has too many tasks", "execution")
+            self._failed(u"The Job has %d Tasks, more than the maximum allowed (%d)." % (
+                len(self.job),
+                self.rconf["job_max_tasks"]
+            ), "execution")
         self._log([u"Number of tasks: '%d'", len(self.job)])
 
         for task in self.job.tasks:
