@@ -44,6 +44,7 @@ static void _array_to_list(struct PATH_CELL *best_path, unsigned int best_path_l
         //i = (*best_path).i;
         //j = (*best_path).j;
         //printf("k = %d : i = %d, j = %d\n", k, (int)i, (int)j);
+        //printf("k = %d : i = %d, j = %d\n", k, best_path[k].i, best_path[k].j);
         _append(list, best_path[k].i, best_path[k].j);
     }
 }
@@ -120,15 +121,13 @@ static PyObject *compute_best_path(PyObject *self, PyObject *args) {
     centers = (PyArrayObject *)PyArray_SimpleNew(1, centers_dimensions, NPY_INT32);
     centers_ptr = (unsigned int *)PyArray_DATA(centers);
 
-    // create best path array of integers
-    best_path_ptr = PyList_New(0);
-
     // actual computation
     _compute_cost_matrix(mfcc1_ptr, mfcc2_ptr, delta, cost_matrix_ptr, centers_ptr, n, m, l1);
     _compute_accumulated_cost_matrix_in_place(cost_matrix_ptr, centers_ptr, n, delta);
     _compute_best_path(cost_matrix_ptr, centers_ptr, n, delta, &best_path, &best_path_length);
 
     // convert array of struct to list of tuples 
+    best_path_ptr = PyList_New(0);
     _array_to_list(best_path, best_path_length, best_path_ptr);
     free((void *)best_path);
     best_path = NULL;

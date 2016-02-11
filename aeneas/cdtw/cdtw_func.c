@@ -244,14 +244,21 @@ void _compute_best_path(
 
     double cost0, cost1, cost2;
     unsigned int argmin, offset;
-    unsigned int i, j, k, r_j;
+    unsigned int i, j, k, r_j, max_path_len;
 
     // allocate space for keeping the best path
-    // NOTE: the length is at most n + delta, but it might be less
-    *best_path_ptr = (struct PATH_CELL *)calloc(n + delta, sizeof(struct PATH_CELL));
+    //
+    // NOTE: the length of any path is at most
+    //       n + (centers[n-1] + delta)
+    //       because: n = num rows and centers[n-1] + delta = num cols
+    //       but of course it might be much less
+    //       allocating statically to avoid reallocations while appending cells
+    //      
+    max_path_len = n + centers_ptr[n-1] + delta;
+    *best_path_ptr = (struct PATH_CELL *)calloc(max_path_len, sizeof(struct PATH_CELL));
 
     i = n - 1;
-    j = delta - 1 + centers_ptr[i];
+    j = centers_ptr[i] + delta - 1;
     k = 0;
     _append(*best_path_ptr, k++, i, j);
 
