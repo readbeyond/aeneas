@@ -2,8 +2,9 @@
 # coding=utf-8
 
 """
-aeneas.tools is a collection of modules
-that can be run as separate programs by the end user.
+**aeneas.tools** is a collection of command line tools
+that can be run by the end user to perform tasks
+such as computing or converting sync maps.
 """
 
 __author__ = "Alberto Pettarin"

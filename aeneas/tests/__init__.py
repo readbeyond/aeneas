@@ -2,8 +2,8 @@
 # coding=utf-8
 
 """
-aeneas.tests is a collection of (fast) unit tests
-to be run to test the main aeneas package.
+**aeneas.tests** is a collection of unit tests
+for the packages **aeneas** and **aeneas.tools**.
 """
 
 import os
