@@ -2,8 +2,8 @@
 # coding=utf-8
 
 """
-**aeneas** is a Python library and a set of tools
-to automagically synchronize audio and text.
+**aeneas** is a Python/C library and a set of tools
+to automagically synchronize audio and text (aka forced alignment).
 """
 
 from __future__ import absolute_import

@@ -712,7 +712,6 @@ class TextFile(object):
                     inner_filter = cls(**params)
                     text_filter.append(inner_filter)
                     self._log([u"Creating %s object... done", cls_name])
-                    print("HERE")
                 except ValueError:
                     self._log([u"Creating %s object... failed", cls_name], Logger.WARNING)
         return text_filter
