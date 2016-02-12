@@ -13,8 +13,9 @@ synchronize audio and text (aka forced alignment).
 -  Quick Links: `Home <http://www.readbeyond.it/aeneas/>`__ -
    `GitHub <https://github.com/readbeyond/aeneas/>`__ -
    `PyPI <https://pypi.python.org/pypi/aeneas/>`__ - `API
-   Docs <http://www.readbeyond.it/aeneas/docs/>`__ - `Web
-   App <http://aeneasweb.org>`__
+   Docs <http://www.readbeyond.it/aeneas/docs/>`__ - `Mailing
+   List <https://groups.google.com/d/forum/aeneas-forced-alignment>`__ -
+   `Web App <http://aeneasweb.org>`__
 
 Goal
 ----
@@ -65,11 +66,11 @@ System Requirements
 3. `FFmpeg <https://www.ffmpeg.org/>`__
 4. `eSpeak <http://espeak.sourceforge.net/>`__
 5. Python modules ``BeautifulSoup4``, ``lxml``, and ``numpy``
-6. (Optional but strongly recommended) Python C headers to compile the
-   Python C extensions
-7. (Optional but strongly recommended) A shell supporting UTF-8
-8. (Only required if you want to download audio from YouTube) Python
-   module ``pafy``
+6. Python C headers to compile the Python C extensions (Optional but
+   strongly recommended)
+7. A shell supporting UTF-8 (Optional but strongly recommended)
+8. Python module ``pafy`` (Optional, only required if you want to
+   download audio from YouTube)
 
 Supported Platforms
 ~~~~~~~~~~~~~~~~~~~
@@ -79,7 +80,8 @@ the **only supported OS** at the moment.
 
 However, **aeneas** has been confirmed to work on other Linux
 distributions, OS X, and Windows. See the `PLATFORMS
-file <wiki/PLATFORMS.md>`__ for the details.
+file <https://github.com/readbeyond/aeneas/blob/master/wiki/PLATFORMS.md>`__
+for the details.
 
 If installing **aeneas** natively on your OS proves difficult, you are
 strongly encouraged to use
@@ -99,15 +101,16 @@ Installation
 2. Make sure the following executables can be called from your shell:
    ``espeak``, ``ffmpeg``, ``ffprobe``, ``pip``, and ``python``
 
-3. Install ``numpy`` and then ``aeneas`` with ``pip``:
+3. First install ``numpy`` with ``pip`` and then ``aeneas``:
 
    .. code:: bash
 
        pip install numpy
        pip install aeneas
 
-See the `INSTALL file <wiki/INSTALL.md>`__ for detailed, step-by-step
-procedures for Linux, OS X, and Windows.
+See the `INSTALL
+file <https://github.com/readbeyond/aeneas/blob/master/wiki/INSTALL.md>`__
+for detailed, step-by-step procedures for Linux, OS X, and Windows.
 
 Usage
 -----
@@ -116,20 +119,22 @@ Usage
 
 ``bash     python -m aeneas.diagnostics``
 
-::
-
-    and, in case of errors, follow the printed directions to fix them.
-
-2. Run ``execute_task`` or ``execute_job`` with ``-h`` to get an usage
-   message and some examples:
+2. Run ``execute_task`` or ``execute_job`` with ``-h`` (resp.,
+   ``--help``) to get a short (resp., long) usage message:
 
    .. code:: bash
 
        python -m aeneas.tools.execute_task -h
        python -m aeneas.tools.execute_job -h
 
+   The above commands also print a list of live usage examples that you
+   can immediately run on your machine, thanks to the included example
+   files.
+
 3. To compute a synchronization map ``map.json`` for a pair
-   (``audio.mp3``, ``text.txt`` in ``plain`` text format), you can run:
+   (``audio.mp3``, ``text.txt`` in
+   ```plain`` <http://www.readbeyond.it/aeneas/docs/textfile.html#aeneas.textfile.TextFileFormat.PLAIN>`__
+   text format), you can run:
 
    .. code:: bash
 
@@ -140,8 +145,9 @@ Usage
            map.json
 
 To compute a synchronization map ``map.smil`` for a pair (``audio.mp3``,
-``page.xhtml`` containing fragments marked by ``id`` attributes like
-``f001``), you can run:
+```page.xhtml`` <http://www.readbeyond.it/aeneas/docs/textfile.html#aeneas.textfile.TextFileFormat.UNPARSED>`__
+containing fragments marked by ``id`` attributes like ``f001``), you can
+run:
 
 ::
 
@@ -167,12 +173,13 @@ other parameters/options. See the
 File ``job.zip`` should contain a ``config.txt`` or ``config.xml``
 configuration file, providing **aeneas** with all the information needed
 to parse the input assets and format the output sync map files. See the
-`documentation <http://www.readbeyond.it/aeneas/docs/>`__ or use the
-``-h`` switch for details.
+`documentation <http://www.readbeyond.it/aeneas/docs/>`__ for details.
 
-See the `documentation <http://www.readbeyond.it/aeneas/docs/>`__ for an
-introduction to the concepts of ``task`` and ``job``, and for the list
-of all the available options.
+The `documentation <http://www.readbeyond.it/aeneas/docs/>`__ provides
+an introduction to the concepts of
+```task`` <http://www.readbeyond.it/aeneas/docs/#tasks>`__ and
+```job`` <http://www.readbeyond.it/aeneas/docs/#job>`__, and it lists of
+all the options and tools available in the library.
 
 Documentation and Support
 -------------------------
@@ -180,7 +187,7 @@ Documentation and Support
 Documentation: http://www.readbeyond.it/aeneas/docs/
 
 High level description of how aeneas works:
-`HOWITWORKS <wiki/HOWITWORKS.md>`__
+`HOWITWORKS <https://github.com/readbeyond/aeneas/blob/master/wiki/HOWITWORKS.md>`__
 
 Tutorial: `A Practical Introduction To The aeneas
 Package <http://www.albertopettarin.it/blog/2015/05/21/a-practical-introduction-to-the-aeneas-package.html>`__
@@ -189,7 +196,8 @@ Mailing list: https://groups.google.com/d/forum/aeneas-forced-alignment
 
 Changelog: http://www.readbeyond.it/aeneas/docs/changelog.html
 
-Development history: `HISTORY <wiki/HISTORY.md>`__
+Development history:
+`HISTORY <https://github.com/readbeyond/aeneas/blob/master/wiki/HISTORY.md>`__
 
 Supported Features
 ------------------
@@ -239,11 +247,13 @@ License
 
 **aeneas** is released under the terms of the GNU Affero General Public
 License Version 3. See the `LICENSE
-file <https://raw.githubusercontent.com/readbeyond/aeneas/master/LICENSE>`__
-for details.
+file <https://github.com/readbeyond/aeneas/blob/master/LICENSE>`__ for
+details.
 
 Licenses for third party code and files included in **aeneas** can be
-found in the `licenses/ <licenses/README.md>`__ directory.
+found in the
+`licenses/ <https://github.com/readbeyond/aeneas/blob/master/licenses/README.md>`__
+directory.
 
 No copy rights were harmed in the making of this project.
 

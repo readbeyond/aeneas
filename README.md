@@ -8,7 +8,8 @@
 * Lead Developer: [Alberto Pettarin](http://www.albertopettarin.it/)
 * License: the GNU Affero General Public License Version 3 (AGPL v3)
 * Contact: [aeneas@readbeyond.it](mailto:aeneas@readbeyond.it)
-* Quick Links: [Home](http://www.readbeyond.it/aeneas/) - [GitHub](https://github.com/readbeyond/aeneas/) - [PyPI](https://pypi.python.org/pypi/aeneas/) - [API Docs](http://www.readbeyond.it/aeneas/docs/) - [Web App](http://aeneasweb.org)
+* Quick Links: [Home](http://www.readbeyond.it/aeneas/) - [GitHub](https://github.com/readbeyond/aeneas/) - [PyPI](https://pypi.python.org/pypi/aeneas/) - [API Docs](http://www.readbeyond.it/aeneas/docs/) - [Mailing List](https://groups.google.com/d/forum/aeneas-forced-alignment) - [Web App](http://aeneasweb.org)
+
  
 ## Goal
 
@@ -55,9 +56,9 @@ or raw CSV/SSV/TSV/TXT/XML for further processing.
 3. [FFmpeg](https://www.ffmpeg.org/)
 4. [eSpeak](http://espeak.sourceforge.net/)
 5. Python modules `BeautifulSoup4`, `lxml`, and `numpy`
-6. (Optional but strongly recommended) Python C headers to compile the Python C extensions
-7. (Optional but strongly recommended) A shell supporting UTF-8
-8. (Only required if you want to download audio from YouTube) Python module `pafy`
+6. Python C headers to compile the Python C extensions (Optional but strongly recommended)
+7. A shell supporting UTF-8 (Optional but strongly recommended)
+8. Python module `pafy` (Optional, only required if you want to download audio from YouTube)
 
 ### Supported Platforms
 
@@ -66,7 +67,7 @@ which is the **only supported OS** at the moment.
 
 However, **aeneas** has been confirmed to work on
 other Linux distributions, OS X, and Windows.
-See the [PLATFORMS file](wiki/PLATFORMS.md) for the details.
+See the [PLATFORMS file](https://github.com/readbeyond/aeneas/blob/master/wiki/PLATFORMS.md) for the details.
 
 If installing **aeneas** natively on your OS proves difficult,
 you are strongly encouraged to use
@@ -85,15 +86,15 @@ on any modern OS (Linux, Mac OS X, Windows).
 2. Make sure the following executables can be called from your shell:
    `espeak`, `ffmpeg`, `ffprobe`, `pip`, and `python`
 
-3. Install `numpy` and then `aeneas` with `pip`:
+3. First install `numpy` with `pip` and then `aeneas`:
     
     ```bash
     pip install numpy
     pip install aeneas
     ```
 
-See the [INSTALL file](wiki/INSTALL.md) for detailed, step-by-step
-procedures for Linux, OS X, and Windows.
+See the [INSTALL file](https://github.com/readbeyond/aeneas/blob/master/wiki/INSTALL.md)
+for detailed, step-by-step procedures for Linux, OS X, and Windows.
 
 
 ## Usage
@@ -104,18 +105,20 @@ procedures for Linux, OS X, and Windows.
     python -m aeneas.diagnostics
     ```
 
-    and, in case of errors, follow the printed directions to fix them.
-
 2. Run `execute_task` or `execute_job`
-   with `-h` to get an usage message and some examples:
+   with `-h` (resp., `--help`) to get a short (resp., long) usage message:
 
     ```bash
     python -m aeneas.tools.execute_task -h
     python -m aeneas.tools.execute_job -h
     ```
 
+    The above commands also print a list of live usage examples
+    that you can immediately run on your machine,
+    thanks to the included example files.
+
 3. To compute a synchronization map `map.json` for a pair
-   (`audio.mp3`, `text.txt` in `plain` text format), you can run:
+   (`audio.mp3`, `text.txt` in [`plain`](http://www.readbeyond.it/aeneas/docs/textfile.html#aeneas.textfile.TextFileFormat.PLAIN) text format), you can run:
 
     ```bash
     python -m aeneas.tools.execute_task \
@@ -126,7 +129,7 @@ procedures for Linux, OS X, and Windows.
     ```
 
    To compute a synchronization map `map.smil` for a pair
-   (`audio.mp3`, `page.xhtml` containing fragments marked by `id` attributes like `f001`),
+   (`audio.mp3`, [`page.xhtml`](http://www.readbeyond.it/aeneas/docs/textfile.html#aeneas.textfile.TextFileFormat.UNPARSED) containing fragments marked by `id` attributes like `f001`),
    you can run:
 
     ```bash
@@ -152,19 +155,20 @@ procedures for Linux, OS X, and Windows.
    configuration file, providing **aeneas**
    with all the information needed to parse the input assets
    and format the output sync map files.
-   See the [documentation](http://www.readbeyond.it/aeneas/docs/)
-   or use the `-h` switch for details.
+   See the [documentation](http://www.readbeyond.it/aeneas/docs/) for details.
 
-   See the [documentation](http://www.readbeyond.it/aeneas/docs/)
-   for an introduction to the concepts of `task` and  `job`,
-   and for the list of all the available options.
+The [documentation](http://www.readbeyond.it/aeneas/docs/)
+provides an introduction to the concepts of
+[`task`](http://www.readbeyond.it/aeneas/docs/#tasks) and
+[`job`](http://www.readbeyond.it/aeneas/docs/#job),
+and it lists of all the options and tools available in the library.
 
 
 ## Documentation and Support
 
 Documentation: [http://www.readbeyond.it/aeneas/docs/](http://www.readbeyond.it/aeneas/docs/)
 
-High level description of how aeneas works: [HOWITWORKS](wiki/HOWITWORKS.md)
+High level description of how aeneas works: [HOWITWORKS](https://github.com/readbeyond/aeneas/blob/master/wiki/HOWITWORKS.md)
 
 Tutorial: [A Practical Introduction To The aeneas Package](http://www.albertopettarin.it/blog/2015/05/21/a-practical-introduction-to-the-aeneas-package.html)
 
@@ -172,7 +176,7 @@ Mailing list: [https://groups.google.com/d/forum/aeneas-forced-alignment](https:
 
 Changelog: [http://www.readbeyond.it/aeneas/docs/changelog.html](http://www.readbeyond.it/aeneas/docs/changelog.html)
 
-Development history: [HISTORY](wiki/HISTORY.md)
+Development history: [HISTORY](https://github.com/readbeyond/aeneas/blob/master/wiki/HISTORY.md)
 
 
 ## Supported Features
@@ -208,10 +212,10 @@ Development history: [HISTORY](wiki/HISTORY.md)
 
 **aeneas** is released under the terms of the
 GNU Affero General Public License Version 3.
-See the [LICENSE file](https://raw.githubusercontent.com/readbeyond/aeneas/master/LICENSE) for details.
+See the [LICENSE file](https://github.com/readbeyond/aeneas/blob/master/LICENSE) for details.
 
 Licenses for third party code and files included in **aeneas**
-can be found in the [licenses/](licenses/README.md) directory.
+can be found in the [licenses/](https://github.com/readbeyond/aeneas/blob/master/licenses/README.md) directory.
 
 No copy rights were harmed in the making of this project.
 
