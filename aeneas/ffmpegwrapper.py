@@ -10,7 +10,7 @@ from __future__ import print_function
 import subprocess
 
 from aeneas.logger import Logger
-import aeneas.globalconstants as gc
+from aeneas.runtimeconfiguration import RuntimeConfiguration
 import aeneas.globalfunctions as gf
 
 __author__ = "Alberto Pettarin"
@@ -20,9 +20,17 @@ __copyright__ = """
     Copyright 2015-2016, Alberto Pettarin (www.albertopettarin.it)
     """
 __license__ = "GNU AGPL v3"
-__version__ = "1.4.0"
+__version__ = "1.4.1"
 __email__ = "aeneas@readbeyond.it"
 __status__ = "Production"
+
+class FFMPEGPathError(Exception):
+    """
+    Error raised when the path to ``ffmpeg`` is not a valid executable.
+    """
+    pass
+
+
 
 class FFMPEGWrapper(object):
     """
@@ -32,12 +40,9 @@ class FFMPEGWrapper(object):
 
         $ ffmpeg -i /path/to/input.mp3 [parameters] /path/to/output.wav
 
-    :param parameters: list of parameters to be passed to ``ffmpeg``,
-                       not including input and output paths
-                       and the corresponding ``-i`` and ``-o`` flags.
-                       Default: ``None``, meaning that
-                       ``FFMPEG_PARAMETERS_DEFAULT`` will be used.
-    :type  parameters: list of strings
+    :param rconf: a runtime configuration. Default: ``None``, meaning that
+                  default settings will be used.
+    :type  rconf: :class:`aeneas.runtimeconfiguration.RuntimeConfiguration`
     :param logger: the logger object
     :type  logger: :class:`aeneas.logger.Logger`
     """
@@ -63,67 +68,79 @@ class FFMPEGWrapper(object):
     FFMPEG_OVERWRITE = ["-y"]
     """ Single parameter for ``ffmpeg``: force overwriting output file """
 
+    FFMPEG_PLAIN_HEADER = ["-map_metadata", "-1", "-flags", "+bitexact"]
+    """ Single parameter for ``ffmpeg``: generate WAVE header
+    without extra chunks (e.g., the INFO chunk) """
+
     FFMPEG_FORMAT_WAVE = ["-f", "wav"]
     """ Single parameter for ``ffmpeg``: produce output in ``wav`` format
     (must be the second to last argument to ``ffmpeg``,
     just before path of the output file) """
 
     FFMPEG_PARAMETERS_SAMPLE_KEEP = (
-        FFMPEG_MONO + FFMPEG_OVERWRITE + FFMPEG_FORMAT_WAVE
+        FFMPEG_MONO +
+        FFMPEG_OVERWRITE +
+        FFMPEG_PLAIN_HEADER +
+        FFMPEG_FORMAT_WAVE
     )
     """ Set of parameters for ``ffmpeg`` without changing the sampling rate """
 
     FFMPEG_PARAMETERS_SAMPLE_8000 = (
-        FFMPEG_MONO + FFMPEG_SAMPLE_8000 + FFMPEG_OVERWRITE + FFMPEG_FORMAT_WAVE
+        FFMPEG_MONO +
+        FFMPEG_SAMPLE_8000 +
+        FFMPEG_OVERWRITE +
+        FFMPEG_PLAIN_HEADER +
+        FFMPEG_FORMAT_WAVE
     )
-    """ Set of parameters for ``ffmpeg`` with 16000 Hz sampling """
+    """ Set of parameters for ``ffmpeg`` with 8000 Hz sampling """
 
     FFMPEG_PARAMETERS_SAMPLE_16000 = (
-        FFMPEG_MONO + FFMPEG_SAMPLE_16000 + FFMPEG_OVERWRITE + FFMPEG_FORMAT_WAVE
+        FFMPEG_MONO +
+        FFMPEG_SAMPLE_16000 +
+        FFMPEG_OVERWRITE +
+        FFMPEG_PLAIN_HEADER +
+        FFMPEG_FORMAT_WAVE
     )
     """ Set of parameters for ``ffmpeg`` with 16000 Hz sampling """
 
     FFMPEG_PARAMETERS_SAMPLE_22050 = (
-        FFMPEG_MONO + FFMPEG_SAMPLE_22050 + FFMPEG_OVERWRITE + FFMPEG_FORMAT_WAVE
+        FFMPEG_MONO +
+        FFMPEG_SAMPLE_22050 +
+        FFMPEG_OVERWRITE +
+        FFMPEG_PLAIN_HEADER +
+        FFMPEG_FORMAT_WAVE
     )
     """ Set of parameters for ``ffmpeg`` with 22050 Hz sampling """
 
     FFMPEG_PARAMETERS_SAMPLE_44100 = (
-        FFMPEG_MONO + FFMPEG_SAMPLE_44100 + FFMPEG_OVERWRITE + FFMPEG_FORMAT_WAVE
+        FFMPEG_MONO +
+        FFMPEG_SAMPLE_44100 +
+        FFMPEG_OVERWRITE +
+        FFMPEG_PLAIN_HEADER +
+        FFMPEG_FORMAT_WAVE
     )
     """ Set of parameters for ``ffmpeg`` with 44100 Hz sampling """
 
-    FFMPEG_PARAMETERS_DEFAULT = FFMPEG_PARAMETERS_SAMPLE_22050
+    FFMPEG_PARAMETERS_MAP = {
+        8000: FFMPEG_PARAMETERS_SAMPLE_8000,
+        16000: FFMPEG_PARAMETERS_SAMPLE_16000,
+        22050: FFMPEG_PARAMETERS_SAMPLE_22050,
+        44100: FFMPEG_PARAMETERS_SAMPLE_44100
+    }
+    """ Map sample rate to parameter list """
+
+    FFMPEG_PARAMETERS_DEFAULT = FFMPEG_PARAMETERS_SAMPLE_16000
     """ Default set of parameters for ``ffmpeg`` """
 
     TAG = u"FFMPEGWrapper"
 
-    def __init__(self, parameters=None, logger=None):
-        self.parameters = parameters
-        if self.parameters is None:
-            self.parameters = self.FFMPEG_PARAMETERS_DEFAULT
-        self.logger = logger
-        if self.logger is None:
-            self.logger = Logger()
-        self._log([u"Initialized with parameters '%s'", self.parameters])
+    def __init__(self, rconf=None, logger=None):
+        self.logger = logger or Logger()
+        self.rconf = rconf or RuntimeConfiguration()
 
     def _log(self, message, severity=Logger.DEBUG):
         """ Log """
         self.logger.log(message, severity, self.TAG)
-
-    @property
-    def parameters(self):
-        """
-        The parameters to be passed to ffmpeg,
-        not including ``-i input_file.mp3`` and ``output_file.wav``.
-
-        :rtype: list of strings
-        """
-        return self.__parameters
-
-    @parameters.setter
-    def parameters(self, parameters):
-        self.__parameters = parameters
 
     def convert(
             self,
@@ -159,6 +176,7 @@ class FFMPEGWrapper(object):
         :param process_length: process these many seconds of the audio file
         :type  process_length: float
 
+        :raises FFMPEGPathError: if the path to the ``ffmpeg`` executable cannot be called
         :raise OSError: if ``input_file_path`` does not exist
                         or ``output_file_path`` cannot be written
         """
@@ -173,24 +191,32 @@ class FFMPEGWrapper(object):
             raise OSError("Output file cannot be written")
 
         # call ffmpeg
-        arguments = [gc.FFMPEG_PATH, "-i", input_file_path]
+        arguments = [self.rconf["ffmpeg_path"]]
+        arguments.extend(["-i", input_file_path])
         if head_length is not None:
             arguments.extend(["-ss", head_length])
         if process_length is not None:
             arguments.extend(["-t", process_length])
-        arguments.extend(self.parameters)
+        if self.rconf["ffmpeg_sample_rate"] in self.FFMPEG_PARAMETERS_MAP:
+            arguments.extend(self.FFMPEG_PARAMETERS_MAP[self.rconf["ffmpeg_sample_rate"]])
+        else:
+            arguments.extend(self.FFMPEG_PARAMETERS_DEFAULT)
         arguments.append(output_file_path)
         self._log([u"Calling with arguments '%s'", arguments])
-        proc = subprocess.Popen(
-            arguments,
-            stdout=subprocess.PIPE,
-            stdin=subprocess.PIPE,
-            stderr=subprocess.PIPE
-        )
-        proc.communicate()
-        proc.stdout.close()
-        proc.stdin.close()
-        proc.stderr.close()
+        try:
+            proc = subprocess.Popen(
+                arguments,
+                stdout=subprocess.PIPE,
+                stdin=subprocess.PIPE,
+                stderr=subprocess.PIPE
+            )
+            proc.communicate()
+            proc.stdout.close()
+            proc.stdin.close()
+            proc.stderr.close()
+        except OSError:
+            self._log([u"Unable to call the '%s' ffmpeg executable", self.rconf["ffmpeg_path"]], Logger.CRITICAL)
+            raise FFMPEGPathError("Unable to call the specified ffmpeg executable")
         self._log(u"Call completed")
 
         # check if the output file exists

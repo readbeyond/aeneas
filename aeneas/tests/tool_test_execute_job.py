@@ -35,6 +35,41 @@ class TestExecuteJobCLI(unittest.TestCase):
             ("out", "")
         ], 0)
 
+    def test_exec_container_pure(self):
+        self.execute([
+            ("in", "../tools/res/job.zip"),
+            ("out", ""),
+            ("", "-r=\"c_extensions=False\"")
+        ], 0)
+
+    def test_exec_container_mfcc_window_shift(self):
+        self.execute([
+            ("in", "../tools/res/job.zip"),
+            ("out", ""),
+            ("", "-r=\"mfcc_window_length=0.250|mfcc_window_shift=0.100\"")
+        ], 0)
+
+    def test_exec_container_dtw_margin(self):
+        self.execute([
+            ("in", "../tools/res/job.zip"),
+            ("out", ""),
+            ("", "-r=\"dtw_margin=30\"")
+        ], 0)
+
+    def test_exec_container_dtw_algorithm(self):
+        self.execute([
+            ("in", "../tools/res/job.zip"),
+            ("out", ""),
+            ("", "-r=\"c_extensions=False|dtw_algorithm=exact\"")
+        ], 0)
+
+    def test_exec_container_too_many_jobs(self):
+        self.execute([
+            ("in", "../tools/res/job.zip"),
+            ("out", ""),
+            ("", "-r=\"job_max_tasks=1\"")
+        ], 1)
+
     def test_exec_container_bad_1(self):
         self.execute([
             ("in", "../tools/res/job_no_config.zip"),

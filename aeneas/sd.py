@@ -22,9 +22,9 @@ import numpy
 from aeneas.audiofile import AudioFileMonoWAVE
 from aeneas.dtw import DTWAligner
 from aeneas.logger import Logger
+from aeneas.runtimeconfiguration import RuntimeConfiguration
 from aeneas.synthesizer import Synthesizer
 from aeneas.vad import VAD
-import aeneas.globalconstants as gc
 import aeneas.globalfunctions as gf
 
 __author__ = "Alberto Pettarin"
@@ -34,7 +34,7 @@ __copyright__ = """
     Copyright 2015-2016, Alberto Pettarin (www.albertopettarin.it)
     """
 __license__ = "GNU AGPL v3"
-__version__ = "1.4.0"
+__version__ = "1.4.1"
 __email__ = "aeneas@readbeyond.it"
 __status__ = "Production"
 
@@ -59,9 +59,9 @@ class SD(object):
     :type  audio_file: :class:`aeneas.audiofile.AudioFileMonoWAVE`
     :param text_file: the text file
     :type  text_file: :class:`aeneas.textfile.TextFile`
-    :param frame_rate: the MFCC frame rate, in frames per second. Default:
-                       :class:`aeneas.globalconstants.MFCC_FRAME_RATE`
-    :type  frame_rate: int
+    :param rconf: a runtime configuration. Default: ``None``, meaning that
+                  default settings will be used.
+    :type  rconf: :class:`aeneas.runtimeconfiguration.RuntimeConfiguration`
     :param logger: the logger object
     :type  logger: :class:`aeneas.logger.Logger`
     """
@@ -74,19 +74,43 @@ class SD(object):
     QUERY_FACTOR = 2.0
     AUDIO_FACTOR = 6.0
 
-    def __init__(
-            self,
-            audio_file,
-            text_file,
-            frame_rate=gc.MFCC_FRAME_RATE,
-            logger=None
-        ):
-        self.logger = logger
-        if self.logger is None:
-            self.logger = Logger()
+    MAX_HEAD_LENGTH = 10.0
+    """
+    Try detecting audio heads up to this many seconds.
+    Default: ``10.0``.
+
+    .. versionadded:: 1.2.0
+    """
+
+    MIN_HEAD_LENGTH = 0.0
+    """
+    Try detecting audio heads of at least this many seconds.
+    Default: ``0.0``.
+
+    .. versionadded:: 1.2.0
+    """
+
+    MAX_TAIL_LENGTH = 10.0
+    """
+    Try detecting audio tails up to this many seconds.
+    Default: ``10.0``.
+
+    .. versionadded:: 1.2.0
+    """
+
+    MIN_TAIL_LENGTH = 0.0
+    """
+    Try detecting audio tails of at least this many seconds.
+    Default: ``0.0``.
+
+    .. versionadded:: 1.2.0
+    """
+
+    def __init__(self, audio_file, text_file, rconf=None, logger=None):
+        self.logger = logger or Logger()
+        self.rconf = rconf or RuntimeConfiguration()
         self.audio_file = audio_file
         self.text_file = text_file
-        self.frame_rate = frame_rate
         self.audio_speech = None
 
     def _log(self, message, severity=Logger.DEBUG):
@@ -95,10 +119,10 @@ class SD(object):
 
     def detect_interval(
             self,
-            min_head_length=gc.SD_MIN_HEAD_LENGTH,
-            max_head_length=gc.SD_MAX_HEAD_LENGTH,
-            min_tail_length=gc.SD_MIN_TAIL_LENGTH,
-            max_tail_length=gc.SD_MAX_TAIL_LENGTH,
+            min_head_length=MIN_HEAD_LENGTH,
+            max_head_length=MAX_HEAD_LENGTH,
+            min_tail_length=MIN_TAIL_LENGTH,
+            max_tail_length=MAX_TAIL_LENGTH,
             metric=SDMetric.VALUE
         ):
         """
@@ -129,8 +153,8 @@ class SD(object):
 
     def detect_head(
             self,
-            min_head_length=gc.SD_MIN_HEAD_LENGTH,
-            max_head_length=gc.SD_MAX_HEAD_LENGTH,
+            min_head_length=MIN_HEAD_LENGTH,
+            max_head_length=MAX_HEAD_LENGTH,
             metric=SDMetric.VALUE
         ):
         """
@@ -148,8 +172,8 @@ class SD(object):
 
     def detect_tail(
             self,
-            min_tail_length=gc.SD_MIN_TAIL_LENGTH,
-            max_tail_length=gc.SD_MAX_TAIL_LENGTH,
+            min_tail_length=MIN_TAIL_LENGTH,
+            max_tail_length=MAX_TAIL_LENGTH,
             metric=SDMetric.VALUE
         ):
         """
@@ -165,13 +189,7 @@ class SD(object):
         """
         return self._detect_head_or_tail(False, min_tail_length, max_tail_length, metric)
 
-    def _detect_head_or_tail(
-            self,
-            head,
-            min_length,
-            max_length,
-            metric
-    ):
+    def _detect_head_or_tail(self, head, min_length, max_length, metric):
         """
         Detect the audio head or tail
 
@@ -218,26 +236,24 @@ class SD(object):
         self._log([u"Audio rate:     %.3f", audio_rate])
 
         self._log(u"Synthesizing query...")
-        tmp_handler, tmp_file_path = gf.tmp_file(suffix=".wav")
-        synt = Synthesizer(logger=self.logger)
+        tmp_handler, tmp_file_path = gf.tmp_file(suffix=u".wav", root=self.rconf["tmp_path"])
+        synt = Synthesizer(rconf=self.rconf, logger=self.logger)
         synt_duration = max_start_length * self.QUERY_FACTOR
         self._log([u"Synthesizing %.3f seconds", synt_duration])
-        # force_pure_python=True because Python C does not prepend data!!!
         result = synt.synthesize(
             self.text_file,
             tmp_file_path,
             quit_after=synt_duration,
-            backwards=backwards,
-            force_pure_python=True
+            backwards=backwards
         )
         self._log(u"Synthesizing query... done")
 
-        query_file = AudioFileMonoWAVE(tmp_file_path)
+        query_file = AudioFileMonoWAVE(tmp_file_path, rconf=self.rconf, logger=self.logger)
         if backwards:
             self._log(u"Reversing query")
             query_file.reverse()
         self._log(u"Extracting MFCCs for query...")
-        query_file.extract_mfcc(frame_rate=self.frame_rate)
+        query_file.extract_mfcc()
         query_file.clear_data()
         self._log(u"Extracting MFCCs for query... done")
 
@@ -257,7 +273,7 @@ class SD(object):
 
         audio_mfcc = self.audio_file.audio_mfcc
         self._log([u"Actual audio has %d frames", audio_mfcc.shape[1]])
-        audio_mfcc_end_index = int(max_start_length * self.AUDIO_FACTOR * self.frame_rate)
+        audio_mfcc_end_index = int(max_start_length * self.AUDIO_FACTOR / self.rconf["mfcc_win_shift"])
         self._log([u"Limiting audio to first %d frames", audio_mfcc_end_index])
         audio_mfcc_end_index = min(audio_mfcc_end_index, audio_mfcc.shape[1])
         audio_mfcc = audio_mfcc[:, 0:audio_mfcc_end_index]
@@ -320,7 +336,7 @@ class SD(object):
             l, m = audio_mfcc_sub.shape
 
             self._log(u"Computing DTW...")
-            aligner = DTWAligner(None, None, frame_rate=self.frame_rate, logger=self.logger)
+            aligner = DTWAligner(None, None, rconf=self.rconf, logger=self.logger)
             aligner.real_wave_full_mfcc = audio_mfcc_sub
             aligner.synt_wave_full_mfcc = query_mfcc
             aligner.real_wave_length = self._i2t(m)
@@ -387,7 +403,7 @@ class SD(object):
     def _extract_mfcc(self):
         """ Extract MFCCs for audio """
         self._log(u"Extracting MFCCs for audio...")
-        self.audio_file.extract_mfcc(frame_rate=self.frame_rate)
+        self.audio_file.extract_mfcc()
         self._log(u"Extracting MFCCs for audio... done")
 
     def _extract_speech(self):
@@ -396,7 +412,7 @@ class SD(object):
         vad = VAD(
             self.audio_file.audio_mfcc,
             self.audio_file.audio_length,
-            frame_rate=self.frame_rate,
+            rconf=self.rconf,
             logger=self.logger
         )
         vad.compute_vad()
@@ -405,11 +421,11 @@ class SD(object):
 
     def _i2t(self, index):
         """ Frame index to (start) time """
-        return index / self.frame_rate
+        return int(index * self.rconf["mfcc_win_shift"])
 
     def _t2i(self, time):
         """ Frame (start) time to index """
-        return int(time * self.frame_rate)
+        return int(time / self.rconf["mfcc_win_shift"])
 
     def _select_best_candidate(self, candidates, metric):
         """ Select the best candidate (or None if no one is found) """

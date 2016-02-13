@@ -13,7 +13,7 @@ from aeneas.audiofile import AudioFileMonoWAVE
 from aeneas.audiofile import AudioFileUnsupportedFormatError
 from aeneas.language import Language
 from aeneas.logger import Logger
-import aeneas.globalconstants as gc
+from aeneas.runtimeconfiguration import RuntimeConfiguration
 import aeneas.globalfunctions as gf
 
 __author__ = "Alberto Pettarin"
@@ -23,7 +23,7 @@ __copyright__ = """
     Copyright 2015-2016, Alberto Pettarin (www.albertopettarin.it)
     """
 __license__ = "GNU AGPL v3"
-__version__ = "1.4.0"
+__version__ = "1.4.1"
 __email__ = "aeneas@readbeyond.it"
 __status__ = "Production"
 
@@ -44,10 +44,9 @@ class ESPEAKWrapper(object):
 
     TAG = u"ESPEAKWrapper"
 
-    def __init__(self, logger=None):
-        self.logger = logger
-        if self.logger is None:
-            self.logger = Logger()
+    def __init__(self, rconf=None, logger=None):
+        self.logger = logger or Logger()
+        self.rconf = rconf or RuntimeConfiguration()
 
     def _log(self, message, severity=Logger.DEBUG):
         """ Log """
@@ -72,9 +71,7 @@ class ESPEAKWrapper(object):
             text_file,
             output_file_path,
             quit_after=None,
-            backwards=False,
-            force_pure_python=False,
-            allow_unlisted_languages=False
+            backwards=False
     ):
         """
         Synthesize the text contained in the given fragment list
@@ -89,18 +86,11 @@ class ESPEAKWrapper(object):
         :type  quit_after: float
         :param backwards: synthesizing from the end of the text file
         :type  backwards: bool
-        :param force_pure_python: force using the pure Python version
-        :type  force_pure_python: bool
-        :param allow_unlisted_languages: if ``True``, do not emit an error
-                                         if ``text_file`` contains fragments
-                                         with language not listed in
-                                         :class:`aeneas.language.Language`
-        :type  allow_unlisted_languages: bool
         :rtype: tuple (anchors, total_time, num_chars)
 
         :raise TypeError: if ``text_file`` is ``None`` or
                           one of the text fragments is not a ``unicode`` object
-        :raise ValueError: if ``allow_unlisted_languages`` is ``False`` and
+        :raise ValueError: if ``rconf["allow_unlisted_languages"]`` is ``False`` and
                            a fragment has its language code not listed in
                            :class:`aeneas.language.Language`
         :raise OSError: if output file cannot be written to ``output_file_path``
@@ -114,10 +104,12 @@ class ESPEAKWrapper(object):
 
         # check that the lines in the text file all have
         # a supported language code and unicode type
+        if not self.rconf["allow_unlisted_languages"]:
+            for fragment in text_file.fragments:
+                if fragment.language not in Language.ALLOWED_VALUES:
+                    self._log([u"Language '%s' is not allowed", fragment.language], Logger.CRITICAL)
+                    raise ValueError("Language code not allowed")
         for fragment in text_file.fragments:
-            if (fragment.language not in Language.ALLOWED_VALUES) and (not allow_unlisted_languages):
-                self._log([u"Language '%s' is not allowed", fragment.language], Logger.CRITICAL)
-                raise ValueError("Language code not allowed")
             for line in fragment.lines:
                 if not gf.is_unicode(line):
                     self._log(u"Text file must contain only unicode strings", Logger.CRITICAL)
@@ -140,7 +132,7 @@ class ESPEAKWrapper(object):
             self._synthesize_multiple_c_extension,
             self._synthesize_multiple_pure_python,
             (text_file, output_file_path, quit_after, backwards),
-            force_pure_python=force_pure_python
+            c_extension=self.rconf["c_ext"]
         )
 
     def _synthesize_multiple_c_extension(
@@ -185,10 +177,10 @@ class ESPEAKWrapper(object):
         # call C extension
         try:
             self._log(u"Importing aeneas.cew...")
-            import aeneas.cew
+            import aeneas.cew.cew
             self._log(u"Importing aeneas.cew... done")
             self._log(u"Calling aeneas.cew...")
-            sr, sf, intervals = aeneas.cew.cew_synthesize_multiple(
+            sr, sf, intervals = aeneas.cew.cew.synthesize_multiple(
                 output_file_path,
                 c_quit_after,
                 c_backwards,
@@ -244,7 +236,7 @@ class ESPEAKWrapper(object):
             and immediately remove the temporary file.
             """
             self._log(u"Synthesizing text...")
-            handler, tmp_destination = gf.tmp_file(suffix=".wav")
+            handler, tmp_destination = gf.tmp_file(suffix=u".wav", root=self.rconf["tmp_path"])
             result, data = self._synthesize_single_pure_python(
                 text=(text + u" "),
                 language=language,
@@ -342,9 +334,7 @@ class ESPEAKWrapper(object):
             self,
             text,
             language,
-            output_file_path,
-            force_pure_python=False,
-            allow_unlisted_languages=False
+            output_file_path
     ):
         """
         Create a ``wav`` audio file containing the synthesized text.
@@ -360,18 +350,11 @@ class ESPEAKWrapper(object):
         :type  language: :class:`aeneas.language.Language` enum
         :param output_file_path: the path of the output audio file
         :type  output_file_path: string
-        :param force_pure_python: force using the pure Python version
-        :type  force_pure_python: bool
-        :param allow_unlisted_languages: if ``True``, do not emit an error
-                                         if ``text_file`` contains fragments
-                                         with language not listed in
-                                         :class:`aeneas.language.Language`
-        :type  allow_unlisted_languages: bool
         :rtype: float
 
         :raise TypeError: if ``text`` is ``None`` or it is not a ``unicode`` object
-        :raise ValueError: if ``allow_unlisted_languages`` is ``False`` and
-                           a fragment has its language code not listed in
+        :raise ValueError: if ``rconf["allow_unlisted_languages"]`` is ``False`` and
+                           ``language`` is not listed in
                            :class:`aeneas.language.Language`
         :raise OSError: if output file cannot be written to ``output_file_path``
         :raise RuntimeError: if both the C extension and
@@ -393,7 +376,7 @@ class ESPEAKWrapper(object):
             raise OSError("Cannot write output file")
 
         # check that the requested language is listed in language.py
-        if (language not in Language.ALLOWED_VALUES) and (not allow_unlisted_languages):
+        if (language not in Language.ALLOWED_VALUES) and (not self.rconf["allow_unlisted_languages"]):
             self._log([u"Language '%s' is not allowed", language], Logger.CRITICAL)
             raise ValueError("Language code not allowed")
 
@@ -416,7 +399,7 @@ class ESPEAKWrapper(object):
             self._synthesize_single_c_extension,
             self._synthesize_single_pure_python,
             (text, language, output_file_path),
-            force_pure_python=force_pure_python
+            c_extension=self.rconf["c_ext"]
         )
         return result[0]
 
@@ -442,10 +425,10 @@ class ESPEAKWrapper(object):
 
         try:
             self._log(u"Importing aeneas.cew...")
-            import aeneas.cew
+            import aeneas.cew.cew
             self._log(u"Importing aeneas.cew... done")
             self._log(u"Calling aeneas.cew...")
-            sr, begin, end = aeneas.cew.cew_synthesize_single(
+            sr, begin, end = aeneas.cew.cew.synthesize_single(
                 output_file_path,
                 language,
                 c_text
@@ -473,7 +456,7 @@ class ESPEAKWrapper(object):
         try:
             # call espeak via subprocess
             self._log(u"Calling espeak ...")
-            arguments = [gc.ESPEAK_PATH, "-v", language, "-w", output_file_path]
+            arguments = [self.rconf["espeak_path"], "-v", language, "-w", output_file_path]
             self._log([u"Calling with arguments '%s'", " ".join(arguments)])
             self._log([u"Calling with text '%s'", text])
             proc = subprocess.Popen(

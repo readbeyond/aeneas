@@ -10,6 +10,7 @@ from __future__ import print_function
 import re
 
 from aeneas.logger import Logger
+from aeneas.runtimeconfiguration import RuntimeConfiguration
 
 __author__ = "Alberto Pettarin"
 __copyright__ = """
@@ -18,7 +19,7 @@ __copyright__ = """
     Copyright 2015-2016, Alberto Pettarin (www.albertopettarin.it)
     """
 __license__ = "GNU AGPL v3"
-__version__ = "1.4.0"
+__version__ = "1.4.1"
 __email__ = "aeneas@readbeyond.it"
 __status__ = "Production"
 
@@ -29,6 +30,9 @@ class IDSortingAlgorithm(object):
 
     :param algorithm: the id sorting algorithm to be used
     :type  algorithm: :class:`aeneas.idsortingalgorithm.IDSortingAlgorithm`
+    :param rconf: a runtime configuration. Default: ``None``, meaning that
+                  default settings will be used.
+    :type  rconf: :class:`aeneas.runtimeconfiguration.RuntimeConfiguration`
     :param logger: the logger object
     :type  logger: :class:`aeneas.logger.Logger`
 
@@ -53,13 +57,12 @@ class IDSortingAlgorithm(object):
 
     TAG = u"IDSortingAlgorithm"
 
-    def __init__(self, algorithm, logger=None):
+    def __init__(self, algorithm, rconf=None, logger=None):
         if algorithm not in self.ALLOWED_VALUES:
             raise ValueError("Algorithm value not allowed")
         self.algorithm = algorithm
-        self.logger = logger
-        if self.logger is None:
-            self.logger = Logger()
+        self.logger = logger or Logger()
+        self.rconf = rconf or RuntimeConfiguration()
 
     def _log(self, message, severity=Logger.DEBUG):
         """ Log """

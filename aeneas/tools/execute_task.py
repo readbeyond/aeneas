@@ -15,7 +15,6 @@ from aeneas.downloader import Downloader
 from aeneas.executetask import ExecuteTask
 from aeneas.idsortingalgorithm import IDSortingAlgorithm
 from aeneas.language import Language
-from aeneas.logger import Logger
 from aeneas.syncmap import SyncMapFormat
 from aeneas.syncmap import SyncMapHeadTailFormat
 from aeneas.task import Task
@@ -32,7 +31,7 @@ __copyright__ = """
     Copyright 2015-2016, Alberto Pettarin (www.albertopettarin.it)
     """
 __license__ = "GNU AGPL 3"
-__version__ = "1.4.0"
+__version__ = "1.4.1"
 __email__ = "aeneas@readbeyond.it"
 __status__ = "Production"
 
@@ -136,7 +135,6 @@ class ExecuteTaskCLI(AbstractCLIProgram):
             u"--examples"
         ],
         "options": [
-            u"--allow-unlisted-language : allow using a language code not officially supported",
             u"--example-json : run example with JSON output",
             u"--example-smil : run example with SMIL output",
             u"--example-srt : run example with SRT output",
@@ -183,7 +181,6 @@ class ExecuteTaskCLI(AbstractCLIProgram):
         keep_audio = self.has_option(u"--keep-audio")
         output_html = self.has_option(u"--output-html")
         validate = not self.has_option(u"--skip-validator")
-        unlisted_language = self.has_option(u"--allow-unlisted-language")
 
         if demo:
             validate = False
@@ -280,8 +277,8 @@ class ExecuteTaskCLI(AbstractCLIProgram):
 
         try:
             self.print_info(u"Executing task...")
-            executor = ExecuteTask(task=task, logger=self.logger)
-            executor.execute(allow_unlisted_languages=unlisted_language)
+            executor = ExecuteTask(task=task, rconf=self.rconf, logger=self.logger)
+            executor.execute()
             self.print_info(u"Executing task... done")
         except Exception as exc:
             self.print_error(u"An unexpected Exception occurred while executing the task:")
@@ -301,9 +298,9 @@ class ExecuteTaskCLI(AbstractCLIProgram):
         if output_html:
             try:
                 parameters = {}
-                parameters[gc.PPN_TASK_OS_FILE_FORMAT] = task.configuration.os_file_format
-                parameters[gc.PPN_TASK_OS_FILE_SMIL_PAGE_REF] = task.configuration.os_file_smil_page_ref
-                parameters[gc.PPN_TASK_OS_FILE_SMIL_AUDIO_REF] = task.configuration.os_file_smil_audio_ref
+                parameters[gc.PPN_TASK_OS_FILE_FORMAT] = task.configuration["o_format"]
+                parameters[gc.PPN_TASK_OS_FILE_SMIL_AUDIO_REF] = task.configuration["o_smil_audio_ref"]
+                parameters[gc.PPN_TASK_OS_FILE_SMIL_PAGE_REF] = task.configuration["o_smil_page_ref"]
                 self.print_info(u"Creating output HTML file...")
                 task.sync_map.output_html_for_tuning(audio_file_path, html_file_path, parameters)
                 self.print_info(u"Creating output HTML file... done")

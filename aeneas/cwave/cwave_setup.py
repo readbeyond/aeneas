@@ -2,9 +2,9 @@
 # coding=utf-8
 
 """
-Compile the Python C Extension for computing the MFCCs.
+Compile the Python C extension for reading WAVE files.
 
-.. versionadded:: 1.1.0
+.. versionadded:: 1.4.1
 """
 
 from __future__ import absolute_import
@@ -23,23 +23,23 @@ __copyright__ = """
     Copyright 2015-2016, Alberto Pettarin (www.albertopettarin.it)
     """
 __license__ = "GNU AGPL v3"
-__version__ = "1.4.0"
+__version__ = "1.4.1"
 __email__ = "aeneas@readbeyond.it"
 __status__ = "Production"
 
-CMODULE = Extension("cmfcc", sources=["cmfcc.c"], include_dirs=[get_include()])
+CMODULE = Extension("cwave", sources=["cwave_py.c", "cwave_func.c"], include_dirs=[get_include()])
 
 setup(
-    name="cmfcc",
-    version="1.4.0",
+    name="cwave",
+    version="1.4.1",
     description="""
-    Python C Extension for computing the MFCCs as fast as your bare metal allows.
+    Python C Extension for for reading WAVE files.
     """,
     ext_modules=[CMODULE],
     include_dirs=[misc_util.get_numpy_include_dirs()]
 )
 
-print("\n[INFO] Module cmfcc successfully compiled\n")
+print("\n[INFO] Module cwave successfully compiled\n")
 sys.exit(0)
 
 

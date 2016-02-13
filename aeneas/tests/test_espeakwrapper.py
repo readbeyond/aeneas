@@ -19,7 +19,8 @@ class TestESPEAKWrapper(unittest.TestCase):
             output_file_path = ofp
         try:
             espeak = ESPEAKWrapper()
-            result = espeak.synthesize_single(text, language, output_file_path, force_pure_python=force_pure_python)
+            espeak.rconf["c_extensions"] = force_pure_python
+            result = espeak.synthesize_single(text, language, output_file_path)
             gf.delete_file(handler, output_file_path)
             if zero_length:
                 self.assertEqual(result, 0)
@@ -37,12 +38,12 @@ class TestESPEAKWrapper(unittest.TestCase):
             output_file_path = ofp
         try:
             espeak = ESPEAKWrapper()
+            espeak.rconf["c_extensions"] = force_pure_python
             anchors, total_time, num_chars = espeak.synthesize_multiple(
                 text_file,
                 output_file_path,
                 quit_after,
-                backwards,
-                force_pure_python=force_pure_python
+                backwards
             )
             gf.delete_file(handler, output_file_path)
             if zero_length:

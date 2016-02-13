@@ -20,7 +20,7 @@ from __future__ import print_function
 import numpy
 
 from aeneas.logger import Logger
-import aeneas.globalconstants as gc
+from aeneas.runtimeconfiguration import RuntimeConfiguration
 
 __author__ = "Alberto Pettarin"
 __copyright__ = """
@@ -29,7 +29,7 @@ __copyright__ = """
     Copyright 2015-2016, Alberto Pettarin (www.albertopettarin.it)
     """
 __license__ = "GNU AGPL v3"
-__version__ = "1.4.0"
+__version__ = "1.4.1"
 __email__ = "aeneas@readbeyond.it"
 __status__ = "Production"
 
@@ -41,53 +41,20 @@ class VAD(object):
     :type  wave_mfcc: numpy 2D array
     :param wave_len: the duration of the audio file
     :type  wave_len: float
-    :param frame_rate: the MFCC frame rate, in frames per second. Default:
-                       :class:`aeneas.globalconstants.MFCC_FRAME_RATE`
-    :type  frame_rate: int
-    :param energy_threshold: the threshold for the VAD algorithm to decide
-                             that a given frame contains speech. Note that
-                             this is the log10 of the energy coefficient.
-                             Default:
-                             :class:`aeneas.globalconstants.VAD_LOG_ENERGY_THRESHOLD`
-    :type  energy_threshold: float
-    :param min_nonspeech_length: the minimum number of nonspeech frames
-                                 the VAD algorithm must encounter
-                                 to create a nonspeech interval. Default:
-                                 :class:`aeneas.globalconstants.VAD_MIN_NONSPEECH_LENGTH`
-    :type  min_nonspeech_length: int
-    :param extend_after: extend a speech interval by this many frames after.
-                         Default: :class:`aeneas.globalconstants.VAD_EXTEND_SPEECH_INTERVAL_AFTER`
-    :type  extend_after: int
-    :param extend_before: extend a speech interval by this many frames before.
-                          Default: :class:`aeneas.globalconstants.VAD_EXTEND_SPEECH_INTERVAL_BEFORE`
-    :type  extend_before: int
+    :param rconf: a runtime configuration. Default: ``None``, meaning that
+                  default settings will be used.
+    :type  rconf: :class:`aeneas.runtimeconfiguration.RuntimeConfiguration`
     :param logger: the logger object
     :type  logger: :class:`aeneas.logger.Logger`
     """
 
     TAG = u"VAD"
 
-    def __init__(
-            self,
-            wave_mfcc,
-            wave_len,
-            frame_rate=gc.MFCC_FRAME_RATE,
-            energy_threshold=gc.VAD_LOG_ENERGY_THRESHOLD,
-            min_nonspeech_length=gc.VAD_MIN_NONSPEECH_LENGTH,
-            extend_after=gc.VAD_EXTEND_SPEECH_INTERVAL_AFTER,
-            extend_before=gc.VAD_EXTEND_SPEECH_INTERVAL_BEFORE,
-            logger=None
-        ):
-        self.logger = logger
-        if self.logger is None:
-            self.logger = Logger()
+    def __init__(self, wave_mfcc, wave_len, rconf=None, logger=None):
+        self.logger = logger or Logger()
+        self.rconf = rconf or RuntimeConfiguration()
         self.wave_mfcc = wave_mfcc
         self.wave_len = wave_len
-        self.frame_rate = frame_rate
-        self.energy_threshold = energy_threshold
-        self.min_nonspeech_length = min_nonspeech_length
-        self.extend_after = extend_after
-        self.extend_before = extend_before
         self.speech = None
         self.nonspeech = None
 
@@ -141,9 +108,9 @@ class VAD(object):
         self._log(u"Computing VAD for wave")
         labels = []
         energy_vector = self.wave_mfcc[0]
-        energy_threshold = numpy.min(energy_vector) + self.energy_threshold
+        energy_threshold = numpy.min(energy_vector) + self.rconf["vad_log_energy_thr"]
         current_time = 0
-        time_step = 1.0 / self.frame_rate
+        time_step = self.rconf["mfcc_win_shift"]
         self._log([u"Time step: %.3f", time_step])
         last_index = len(energy_vector) - 1
         self._log([u"Last frame index: %d", last_index])
@@ -165,11 +132,12 @@ class VAD(object):
         # spotty False values immersed in True runs are changed to True
         self._log(u"Smoothing labels")
         in_nonspeech = True
-        if len(labels) > self.min_nonspeech_length:
-            for i in range(len(labels) - self.min_nonspeech_length):
+        min_nonspeech_length = int(self.rconf["vad_min_ns_len"] / self.rconf["mfcc_win_shift"])
+        if len(labels) > min_nonspeech_length:
+            for i in range(len(labels) - min_nonspeech_length):
                 if (
                         (not labels[i][3]) and
-                        (self._nonspeech_ahead(labels, i, in_nonspeech))
+                        (self._nonspeech_ahead(labels, i, in_nonspeech, min_nonspeech_length))
                 ):
                     labels[i][3] = False
                     in_nonspeech = True
@@ -177,16 +145,18 @@ class VAD(object):
                     labels[i][3] = True
                     in_nonspeech = False
             # deal with the tail
-            first_index_not_set = len(labels) - self.min_nonspeech_length
+            first_index_not_set = len(labels) - min_nonspeech_length
             speech_at_the_end = False
             for i in range(first_index_not_set, last_index + 1):
                 speech_at_the_end = speech_at_the_end or labels[i][3]
             for i in range(first_index_not_set, last_index + 1):
                 labels[i][3] = speech_at_the_end
 
+        extend_before = int(self.rconf["vad_extend_s_before"] / self.rconf["mfcc_win_shift"])
+        extend_after = int(self.rconf["vad_extend_s_after"] / self.rconf["mfcc_win_shift"])
         self._log(u"Extending speech intervals before and after")
-        self._log([u"Extend before: %d", self.extend_before])
-        self._log([u"Extend after: %d", self.extend_after])
+        self._log([u"Extend before: %d", extend_before])
+        self._log([u"Extend after: %d", extend_after])
         in_speech = False
         run_starts = []
         run_ends = []
@@ -201,8 +171,8 @@ class VAD(object):
                     in_speech = True
         if in_speech:
             run_ends.append(last_index)
-        adj_starts = [max(0, x - self.extend_before) for x in run_starts]
-        adj_ends = [min(x + self.extend_after, last_index) for x in run_ends]
+        adj_starts = [max(0, x - extend_before) for x in run_starts]
+        adj_ends = [min(x + extend_after, last_index) for x in run_ends]
         speech_indices = zip(adj_starts, adj_ends)
 
         self._log(u"Generating speech and nonspeech list of intervals")
@@ -222,10 +192,10 @@ class VAD(object):
         self.nonspeech = nonspeech
 
     # TODO check if a numpy sliding window is faster
-    def _nonspeech_ahead(self, array, current_index, in_nonspeech):
+    def _nonspeech_ahead(self, array, current_index, in_nonspeech, min_nonspeech_length):
         if in_nonspeech:
             return not array[current_index][3]
-        ahead = range(current_index, current_index + self.min_nonspeech_length)
+        ahead = range(current_index, current_index + min_nonspeech_length)
         for index in ahead:
             if array[index][3]:
                 return False

@@ -27,7 +27,7 @@ __copyright__ = """
     Copyright 2015-2016, Alberto Pettarin (www.albertopettarin.it)
     """
 __license__ = "GNU AGPL 3"
-__version__ = "1.4.0"
+__version__ = "1.4.1"
 __email__ = "aeneas@readbeyond.it"
 __status__ = "Production"
 
@@ -82,7 +82,7 @@ class ValidateCLI(AbstractCLIProgram):
             return self.print_help()
         mode = self.actual_arguments[0]
 
-        validator = Validator(logger=self.logger)
+        validator = Validator(rconf=self.rconf, logger=self.logger)
         if mode == u"config":
             config_file_path = self.actual_arguments[1]
             config_txt = None

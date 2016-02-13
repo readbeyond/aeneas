@@ -25,7 +25,7 @@ __copyright__ = """
     Copyright 2015-2016, Alberto Pettarin (www.albertopettarin.it)
     """
 __license__ = "GNU AGPL 3"
-__version__ = "1.4.0"
+__version__ = "1.4.1"
 __email__ = "aeneas@readbeyond.it"
 __status__ = "Production"
 
@@ -45,7 +45,7 @@ class RunVADCLI(AbstractCLIProgram):
     HELP = {
         "description": u"Extract a list of speech intervals using the MFCC energy-based VAD.",
         "synopsis": [
-            u"AUDIO_FILE [%s] OUTPUT_FILE" % (u"|".join(MODES))
+            u"AUDIO_FILE [%s] [OUTPUT_FILE]" % (u"|".join(MODES))
         ],
         "examples": [
             u"%s both %s" % (INPUT_FILE, OUTPUT_BOTH),
@@ -60,34 +60,36 @@ class RunVADCLI(AbstractCLIProgram):
 
         :rtype: int
         """
-        if len(self.actual_arguments) < 3:
+        if len(self.actual_arguments) < 2:
             return self.print_help()
         audio_file_path = self.actual_arguments[0]
         mode = self.actual_arguments[1]
-        output_file_path = self.actual_arguments[2]
         if mode not in [u"speech", u"nonspeech", u"both"]:
             return self.print_help()
+        output_file_path = None
+        if len(self.actual_arguments) >= 3:
+            output_file_path = self.actual_arguments[2]
 
         self.check_c_extensions("cmfcc")
         if not self.check_input_file(audio_file_path):
             return self.ERROR_EXIT_CODE
-        if not self.check_output_file(output_file_path):
+        if (output_file_path is not None) and (not self.check_output_file(output_file_path)):
             return self.ERROR_EXIT_CODE
 
-        tmp_handler, tmp_file_path = gf.tmp_file(suffix=".wav")
+        tmp_handler, tmp_file_path = gf.tmp_file(suffix=u".wav", root=self.rconf["tmp_path"])
         try:
             self.print_info(u"Converting audio file to mono...")
-            converter = FFMPEGWrapper(logger=self.logger)
+            converter = FFMPEGWrapper(rconf=self.rconf, logger=self.logger)
             converter.convert(audio_file_path, tmp_file_path)
             self.print_info(u"Converting audio file to mono... done")
         except OSError:
-            self.print__error(u"Cannot convert audio file '%s'" % audio_file_path)
+            self.print_error(u"Cannot convert audio file '%s'" % audio_file_path)
             self.print_error(u"Check that its format is supported by ffmpeg")
             return self.ERROR_EXIT_CODE
 
         try:
             self.print_info(u"Extracting MFCCs...")
-            audiofile = AudioFileMonoWAVE(tmp_file_path)
+            audiofile = AudioFileMonoWAVE(tmp_file_path, rconf=self.rconf, logger=self.logger)
             audiofile.extract_mfcc()
             self.print_info(u"Extracting MFCCs... done")
         except (AudioFileUnsupportedFormatError, OSError):
@@ -95,7 +97,7 @@ class RunVADCLI(AbstractCLIProgram):
             return self.ERROR_EXIT_CODE
 
         self.print_info(u"Executing VAD...")
-        vad = VAD(audiofile.audio_mfcc, audiofile.audio_length, logger=self.logger)
+        vad = VAD(audiofile.audio_mfcc, audiofile.audio_length, rconf=self.rconf, logger=self.logger)
         vad.compute_vad()
         self.print_info(u"Executing VAD... done")
 
@@ -118,7 +120,8 @@ class RunVADCLI(AbstractCLIProgram):
         """
         Write intervals to file.
 
-        :param output_file_path: path of the output file to be written
+        :param output_file_path: path of the output file to be written;
+                                 if ``None``, print to stdout
         :type  output_file_path: string (path)
         :param intervals: a list of tuples, each representing an interval
         :type  intervals: list of tuples
@@ -130,9 +133,14 @@ class RunVADCLI(AbstractCLIProgram):
             else:
                 template = u"%.3f\t%.3f\t%s"
             msg = [template % (interval) for interval in intervals]
-        with io.open(output_file_path, "w", encoding="utf-8") as output_file:
-            output_file.write(u"\n".join(msg))
-            self.print_info(u"Created file %s" % output_file_path)
+        if output_file_path is None:
+            self.print_info(u"Intervals detected:")
+            for line in msg:
+                self.print_generic(line)
+        else:
+            with io.open(output_file_path, "w", encoding="utf-8") as output_file:
+                output_file.write(u"\n".join(msg))
+                self.print_info(u"Created file %s" % output_file_path)
 
 
 

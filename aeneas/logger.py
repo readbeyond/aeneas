@@ -8,8 +8,9 @@ A logger class to help with debugging and performance tests.
 from __future__ import absolute_import
 from __future__ import print_function
 import datetime
-import sys
+import io
 
+from aeneas.runtimeconfiguration import RuntimeConfiguration
 import aeneas.globalfunctions as gf
 
 __author__ = "Alberto Pettarin"
@@ -19,7 +20,7 @@ __copyright__ = """
     Copyright 2015-2016, Alberto Pettarin (www.albertopettarin.it)
     """
 __license__ = "GNU AGPL v3"
-__version__ = "1.4.0"
+__version__ = "1.4.1"
 __email__ = "aeneas@readbeyond.it"
 __status__ = "Production"
 
@@ -33,6 +34,9 @@ class Logger(object):
     :type  indentation: int
     :param tee_show_datetime: if ``True``, print date and time when teeing
     :type  tee_show_datetime: bool
+    :param rconf: a runtime configuration. Default: ``None``, meaning that
+                  default settings will be used.
+    :type  rconf: :class:`aeneas.runtimeconfiguration.RuntimeConfiguration`
     """
 
     DEBUG = "DEBU"
@@ -47,11 +51,12 @@ class Logger(object):
     CRITICAL = "CRIT"
     """ ``CRITICAL`` severity """
 
-    def __init__(self, tee=False, indentation=0, tee_show_datetime=True):
+    def __init__(self, tee=False, indentation=0, tee_show_datetime=True, rconf=None):
         self.entries = []
         self.tee = tee
         self.indentation = indentation
         self.tee_show_datetime = tee_show_datetime
+        self.rconf = rconf or RuntimeConfiguration()
 
     def __len__(self):
         return len(self.entries)
@@ -150,6 +155,16 @@ class Logger(object):
         Clear the contents of the log.
         """
         self.entries = []
+
+    def write(self, path):
+        """
+        Output the log to file.
+
+        :param path: the path of the log file to be written
+        :type  path: Unicode string (path)
+        """
+        with io.open(path, "w", encoding="utf-8") as log_file:
+            log_file.write(self.pretty_print())
 
     @classmethod
     def _sanitize(cls, message):

@@ -1,8 +1,8 @@
 # aeneas Tests 
 
-This Python module (directory) contains the ``unittest`` tests for ``aeneas``.
+This Python module contains the ``unittest`` tests for ``aeneas`` and ``aeneas.tools``.
 
-The tests are (roughly) divided by source file in the main ``aeneas`` library.
+The tests are (roughly) divided by source file.
 
 The following naming convention is used:
 

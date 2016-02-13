@@ -13,6 +13,7 @@ from __future__ import print_function
 import copy
 
 from aeneas.logger import Logger
+from aeneas.runtimeconfiguration import RuntimeConfiguration
 
 __author__ = "Alberto Pettarin"
 __copyright__ = """
@@ -21,7 +22,7 @@ __copyright__ = """
     Copyright 2015-2016, Alberto Pettarin (www.albertopettarin.it)
     """
 __license__ = "GNU AGPL v3"
-__version__ = "1.4.0"
+__version__ = "1.4.1"
 __email__ = "aeneas@readbeyond.it"
 __status__ = "Production"
 
@@ -45,6 +46,9 @@ class AdjustBoundaryAlgorithm(object):
                   it will be converted (to int, to float) as needed,
                   depending on the selected algorithm
     :type  value: string
+    :param rconf: a runtime configuration. Default: ``None``, meaning that
+                  default settings will be used.
+    :type  rconf: :class:`aeneas.runtimeconfiguration.RuntimeConfiguration`
     :param logger: the logger object
     :type  logger: :class:`aeneas.logger.Logger`
 
@@ -113,6 +117,7 @@ class AdjustBoundaryAlgorithm(object):
             speech,
             nonspeech,
             value=None,
+            rconf=None,
             logger=None
         ):
         if algorithm not in self.ALLOWED_VALUES:
@@ -128,9 +133,8 @@ class AdjustBoundaryAlgorithm(object):
         self.speech = speech
         self.nonspeech = nonspeech
         self.value = value
-        self.logger = logger
-        if self.logger is None:
-            self.logger = Logger()
+        self.logger = logger or Logger()
+        self.rconf = rconf or RuntimeConfiguration()
         self._parse_value()
 
     def _log(self, message, severity=Logger.DEBUG):

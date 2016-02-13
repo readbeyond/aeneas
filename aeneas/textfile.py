@@ -23,7 +23,7 @@ __copyright__ = """
     Copyright 2015-2016, Alberto Pettarin (www.albertopettarin.it)
     """
 __license__ = "GNU AGPL v3"
-__version__ = "1.4.0"
+__version__ = "1.4.1"
 __email__ = "aeneas@readbeyond.it"
 __status__ = "Production"
 
@@ -304,9 +304,7 @@ class TextFile(object):
         self.file_format = file_format
         self.parameters = parameters
         self.fragments = []
-        self.logger = Logger()
-        if logger is not None:
-            self.logger = logger
+        self.logger = logger or Logger()
         if self.parameters is None:
             self.parameters = {}
         if (self.file_path is not None) and (self.file_format is not None):
@@ -714,7 +712,6 @@ class TextFile(object):
                     inner_filter = cls(**params)
                     text_filter.append(inner_filter)
                     self._log([u"Creating %s object... done", cls_name])
-                    print("HERE")
                 except ValueError:
                     self._log([u"Creating %s object... failed", cls_name], Logger.WARNING)
         return text_filter
@@ -744,9 +741,7 @@ class TextFilter(object):
 
     def __init__(self, logger=None):
         self.filters = []
-        self.logger = Logger()
-        if logger is not None:
-            self.logger = logger
+        self.logger = logger or Logger()
 
     def _log(self, message, severity=Logger.DEBUG):
         """ Log """
@@ -884,9 +879,7 @@ class TransliterationMap(object):
 
     def __init__(self, file_path, logger=None):
         self.trans_map = {}
-        self.logger = Logger()
-        if logger is not None:
-            self.logger = logger
+        self.logger = logger or Logger()
         self.file_path = file_path
 
     def _log(self, message, severity=Logger.DEBUG):

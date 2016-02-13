@@ -8,11 +8,11 @@ to the CLI programs in aeneas.tools.
 
 from __future__ import absolute_import
 from __future__ import print_function
-import io
 import os
 import sys
 
 from aeneas.logger import Logger
+from aeneas.runtimeconfiguration import RuntimeConfiguration
 from aeneas.textfile import TextFile
 from aeneas.textfile import TextFileFormat
 import aeneas.globalfunctions as gf
@@ -24,7 +24,7 @@ __copyright__ = """
     Copyright 2015-2016, Alberto Pettarin (www.albertopettarin.it)
     """
 __license__ = "GNU AGPL 3"
-__version__ = "1.4.0"
+__version__ = "1.4.1"
 __email__ = "aeneas@readbeyond.it"
 __status__ = "Production"
 
@@ -36,8 +36,13 @@ class AbstractCLIProgram(object):
     derived from this one, and overload
     ``NAME``, ``HELP``, and ``perform_command()``.
 
-    :param use_sys: if ``True``, call sys.exit
+    :param use_sys: if ``True``, call ``sys.exit`` when needed;
+                    otherwise, never call ``sys.exit`` and
+                    just return a return code/value
     :type  use_sys: bool
+    :param rconf: a runtime configuration. Default: ``None``, meaning that
+                  default settings will be used.
+    :type  rconf: :class:`aeneas.runtimeconfiguration.RuntimeConfiguration`
     """
 
     NAME = gf.file_name_without_extension(__file__)
@@ -66,15 +71,16 @@ class AbstractCLIProgram(object):
 
     TAG = u"CLI"
 
-    def __init__(self, use_sys=True):
+    def __init__(self, use_sys=True, rconf=None):
         self.use_sys = use_sys
         self.formal_arguments_raw = []
         self.formal_arguments = []
         self.actual_arguments = []
         self.logger = Logger()
-        self.save_log_to_file = False
+        self.log_file_path = None
         self.verbose = False
         self.very_verbose = False
+        self.rconf = rconf or RuntimeConfiguration()
 
     def _log(self, message, severity=Logger.DEBUG):
         """ Log """
@@ -166,7 +172,8 @@ class AbstractCLIProgram(object):
             u"  -h : print short help and exit",
             u"  --help : print full help and exit",
             u"  --version : print the program name and version and exit",
-            u"  -l, --log : log verbose output to tmp file",
+            u"  -l[=FILE], --log[=FILE] : log verbose output to tmp file or FILE if specified",
+            u"  -r=CONF, --runtime-configuration=CONF : apply runtime configuration CONF",
             u"  -v, --verbose : verbose output",
             u"  -vv, --very-verbose : verbose output, print date/time values",
         ]
@@ -275,38 +282,58 @@ class AbstractCLIProgram(object):
         args = args[1:]
         set_args = set(args)
 
+        # set verbosity, if requested
         for flag in set([u"-v", u"--verbose"]) & set_args:
             self.verbose = True
             args.remove(flag)
-
         for flag in set([u"-vv", u"--very-verbose"]) & set_args:
             self.verbose = True
             self.very_verbose = True
             args.remove(flag)
 
-        for flag in set([u"-l", u"--log"]) & set_args:
-            self.save_log_to_file = True
-            args.remove(flag)
+        # set RuntimeConfiguration string, if specified
+        for flag in [u"-r", u"--runtime-configuration"]:
+            rconf_string = self.has_option_with_value(flag, actual_arguments=False)
+            if rconf_string is not None:
+                self.rconf = RuntimeConfiguration(rconf_string)
+                args.remove("%s=%s" % (flag, rconf_string))
 
+        # set log file path, if requested
+        log_path = None
+        for flag in [u"-l", u"--log"]:
+            log_path = self.has_option_with_value(flag, actual_arguments=False)
+            if log_path is not None:
+                args.remove("%s=%s" % (flag, log_path))
+            elif flag in set_args:
+                handler, log_path = gf.tmp_file(suffix=u".log", root=self.rconf["tmp_path"])
+                args.remove(flag)
+            if log_path is not None:
+                self.log_file_path = log_path
+
+        # if no actual arguments left, print help
         if len(args) < 1:
-            return self.print_help()
+            return self.print_help(short=True)
 
         # store actual arguments
         self.actual_arguments = args
 
+        # create logger
         self.logger = Logger(tee=self.verbose, tee_show_datetime=self.very_verbose)
         self._log([u"Formal arguments: %s", self.formal_arguments])
         self._log([u"Actual arguments: %s", self.actual_arguments])
+        self._log([u"Runtime configuration: '%s'", self.rconf.config_string()])
+
+        # perform command
         exit_code = self.perform_command()
         self._log([u"Execution completed with code %d", exit_code])
-        if self.save_log_to_file:
-            self._log(u"User requested saving log to file")
-            handler, path = gf.tmp_file(u".log")
-            self._log([u"Writing log to file '%s'", path])
-            with io.open(path, "w", encoding="utf-8") as log_file:
-                log_file.write(self.logger.pretty_print())
+
+        # output log if requested
+        if self.log_file_path is not None:
+            self._log([u"User requested saving log to file '%s'", self.log_file_path])
+            self.logger.write(self.log_file_path)
             if self.use_sys:
-                self.print_info(u"Log written to file '%s'" % path)
+                self.print_info(u"Log written to file '%s'" % self.log_file_path)
+
         return self.exit(exit_code)
 
     def has_option(self, target):
@@ -326,7 +353,7 @@ class AbstractCLIProgram(object):
             target_set = set([target])
         return len(target_set & set(self.actual_arguments)) > 0
 
-    def has_option_with_value(self, prefix):
+    def has_option_with_value(self, prefix, actual_arguments=True):
         """
         Check if the actual arguments include an option
         starting with the given ``prefix`` and having a value,
@@ -334,12 +361,19 @@ class AbstractCLIProgram(object):
 
         :param prefix: the option prefix
         :type  prefix: Unicode string
+        :param actual_arguments: if ``True``, check among actual arguments;
+                                 otherwise check among formal arguments
+        :rtype actual_arguments: bool
         :rtype: Unicode string or None
         """
-        for arg in [arg for arg in self.actual_arguments if arg.startswith(prefix)]:
+        if actual_arguments:
+            args = self.actual_arguments
+        else:
+            args = self.formal_arguments
+        for arg in [arg for arg in args if arg.startswith(prefix + u"=")]:
             lis = arg.split(u"=")
-            if len(lis) == 2:
-                return lis[1]
+            if len(lis) >= 2:
+                return u"=".join(lis[1:])
         return None
 
     def perform_command(self):

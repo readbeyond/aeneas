@@ -11,13 +11,14 @@ from __future__ import print_function
 import numpy
 
 from aeneas.ffprobewrapper import FFPROBEParsingError
+from aeneas.ffprobewrapper import FFPROBEPathError
 from aeneas.ffprobewrapper import FFPROBEUnsupportedFormatError
 from aeneas.ffprobewrapper import FFPROBEWrapper
 from aeneas.logger import Logger
 from aeneas.mfcc import MFCC
+from aeneas.runtimeconfiguration import RuntimeConfiguration
 from aeneas.wavfile import read as scipywavread
 from aeneas.wavfile import write as scipywavwrite
-import aeneas.globalconstants as gc
 import aeneas.globalfunctions as gf
 
 __author__ = "Alberto Pettarin"
@@ -27,9 +28,17 @@ __copyright__ = """
     Copyright 2015-2016, Alberto Pettarin (www.albertopettarin.it)
     """
 __license__ = "GNU AGPL v3"
-__version__ = "1.4.0"
+__version__ = "1.4.1"
 __email__ = "aeneas@readbeyond.it"
 __status__ = "Production"
+
+class AudioFileProbeError(Exception):
+    """
+    Error raised when the probe executable cannot be executed.
+    """
+    pass
+
+
 
 class AudioFileUnsupportedFormatError(Exception):
     """
@@ -50,16 +59,18 @@ class AudioFile(object):
 
     :param file_path: the path of the audio file
     :type  file_path: Unicode string (path)
+    :param rconf: a runtime configuration. Default: ``None``, meaning that
+                  default settings will be used.
+    :type  rconf: :class:`aeneas.runtimeconfiguration.RuntimeConfiguration`
     :param logger: the logger object
     :type  logger: :class:`aeneas.logger.Logger`
     """
 
     TAG = u"AudioFile"
 
-    def __init__(self, file_path=None, logger=None):
-        self.logger = logger
-        if self.logger is None:
-            self.logger = Logger()
+    def __init__(self, file_path=None, rconf=None, logger=None):
+        self.logger = logger or Logger()
+        self.rconf = rconf or RuntimeConfiguration()
         self.file_path = file_path
         self.file_size = None
         self.audio_length = None
@@ -166,6 +177,7 @@ class AudioFile(object):
         :class:`aeneas.ffprobewrapper.FFPROBEWrapper`
         to get the audio file properties.
 
+        :raises AudioFileProbeError: if the path to the ``ffprobe`` executable cannot be called
         :raises AudioFileUnsupportedFormatError: if the audio file has a format not supported
         :raises OSError: if the audio file cannot be read
         """
@@ -185,8 +197,12 @@ class AudioFile(object):
         # get the audio properties using FFPROBEWrapper
         try:
             self._log(u"Reading properties with FFPROBEWrapper...")
-            properties = FFPROBEWrapper(logger=self.logger).read_properties(self.file_path)
+            properties = FFPROBEWrapper(rconf=self.rconf, logger=self.logger).read_properties(self.file_path)
             self._log(u"Reading properties with FFPROBEWrapper... done")
+        except FFPROBEPathError:
+            self._log(u"Reading properties with FFPROBEWrapper... failed", Logger.CRITICAL)
+            self._log(u"Unable to call ffprobe executable", Logger.CRITICAL)
+            raise AudioFileProbeError("Unable to call the audio probe executable")
         except FFPROBEUnsupportedFormatError:
             self._log(u"Reading properties with FFPROBEWrapper... failed", Logger.CRITICAL)
             self._log(u"Unsupported audio file format", Logger.CRITICAL)
@@ -227,19 +243,21 @@ class AudioFileMonoWAVE(AudioFile):
 
     :param file_path: the path of the audio file
     :type  file_path: Unicode string (path)
+    :param rconf: a runtime configuration. Default: ``None``, meaning that
+                  default settings will be used.
+    :type  rconf: :class:`aeneas.runtimeconfiguration.RuntimeConfiguration`
     :param logger: the logger object
     :type  logger: :class:`aeneas.logger.Logger`
     """
 
     TAG = u"AudioFileMonoWAVE"
 
-    def __init__(self, file_path=None, logger=None):
-        self.logger = logger
-        if self.logger is None:
-            self.logger = Logger()
+    def __init__(self, file_path=None, rconf=None, logger=None):
+        self.logger = logger or Logger()
+        self.rconf = rconf or RuntimeConfiguration()
         self.audio_data = None
         self.audio_mfcc = None
-        AudioFile.__init__(self, file_path=file_path, logger=logger)
+        AudioFile.__init__(self, file_path=file_path, rconf=rconf, logger=logger)
 
     @property
     def audio_data(self):
@@ -283,7 +301,8 @@ class AudioFileMonoWAVE(AudioFile):
         try:
             self.audio_format = "pcm16"
             self.audio_sample_rate, self.audio_data = scipywavread(self.file_path)
-            # scipy => [-32768..32767]
+            # scipy reads a sample as an int16_t, that is, a number in [-32768, 32767]
+            # so we convert it to a float64 in [-1, 1]
             self.audio_data = self.audio_data.astype("float64") / 32768
         except ValueError:
             self._log(u"Unsupported audio file format", Logger.CRITICAL)
@@ -331,22 +350,13 @@ class AudioFileMonoWAVE(AudioFile):
         self._update_length()
         self._log(u"Prepending audio data... done")
 
-    def extract_mfcc(
-            self,
-            frame_rate=gc.MFCC_FRAME_RATE,
-            force_pure_python=False
-    ):
+    def extract_mfcc(self):
         """
         Extract MFCCs from the given audio file.
 
         If audio data is not loaded, load it, extract MFCCs,
         store them internally, and discard the audio data immediately.
 
-        :param frame_rate: the MFCC frame rate, in frames per second.
-                           Default: :class:`aeneas.globalconstants.MFCC_FRAME_RATE`.
-        :type  frame_rate: int
-        :param force_pure_python: force using the pure Python version
-        :type  force_pure_python: bool
         :raise RuntimeError: if both the C extension and
                              the pure Python code did not succeed.
         """
@@ -356,8 +366,8 @@ class AudioFileMonoWAVE(AudioFile):
             "cmfcc",
             self._compute_mfcc_c_extension,
             self._compute_mfcc_pure_python,
-            (frame_rate,),
-            force_pure_python=force_pure_python
+            (),
+            c_extension=self.rconf["c_ext"]
         )
         if not had_audio_data:
             self._log(u"Audio data was not loaded, clearing it")
@@ -427,7 +437,8 @@ class AudioFileMonoWAVE(AudioFile):
         self._log([u"Writing audio file '%s'...", file_path])
         self._audio_data_is_initialized(load=False)
         try:
-            # scipy => [-32768..32767]
+            # our value is a float64 in [-1, 1]
+            # scipy writes the sample as an int16_t, that is, a number in [-32768, 32767]
             data = (self.audio_data * 32768).astype("int16")
             scipywavwrite(file_path, self.audio_sample_rate, data)
         except:
@@ -477,27 +488,27 @@ class AudioFileMonoWAVE(AudioFile):
         self._log(u"audio data was None: returning False")
         return False
 
-    def _compute_mfcc_c_extension(self, frame_rate):
+    def _compute_mfcc_c_extension(self):
         """
         Compute MFCCs using the Python C extension cmfcc.
         """
         self._log(u"Computing MFCCs using C extension...")
         try:
             self._log(u"Importing cmfcc...")
-            import aeneas.cmfcc
+            import aeneas.cmfcc.cmfcc
             self._log(u"Importing cmfcc... done")
-            self.audio_mfcc = aeneas.cmfcc.cmfcc_compute_mfcc(
+            self.audio_mfcc = (aeneas.cmfcc.cmfcc.compute_from_data(
                 self.audio_data,
                 self.audio_sample_rate,
-                frame_rate,
-                40,
-                13,
-                512,
-                133.3333,
-                6855.4976,
-                0.97,
-                0.0256
-            ).transpose()
+                self.rconf["mfcc_filters"],
+                self.rconf["mfcc_size"],
+                self.rconf["mfcc_order"],
+                self.rconf["mfcc_lower_freq"],
+                self.rconf["mfcc_upper_freq"],
+                self.rconf["mfcc_emph"],
+                self.rconf["mfcc_win_len"],
+                self.rconf["mfcc_win_shift"]
+            )[0]).transpose()
             self._log(u"Computing MFCCs using C extension... done")
             return (True, None)
         except Exception as exc:
@@ -506,16 +517,16 @@ class AudioFileMonoWAVE(AudioFile):
             self._log([u"%s", exc], Logger.WARNING)
         return (False, None)
 
-    def _compute_mfcc_pure_python(self, frame_rate):
+    def _compute_mfcc_pure_python(self):
         """
         Compute MFCCs using the pure Python code.
         """
         self._log(u"Computing MFCCs using pure Python code...")
         try:
             self.audio_mfcc = MFCC(
-                samprate=self.audio_sample_rate,
-                frate=frame_rate
-            ).sig2s2mfc(self.audio_data).transpose()
+                rconf=self.rconf,
+                logger=self.logger
+            ).compute_from_data(self.audio_data, self.audio_sample_rate).transpose()
             self._log(u"Computing MFCCs using pure Python code... done")
             return (True, None)
         except Exception as exc:

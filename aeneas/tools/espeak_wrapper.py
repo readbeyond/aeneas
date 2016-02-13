@@ -22,7 +22,7 @@ __copyright__ = """
     Copyright 2015-2016, Alberto Pettarin (www.albertopettarin.it)
     """
 __license__ = "GNU AGPL 3"
-__version__ = "1.4.0"
+__version__ = "1.4.1"
 __email__ = "aeneas@readbeyond.it"
 __status__ = "Production"
 
@@ -46,9 +46,7 @@ class ESPEAKWrapperCLI(AbstractCLIProgram):
             u"\"%s\" en %s -m" % (TEXT_MULTI, OUTPUT_FILE)
         ],
         "options": [
-            u"--allow-unlisted-language : allow using a language code not officially supported",
             u"-m, --multiple : text contains multiple fragments, separated by a '|' character",
-            u"-p, --pure : use pure Python code, even if the C extension is available"
         ]
     }
 
@@ -63,12 +61,9 @@ class ESPEAKWrapperCLI(AbstractCLIProgram):
         text = gf.safe_unicode(self.actual_arguments[0])
         language = gf.safe_unicode(self.actual_arguments[1])
         output_file_path = self.actual_arguments[2]
-
         multiple = self.has_option([u"-m", u"--multiple"])
-        pure = self.has_option([u"-p", u"--pure"])
-        unlisted_language = self.has_option(u"--allow-unlisted-language")
 
-        if (not unlisted_language) and (not language in Language.ALLOWED_VALUES):
+        if (not language in Language.ALLOWED_VALUES) and (not self.rconf["allow_unlisted_languages"]):
             self.print_error(u"Language code '%s' is not allowed." % language)
             return self.ERROR_EXIT_CODE
 
@@ -76,24 +71,20 @@ class ESPEAKWrapperCLI(AbstractCLIProgram):
             return self.ERROR_EXIT_CODE
 
         try:
-            synt = ESPEAKWrapper(logger=self.logger)
+            synt = ESPEAKWrapper(rconf=self.rconf, logger=self.logger)
             if multiple:
                 tfl = TextFile()
                 tfl.read_from_list(text.split("|"))
                 tfl.set_language(language)
                 synt.synthesize_multiple(
                     tfl,
-                    output_file_path,
-                    force_pure_python=pure,
-                    allow_unlisted_languages=unlisted_language
+                    output_file_path
                 )
             else:
                 synt.synthesize_single(
                     text,
                     language,
-                    output_file_path,
-                    force_pure_python=pure,
-                    allow_unlisted_languages=unlisted_language
+                    output_file_path
                 )
             self.print_info(u"Created file '%s'" % output_file_path)
             return self.NO_ERROR_EXIT_CODE

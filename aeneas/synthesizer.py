@@ -11,6 +11,7 @@ from __future__ import absolute_import
 from __future__ import print_function
 from aeneas.espeakwrapper import ESPEAKWrapper
 from aeneas.logger import Logger
+from aeneas.runtimeconfiguration import RuntimeConfiguration
 from aeneas.textfile import TextFile
 import aeneas.globalfunctions as gf
 
@@ -21,7 +22,7 @@ __copyright__ = """
     Copyright 2015-2016, Alberto Pettarin (www.albertopettarin.it)
     """
 __license__ = "GNU AGPL v3"
-__version__ = "1.4.0"
+__version__ = "1.4.1"
 __email__ = "aeneas@readbeyond.it"
 __status__ = "Production"
 
@@ -31,16 +32,18 @@ class Synthesizer(object):
     a single ``wav`` file,
     along with the corresponding time anchors.
 
+    :param rconf: a runtime configuration. Default: ``None``, meaning that
+                  default settings will be used.
+    :type  rconf: :class:`aeneas.runtimeconfiguration.RuntimeConfiguration`
     :param logger: the logger object
     :type  logger: :class:`aeneas.logger.Logger`
     """
 
     TAG = u"Synthesizer"
 
-    def __init__(self, logger=None):
-        self.logger = logger
-        if self.logger is None:
-            self.logger = Logger()
+    def __init__(self, rconf=None, logger=None):
+        self.logger = logger or Logger()
+        self.rconf = rconf or RuntimeConfiguration()
 
     def _log(self, message, severity=Logger.DEBUG):
         """ Log """
@@ -51,9 +54,7 @@ class Synthesizer(object):
             text_file,
             audio_file_path,
             quit_after=None,
-            backwards=False,
-            force_pure_python=False,
-            allow_unlisted_languages=False
+            backwards=False
     ):
         """
         Synthesize the text contained in the given fragment list
@@ -68,13 +69,6 @@ class Synthesizer(object):
         :type  quit_after: float
         :param backwards: if ``True``, synthesizing from the end of the text file
         :type  backwards: bool
-        :param force_pure_python: if ``True``, force using the pure Python version
-        :type  force_pure_python: bool
-        :param allow_unlisted_languages: if ``True``, do not emit an error
-                                         if ``text_file`` contains fragments
-                                         with language not listed in
-                                         :class:`aeneas.language.Language`
-        :type  allow_unlisted_languages: bool
 
         :raise TypeError: if ``text_file`` is ``None`` or not an instance of ``TextFile``
         :raise OSError: if ``audio_file_path`` cannot be written
@@ -88,14 +82,12 @@ class Synthesizer(object):
 
         # at the moment only espeak TTS is supported
         self._log(u"Synthesizing using espeak...")
-        espeak = ESPEAKWrapper(logger=self.logger)
+        espeak = ESPEAKWrapper(rconf=self.rconf, logger=self.logger)
         result = espeak.synthesize_multiple(
             text_file=text_file,
             output_file_path=audio_file_path,
             quit_after=quit_after,
-            backwards=backwards,
-            force_pure_python=force_pure_python,
-            allow_unlisted_languages=allow_unlisted_languages
+            backwards=backwards
         )
         self._log(u"Synthesizing using espeak... done")
 

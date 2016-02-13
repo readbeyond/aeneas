@@ -2,8 +2,8 @@
 # coding=utf-8
 
 """
-aeneas.tests is a collection of (fast) unit tests
-to be run to test the main aeneas package.
+**aeneas.tests** is a collection of unit tests
+for the packages **aeneas** and **aeneas.tools**.
 """
 
 import os
@@ -15,7 +15,7 @@ __copyright__ = """
     Copyright 2015-2016, Alberto Pettarin (www.albertopettarin.it)
     """
 __license__ = "GNU AGPL 3"
-__version__ = "1.4.0"
+__version__ = "1.4.1"
 __email__ = "aeneas@readbeyond.it"
 __status__ = "Production"
 

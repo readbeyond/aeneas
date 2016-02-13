@@ -9,6 +9,7 @@ from __future__ import absolute_import
 from __future__ import print_function
 
 from aeneas.logger import Logger
+from aeneas.runtimeconfiguration import RuntimeConfiguration
 import aeneas.globalfunctions as gf
 
 __author__ = "Alberto Pettarin"
@@ -18,7 +19,7 @@ __copyright__ = """
     Copyright 2015-2016, Alberto Pettarin (www.albertopettarin.it)
     """
 __license__ = "GNU AGPL v3"
-__version__ = "1.4.0"
+__version__ = "1.4.1"
 __email__ = "aeneas@readbeyond.it"
 __status__ = "Production"
 
@@ -26,16 +27,18 @@ class Downloader(object):
     """
     Download files from various Web sources.
 
+    :param rconf: a runtime configuration. Default: ``None``, meaning that
+                  default settings will be used.
+    :type  rconf: :class:`aeneas.runtimeconfiguration.RuntimeConfiguration`
     :param logger: the logger object
     :type  logger: :class:`aeneas.logger.Logger`
     """
 
     TAG = u"Downloader"
 
-    def __init__(self, logger=None):
-        self.logger = logger
-        if self.logger is None:
-            self.logger = Logger()
+    def __init__(self, rconf=None, logger=None):
+        self.logger = logger or Logger()
+        self.rconf = rconf or RuntimeConfiguration()
 
     def _log(self, message, severity=Logger.DEBUG):
         """ Log """
@@ -140,7 +143,7 @@ class Downloader(object):
         output_path = output_file_path
         if output_file_path is None:
             self._log(u"output_path is None: creating temp file")
-            handler, output_path = gf.tmp_file()
+            handler, output_path = gf.tmp_file(root=self.rconf["tmp_path"])
         else:
             if not gf.file_can_be_written(output_path):
                 self._log([u"Path '%s' cannot be written (wrong permissions?)", output_path], Logger.CRITICAL)

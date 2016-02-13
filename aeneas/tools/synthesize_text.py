@@ -23,7 +23,7 @@ __copyright__ = """
     Copyright 2015-2016, Alberto Pettarin (www.albertopettarin.it)
     """
 __license__ = "GNU AGPL 3"
-__version__ = "1.4.0"
+__version__ = "1.4.1"
 __email__ = "aeneas@readbeyond.it"
 __status__ = "Production"
 
@@ -59,11 +59,8 @@ class SynthesizeTextCLI(AbstractCLIProgram):
             u"plain %s en %s --start=5 --end=10" % (TEXT_FILE_PLAIN, OUTPUT_FILE),
             u"plain %s en %s --backwards" % (TEXT_FILE_PLAIN, OUTPUT_FILE),
             u"plain %s en %s --quit-after=10.0" % (TEXT_FILE_PLAIN, OUTPUT_FILE),
-            u"plain %s en %s --backwards --quit-after=10.0" % (TEXT_FILE_PLAIN, OUTPUT_FILE),
-            u"plain %s en %s --pure" % (TEXT_FILE_PLAIN, OUTPUT_FILE)
         ],
         "options": [
-            u"--allow-unlisted-language : allow using a language code not officially supported",
             u"--class-regex=REGEX : extract text from elements with class attribute matching REGEX (unparsed)",
             u"--end=INDEX : slice the text file until fragment INDEX",
             u"--id-format=FMT : use FMT for generating text id attributes (subtitles, plain)",
@@ -72,7 +69,6 @@ class SynthesizeTextCLI(AbstractCLIProgram):
             u"--sort=ALGORITHM : sort the matched element id attributes using ALGORITHM (lexicographic, numeric, unsorted)",
             u"--start=INDEX : slice the text file from fragment INDEX",
             u"-b, --backwards : synthesize from the last fragment to the first one",
-            u"-p, --pure : use pure Python code, even if the C extension is available"
         ]
     }
 
@@ -101,8 +97,6 @@ class SynthesizeTextCLI(AbstractCLIProgram):
         quit_after = gf.safe_float(self.has_option_with_value(u"--quit-after"), None)
         start_fragment = gf.safe_int(self.has_option_with_value(u"--start"), None)
         end_fragment = gf.safe_int(self.has_option_with_value(u"--end"), None)
-        force_pure_python = self.has_option([u"-p", u"--pure"])
-        unlisted_language = self.has_option(u"--allow-unlisted-language")
         parameters = {
             gc.PPN_JOB_IS_TEXT_UNPARSED_ID_REGEX : id_regex,
             gc.PPN_JOB_IS_TEXT_UNPARSED_CLASS_REGEX : class_regex,
@@ -113,7 +107,7 @@ class SynthesizeTextCLI(AbstractCLIProgram):
             return self.ERROR_EXIT_CODE
 
         language = gf.safe_unicode(self.actual_arguments[2])
-        if not language in Language.ALLOWED_VALUES:
+        if (not language in Language.ALLOWED_VALUES) and (not self.rconf["allow_unlisted_languages"]):
             self.print_error(u"Language '%s' is not supported" % (language))
             return self.ERROR_EXIT_CODE
 
@@ -136,21 +130,14 @@ class SynthesizeTextCLI(AbstractCLIProgram):
 
         if quit_after is not None:
             self.print_info(u"Stop synthesizing upon reaching %.3f seconds" % (quit_after))
-        if backwards:
-            self.print_info(u"Synthesizing backwards => forcing pure Python code")
-            force_pure_python = True
-        elif force_pure_python:
-            self.print_info(u"Forcing pure Python code")
 
         try:
-            synt = Synthesizer(logger=self.logger)
+            synt = Synthesizer(rconf=self.rconf, logger=self.logger)
             synt.synthesize(
                 text_slice,
                 output_file_path,
                 quit_after=quit_after,
-                backwards=backwards,
-                force_pure_python=force_pure_python,
-                allow_unlisted_languages=unlisted_language
+                backwards=backwards
             )
             self.print_info(u"Created file '%s'" % output_file_path)
             return self.NO_ERROR_EXIT_CODE
