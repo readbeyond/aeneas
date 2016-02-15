@@ -1,6 +1,6 @@
 /*
 
-Python C Extension for computing the MFCC
+Python C Extension for computing the MFCCs from a WAVE mono file.
 
 __author__ = "Alberto Pettarin"
 __copyright__ = """
@@ -9,7 +9,7 @@ __copyright__ = """
     Copyright 2015-2016, Alberto Pettarin (www.albertopettarin.it)
     """
 __license__ = "GNU AGPL v3"
-__version__ = "1.4.1"
+__version__ = "1.5.0"
 __email__ = "aeneas@readbeyond.it"
 __status__ = "Production"
 
@@ -26,26 +26,21 @@ __status__ = "Production"
 #include "cwave_func.h"
 #endif
 
-//
-// this is a simple driver to test on the command line
-//
-// you can compile it with: sndfile (s) or cwave_func (o) for reading WAVE info and data,
-//                and with: fftw    (f) or cmfcc_func (o) for computing the RFFT
-//
-// $ gcc cmfcc_driver.c cmfcc_func.c cwave_func.c -o cmfcc_driver_wo_fo -lm
-// $ gcc cmfcc_driver.c cmfcc_func.c cwave_func.c -o cmfcc_driver_wo_ff -lm           -lrfftw -lfftw               -DUSE_FFTW
-// $ gcc cmfcc_driver.c cmfcc_func.c cwave_func.c -o cmfcc_driver_ws_fo -lm -lsndfile                -DUSE_SNDFILE
-// $ gcc cmfcc_driver.c cmfcc_func.c cwave_func.c -o cmfcc_driver_ws_ff -lm -lsndfile -lrfftw -lfftw -DUSE_SNDFILE -DUSE_FFTW
-//
-// use it as follows:
-//
-// ./cmfcc_driver_X audio.wav out.mfcc data text => load file in RAM, then compute MFCC, output text
-// ./cmfcc_driver_X audio.wav out.mfcc file text => compute MFCC directly from file, output text
-// ./cmfcc_driver_X audio.wav out.mfcc data binary => load file in RAM, then compute MFCC, output binary
-// ./cmfcc_driver_X audio.wav out.mfcc file binary => compute MFCC directly from file, output binary
-//
-// where X is wo_fo|wo_ff|ws_fo|ws_ff as described above
-//
+#define DRIVER_SUCCESS 0
+#define DRIVER_FAILURE 1
+
+// print usage
+void _usage(const char *prog) {
+    printf("\n");
+    printf("Usage:   %s AUDIO_FILE.wav OUTPUT.bin [data|file] [text|binary]\n", prog);
+    printf("\n");
+    printf("Example: %s ../tools/res/audio.wav /tmp/out.dt.bin data text\n", prog);
+    printf("         %s ../tools/res/audio.wav /tmp/out.db.bin data binary\n", prog);
+    printf("         %s ../tools/res/audio.wav /tmp/out.ft.bin file text\n", prog);
+    printf("         %s ../tools/res/audio.wav /tmp/out.fb.bin file binary\n", prog);
+    printf("\n");
+}
+
 int main(int argc, char **argv) {
 
 #if USE_SNDFILE
@@ -58,22 +53,23 @@ int main(int argc, char **argv) {
 
     char *audio_file_name, *output_file_name, *mode, *output_format;
     double *data_ptr, *mfcc_ptr;
-    unsigned int data_length, sample_rate, mfcc_length;
     FILE *output_file;
-    unsigned int i, j;
+    uint32_t sample_rate;
+    uint32_t data_length, mfcc_length;
+    uint32_t i, j;
 
-    const unsigned int filter_bank_size = 40;
-    const unsigned int mfcc_size = 13;
-    const unsigned int fft_order = 512;
+    const uint32_t filter_bank_size = 40;
+    const uint32_t mfcc_size = 13;
+    const uint32_t fft_order = 512;
     const double lower_frequency = 133.3333;
     const double upper_frequency = 6855.4976;
     const double emphasis_factor = 0.97;
-    const double window_length = 0.025;
-    const double window_shift = 0.010;
+    const double window_length = 0.100;
+    const double window_shift = 0.040;
 
     if (argc < 5) {
-        printf("\nUsage: %s AUDIO_FILE.wav OUTPUT.bin [data|file] [text|binary]\n\n", argv[0]);
-        return 1;
+        _usage(argv[0]);
+        return DRIVER_FAILURE;
     }
     audio_file_name = argv[1];
     output_file_name = argv[2];
@@ -102,7 +98,7 @@ int main(int argc, char **argv) {
         if (!(audio_file = sf_open(audio_file_name, SFM_READ, &audio_info))) {
             printf("Error: unable to open input file %s.\n", audio_file_name);
             puts(sf_strerror(NULL));
-            return 1;
+            return DRIVER_FAILURE;
         }
         data_length = audio_info.frames;
         sample_rate = audio_info.samplerate;
@@ -110,10 +106,9 @@ int main(int argc, char **argv) {
         sf_read_double(audio_file, data_ptr, audio_info.frames);
         sf_close(audio_file);
 #else
-        memset(&audio_info, 0, sizeof(audio_info));
         if (!(audio_file = wave_open(audio_file_name, &audio_info))) {
             printf("Error: unable to open input file %s.\n", audio_file_name);
-            return 1;
+            return DRIVER_FAILURE;
         }
         data_length = audio_info.coNumSamples;
         sample_rate = audio_info.leSampleRate;
@@ -193,6 +188,6 @@ int main(int argc, char **argv) {
     free((void *)mfcc_ptr);
     mfcc_ptr = NULL;
 
-    return 0;
+    return DRIVER_SUCCESS;
 }
 

@@ -1,6 +1,6 @@
 /*
 
-Python C Extension for computing the MFCC
+Python C Extension for computing the MFCCs from a WAVE mono file.
 
 __author__ = "Alberto Pettarin"
 __copyright__ = """
@@ -9,7 +9,7 @@ __copyright__ = """
     Copyright 2015-2016, Alberto Pettarin (www.albertopettarin.it)
     """
 __license__ = "GNU AGPL v3"
-__version__ = "1.4.1"
+__version__ = "1.5.0"
 __email__ = "aeneas@readbeyond.it"
 __status__ = "Production"
 
@@ -25,30 +25,26 @@ __status__ = "Production"
 #include "cmfcc_func.h"
 
 // compute the MFCCs of the given audio data (mono)
-// take the PyObject containing the following arguments (see below)
-// and return the MFCCs as a n x mfcc_size 2D array of double, where
-//   - n is the number of frames
-//   - mfcc_size is the number of ceptral coefficients (including the 0-th)
 static PyObject *compute_from_data(PyObject *self, PyObject *args) {
-    PyObject *data_raw;             // 1D array of double, holding the data
-    unsigned int sample_rate;       // sample rate (default: 16000)
-    unsigned int filter_bank_size;  // number of filters in the filter bank (default: 40)
-    unsigned int mfcc_size;         // number of ceptral coefficients (default: 13)
-    unsigned int fft_order;         // FFT order; must be a power of 2 (default: 512)
-    double lower_frequency;         // lower frequency (default: 133.3333)
-    double upper_frequency;         // upper frequency; must be <= sample_rate/2 = Nyquist frequency (default: 6855.4976)
-    double emphasis_factor;         // pre-emphasis factor (default: 0.97)
-    double window_length;           // window length (default: 0.0250)
-    double window_shift;            // window shift (default: 0.010)
+    PyObject *data_raw;         // 1D array of double, holding the data
+    uint32_t sample_rate;       // sample rate (default: 16000)
+    uint32_t filter_bank_size;  // number of filters in the filter bank (default: 40)
+    uint32_t mfcc_size;         // number of ceptral coefficients (default: 13)
+    uint32_t fft_order;         // FFT order; must be a power of 2 (default: 512)
+    double lower_frequency;     // lower frequency (default: 133.3333)
+    double upper_frequency;     // upper frequency; must be <= sample_rate/2 = Nyquist frequency (default: 6855.4976)
+    double emphasis_factor;     // pre-emphasis factor (default: 0.97)
+    double window_length;       // window length (default: 0.0250)
+    double window_shift;        // window shift (default: 0.010)
 
     PyObject *tuple;
     PyArrayObject *data, *mfcc;
     npy_intp mfcc_dimensions[2];
     double *data_ptr, *mfcc_ptr;
-    unsigned int data_length, mfcc_length;
+    uint32_t data_length, mfcc_length;
 
     // O = object (do not convert or check for errors)
-    // I = unsigned integer
+    // I = uint32_teger
     // d = double
     if (!PyArg_ParseTuple(
             args,
@@ -75,10 +71,10 @@ static PyObject *compute_from_data(PyObject *self, PyObject *args) {
     data_ptr = (double *)PyArray_DATA(data);
 
     // number of audio samples in data (= duration in seconds * sample_rate)
-    data_length = (unsigned int)PyArray_DIMS(data)[0];
+    data_length = (uint32_t)PyArray_DIMS(data)[0];
 
     // compute MFCC matrix
-    if (!compute_mfcc_from_data(
+    if (compute_mfcc_from_data(
         data_ptr,
         data_length,
         sample_rate,
@@ -91,7 +87,7 @@ static PyObject *compute_from_data(PyObject *self, PyObject *args) {
         window_length,
         window_shift,
         &mfcc_ptr,
-        &mfcc_length)
+        &mfcc_length) != CMFCC_SUCCESS
     ) {
         // failed
         PyErr_SetString(PyExc_ValueError, "Error while calling compute_mfcc_from_data()");
@@ -115,30 +111,27 @@ static PyObject *compute_from_data(PyObject *self, PyObject *args) {
     return tuple;
 }
 
-// compute the MFCCs of the given data
-// take the PyObject containing the following arguments (see below)
-// and return the MFCCs as a n x mfcc_size 2D array of double, where
-//   - n is the number of frames
-//   - mfcc_size is the number of ceptral coefficients (including the 0-th)
+// compute the MFCCs of the given audio file 
 static PyObject *compute_from_file(PyObject *self, PyObject *args) {
-    char *audio_file_path;          // path of the WAVE file
-    unsigned int filter_bank_size;  // number of filters in the filter bank (default: 40)
-    unsigned int mfcc_size;         // number of ceptral coefficients (default: 13)
-    unsigned int fft_order;         // FFT order; must be a power of 2 (default: 512)
-    double lower_frequency;         // lower frequency (default: 133.3333)
-    double upper_frequency;         // upper frequency; must be <= sample_rate/2 = Nyquist frequency (default: 6855.4976)
-    double emphasis_factor;         // pre-emphasis factor (default: 0.97)
-    double window_length;           // window length (default: 0.0250)
-    double window_shift;            // window shift (default: 0.010)
+    char *audio_file_path;      // path of the WAVE file
+    uint32_t filter_bank_size;  // number of filters in the filter bank (default: 40)
+    uint32_t mfcc_size;         // number of ceptral coefficients (default: 13)
+    uint32_t fft_order;         // FFT order; must be a power of 2 (default: 512)
+    double lower_frequency;     // lower frequency (default: 133.3333)
+    double upper_frequency;     // upper frequency; must be <= sample_rate/2 = Nyquist frequency (default: 6855.4976)
+    double emphasis_factor;     // pre-emphasis factor (default: 0.97)
+    double window_length;       // window length (default: 0.0250)
+    double window_shift;        // window shift (default: 0.010)
 
     PyObject *tuple;
     PyArrayObject *mfcc;
     npy_intp mfcc_dimensions[2];
     double *mfcc_ptr;
-    unsigned int data_length, sample_rate, mfcc_length;
+    uint32_t sample_rate;
+    uint32_t data_length, mfcc_length;
 
     // s = string
-    // I = unsigned integer
+    // I = uint32_teger
     // d = double
     if (!PyArg_ParseTuple(
             args,
@@ -158,7 +151,7 @@ static PyObject *compute_from_file(PyObject *self, PyObject *args) {
     }
 
     // compute MFCC matrix
-    if (!compute_mfcc_from_file(
+    if (compute_mfcc_from_file(
         audio_file_path,
         filter_bank_size,
         mfcc_size,
@@ -171,7 +164,7 @@ static PyObject *compute_from_file(PyObject *self, PyObject *args) {
         &data_length,
         &sample_rate,
         &mfcc_ptr,
-        &mfcc_length)
+        &mfcc_length) != CMFCC_SUCCESS
     ) {
         // failed
         PyErr_SetString(PyExc_ValueError, "Error while calling compute_mfcc_from_file()");
@@ -197,13 +190,34 @@ static PyMethodDef cmfcc_methods[] = {
         "compute_from_data",
         compute_from_data,
         METH_VARARGS,
-        "Given the data from a mono PCM16 WAVE file, compute and return the MFCCs"
+        "Given the data from a mono PCM16 WAVE file, compute and return the MFCCs\n"
+        ":param object data_raw: numpy 1D array of float values, one per sample\n"
+        ":param uint sample_rate: the sample rate of the WAVE file\n"
+        ":param uint filter_bank_size: the number of MFCC filters\n"
+        ":param uint mfcc_size: the number of MFCCs\n"
+        ":param uint fft_order: the order of the FFT\n"
+        ":param float lower_frequency: cut below this frequency, in Hz\n"
+        ":param float upper_frequency: cut above this frequency, in Hz\n"
+        ":param float emphasis_factor: pre-amplify frames by this factor\n"
+        ":param float window_length: MFCC window lenght, in s\n"
+        ":param float window_shift: MFCC window shift, in s\n"
+        ":rtype: tuple (mfccs, data_length, sample_rate)"
     },
     {
         "compute_from_file",
         compute_from_file,
         METH_VARARGS,
-        "Given the path of the mono PCM16 WAVE file, compute and return the MFCCs"
+        "Given the path of the mono PCM16 WAVE file, compute and return the MFCCs\n"
+        ":param string audio_file_path: the path of the audio file\n"
+        ":param uint filter_bank_size: the number of MFCC filters\n"
+        ":param uint mfcc_size: the number of MFCCs\n"
+        ":param uint fft_order: the order of the FFT\n"
+        ":param float lower_frequency: cut below this frequency, in Hz\n"
+        ":param float upper_frequency: cut above this frequency, in Hz\n"
+        ":param float emphasis_factor: pre-amplify frames by this factor\n"
+        ":param float window_length: MFCC window lenght, in s\n"
+        ":param float window_shift: MFCC window shift, in s\n"
+        ":rtype: tuple (mfccs, data_length, sample_rate)"
     },
     {
         NULL,

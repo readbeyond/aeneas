@@ -23,7 +23,7 @@ __copyright__ = """
     Copyright 2015-2016, Alberto Pettarin (www.albertopettarin.it)
     """
 __license__ = "GNU AGPL v3"
-__version__ = "1.4.1"
+__version__ = "1.5.0"
 __email__ = "aeneas@readbeyond.it"
 __status__ = "Production"
 
@@ -132,15 +132,12 @@ class TextFragment(object):
 
     Note: internally, all the text objects are Unicode strings.
 
-    :param identifier: the identifier of the fragment
-    :type  identifier: Unicode string
+    :param string identifier: the identifier of the fragment
     :param language: the language of the text of the fragment
-    :type  language: :class:`aeneas.language.Language` enum
-    :param lines: the lines in which text is split up
-    :type  lines: list of Unicode strings
-    :param filtered_lines: the lines in which text is split up,
-                           possibly filtered for the alignment purpose
-    :type  filtered_lines: list of Unicode strings
+    :type  language: :class:`aeneas.language.Language`
+    :param list lines: the lines in which text is split up
+    :param list filtered_lines: the lines in which text is split up,
+                                possibly filtered for the alignment purpose
 
     :raise TypeError: if ``identifier`` is not a Unicode string
     :raise TypeError: if ``lines`` is not an instance of ``list`` or
@@ -187,7 +184,7 @@ class TextFragment(object):
         """
         The identifier of the text fragment.
 
-        :rtype: Unicode string
+        :rtype: string
         """
         return self.__identifier
     @identifier.setter
@@ -201,7 +198,7 @@ class TextFragment(object):
         """
         The language of the text fragment.
 
-        :rtype: :class:`aeneas.language.Language` enum
+        :rtype: :class:`aeneas.language.Language`
         """
         return self.__language
     @language.setter
@@ -234,7 +231,7 @@ class TextFragment(object):
         """
         The text of the text fragment.
 
-        :rtype: Unicode string
+        :rtype: string
         """
         return u" ".join(self.lines)
 
@@ -252,7 +249,7 @@ class TextFragment(object):
         """
         The filtered text of the text fragment.
 
-        :rtype: Unicode string
+        :rtype: string
         """
         return u" ".join(self.filtered_lines)
 
@@ -273,14 +270,12 @@ class TextFile(object):
 
     Note: internally, all the text objects are Unicode strings.
 
-    :param file_path: the path to the text file.
-                      If not ``None`` (and also ``file_format`` is not ``None``),
-                      the file will be read immediately.
-    :type  file_path: string (path)
+    :param string file_path: the path to the text file.
+                             If not ``None`` (and also ``file_format`` is not ``None``),
+                             the file will be read immediately.
     :param file_format: the format of the text file
-    :type  file_format: :class:`aeneas.textfile.TextFileFormat` enum
-    :param parameters: additional parameters used to parse the text file
-    :type  parameters: dict
+    :type  file_format: :class:`aeneas.textfile.TextFileFormat`
+    :param dict parameters: additional parameters used to parse the text file
     :param logger: the logger object
     :type  logger: :class:`aeneas.logger.Logger`
 
@@ -304,7 +299,7 @@ class TextFile(object):
         self.file_format = file_format
         self.parameters = parameters
         self.fragments = []
-        self.logger = logger or Logger()
+        self.logger = logger if logger is not None else Logger()
         if self.parameters is None:
             self.parameters = {}
         if (self.file_path is not None) and (self.file_format is not None):
@@ -338,7 +333,7 @@ class TextFile(object):
         """
         The path of the text file.
 
-        :rtype: string (path)
+        :rtype: string
         """
         return self.__file_path
     @file_path.setter
@@ -352,7 +347,7 @@ class TextFile(object):
         """
         The format of the text file.
 
-        :rtype: :class:`aeneas.textfile.TextFileFormat` enum
+        :rtype: :class:`aeneas.textfile.TextFileFormat`
         """
         return self.__file_format
     @file_format.setter
@@ -419,10 +414,8 @@ class TextFile(object):
         Return a new list of text fragments,
         indexed from start (included) to end (excluded).
 
-        :param start: the start index
-        :type  start: int
-        :param end: the end index
-        :type  end: int
+        :param int start: the start index
+        :param int end: the end index
         :rtype: :class:`aeneas.textfile.TextFile`
         """
         if start is not None:
@@ -444,7 +437,7 @@ class TextFile(object):
         Set the given language for all the text fragments.
 
         :param language: the language of the text fragments
-        :type  language: :class:`aeneas.language.Language` enum
+        :type  language: :class:`aeneas.language.Language`
         """
         self._log([u"Setting language: '%s'", language])
         for fragment in self.fragments:
@@ -463,8 +456,7 @@ class TextFile(object):
 
             [fragment_1, fragment_2, ..., fragment_n]
 
-        :param lines: the text fragments
-        :type  lines: list of strings
+        :param list lines: the text fragments
         """
         self._log(u"Reading text fragments from list")
         self._read_plain(lines)
@@ -475,8 +467,7 @@ class TextFile(object):
 
             [(id_1, text_1), (id_2, text_2), ..., (id_n, text_n)].
 
-        :param lines: the list of ``[id, text]`` fragments (see above)
-        :type  lines: list of tuples (see above)
+        :param list lines: the list of ``[id, text]`` fragments (see above)
         """
         self._log(u"Reading text fragments from list with ids")
         self._create_text_fragments([(line[0], [line[1]]) for line in lines])
@@ -518,8 +509,7 @@ class TextFile(object):
         """
         Read text fragments from a subtitles format text file.
 
-        :param lines: the lines of the subtitles text file
-        :type  lines: list of strings
+        :param list lines: the lines of the subtitles text file
 
         :raise ValueError: if the id regex is not valid
         """
@@ -548,11 +538,9 @@ class TextFile(object):
         """
         Read text fragments from a parsed format text file.
 
-        :param lines: the lines of the parsed text file
-        :type  lines: list of strings
-        :param parameters: additional parameters for parsing
-                           (e.g., class/id regex strings)
-        :type  parameters: dict
+        :param list lines: the lines of the parsed text file
+        :param dict parameters: additional parameters for parsing
+                                (e.g., class/id regex strings)
         """
         self._log(u"Parsing fragments from parsed text format")
         pairs = []
@@ -569,11 +557,9 @@ class TextFile(object):
         """
         Read text fragments from a plain format text file.
 
-        :param lines: the lines of the plain text file
-        :type  lines: list of strings
-        :param parameters: additional parameters for parsing
-                           (e.g., class/id regex strings)
-        :type  parameters: dict
+        :param list lines: the lines of the plain text file
+        :param dict parameters: additional parameters for parsing
+                                (e.g., class/id regex strings)
 
         :raise ValueError: if the id regex is not valid
         """
@@ -593,8 +579,7 @@ class TextFile(object):
         """
         Read text fragments from an unparsed format text file.
 
-        :param lines: the lines of the unparsed text file
-        :type  lines: list of strings
+        :param list lines: the lines of the unparsed text file
         """
         def filter_attributes():
             """ Return a dict with the bs4 filter parameters """
@@ -668,8 +653,7 @@ class TextFile(object):
         """
         Create text fragment objects and append them to this list.
 
-        :param pairs: a list of pairs, each pair being (id, [line_1, ..., line_n])
-        :type  pairs: list of tuples (see above)
+        :param list pairs: a list of pairs, each pair being (id, [line_1, ..., line_n])
         """
         self._log(u"Creating TextFragment objects")
         text_filter = self._build_text_filter()
@@ -741,7 +725,7 @@ class TextFilter(object):
 
     def __init__(self, logger=None):
         self.filters = []
-        self.logger = logger or Logger()
+        self.logger = logger if logger is not None else Logger()
 
     def _log(self, message, severity=Logger.DEBUG):
         """ Log """
@@ -760,8 +744,7 @@ class TextFilter(object):
         """
         Apply the text filter filter to the given list of strings.
 
-        :param strings: the list of input strings
-        :type  strings: list of Unicode strings
+        :param list strings: the list of input strings
         """
         result = strings
         for filt in self.filters:
@@ -777,8 +760,7 @@ class TextFilterIgnoreRegex(TextFilter):
 
     Leading/trailing spaces, and repeated spaces are removed.
 
-    :param regex: the regular expression to be applied
-    :type  regex: regex
+    :param regex regex: the regular expression to be applied
     :param logger: the logger object
     :type  logger: :class:`aeneas.logger.Logger`
 
@@ -815,8 +797,7 @@ class TextFilterTransliterate(TextFilter):
 
     :param map_object: the map object
     :type  map_object: :class:`aeneas.textfile.TransliterationMap`
-    :param map_file_path: the path to a map file
-    :type  map_file_path: str (path)
+    :param string map_file_path: the path to a map file
     :param logger: the logger object
     :type  logger: :class:`aeneas.logger.Logger`
 
@@ -863,8 +844,7 @@ class TransliterationMap(object):
     For its format, please read the initial comment
     included at the top of the ``transliteration.map`` sample file.
 
-    :param file_path: the path to the map file to be read
-    :type  file_path: str (path)
+    :param string file_path: the path to the map file to be read
     :param logger: the logger object
     :type  logger: :class:`aeneas.logger.Logger`
 
@@ -879,7 +859,7 @@ class TransliterationMap(object):
 
     def __init__(self, file_path, logger=None):
         self.trans_map = {}
-        self.logger = logger or Logger()
+        self.logger = logger if logger is not None else Logger()
         self.file_path = file_path
 
     def _log(self, message, severity=Logger.DEBUG):
@@ -891,7 +871,7 @@ class TransliterationMap(object):
         """
         The path of the map file.
 
-        :rtype: string (path)
+        :rtype: string
         """
         return self.__file_path
     @file_path.setter

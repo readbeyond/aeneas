@@ -19,7 +19,7 @@ __copyright__ = """
     Copyright 2015-2016, Alberto Pettarin (www.albertopettarin.it)
     """
 __license__ = "GNU AGPL v3"
-__version__ = "1.4.1"
+__version__ = "1.5.0"
 __email__ = "aeneas@readbeyond.it"
 __status__ = "Production"
 
@@ -61,8 +61,8 @@ class IDSortingAlgorithm(object):
         if algorithm not in self.ALLOWED_VALUES:
             raise ValueError("Algorithm value not allowed")
         self.algorithm = algorithm
-        self.logger = logger or Logger()
-        self.rconf = rconf or RuntimeConfiguration()
+        self.logger = logger if logger is not None else Logger()
+        self.rconf = rconf if rconf is not None else RuntimeConfiguration()
 
     def _log(self, message, severity=Logger.DEBUG):
         """ Log """
@@ -73,16 +73,14 @@ class IDSortingAlgorithm(object):
         Sort the given list of identifiers,
         returning a new (sorted) list.
 
-        :param ids: the list of identifiers to be sorted
-        :type ids: list of Unicode strings
-        :rtype: list of Unicode strings
+        :param list ids: the list of identifiers to be sorted
+        :rtype: list
         """
         def extract_int(string):
             """
             Extract an integer from the given string.
 
-            :param string: the identifier string
-            :type  string: string
+            :param string string: the identifier string
             :rtype: int
             """
             return int(re.sub(r"[^0-9]", "", string))

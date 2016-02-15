@@ -26,19 +26,25 @@ __copyright__ = """
     Copyright 2015-2016, Alberto Pettarin (www.albertopettarin.it)
     """
 __license__ = "GNU AGPL v3"
-__version__ = "1.4.1"
+__version__ = "1.5.0"
 __email__ = "aeneas@readbeyond.it"
 __status__ = "Production"
+
+### RUNTIME CONSTANTS ###
 
 HHMMSS_MMM_PATTERN = re.compile(r"([0-9]*):([0-9]*):([0-9]*)\.([0-9]*)")
 HHMMSS_MMM_PATTERN_COMMA = re.compile(r"([0-9]*):([0-9]*):([0-9]*),([0-9]*)")
 PY2 = (sys.version_info[0] == 2)
 
+
+
+### COMMON FUNCTIONS ###
+
 def uuid_string():
     """
     Return a uuid4 as a Unicode string.
 
-    :rtype: Unicode string
+    :rtype: string
     """
     return safe_unicode(str(uuid.uuid4())).lower()
 
@@ -56,7 +62,7 @@ def custom_tmp_dir():
     will use the directory specified by the
     environment/user TMP/TEMP variable.
 
-    :rtype: string (path)
+    :rtype: string
     """
     if is_posix():
         return gc.RC_TMP_PATH_DEFAULT_POSIX
@@ -66,11 +72,10 @@ def tmp_directory(root=None):
     """
     Return the path of a temporary directory created by ``tempfile``.
 
-    :param root: path to the root temporary directory;
-                 if ``None``, the default temporary directory
-                 will be used instead
-    :type  root: Unicode string (path)
-    :rtype: string (path)
+    :param string root: path to the root temporary directory;
+                        if ``None``, the default temporary directory
+                        will be used instead
+    :rtype: string
     """
     if root is None:
         root = custom_tmp_dir()
@@ -81,12 +86,10 @@ def tmp_file(suffix=u"", root=None):
     Return a (handler, path) tuple
     for a temporary file with given suffix created by ``tempfile``.
 
-    :param suffix: the suffix (e.g., the extension) of the file
-    :type  suffix: Unicode string
-    :param root: path to the root temporary directory;
-                 if ``None``, the default temporary directory
-                 will be used instead
-    :type  root: Unicode string (path)
+    :param string suffix: the suffix (e.g., the extension) of the file
+    :param string root: path to the root temporary directory;
+                        if ``None``, the default temporary directory
+                        will be used instead
     :rtype: tuple
     """
     if root is None:
@@ -102,9 +105,8 @@ def file_extension(path):
         /foo/bar.baz => baz
         None         => None
 
-    :param path: the file path
-    :type  path: string (path)
-    :rtype: string (path)
+    :param string path: the file path
+    :rtype: string
     """
     if path is None:
         return None
@@ -123,9 +125,8 @@ def file_name_without_extension(path):
         /foo/bar     => bar
         None         => None
 
-    :param path: the file path
-    :type  path: string (path)
-    :rtype: string (path)
+    :param string path: the file path
+    :rtype: string
     """
     if path is None:
         return None
@@ -137,10 +138,8 @@ def safe_float(string, default=None):
 
     On error return the ``default`` value.
 
-    :param string: string value to be converted
-    :type  string: string
-    :param default: default value to be used in case of failure
-    :type  default: float
+    :param string string: string value to be converted
+    :param float default: default value to be used in case of failure
     :rtype: float
     """
     value = default
@@ -158,10 +157,8 @@ def safe_int(string, default=None):
 
     On error return the ``default`` value.
 
-    :param string: string value to be converted
-    :type  string: string
-    :param default: default value to be used in case of failure
-    :type  default: int
+    :param string string: string value to be converted
+    :param int default: default value to be used in case of failure
     :rtype: int
     """
     value = safe_float(string, default)
@@ -174,16 +171,12 @@ def safe_get(dictionary, key, default_value, can_return_none=True):
     Safely perform a dictionary get,
     returning the default value if the key is not found.
 
-    :param dictionary: the dictionary
-    :type  dictionary: dict
-    :param key: the key
-    :type  key: Unicode string
-    :param default_value: the default value to be returned
-    :type  default_value: variant
-    :param can_return_none: if ``True``, the function can return ``None``;
-                            otherwise, return ``default_value`` even if the
-                            dictionary lookup succeeded
-    :type  can_return_none: bool
+    :param dict dictionary: the dictionary
+    :param string key: the key
+    :param variant default_value: the default value to be returned
+    :param bool can_return_none: if ``True``, the function can return ``None``;
+                                 otherwise, return ``default_value`` even if the
+                                 dictionary lookup succeeded
     :rtype: variant
     """
     return_value = default_value
@@ -202,11 +195,9 @@ def norm_join(prefix, suffix):
     Join ``prefix`` and ``suffix`` paths
     and return the resulting path, normalized.
 
-    :param prefix: the prefix path
-    :type  prefix: string (path)
-    :param suffix: the suffix path
-    :type  suffix: string (path)
-    :rtype: string (path)
+    :param string prefix: the prefix path
+    :param string suffix: the suffix path
+    :rtype: string
     """
     if (prefix is None) and (suffix is None):
         return "."
@@ -226,9 +217,8 @@ def config_txt_to_string(string):
     Leading and trailing blank characters will be stripped
     and empty lines (after stripping) will be ignored.
 
-    :param string: the contents of a TXT config file
-    :type  string: Unicode string
-    :rtype: Unicode string
+    :param string string: the contents of a TXT config file
+    :rtype: string
     """
     if string is None:
         return None
@@ -248,8 +238,7 @@ def config_string_to_dict(string, result=None):
         ...
         dictionary[key_n] = value_n
 
-    :param string: the configuration string
-    :type  string: string
+    :param string string: the configuration string
     :rtype: dict
     """
     if string is None:
@@ -267,11 +256,9 @@ def config_xml_to_dict(contents, result, parse_job=True):
         ...
         dictionary[key_n] = value_n
 
-    :param contents: the XML configuration contents
-    :type  contents: bytes
-    :param parse_job: if ``True``, parse the job properties;
-                      if ``False``, parse the tasks properties
-    :type  parse_job: bool
+    :param bytes contents: the XML configuration contents
+    :param bool parse_job: if ``True``, parse the job properties;
+                           if ``False``, parse the tasks properties
     :rtype: dict (``parse_job=True``) or list of dict (``parse_job=False``)
     """
     try:
@@ -324,8 +311,7 @@ def config_dict_to_string(dictionary):
 
         key_1=value_1|key_2=value_2|...|key_n=value_n
 
-    :param dictionary: the config dictionary
-    :type  dictionary: dict
+    :param dict dictionary: the config dictionary
     :rtype: string
     """
     parameters = []
@@ -350,8 +336,7 @@ def pairs_to_dict(pairs, result=None):
         ...
         dictionary[key_n] = value_n
 
-    :param pairs: the list of key=value strings
-    :type  pairs: list of strings
+    :param list pairs: the list of key=value strings
     :rtype: dict
     """
     dictionary = {}
@@ -380,10 +365,8 @@ def copytree(source_directory, destination_directory, ignore=None):
 
     NOTE: code adapted from http://stackoverflow.com/a/12686557
 
-    :param source_directory: the source directory, already existing
-    :type  source_directory: string (path)
-    :param destination_directory: the destination directory, already existing
-    :type  destination_directory: string (path)
+    :param string source_directory: the source directory, already existing
+    :param string destination_directory: the destination directory, already existing
     """
     if os.path.isdir(source_directory):
         if not os.path.isdir(destination_directory):
@@ -407,11 +390,9 @@ def ensure_parent_directory(path, ensure_parent=True):
     """
     Ensures the parent directory exists.
 
-    :param path: the path of the file
-    :type  path: string (path)
-    :param ensure_parent: if True, ensure the parent directory of ``path`` exists;
-                       if False, ensure ``path`` exists
-    :type  ensure_parent: bool
+    :param string path: the path of the file
+    :param bool ensure_parent: if True, ensure the parent directory of ``path`` exists;
+                               if False, ensure ``path`` exists
     :raise OSError: if the path cannot be created
     """
     parent_directory = os.path.abspath(path)
@@ -429,8 +410,7 @@ def time_from_ttml(string):
     (TTML values have an "s" suffix, e.g. ``1.234s``)
     and return a float time value.
 
-    :param string: the string to be parsed
-    :type  string: unicode
+    :param string string: the string to be parsed
     :rtype: float
     """
     if (string is None) or (len(string) < 2):
@@ -451,8 +431,7 @@ def time_to_ttml(time_value):
         12.345432 => 12.345s
         12.345678 => 12.346s
 
-    :param time_value: a time value, in seconds
-    :type  time_value: float
+    :param float time_value: a time value, in seconds
     :rtype: string
     """
     if time_value is None:
@@ -463,8 +442,7 @@ def time_from_ssmmm(string):
     """
     Parse the given ``SS.mmm`` string and return a float time value.
 
-    :param string: the string to be parsed
-    :type  string: unicode
+    :param string string: the string to be parsed
     :rtype: float
     """
     if (string is None) or (len(string) < 1):
@@ -482,8 +460,7 @@ def time_to_ssmmm(time_value):
         12.345432 => 12.345
         12.345678 => 12.346
 
-    :param time_value: a time value, in seconds
-    :type  time_value: float
+    :param float time_value: a time value, in seconds
     :rtype: string
     """
     if time_value is None:
@@ -494,10 +471,8 @@ def time_from_hhmmssmmm(string, decimal_separator="."):
     """
     Parse the given ``HH:MM:SS.mmm`` string and return a float time value.
 
-    :param string: the string to be parsed
-    :type  string: unicode
-    :param decimal_separator: the decimal separator to be used
-    :type  decimal_separator: string
+    :param string string: the string to be parsed
+    :param string decimal_separator: the decimal separator to be used
     :rtype: float
     """
     if decimal_separator == ",":
@@ -533,10 +508,8 @@ def time_to_hhmmssmmm(time_value, decimal_separator="."):
         3600      => 01:00:00.000
         3612.345  => 01:00:12.345
 
-    :param time_value: a time value, in seconds
-    :type  time_value: float
-    :param decimal_separator: the decimal separator, default ``.``
-    :type  decimal_separator: char
+    :param float time_value: a time value, in seconds
+    :param string decimal_separator: the decimal separator, default ``.``
     :rtype: string
     """
     if time_value is None:
@@ -574,8 +547,7 @@ def time_to_srt(time_value):
         3600      => 01:00:00,000
         3612.345  => 01:00:12,345
 
-    :param time_value: a time value, in seconds
-    :type  time_value: float
+    :param float time_value: a time value, in seconds
     :rtype: string
     """
     return time_to_hhmmssmmm(time_value, ",")
@@ -585,8 +557,7 @@ def split_url(url):
     Split the given URL base#anchor into (base, anchor),
     or (base, None) if no anchor is present.
 
-    :param url: the url
-    :type  url: str
+    :param string url: the url
     :rtype: list of str
     """
     if url is None:
@@ -643,9 +614,8 @@ def fix_slash(path):
 
         c:\\abc\\def => c:/abc/def
 
-    :param path: the path
-    :type  path: Unicode string (path)
-    :rtype: Unicode string
+    :param string path: the path
+    :rtype: string
     """
     if not is_posix():
         # TODO is there a better way to do this?
@@ -659,8 +629,7 @@ def can_run_c_extension(name=None):
     If ``name`` is ``None``, tests all Python C extensions,
     and return ``True`` if and only if all load correctly.
 
-    :param name: the name of the Python C extension to test
-    :type  name: string
+    :param string name: the name of the Python C extension to test
     :rtype: bool
     """
     def can_run_cdtw():
@@ -711,17 +680,12 @@ def run_c_extension_with_fallback(
     Run a function calling a C extension, falling back
     to a pure Python function if the former does not succeed.
 
-    :param log_function: a logger function (see ``_log()`` in many classes)
-    :type  log_function: function
-    :param extension: the name of the extension
-    :type  extension: string
-    :param c_function: the (Python) function calling the C extension
-    :type  c_function: function
-    :param py_function: the (Python) function providing the fallback
-    :type  py_function: function
-    :param c_extension: if ``True``, try running the C extension first;
-                        if ``False``, directly run the pure Python fallback
-    :type  c_extension: bool
+    :param function log_function: a logger function (see ``_log()`` in many classes)
+    :param string extension: the name of the extension
+    :param function c_function: the (Python) function calling the C extension
+    :param function py_function: the (Python) function providing the fallback
+    :param bool c_extension: if ``True``, try running the C extension first;
+                             if ``False``, directly run the pure Python fallback
     :rtype: depends on the extension being called
 
     :raise RuntimeError: if both the C extension and
@@ -751,8 +715,7 @@ def file_can_be_read(path):
     """
     Return ``True`` if the file at the given ``path`` can be read.
 
-    :param path: the file path
-    :type  path: string (path)
+    :param string path: the file path
     :rtype: bool
 
     .. versionadded:: 1.4.0
@@ -775,8 +738,7 @@ def file_can_be_written(path):
     IMPORTANT: this function will attempt to open the given ``path``
     in write mode, possibly destroying the file previously existing there.
 
-    :param path: the file path
-    :type  path: string (path)
+    :param string path: the file path
     :rtype: bool
 
     .. versionadded:: 1.4.0
@@ -798,8 +760,7 @@ def directory_exists(path):
     Return ``True`` if the given ``path`` string
     points to an existing directory.
 
-    :param path: the file path
-    :type  path: string (path)
+    :param string path: the file path
     :rtype: bool
     """
     if (path is None) or (not os.path.isdir(path)):
@@ -811,8 +772,7 @@ def file_exists(path):
     Return ``True`` if the given ``path`` string
     points to an existing file.
 
-    :param path: the file path
-    :type  path: string (path)
+    :param string path: the file path
     :rtype: bool
     """
     if (path is None) or (not os.path.isfile(path)):
@@ -824,8 +784,7 @@ def file_size(path):
     Return the size, in bytes, of the file at the given ``path``.
     Return ``-1`` if the file does not exist or cannot be read.
 
-    :param path: the file path
-    :type  path: string (path)
+    :param string path: the file path
     :rtype: int
     """
     try:
@@ -837,8 +796,7 @@ def delete_directory(path):
     """
     Safely delete a directory.
 
-    :param path: the file path
-    :type  path: string (path)
+    :param string path: the file path
     """
     if path is not None:
         try:
@@ -850,10 +808,8 @@ def delete_file(handler, path):
     """
     Safely delete file.
 
-    :param handler: the file handler (as returned by tempfile)
-    :type  handler: obj
-    :param path: the file path
-    :type  path: string (path)
+    :param object handler: the file handler (as returned by tempfile)
+    :param string path: the file path
     """
     if handler is not None:
         try:
@@ -880,11 +836,9 @@ def relative_path(path, from_file):
         cwd="/root"
         => "abc/def/res/foo.bar"
 
-    :param path: the file path
-    :type  path: string (path)
-    :param from_file: the reference file
-    :type  from_file: string (path)
-    :rtype: string (path)
+    :param string path: the file path
+    :param string from_file: the reference file
+    :rtype: string
     """
     if path is None:
         return None
@@ -906,11 +860,9 @@ def absolute_path(path, from_file):
         from_file="/abc/def/ghi.py"
         => "/abc/def/res/foo.bar"
 
-    :param path: the file path
-    :type  path: string (path)
-    :param from_file: the reference file
-    :type  from_file: string (path)
-    :rtype: string (path)
+    :param string path: the file path
+    :param string from_file: the reference file
+    :rtype: string
     """
     if path is None:
         return None
@@ -924,9 +876,8 @@ def read_file_bytes(input_file_path):
     and return its contents as a byte string,
     or ``None`` if an error occurred.
 
-    :param input_file_path: the file path
-    :type  input_file_path: string (path)
-    :rtype: byte string
+    :param string input_file_path: the file path
+    :rtype: bytes
     """
     contents = None
     try:
@@ -940,10 +891,8 @@ def human_readable_number(number, suffix=""):
     """
     Format the given number into a human-readable string.
 
-    :param number: the number
-    :type  number: int or float
-    :param suffix: the unit of the number
-    :type  suffix: str
+    :param variant number: the number (int or float)
+    :param string suffix: the unit of the number
 
     Code adapted from http://stackoverflow.com/a/1094933
     """
@@ -957,8 +906,7 @@ def is_unicode(string):
     """
     Return True if the given string is a sequence of Unicode code points.
 
-    :param string: the string to test
-    :type  string: any
+    :param variant string: the string to test
     :rtype: bool
     """
     if PY2:
@@ -969,8 +917,7 @@ def is_bytes(string):
     """
     Return True if the given string is a sequence of bytes.
 
-    :param string: the string to test
-    :type  string: any
+    :param variant string: the string to test
     :rtype: bool
     """
     if PY2:
@@ -982,8 +929,7 @@ def is_utf8_encoded(bstring):
     Return True if the given byte string can be decoded
     into a Unicode string using the UTF-8 decoder.
 
-    :param bstring: the string to test
-    :type  bstring: byte string
+    :param bytes bstring: the string to test
     :rtype: bool
     """
     try:
@@ -999,9 +945,8 @@ def safe_str(string):
     from a __str__ function: as a byte string
     in Python 2, or as a Unicode string in Python 3.
 
-    :param string: the string to return
-    :type  string: Unicode string
-    :rtype: byte string or Unicode string
+    :param string string: the string to return
+    :rtype: bytes or string
     """
     if string is None:
         return None
@@ -1014,9 +959,8 @@ def safe_unichr(codepoint):
     Safely return a Unicode string of length one,
     containing the Unicode character with given codepoint.
 
-    :param codepoint: the codepoint
-    :type  codepoint: int
-    :rtype: Unicode string
+    :param int codepoint: the codepoint
+    :rtype: string
     """
     if PY2:
         return unichr(codepoint)
@@ -1026,9 +970,8 @@ def safe_unicode(string):
     """
     Safely convert the given string to a Unicode string.
 
-    :param string: the string to convert
-    :type  string: byte string or Unicode string
-    :rtype: Unicode string
+    :param variant string: the byte string or Unicode string to convert
+    :rtype: string
     """
     if string is None:
         return None
@@ -1040,9 +983,8 @@ def safe_bytes(string):
     """
     Safely convert the given string to a bytes string.
 
-    :param string: the string to convert
-    :type  string: byte string or Unicode string
-    :rtype: byte string
+    :param variant string: the byte string or Unicode string to convert
+    :rtype: bytes
     """
     if string is None:
         return None
@@ -1055,9 +997,8 @@ def safe_unicode_stdin(string):
     Safely convert the given string to a Unicode string,
     decoding using ``sys.stdin.encoding`` if needed.
 
-    :param string: the string to convert
-    :type  string: byte string or Unicode string
-    :rtype: Unicode string
+    :param variant string: the byte string or Unicode string to convert
+    :rtype: string
     """
     if string is None:
         return None
@@ -1074,8 +1015,7 @@ def safe_print(string):
     possibly replacing characters non-printable
     in the current stdout encoding.
 
-    :param string: the message string
-    :type  string: Unicode string
+    :param string string: the message string
     """
     try:
         print(string)
@@ -1094,9 +1034,8 @@ def object_to_unicode(obj):
     """
     Return a sequence of Unicode code points from the given object.
 
-    :param obj: the object
-    :type  obj: object
-    :rtype: unicode
+    :param object obj: the object
+    :rtype: string
     """
     if PY2:
         return unicode(obj)
@@ -1106,9 +1045,8 @@ def object_to_bytes(obj):
     """
     Return a sequence of bytes from the given object.
 
-    :param obj: the object
-    :type  obj: object
-    :rtype: unicode
+    :param object obj: the object
+    :rtype: bytes
     """
     if PY2:
         return str(obj)

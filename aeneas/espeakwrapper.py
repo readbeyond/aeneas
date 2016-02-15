@@ -7,7 +7,9 @@ Wrapper around ``espeak`` to synthesize text into a ``wav`` audio file.
 
 from __future__ import absolute_import
 from __future__ import print_function
+import io
 import subprocess
+import sys
 
 from aeneas.audiofile import AudioFileMonoWAVE
 from aeneas.audiofile import AudioFileUnsupportedFormatError
@@ -23,7 +25,7 @@ __copyright__ = """
     Copyright 2015-2016, Alberto Pettarin (www.albertopettarin.it)
     """
 __license__ = "GNU AGPL v3"
-__version__ = "1.4.1"
+__version__ = "1.5.0"
 __email__ = "aeneas@readbeyond.it"
 __status__ = "Production"
 
@@ -45,8 +47,8 @@ class ESPEAKWrapper(object):
     TAG = u"ESPEAKWrapper"
 
     def __init__(self, rconf=None, logger=None):
-        self.logger = logger or Logger()
-        self.rconf = rconf or RuntimeConfiguration()
+        self.logger = logger if logger is not None else Logger()
+        self.rconf = rconf if rconf is not None else RuntimeConfiguration()
 
     def _log(self, message, severity=Logger.DEBUG):
         """ Log """
@@ -58,8 +60,8 @@ class ESPEAKWrapper(object):
         synthesizing using a similar language.
 
         :param language: the requested language
-        :type  language: :class:`aeneas.language.Language` enum
-        :rtype: :class:`aeneas.language.Language` enum
+        :type  language: :class:`aeneas.language.Language`
+        :rtype: :class:`aeneas.language.Language`
         """
         if language == Language.UK:
             self._log([u"Replaced '%s' with '%s'", Language.UK, Language.RU])
@@ -79,20 +81,18 @@ class ESPEAKWrapper(object):
 
         :param text_file: the text file to be synthesized
         :type  text_file: :class:`aeneas.textfile.TextFile`
-        :param output_file_path: the path to the output audio file
-        :type  output_file_path: string (path)
-        :param quit_after: stop synthesizing as soon as
-                           reaching this many seconds
-        :type  quit_after: float
-        :param backwards: synthesizing from the end of the text file
-        :type  backwards: bool
+        :param string output_file_path: the path to the output audio file
+        :param float quit_after: stop synthesizing as soon as
+                                 reaching this many seconds
+        :param bool backwards: if > 0, synthese from the end of the text file
         :rtype: tuple (anchors, total_time, num_chars)
 
         :raise TypeError: if ``text_file`` is ``None`` or
                           one of the text fragments is not a ``unicode`` object
         :raise ValueError: if ``rconf["allow_unlisted_languages"]`` is ``False`` and
                            a fragment has its language code not listed in
-                           :class:`aeneas.language.Language`
+                           :class:`aeneas.language.Language`, or
+                           if ``text_file`` has no fragments
         :raise OSError: if output file cannot be written to ``output_file_path``
         :raise RuntimeError: if both the C extension and
                              the pure Python code did not succeed.
@@ -101,6 +101,11 @@ class ESPEAKWrapper(object):
         if text_file is None:
             self._log(u"text_file is None", Logger.CRITICAL)
             raise TypeError("text_file is None")
+
+        # check that text_file has at least one text fragment
+        if len(text_file) < 1:
+            self._log(u"text_file has no fragments", Logger.CRITICAL)
+            raise ValueError("text_file has no fragments")
 
         # check that the lines in the text file all have
         # a supported language code and unicode type
@@ -155,8 +160,8 @@ class ESPEAKWrapper(object):
         self._log([u"output_file_path: %s", output_file_path])
         self._log([u"c_quit_after:     %.3f", c_quit_after])
         self._log([u"c_backwards:      %d", c_backwards])
-        self._log(u"Preparing c_text...")
-        c_text = []
+        self._log(u"Preparing u_text...")
+        u_text = []
         fragments = text_file.fragments
         for fragment in fragments:
             f_lang = fragment.language
@@ -166,32 +171,59 @@ class ESPEAKWrapper(object):
             f_lang = self._replace_language(f_lang)
             if f_text is None:
                 f_text = u""
-            if gf.PY2:
-                # Python 2 => pass byte strings
-                c_text.append((gf.safe_bytes(f_lang), gf.safe_bytes(f_text)))
-            else:
-                # Python 3 => pass Unicode strings
-                c_text.append((gf.safe_unicode(f_lang), gf.safe_unicode(f_text)))
-        self._log(u"Preparing c_text... done")
+            u_text.append((f_lang, f_text))
+        self._log(u"Preparing u_text... done")
 
         # call C extension
-        try:
-            self._log(u"Importing aeneas.cew...")
-            import aeneas.cew.cew
-            self._log(u"Importing aeneas.cew... done")
-            self._log(u"Calling aeneas.cew...")
-            sr, sf, intervals = aeneas.cew.cew.synthesize_multiple(
-                output_file_path,
-                c_quit_after,
-                c_backwards,
-                c_text
-            )
-            self._log(u"Calling aeneas.cew... done")
-        except Exception as exc:
-            self._log(u"Calling aeneas.cew... failed")
-            self._log(u"An unexpected exception occurred while running cew:", Logger.WARNING)
-            self._log([u"%s", exc], Logger.WARNING)
-            return (False, None)
+        sr = None
+        sf = None
+        intervals = None
+        if self.rconf["cew_subprocess_enabled"]:
+            self._log(u"Using cewsubprocess to call aeneas.cew")
+            try:
+                self._log(u"Importing aeneas.cewsubprocess...")
+                from aeneas.cewsubprocess import CEWSubprocess
+                self._log(u"Importing aeneas.cewsubprocess... done")
+                self._log(u"Calling aeneas.cewsubprocess...")
+                cewsub = CEWSubprocess(rconf=self.rconf, logger=self.logger)
+                sr, sf, intervals = cewsub.synthesize_multiple(output_file_path, c_quit_after, c_backwards, u_text)
+                self._log(u"Calling aeneas.cewsubprocess... done")
+            except Exception as exc:
+                self._log(u"Calling aeneas.cewsubprocess... failed")
+                self._log(u"An unexpected exception occurred while running cewsubprocess:", Logger.WARNING)
+                self._log([u"%s", exc], Logger.WARNING)
+                # NOTE not critical, try calling aeneas.cew directly
+                #return (False, None)
+
+        if sr is None:
+            self._log(u"Preparing c_text...")
+            if gf.PY2:
+                # Python 2 => pass byte strings
+                c_text = [(gf.safe_bytes(t[0]), gf.safe_bytes(t[1])) for t in u_text]
+            else:
+                # Python 3 => pass Unicode strings
+                c_text = [(gf.safe_unicode(t[0]), gf.safe_unicode(t[1])) for t in u_text]
+            self._log(u"Preparing c_text... done")
+            
+            self._log(u"Calling aeneas.cew directly") 
+            try:
+                self._log(u"Importing aeneas.cew...")
+                import aeneas.cew.cew
+                self._log(u"Importing aeneas.cew... done")
+                self._log(u"Calling aeneas.cew...")
+                sr, sf, intervals = aeneas.cew.cew.synthesize_multiple(
+                    output_file_path,
+                    c_quit_after,
+                    c_backwards,
+                    c_text
+                )
+                self._log(u"Calling aeneas.cew... done")
+            except Exception as exc:
+                self._log(u"Calling aeneas.cew... failed")
+                self._log(u"An unexpected exception occurred while running cew:", Logger.WARNING)
+                self._log([u"%s", exc], Logger.WARNING)
+                return (False, None)
+        
         self._log([u"sr: %d", sr])
         self._log([u"sf: %d", sf])
 
@@ -257,10 +289,7 @@ class ESPEAKWrapper(object):
             )
 
             # open output file
-            output_file = AudioFileMonoWAVE(
-                file_path=output_file_path,
-                logger=self.logger
-            )
+            output_file = AudioFileMonoWAVE(logger=self.logger)
             output_file.audio_format = encoding
             output_file.audio_sample_rate = sample_rate
 
@@ -285,32 +314,25 @@ class ESPEAKWrapper(object):
                 anchors.append([current_time, fragment.identifier, fragment.text])
                 # increase the character counter
                 num_chars += fragment.characters
-                # append/prepend data
+                # append new data
                 self._log([u"Fragment %d starts at: %f", num, current_time])
                 if duration > 0:
                     self._log([u"Fragment %d duration: %f", num, duration])
                     current_time += duration
-                    #
-                    # NOTE since numpy.append cannot be in place,
-                    # it seems that the only alternative to make
-                    # this more efficient consists in pre-allocating
-                    # the destination array,
-                    # possibly truncating or extending it as needed
-                    #
-                    if backwards:
-                        output_file.prepend_data(data)
-                    else:
-                        output_file.append_data(data)
+                    # if backwards, we append the data reversed
+                    output_file.append(data, reverse=backwards)
                 else:
                     self._log([u"Fragment %d has zero duration", num])
-
                 # increment fragment counter
                 num += 1
-
                 # check if we must stop synthesizing because we have enough audio
                 if (quit_after is not None) and (current_time > quit_after):
                     self._log([u"Quitting after reached duration %.3f", current_time])
                     break
+
+            # if backwards, we need to reverse the audio samples again
+            if backwards:
+                output_file.reverse()
 
             # write output file
             self._log([u"Writing audio file '%s'", output_file_path])
@@ -323,7 +345,7 @@ class ESPEAKWrapper(object):
             return (False, None)
 
         # return output
-        # NOTE anchors do not make sense if backwards == True
+        # NOTE anchors do not make sense if backwards
         self._log([u"Returning %d time anchors", len(anchors)])
         self._log([u"Current time %.3f", current_time])
         self._log([u"Synthesized %d characters", num_chars])
@@ -344,12 +366,10 @@ class ESPEAKWrapper(object):
 
         Return the duration of the synthesized audio file, in seconds.
 
-        :param text: the text to synthesize
-        :type  text: unicode
+        :param string text: the text to synthesize
         :param language: the language to use
-        :type  language: :class:`aeneas.language.Language` enum
-        :param output_file_path: the path of the output audio file
-        :type  output_file_path: string
+        :type  language: :class:`aeneas.language.Language`
+        :param string output_file_path: the path of the output audio file
         :rtype: float
 
         :raise TypeError: if ``text`` is ``None`` or it is not a ``unicode`` object
@@ -413,32 +433,52 @@ class ESPEAKWrapper(object):
         """
         self._log(u"Synthesizing using C extension...")
 
-        self._log(u"Preparing c_text...")
-        if gf.PY2:
-            # Python 2 => pass byte strings
-            c_text = gf.safe_bytes(text)
-        else:
-            # Python 3 => pass Unicode strings
-            c_text = text
-        # NOTE language has been replaced already!
-        self._log(u"Preparing c_text... done")
+        end = None
+        if self.rconf["cew_subprocess_enabled"]:
+            self._log(u"Using cewsubprocess to call aeneas.cew")
+            try:
+                self._log(u"Importing aeneas.cewsubprocess...")
+                from aeneas.cewsubprocess import CEWSubprocess
+                self._log(u"Importing aeneas.cewsubprocess... done")
+                self._log(u"Calling aeneas.cewsubprocess...")
+                cewsub = CEWSubprocess(rconf=self.rconf, logger=self.logger)
+                end = cewsub.synthesize_single(output_file_path, language, text)
+                self._log(u"Calling aeneas.cewsubprocess... done")
+            except Exception as exc:
+                self._log(u"Calling aeneas.cewsubprocess... failed")
+                self._log(u"An unexpected exception occurred while running cewsubprocess:", Logger.WARNING)
+                self._log([u"%s", exc], Logger.WARNING)
+                # NOTE not critical, try calling aeneas.cew directly
+                #return (False, None)
 
-        try:
-            self._log(u"Importing aeneas.cew...")
-            import aeneas.cew.cew
-            self._log(u"Importing aeneas.cew... done")
-            self._log(u"Calling aeneas.cew...")
-            sr, begin, end = aeneas.cew.cew.synthesize_single(
-                output_file_path,
-                language,
-                c_text
-            )
-            self._log(u"Calling aeneas.cew... done")
-        except Exception as exc:
-            self._log(u"Calling aeneas.cew... failed")
-            self._log(u"An unexpected exception occurred while running cew:", Logger.WARNING)
-            self._log([u"%s", exc], Logger.WARNING)
-            return (False, None)
+        if end is None:
+            self._log(u"Preparing c_text...")
+            if gf.PY2:
+                # Python 2 => pass byte strings
+                c_text = gf.safe_bytes(text)
+            else:
+                # Python 3 => pass Unicode strings
+                c_text = gf.safe_unicode(text)
+            # NOTE language has been replaced already!
+            self._log(u"Preparing c_text... done")
+            
+            self._log(u"Calling aeneas.cew directly") 
+            try:
+                self._log(u"Importing aeneas.cew...")
+                import aeneas.cew.cew
+                self._log(u"Importing aeneas.cew... done")
+                self._log(u"Calling aeneas.cew...")
+                sr, begin, end = aeneas.cew.cew.synthesize_single(
+                    output_file_path,
+                    language,
+                    c_text
+                )
+                self._log(u"Calling aeneas.cew... done")
+            except Exception as exc:
+                self._log(u"Calling aeneas.cew... failed")
+                self._log(u"An unexpected exception occurred while running cew:", Logger.WARNING)
+                self._log([u"%s", exc], Logger.WARNING)
+                return (False, None)
 
         self._log(u"Synthesizing using C extension... done")
         return (True, (end, ))
@@ -490,14 +530,14 @@ class ESPEAKWrapper(object):
                 file_path=output_file_path,
                 logger=self.logger
             )
-            audio_file.load_data()
-            duration = audio_file.audio_length
-            sample_rate = audio_file.audio_sample_rate
-            encoding = audio_file.audio_format
-            data = audio_file.audio_data
-            self._log([u"Duration of '%s': %f", output_file_path, duration])
+            self._log([u"Duration of '%s': %f", output_file_path, audio_file.audio_length])
             self._log(u"Synthesizing using pure Python... done")
-            return (True, (duration, sample_rate, encoding, data))
+            return (True, (
+                audio_file.audio_length,
+                audio_file.audio_sample_rate,
+                audio_file.audio_format,
+                audio_file.audio_samples
+            ))
         except (AudioFileUnsupportedFormatError, OSError) as exc:
             self._log(u"Error while trying reading the sythesized audio file", Logger.CRITICAL)
             return (False, None)

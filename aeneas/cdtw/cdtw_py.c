@@ -9,7 +9,7 @@ __copyright__ = """
     Copyright 2015-2016, Alberto Pettarin (www.albertopettarin.it)
     """
 __license__ = "GNU AGPL v3"
-__version__ = "1.4.1"
+__version__ = "1.5.0"
 __email__ = "aeneas@readbeyond.it"
 __status__ = "Production"
 
@@ -25,7 +25,7 @@ __status__ = "Production"
 #include "cdtw_func.h"
 
 // append a new tuple (i, j) to the given list
-static void _append(PyObject *list, unsigned int i, unsigned int j) {
+static void _append(PyObject *list, uint32_t i, uint32_t j) {
     PyObject *tuple;
     
     tuple = PyTuple_New(2);
@@ -36,15 +36,10 @@ static void _append(PyObject *list, unsigned int i, unsigned int j) {
 }
 
 // convert array of struct to list of tuples 
-static void _array_to_list(struct PATH_CELL *best_path, unsigned int best_path_length, PyObject *list) {
-    //unsigned int i, j;
-    unsigned int k;
+static void _array_to_list(struct PATH_CELL *best_path, uint32_t best_path_length, PyObject *list) {
+    uint32_t k;
 
     for (k = 0; k < best_path_length; ++k) {
-        //i = (*best_path).i;
-        //j = (*best_path).j;
-        //printf("k = %d : i = %d, j = %d\n", k, (int)i, (int)j);
-        //printf("k = %d : i = %d, j = %d\n", k, best_path[k].i, best_path[k].j);
         _append(list, best_path[k].i, best_path[k].j);
     }
 }
@@ -53,22 +48,22 @@ static void _array_to_list(struct PATH_CELL *best_path, unsigned int best_path_l
 // take the PyObject containing the following arguments:
 //   - mfcc1:       2D array (l x n) of double, MFCCs of the first wave
 //   - mfcc2:       2D array (l x m) of double, MFCCs of the second wave
-//   - delta:       int, the number of frames of margin
-// and return the best path as a list of (i, j) tuples, from (0,0) to (n-1, delta-1)
+//   - delta:       uint, the number of frames of margin
+// and return the best path as a list of (i, j) tuples, from (0,0) to (n-1, m-1)
 static PyObject *compute_best_path(PyObject *self, PyObject *args) {
     PyObject *mfcc1_raw;
     PyObject *mfcc2_raw;
-    unsigned int delta;
+    uint32_t delta;
  
     PyArrayObject *mfcc1, *mfcc2, *cost_matrix, *centers;
     PyObject *best_path_ptr;
     npy_intp cost_matrix_dimensions[2];
     npy_intp centers_dimensions[1];
     double *mfcc1_ptr, *mfcc2_ptr, *cost_matrix_ptr;
-    unsigned int *centers_ptr;
-    unsigned int l1, l2, n, m;
+    uint32_t *centers_ptr;
+    uint32_t l1, l2, n, m;
     struct PATH_CELL *best_path;
-    unsigned int best_path_length;
+    uint32_t best_path_length;
 
     // O = object (do not convert or check for errors)
     // I = unsigned int
@@ -87,13 +82,11 @@ static PyObject *compute_best_path(PyObject *self, PyObject *args) {
         return NULL;
     }
 
-    // NOTE: if arrived here, the mfcc? have the correct number of dimensions (2)
-   
     // get the dimensions of the input arguments
     l1 = PyArray_DIMS(mfcc1)[0]; // number of MFCCs in the first wave
     l2 = PyArray_DIMS(mfcc2)[0]; // number of MFCCs in the second wave
-    n  = PyArray_DIMS(mfcc1)[1]; // number of frames in the first wave
-    m  = PyArray_DIMS(mfcc2)[1];; // number of frames in the second wave
+    n = PyArray_DIMS(mfcc1)[1]; // number of frames in the first wave
+    m = PyArray_DIMS(mfcc2)[1]; // number of frames in the second wave
 
     // check that the number of MFCCs is the same for both waves
     if (l1 != l2) {
@@ -107,8 +100,8 @@ static PyObject *compute_best_path(PyObject *self, PyObject *args) {
     }
     
     // pointer to cost matrix data
-    mfcc1_ptr   = (double *)PyArray_DATA(mfcc1);
-    mfcc2_ptr   = (double *)PyArray_DATA(mfcc2);
+    mfcc1_ptr = (double *)PyArray_DATA(mfcc1);
+    mfcc2_ptr = (double *)PyArray_DATA(mfcc2);
     
     // create cost matrix object
     cost_matrix_dimensions[0] = n;
@@ -118,13 +111,36 @@ static PyObject *compute_best_path(PyObject *self, PyObject *args) {
 
     // create centers object
     centers_dimensions[0] = n;
-    centers = (PyArrayObject *)PyArray_SimpleNew(1, centers_dimensions, NPY_INT32);
-    centers_ptr = (unsigned int *)PyArray_DATA(centers);
+    centers = (PyArrayObject *)PyArray_SimpleNew(1, centers_dimensions, NPY_UINT32);
+    centers_ptr = (uint32_t *)PyArray_DATA(centers);
 
     // actual computation
-    _compute_cost_matrix(mfcc1_ptr, mfcc2_ptr, delta, cost_matrix_ptr, centers_ptr, n, m, l1);
-    _compute_accumulated_cost_matrix_in_place(cost_matrix_ptr, centers_ptr, n, delta);
-    _compute_best_path(cost_matrix_ptr, centers_ptr, n, delta, &best_path, &best_path_length);
+    if (_compute_cost_matrix(mfcc1_ptr, mfcc2_ptr, delta, cost_matrix_ptr, centers_ptr, n, m, l1) != CDTW_SUCCESS) {
+       Py_XDECREF(mfcc1);
+       Py_XDECREF(mfcc2);
+       Py_XDECREF(cost_matrix);
+       Py_XDECREF(centers);
+       PyErr_SetString(PyExc_ValueError, "Error while computing cost matrix");
+       return NULL;
+    }
+    
+    if (_compute_accumulated_cost_matrix_in_place(cost_matrix_ptr, centers_ptr, n, delta) != CDTW_SUCCESS) {
+       Py_XDECREF(mfcc1);
+       Py_XDECREF(mfcc2);
+       Py_XDECREF(cost_matrix);
+       Py_XDECREF(centers);
+       PyErr_SetString(PyExc_ValueError, "Error while computing accumulated cost matrix");
+       return NULL;
+    }
+    
+    if (_compute_best_path(cost_matrix_ptr, centers_ptr, n, delta, &best_path, &best_path_length) != CDTW_SUCCESS) {
+       Py_XDECREF(mfcc1);
+       Py_XDECREF(mfcc2);
+       Py_XDECREF(cost_matrix);
+       Py_XDECREF(centers);
+       PyErr_SetString(PyExc_ValueError, "Error while computing best path");
+       return NULL;
+    }
 
     // convert array of struct to list of tuples 
     best_path_ptr = PyList_New(0);
@@ -145,22 +161,22 @@ static PyObject *compute_best_path(PyObject *self, PyObject *args) {
 // take the PyObject containing the following arguments:
 //   - mfcc1:       2D array (l x n) of double, MFCCs of the first wave
 //   - mfcc2:       2D array (l x m) of double, MFCCs of the second wave
-//   - delta:       int, the number of frames of margin
+//   - delta:       uint, the number of frames of margin
 // and return a tuple (cost_matrix, centers), where
 //   - cost_matrix: 2D array (n x delta) of double
-//   - centers:     1D array (n x 1) of int, centers[i] is the 0 <= center < m of the stripe at row i
+//   - centers:     1D array (n x 1) of uint, centers[i] is the 0 <= center < m of the stripe at row i
 static PyObject *compute_cost_matrix_step(PyObject *self, PyObject *args) {
     PyObject *mfcc1_raw;
     PyObject *mfcc2_raw;
-    unsigned int delta;
+    uint32_t delta;
 
     PyArrayObject *mfcc1, *mfcc2, *cost_matrix, *centers;
     PyObject *tuple;
     npy_intp cost_matrix_dimensions[2];
     npy_intp centers_dimensions[1];
     double *mfcc1_ptr, *mfcc2_ptr, *cost_matrix_ptr;
-    unsigned int *centers_ptr;
-    unsigned int l1, l2, n, m;
+    uint32_t *centers_ptr;
+    uint32_t l1, l2, n, m;
    
     // O = object (do not convert or check for errors)
     // I = unsigned int
@@ -179,13 +195,11 @@ static PyObject *compute_cost_matrix_step(PyObject *self, PyObject *args) {
         return NULL;
     }
 
-    // NOTE: if arrived here, the mfcc? have the correct number of dimensions (2)
-   
     // get the dimensions of the input arguments
     l1 = PyArray_DIMS(mfcc1)[0]; // number of MFCCs in the first wave
     l2 = PyArray_DIMS(mfcc2)[0]; // number of MFCCs in the second wave
-    n  = PyArray_DIMS(mfcc1)[1]; // number of frames in the first wave
-    m  = PyArray_DIMS(mfcc2)[1];; // number of frames in the second wave
+    n = PyArray_DIMS(mfcc1)[1]; // number of frames in the first wave
+    m = PyArray_DIMS(mfcc2)[1]; // number of frames in the second wave
 
     // check that the number of MFCCs is the same for both waves
     if (l1 != l2) {
@@ -199,8 +213,8 @@ static PyObject *compute_cost_matrix_step(PyObject *self, PyObject *args) {
     }
 
     // pointer to cost matrix data
-    mfcc1_ptr   = (double *)PyArray_DATA(mfcc1);
-    mfcc2_ptr   = (double *)PyArray_DATA(mfcc2);
+    mfcc1_ptr = (double *)PyArray_DATA(mfcc1);
+    mfcc2_ptr = (double *)PyArray_DATA(mfcc2);
 
     // create cost matrix object
     cost_matrix_dimensions[0] = n;
@@ -210,11 +224,18 @@ static PyObject *compute_cost_matrix_step(PyObject *self, PyObject *args) {
 
     // create centers object
     centers_dimensions[0] = n;
-    centers = (PyArrayObject *)PyArray_SimpleNew(1, centers_dimensions, NPY_INT32);
-    centers_ptr = (unsigned int *)PyArray_DATA(centers);
+    centers = (PyArrayObject *)PyArray_SimpleNew(1, centers_dimensions, NPY_UINT32);
+    centers_ptr = (uint32_t *)PyArray_DATA(centers);
     
     // compute cost matrix
-    _compute_cost_matrix(mfcc1_ptr, mfcc2_ptr, delta, cost_matrix_ptr, centers_ptr, n, m, l1);
+    if (_compute_cost_matrix(mfcc1_ptr, mfcc2_ptr, delta, cost_matrix_ptr, centers_ptr, n, m, l1) != CDTW_SUCCESS) {
+        Py_XDECREF(mfcc1);
+        Py_XDECREF(mfcc2);
+        Py_XDECREF(cost_matrix);
+        Py_XDECREF(centers);
+        PyErr_SetString(PyExc_ValueError, "Error while computing cost matrix");
+        return NULL;
+    }
 
     // decrement reference to local object no longer needed
     Py_DECREF(mfcc1);
@@ -242,8 +263,8 @@ static PyObject *compute_accumulated_cost_matrix_step(PyObject *self, PyObject *
     PyArrayObject *cost_matrix, *centers, *accumulated_cost_matrix;
     npy_intp accumulated_cost_matrix_dimensions[2];
     double *cost_matrix_ptr, *accumulated_cost_matrix_ptr;
-    unsigned int *centers_ptr;
-    unsigned int n, delta;
+    uint32_t *centers_ptr;
+    uint32_t n, delta;
 
     // O = object (do not convert or check for errors)
     if (!PyArg_ParseTuple(args, "OO", &cost_matrix_raw, &centers_raw)) {
@@ -253,7 +274,7 @@ static PyObject *compute_accumulated_cost_matrix_step(PyObject *self, PyObject *
 
     // convert to C contiguous array
     cost_matrix = (PyArrayObject *) PyArray_ContiguousFromAny(cost_matrix_raw, NPY_DOUBLE, 2, 2);
-    centers     = (PyArrayObject *) PyArray_ContiguousFromAny(centers_raw,     NPY_INT32,  1, 1);
+    centers = (PyArrayObject *) PyArray_ContiguousFromAny(centers_raw, NPY_UINT32, 1, 1);
 
     // pointer to cost matrix data
     cost_matrix_ptr = (double *)PyArray_DATA(cost_matrix);
@@ -269,7 +290,7 @@ static PyObject *compute_accumulated_cost_matrix_step(PyObject *self, PyObject *
     }
    
     // pointer to centers data
-    centers_ptr = (unsigned int *)PyArray_DATA(centers);
+    centers_ptr = (uint32_t *)PyArray_DATA(centers);
     
     // create accumulated cost matrix object 
     accumulated_cost_matrix_dimensions[0] = n;
@@ -280,7 +301,12 @@ static PyObject *compute_accumulated_cost_matrix_step(PyObject *self, PyObject *
     accumulated_cost_matrix_ptr = (double *)PyArray_DATA(accumulated_cost_matrix);
 
     // compute accumulated cost matrix
-    _compute_accumulated_cost_matrix(cost_matrix_ptr, centers_ptr, n, delta, accumulated_cost_matrix_ptr);
+    if (_compute_accumulated_cost_matrix(cost_matrix_ptr, centers_ptr, n, delta, accumulated_cost_matrix_ptr) != CDTW_SUCCESS) {
+        Py_XDECREF(cost_matrix);
+        Py_XDECREF(centers);
+        PyErr_SetString(PyExc_ValueError, "Error while computing accumulated cost matrix");
+        return NULL;
+    }
 
     // decrement reference to local object no longer needed
     Py_DECREF(cost_matrix);
@@ -294,7 +320,7 @@ static PyObject *compute_accumulated_cost_matrix_step(PyObject *self, PyObject *
 // take the PyObject containing the following arguments:
 //   - accumulated_cost_matrix: 2D array (n x delta) of double
 //   - centers:                 1D array (n x 1) of int, centers[i] is the 0 <= center < m of the stripe at row i
-// and return the best path as a list of (i, j) tuples, from (0,0) to (n-1, delta-1)
+// and return the best path as a list of (i, j) tuples, from (0,0) to (n-1, m-1)
 static PyObject *compute_best_path_step(PyObject *self, PyObject *args) {
     PyObject *accumulated_cost_matrix_raw;
     PyObject *centers_raw;
@@ -302,10 +328,10 @@ static PyObject *compute_best_path_step(PyObject *self, PyObject *args) {
     PyArrayObject *accumulated_cost_matrix, *centers;
     PyObject *best_path_ptr;
     double *accumulated_cost_matrix_ptr;
-    unsigned int *centers_ptr;
-    unsigned int n, delta;
+    uint32_t *centers_ptr;
+    uint32_t n, delta;
     struct PATH_CELL *best_path;
-    unsigned int best_path_length;
+    uint32_t best_path_length;
 
     // O = object (do not convert or check for errors)
     if (!PyArg_ParseTuple(args, "OO", &accumulated_cost_matrix_raw, &centers_raw)) {
@@ -315,7 +341,7 @@ static PyObject *compute_best_path_step(PyObject *self, PyObject *args) {
 
     // convert to C contiguous array
     accumulated_cost_matrix = (PyArrayObject *) PyArray_ContiguousFromAny(accumulated_cost_matrix_raw, NPY_DOUBLE, 2, 2);
-    centers                 = (PyArrayObject *) PyArray_ContiguousFromAny(centers_raw,                 NPY_INT32,  1, 1);
+    centers = (PyArrayObject *) PyArray_ContiguousFromAny(centers_raw, NPY_UINT32, 1, 1);
 
     // pointer to cost matrix data
     accumulated_cost_matrix_ptr = (double *)PyArray_DATA(accumulated_cost_matrix);
@@ -331,13 +357,18 @@ static PyObject *compute_best_path_step(PyObject *self, PyObject *args) {
     }
    
     // pointer to centers data
-    centers_ptr = (unsigned int *)PyArray_DATA(centers);
+    centers_ptr = (uint32_t *)PyArray_DATA(centers);
     
     // create best path array of integers
     best_path_ptr = PyList_New(0);
     
     // compute best path
-    _compute_best_path(accumulated_cost_matrix_ptr, centers_ptr, n, delta, &best_path, &best_path_length);
+    if (_compute_best_path(accumulated_cost_matrix_ptr, centers_ptr, n, delta, &best_path, &best_path_length) != CDTW_SUCCESS) {
+        Py_XDECREF(accumulated_cost_matrix);
+        Py_XDECREF(centers);
+        PyErr_SetString(PyExc_ValueError, "Error while computing accumulated cost matrix");
+        return NULL;
+    }
 
     // convert array of struct to list of tuples 
     _array_to_list(best_path, best_path_length, best_path_ptr);
@@ -355,31 +386,43 @@ static PyObject *compute_best_path_step(PyObject *self, PyObject *args) {
 
 
 static PyMethodDef cdtw_methods[] = {
-    // compute best path at once 
     {
         "compute_best_path",
         compute_best_path,
         METH_VARARGS,
-        "Given the MFCCs of the two waves, compute and return the DTW best path at once"
+        "Given the MFCCs of the two waves, compute and return the DTW best path at once\n"
+        ":param object mfcc1: numpy 2D matrix (mfcc_size, n) of MFCCs of the first wave\n"
+        ":param object mfcc2: numpy 2D matrix (mfcc_size, m) of MFCCs of the second wave\n"
+        ":param uint delta: the margin, in number of frames\n"
+        ":rtype: a list of tuples (i, j), from (0, 0) to (n-1, m-1) representing the best path"
     },
-    // compute in separate steps
     {
         "compute_cost_matrix_step",
         compute_cost_matrix_step,
         METH_VARARGS,
-        "Given the MFCCs of the two waves, compute and return the DTW cost matrix"
+        "Given the MFCCs of the two waves, compute and return the DTW cost matrix\n"
+        ":param object mfcc1: numpy 2D matrix (mfcc_size, n) of MFCCs of the first wave\n"
+        ":param object mfcc2: numpy 2D matrix (mfcc_size, m) of MFCCs of the second wave\n"
+        ":param uint delta: the margin, in number of frames\n"
+        ":rtype: tuple (cost_matrix, centers)"
     },
     {
         "compute_accumulated_cost_matrix_step",
         compute_accumulated_cost_matrix_step,
         METH_VARARGS,
-        "Given the DTW cost matrix, compute and return the DTW accumulated cost matrix"
+        "Given the DTW cost matrix, compute and return the DTW accumulated cost matrix\n"
+        ":param object cost_matrix: the cost matrix (n, delta)\n"
+        ":param object centers: the centers (n)\n"
+        ":rtype: the accumulated cost matrix"
     },
     {
         "compute_best_path_step",
         compute_best_path_step,
         METH_VARARGS,
-        "Given the DTW accumulated cost matrix, compute and return the DTW best path"
+        "Given the DTW accumulated cost matrix, compute and return the DTW best path\n"
+        ":param object accumulated_cost_matrix: the accumulated cost matrix (n, delta)\n"
+        ":param object centers: the centers (n)\n"
+        ":rtype: a list of tuples (i, j), from (0, 0) to (n-1, m-1) representing the best path"
     },
     {
         NULL,

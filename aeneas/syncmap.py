@@ -39,7 +39,7 @@ __copyright__ = """
     Copyright 2015-2016, Alberto Pettarin (www.albertopettarin.it)
     """
 __license__ = "GNU AGPL v3"
-__version__ = "1.4.1"
+__version__ = "1.5.0"
 __email__ = "aeneas@readbeyond.it"
 __status__ = "Production"
 
@@ -542,7 +542,7 @@ class SyncMap(object):
 
     def __init__(self, logger=None):
         self.fragments = []
-        self.logger = logger or Logger()
+        self.logger = logger if logger is not None else Logger()
 
     def _log(self, message, severity=Logger.DEBUG):
         """ Log """
@@ -561,7 +561,7 @@ class SyncMap(object):
         """
         Return a JSON representation of the sync map.
 
-        :rtype: Unicode string
+        :rtype: string
 
         .. versionadded:: 1.3.1
         """
@@ -621,12 +621,9 @@ class SyncMap(object):
         """
         Output an HTML file for fine tuning the sync map manually.
 
-        :param audio_file_path: the path to the associated audio file
-        :type  audio_file_path: string (path)
-        :param output_file_path: the path to the output file to write
-        :type  output_file_path: string (path)
-        :param parameters: additional parameters
-        :type  parameters: dict
+        :param string audio_file_path: the path to the associated audio file
+        :param string output_file_path: the path to the output file to write
+        :param dict parameters: additional parameters
 
         .. versionadded:: 1.3.1
         """
@@ -685,11 +682,9 @@ class SyncMap(object):
         ``False`` if an error occurred.
 
         :param sync_map_format: the format of the sync map
-        :type  sync_map_format: :class:`aeneas.syncmap.SyncMapFormat` enum
-        :param input_file_path: the path to the input file to read
-        :type  input_file_path: string (path)
-        :param parameters: additional parameters (e.g., for SMIL input)
-        :type  parameters: dict
+        :type  sync_map_format: :class:`aeneas.syncmap.SyncMapFormat`
+        :param string input_file_path: the path to the input file to read
+        :param dict parameters: additional parameters (e.g., for SMIL input)
 
         :raise ValueError: if ``sync_map_format`` is ``None`` or it is not an allowed value
         :raise OSError: if ``input_file_path`` does not exist
@@ -753,11 +748,9 @@ class SyncMap(object):
         ``False`` if an error occurred.
 
         :param sync_map_format: the format of the sync map
-        :type  sync_map_format: :class:`aeneas.syncmap.SyncMapFormat` enum
-        :param output_file_path: the path to the output file to write
-        :type  output_file_path: string (path)
-        :param parameters: additional parameters (e.g., for SMIL output)
-        :type  parameters: dict
+        :type  sync_map_format: :class:`aeneas.syncmap.SyncMapFormat`
+        :param string output_file_path: the path to the output file to write
+        :param dict parameters: additional parameters (e.g., for SMIL output)
 
         :raise ValueError: if ``sync_map_format`` is ``None`` or it is not an allowed value
         :raise TypeError: if a required parameter is missing
@@ -1421,12 +1414,9 @@ class SyncMapFragment(object):
 
     :param text_fragment: the text fragment
     :type  text_fragment: :class:`aeneas.textfile.TextFragment`
-    :param begin: the begin time of the audio interval
-    :type  begin: float
-    :param end: the end time of the audio interval
-    :type  end: float
-    :param confidence: the confidence of the audio timing
-    :type  confidence: float
+    :param float begin: the begin time of the audio interval
+    :param float end: the end time of the audio interval
+    :param float confidence: the confidence of the audio timing
     """
 
     TAG = u"SyncMapFragment"

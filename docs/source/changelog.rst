@@ -1,6 +1,29 @@
 Changelog
 =========
 
+v1.5.0 (2016-??-??)
+-------------------
+
+#. Rewritten ``vad.py``
+#. Rewritten ``sd.py``, removed ``SDMetric``
+#. Rewritten ``adjustboundaryalgorithm.py``
+#. Simplified ``executetask.py``
+#. Added ``CEWSubprocess`` to run ``aeneas.cew`` in a separate process to work around a bug in libespeak
+#. Added README files and documentation to the C extensions subdirectories
+#. Added Bash scripts to compile and run C drivers
+#. Added usage messages to C drivers
+#. Converted all ``malloc()`` calls to ``calloc()`` calls to avoid dirty allocations, added checks on the returned pointers
+#. Introduced fixed-size int types in C extensions, with explicit definitions for the MS C compiler
+#. More efficient append/prepend operations in ``AudioFileMonoWAVE`` thanks to preallocated memory and space doubling
+#. Created ``AudioFileMFCC`` to handle the MFCC representation of audio files
+#. Added ``run_vad()`` to ``AudioFileMFCC``, ``VAD`` is just an "algorithm-switcher" class now
+#. Added ``detect_head_tail()`` to ``AudioFileMFCC``, ``SD`` is just an "algorithm-switcher" class now
+#. Listed supported keys in ``RuntimeConfiguration`` documentation
+#. Renamed ``ConfigurationObject`` to ``Configuration``
+#. Fixed a bug with logger and rconf initialization in all classes
+#. More uniform Python documentation: unless ``byte`` or ``Unicode`` is specified, all strings are assumed to be Unicode strings
+#. More unit tests
+
 v1.4.1 (2016-02-13)
 -------------------
 

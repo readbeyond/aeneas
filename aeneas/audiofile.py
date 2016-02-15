@@ -28,7 +28,7 @@ __copyright__ = """
     Copyright 2015-2016, Alberto Pettarin (www.albertopettarin.it)
     """
 __license__ = "GNU AGPL v3"
-__version__ = "1.4.1"
+__version__ = "1.5.0"
 __email__ = "aeneas@readbeyond.it"
 __status__ = "Production"
 
@@ -57,8 +57,7 @@ class AudioFile(object):
     which calls an audio file probe.
     (Currently, the probe is :class:`aeneas.ffprobewrapper.FFPROBEWrapper`)
 
-    :param file_path: the path of the audio file
-    :type  file_path: Unicode string (path)
+    :param string file_path: the path of the audio file
     :param rconf: a runtime configuration. Default: ``None``, meaning that
                   default settings will be used.
     :type  rconf: :class:`aeneas.runtimeconfiguration.RuntimeConfiguration`
@@ -69,8 +68,8 @@ class AudioFile(object):
     TAG = u"AudioFile"
 
     def __init__(self, file_path=None, rconf=None, logger=None):
-        self.logger = logger or Logger()
-        self.rconf = rconf or RuntimeConfiguration()
+        self.logger = logger if logger is not None else Logger()
+        self.rconf = rconf if rconf is not None else RuntimeConfiguration()
         self.file_path = file_path
         self.file_size = None
         self.audio_length = None
@@ -101,7 +100,7 @@ class AudioFile(object):
         """
         The path of the audio file.
 
-        :rtype: Unicode string
+        :rtype: string
         """
         return self.__file_path
     @file_path.setter
@@ -137,7 +136,7 @@ class AudioFile(object):
         """
         The format of the audio file.
 
-        :rtype: Unicode string
+        :rtype: string
         """
         return self.__audio_format
     @audio_format.setter
@@ -187,7 +186,7 @@ class AudioFile(object):
         # check the file can be read
         if not gf.file_can_be_read(self.file_path):
             self._log([u"File '%s' cannot be read", self.file_path], Logger.CRITICAL)
-            raise OSError(u"File '%s' cannot be read" % self.file_path)
+            raise OSError("File '%s' cannot be read" % self.file_path)
 
         # get the file size
         self._log([u"Getting file size for '%s'", self.file_path])
@@ -225,24 +224,31 @@ class AudioFile(object):
 
 
 
+class AudioFileMonoWAVENotInitialized(Exception):
+    """
+    Error raised when trying to access audio samples from
+    an AudioFileMonoWAVE not initialized yet.
+    """
+    pass
+
+
+
 class AudioFileMonoWAVE(AudioFile):
     """
-    A monoaural (single-channel) WAVE audio file.
+    A monoaural (single-channel) WAVE audio file,
+    represented as a numpy 1D array of float64 values in [-1, 1].
 
-    Its data can be read from and write to file, set from a ``numpy`` 1D array.
+    The audio samples can be read from file and written to file.
 
     It supports append, prepend, reverse, and trim operations.
 
-    It can also extract MFCCs and store them internally,
-    also after the audio data has been discarded.
+    Memory can be pre-allocated to avoid memory trashing while
+    performing many append operations.
 
-    NOTE
-    At the moment, the state of this object might be inconsistent
-    (e.g., setting a new path after loading audio data will not flush the audio data).
-    Use this class with care.
+    If ``file_path`` is not ``None``, the audio samples
+    will be read upon creation of the object.
 
-    :param file_path: the path of the audio file
-    :type  file_path: Unicode string (path)
+    :param string file_path: the path of the audio file
     :param rconf: a runtime configuration. Default: ``None``, meaning that
                   default settings will be used.
     :type  rconf: :class:`aeneas.runtimeconfiguration.RuntimeConfiguration`
@@ -253,40 +259,52 @@ class AudioFileMonoWAVE(AudioFile):
     TAG = u"AudioFileMonoWAVE"
 
     def __init__(self, file_path=None, rconf=None, logger=None):
-        self.logger = logger or Logger()
-        self.rconf = rconf or RuntimeConfiguration()
-        self.audio_data = None
-        self.audio_mfcc = None
+        self.logger = logger if logger is not None else Logger()
+        self.rconf = rconf if rconf is not None else RuntimeConfiguration()
+        self.__samples_capacity = 0
+        self.__samples_length = 0
+        self.__samples = None
         AudioFile.__init__(self, file_path=file_path, rconf=rconf, logger=logger)
+        if self.file_path is not None:
+            self.read_samples_from_file()
+
+    def __unicode__(self):
+        msg = [
+            u"File path:         %s" % self.file_path,
+            u"File size (bytes): %s" % gf.safe_int(self.file_size),
+            u"Audio length (s):  %s" % gf.safe_float(self.audio_length),
+            u"Audio format:      %s" % self.audio_format,
+            u"Audio sample rate: %s" % gf.safe_int(self.audio_sample_rate),
+            u"Audio channels:    %s" % gf.safe_int(self.audio_channels),
+            u"Samples capacity:  %s" % gf.safe_int(self.__samples_capacity),
+            u"Samples length:    %s" % gf.safe_int(self.__samples_length),
+        ]
+        return u"\n".join(msg)
+
+    def __str__(self):
+        return gf.safe_str(self.__unicode__())
 
     @property
-    def audio_data(self):
+    def audio_samples(self):
         """
-        The audio data.
+        The audio audio_samples, that is, an array of float64 values,
+        each representing an audio sample.
 
-        :rtype: numpy 1D array
+        Note that this function returns a view into the
+        first ``self.__samples_length`` elements of ``self.__samples``.
+        If you want to clone the values,
+        you must use e.g. ``numpy.array(audiofile.audio_samples)``.
+
+        :rtype: numpy 1D array view
+        :raises AudioFileMonoWAVENotInitialized: if the audio file is not initialized yet 
         """
-        return self.__audio_data
-    @audio_data.setter
-    def audio_data(self, audio_data):
-        self.__audio_data = audio_data
+        if self.__samples is None:
+            raise AudioFileMonoWAVENotInitialized("The AudioFileMonoWAVE is not initialized")
+        return self.__samples[0:self.__samples_length]
 
-    @property
-    def audio_mfcc(self):
+    def read_samples_from_file(self):
         """
-        The MFCCs of the audio file.
-
-        :rtype: numpy 2D array
-        """
-        return self.__audio_mfcc
-
-    @audio_mfcc.setter
-    def audio_mfcc(self, audio_mfcc):
-        self.__audio_mfcc = audio_mfcc
-
-    def load_data(self):
-        """
-        Load the audio file data.
+        Load the audio samples from file.
 
         :raises AudioFileUnsupportedFormatError: if the audio file is not a mono WAVE file
         :raises OSError: if the audio file cannot be read
@@ -298,12 +316,17 @@ class AudioFileMonoWAVE(AudioFile):
             self._log([u"File '%s' cannot be read", self.file_path], Logger.CRITICAL)
             raise OSError("File '%s' cannot be read" % self.file_path)
 
+        # TODO allow calling C extension cwave
         try:
             self.audio_format = "pcm16"
-            self.audio_sample_rate, self.audio_data = scipywavread(self.file_path)
+            self.audio_sample_rate, self.__samples = scipywavread(self.file_path)
             # scipy reads a sample as an int16_t, that is, a number in [-32768, 32767]
             # so we convert it to a float64 in [-1, 1]
-            self.audio_data = self.audio_data.astype("float64") / 32768
+            self.__samples = self.__samples.astype("float64") / 32768
+            self.__samples_capacity = len(self.__samples)
+            self.__samples_length = self.__samples_capacity
+            # set the precise audio length
+            self.audio_length = float(self.__samples_length) / self.audio_sample_rate
         except ValueError:
             self._log(u"Unsupported audio file format", Logger.CRITICAL)
             raise AudioFileUnsupportedFormatError("Unsupported audio file format")
@@ -314,30 +337,79 @@ class AudioFileMonoWAVE(AudioFile):
         self._log([u"Audio format:  %s", self.audio_format])
         self._log(u"Loading audio data... done")
 
-    def append_data(self, new_data):
+    def preallocate_memory(self, new_capacity):
+        """
+        Preallocate memory to store audio samples,
+        to avoid repeated new allocations and copies
+        while performing several consecutive append operations.
+
+        If ``self.__samples`` is not initialized,
+        it will become an array of ``new_capacity`` zeros.
+
+        If ``new_capacity`` is larger than the current capacity,
+        the current ``self.__samples`` will be extended with zeros.
+
+        If ``new_capacity`` is smaller than the current capacity,
+        the first ``new_capacity`` values of ``self.__samples``
+        will be retained.
+
+        :param int new_capacity: the new capacity, in number of samples
+
+        :raises ValueError: if ``new_capacity`` is negative
+
+        .. versionadded:: 1.5.0
+        """
+        if new_capacity < 0:
+            raise ValueError("The capacity value cannot be negative")
+        if self.__samples is None:
+            self._log(u"self.__samples is not initialized")
+            self.__samples = numpy.zeros(new_capacity)
+            self.__samples_length = 0
+        else:
+            self._log([u"Previous sample capacity was %d samples", self.__samples_capacity])
+            self._log([u"Previous sample length was %d samples", self.__samples_length])
+            self.__samples = numpy.resize(self.__samples, new_capacity)
+            self.__samples_length = min(self.__samples_length, new_capacity)
+        self._log([u"New sample length   is %d", self.__samples_length])
+        self._log([u"New sample capacity is %d", new_capacity])
+        self.__samples_capacity = new_capacity
+
+    def append(self, new_data, reverse=False):
         """
         Append the given new data to the current audio data.
 
-        If audio data is not loaded, create an empty data structure
-        and then append to it.
+        This function initializes the memory if no audio data
+        is present already.
+
+        If ``reverse`` is ``True``, the new audio data
+        will be reversed and then appended.
 
         :param new_data: the new data to be appended
         :type  new_data: numpy 1D array
+        :param bool reverse: if ``True``, append data reversed
 
         .. versionadded:: 1.2.1
         """
         self._log(u"Appending audio data...")
-        self._audio_data_is_initialized(load=False)
-        self.audio_data = numpy.append(self.audio_data, new_data)
+        new_data_length = len(new_data)
+        current_length = self.__samples_length
+        future_length = current_length + new_data_length
+        if (self.__samples is None) or (self.__samples_capacity < future_length):
+            self.preallocate_memory(2 * future_length)
+        if reverse:
+            self.__samples[current_length:future_length] = new_data[::-1]
+        else:
+            self.__samples[current_length:future_length] = new_data[:]
+        self.__samples_length = future_length
         self._update_length()
         self._log(u"Appending audio data... done")
 
-    def prepend_data(self, new_data):
+    def prepend(self, new_data):
         """
         Prepend the given new data to the current audio data.
 
-        If audio data is not loaded, create an empty data structure
-        and then preppend to it.
+        If no audio data is present, then at the end
+        the audio data will be equal to ``new_data``.
 
         :param new_data: the new data to be prepended
         :type  new_data: numpy 1D array
@@ -345,47 +417,27 @@ class AudioFileMonoWAVE(AudioFile):
         .. versionadded:: 1.2.1
         """
         self._log(u"Prepending audio data...")
-        self._audio_data_is_initialized(load=False)
-        self.audio_data = numpy.append(new_data, self.audio_data)
+        new_data_length = len(new_data)
+        current_length = self.__samples_length
+        future_length = current_length + new_data_length
+        if (self.__samples is None) or (self.__samples_capacity < future_length):
+            self.preallocate_memory(2 * future_length)
+        self.__samples[new_data_length:future_length] = self.__samples[0:current_length]
+        self.__samples[0:new_data_length] = new_data[:]
+        self.__samples_length = future_length
         self._update_length()
         self._log(u"Prepending audio data... done")
-
-    def extract_mfcc(self):
-        """
-        Extract MFCCs from the given audio file.
-
-        If audio data is not loaded, load it, extract MFCCs,
-        store them internally, and discard the audio data immediately.
-
-        :raise RuntimeError: if both the C extension and
-                             the pure Python code did not succeed.
-        """
-        had_audio_data = self._audio_data_is_initialized(load=True)
-        gf.run_c_extension_with_fallback(
-            self._log,
-            "cmfcc",
-            self._compute_mfcc_c_extension,
-            self._compute_mfcc_pure_python,
-            (),
-            c_extension=self.rconf["c_ext"]
-        )
-        if not had_audio_data:
-            self._log(u"Audio data was not loaded, clearing it")
-            self.clear_data()
-        else:
-            self._log(u"Audio data was loaded, not clearing it")
 
     def reverse(self):
         """
         Reverse the audio data.
 
-        If audio data is not loaded, load it and then reverse it.
-
         .. versionadded:: 1.2.0
         """
+        if self.__samples is None:
+            raise AudioFileMonoWAVENotInitialized(u"The AudioFileMonoWAVE is not initialized")
         self._log(u"Reversing...")
-        self._audio_data_is_initialized(load=True)
-        self.audio_data = self.audio_data[::-1]
+        self.__samples[0:self.__samples_length] = numpy.flipud(self.__samples[0:self.__samples_length])
         self._log(u"Reversing... done")
 
     def trim(self, begin=None, length=None):
@@ -395,10 +447,8 @@ class AudioFileMonoWAVE(AudioFile):
 
         If audio data is not loaded, load it and then slice it.
 
-        :param begin: the start position, in seconds
-        :type  begin: float
-        :param length: the  position, in seconds
-        :type  length: float
+        :param float begin: the start position, in seconds
+        :param float length: the  position, in seconds
 
         .. versionadded:: 1.2.0
         """
@@ -406,8 +456,6 @@ class AudioFileMonoWAVE(AudioFile):
         if (begin is None) and (length is None):
             self._log(u"begin and length are both None: nothing to do")
         else:
-            self._audio_data_is_initialized(load=True)
-            self._log([u"audio_length is %.3f", self.audio_length])
             if begin is None:
                 begin = 0
                 self._log([u"begin was None, now set to %.3f", begin])
@@ -420,7 +468,9 @@ class AudioFileMonoWAVE(AudioFile):
             self._log([u"length is %.3f", length])
             begin_index = int(begin * self.audio_sample_rate)
             end_index = int((begin + length) * self.audio_sample_rate)
-            self.audio_data = self.audio_data[begin_index:end_index]
+            new_idx = end_index - begin_index
+            self.__samples[0:new_idx] = self.__samples[begin_index:end_index]
+            self.__samples_length = new_idx
             self._update_length()
         self._log(u"Trimming... done")
 
@@ -429,17 +479,17 @@ class AudioFileMonoWAVE(AudioFile):
         Write the audio data to file.
         Return ``True`` on success, or ``False`` otherwise.
 
-        :param file_path: the path of the output file to be written
-        :type  file_path: Unicode string (path)
+        :param string file_path: the path of the output file to be written
 
         .. versionadded:: 1.2.0
         """
+        if self.__samples is None:
+            raise AudioFileMonoWAVENotInitialized("The AudioFileMonoWAVE is not initialized")
         self._log([u"Writing audio file '%s'...", file_path])
-        self._audio_data_is_initialized(load=False)
         try:
             # our value is a float64 in [-1, 1]
             # scipy writes the sample as an int16_t, that is, a number in [-32768, 32767]
-            data = (self.audio_data * 32768).astype("int16")
+            data = (self.audio_samples * 32768).astype("int16")
             scipywavwrite(file_path, self.audio_sample_rate, data)
         except:
             self._log(u"Error writing audio file", severity=Logger.CRITICAL)
@@ -451,7 +501,9 @@ class AudioFileMonoWAVE(AudioFile):
         Clear the audio data, freeing memory.
         """
         self._log(u"Clear audio_data")
-        self.audio_data = None
+        self.__samples_capacity = 0
+        self.__samples_length = 0
+        self.__samples = None
 
     def _update_length(self):
         """
@@ -461,79 +513,8 @@ class AudioFileMonoWAVE(AudioFile):
 
         This function fails silently if one of the two is None.
         """
-        if (self.audio_sample_rate is not None) and (self.audio_data is not None):
-            self.audio_length = len(self.audio_data) / self.audio_sample_rate
-
-    def _audio_data_is_initialized(self, load=True):
-        """
-        Check if audio data is loaded:
-        if so, return True.
-
-        Otherwise, either load or initialize the audio data
-        and return False.
-
-        :param load: if True, load from file; if False, initialize to empty
-        :type  load: bool
-        :rtype: bool
-        """
-        if self.audio_data is not None:
-            self._log(u"audio data is not None: returning True")
-            return True
-        if load:
-            self._log(u"No audio data: loading it from file")
-            self.load_data()
-        else:
-            self._log(u"No audio data: initializing it to an empty data structure")
-            self.audio_data = numpy.array([])
-        self._log(u"audio data was None: returning False")
-        return False
-
-    def _compute_mfcc_c_extension(self):
-        """
-        Compute MFCCs using the Python C extension cmfcc.
-        """
-        self._log(u"Computing MFCCs using C extension...")
-        try:
-            self._log(u"Importing cmfcc...")
-            import aeneas.cmfcc.cmfcc
-            self._log(u"Importing cmfcc... done")
-            self.audio_mfcc = (aeneas.cmfcc.cmfcc.compute_from_data(
-                self.audio_data,
-                self.audio_sample_rate,
-                self.rconf["mfcc_filters"],
-                self.rconf["mfcc_size"],
-                self.rconf["mfcc_order"],
-                self.rconf["mfcc_lower_freq"],
-                self.rconf["mfcc_upper_freq"],
-                self.rconf["mfcc_emph"],
-                self.rconf["mfcc_win_len"],
-                self.rconf["mfcc_win_shift"]
-            )[0]).transpose()
-            self._log(u"Computing MFCCs using C extension... done")
-            return (True, None)
-        except Exception as exc:
-            self._log(u"Computing MFCCs using C extension... failed")
-            self._log(u"An unexpected exception occurred while running cmfcc:", Logger.WARNING)
-            self._log([u"%s", exc], Logger.WARNING)
-        return (False, None)
-
-    def _compute_mfcc_pure_python(self):
-        """
-        Compute MFCCs using the pure Python code.
-        """
-        self._log(u"Computing MFCCs using pure Python code...")
-        try:
-            self.audio_mfcc = MFCC(
-                rconf=self.rconf,
-                logger=self.logger
-            ).compute_from_data(self.audio_data, self.audio_sample_rate).transpose()
-            self._log(u"Computing MFCCs using pure Python code... done")
-            return (True, None)
-        except Exception as exc:
-            self._log(u"Computing MFCCs using pure Python code... failed")
-            self._log(u"An unexpected exception occurred while running pure Python code:", Logger.WARNING)
-            self._log([u"%s", exc], Logger.WARNING)
-        return (False, None)
+        if (self.audio_sample_rate is not None) and (self.__samples is not None):
+            self.audio_length = self.__samples_length / self.audio_sample_rate
 
 
 

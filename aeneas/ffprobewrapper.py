@@ -21,7 +21,7 @@ __copyright__ = """
     Copyright 2015-2016, Alberto Pettarin (www.albertopettarin.it)
     """
 __license__ = "GNU AGPL v3"
-__version__ = "1.4.1"
+__version__ = "1.5.0"
 __email__ = "aeneas@readbeyond.it"
 __status__ = "Production"
 
@@ -36,6 +36,8 @@ class FFPROBEParsingError(Exception):
 class FFPROBEPathError(Exception):
     """
     Error raised when the path to ``ffprobe`` is not a valid executable.
+
+    .. versionadded:: 1.4.1
     """
     pass
 
@@ -137,8 +139,8 @@ class FFPROBEWrapper(object):
     TAG = u"FFPROBEWrapper"
 
     def __init__(self, rconf=None, logger=None):
-        self.logger = logger or Logger()
-        self.rconf = rconf or RuntimeConfiguration()
+        self.logger = logger if logger is not None else Logger()
+        self.rconf = rconf if rconf is not None else RuntimeConfiguration()
 
     def _log(self, message, severity=Logger.DEBUG):
         """ Log """
@@ -190,8 +192,7 @@ class FFPROBEWrapper(object):
             d["DISPOSITION:clean_effects"]=0
             d["DISPOSITION:attached_pic"]=0
 
-        :param audio_file_path: the path of the audio file to analyze
-        :type  audio_file_path: string (path)
+        :param string audio_file_path: the path of the audio file to analyze
         :rtype: dict
 
         :raises TypeError: if ``audio_file_path`` is None

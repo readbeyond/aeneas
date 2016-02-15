@@ -23,7 +23,7 @@ __copyright__ = """
     Copyright 2015-2016, Alberto Pettarin (www.albertopettarin.it)
     """
 __license__ = "GNU AGPL v3"
-__version__ = "1.4.1"
+__version__ = "1.5.0"
 __email__ = "aeneas@readbeyond.it"
 __status__ = "Production"
 
@@ -105,11 +105,11 @@ class Diagnostics(object):
             file_path = gf.absolute_path(u"tools/res/audio.mp3", __file__)
             prober = FFPROBEWrapper()
             properties = prober.read_properties(file_path)
-            print_success(u"ffprobe OK")
+            print_success(u"ffprobe        OK")
             return False
         except:
             pass
-        print_error(u"ffprobe ERROR")
+        print_error(u"ffprobe        ERROR")
         print_info(u"  Please make sure you have ffprobe installed correctly")
         print_info(u"  (usually it is provided by the ffmpeg installer)")
         print_info(u"  and that its path is in your PATH environment variable")
@@ -133,11 +133,11 @@ class Diagnostics(object):
             result = converter.convert(input_file_path, output_file_path)
             gf.delete_file(handler, output_file_path)
             if result:
-                print_success(u"ffmpeg OK")
+                print_success(u"ffmpeg         OK")
                 return False
         except:
             pass
-        print_error(u"ffmpeg ERROR")
+        print_error(u"ffmpeg         ERROR")
         print_info(u"  Please make sure you have ffmpeg installed correctly")
         print_info(u"  and that its path is in your PATH environment variable")
         return True
@@ -166,11 +166,11 @@ class Diagnostics(object):
             )
             gf.delete_file(handler, output_file_path)
             if result:
-                print_success(u"espeak OK")
+                print_success(u"espeak         OK")
                 return False
         except:
             pass
-        print_error(u"espeak ERROR")
+        print_error(u"espeak         ERROR")
         print_info(u"  Please make sure you have espeak installed correctly")
         print_info(u"  and that its path is in your PATH environment variable")
         print_info(u"  You might also want to check that the espeak-data directory")
@@ -201,11 +201,11 @@ class Diagnostics(object):
             from aeneas.tools.run_vad import RunVADCLI
             from aeneas.tools.synthesize_text import SynthesizeTextCLI
             from aeneas.tools.validate import ValidateCLI
-            print_success(u"aeneas.tools OK")
+            print_success(u"aeneas.tools   OK")
             return False
         except:
             pass
-        print_error(u"aeneas.tools ERROR")
+        print_error(u"aeneas.tools   ERROR")
         print_info(u"  Unable to import one or more aeneas.tools")
         print_info(u"  Please check that you installed aeneas properly")
         return True
@@ -220,9 +220,9 @@ class Diagnostics(object):
         :rtype: bool
         """
         if gf.can_run_c_extension("cdtw"):
-            print_success(u"aeneas.cdtw COMPILED")
+            print_success(u"aeneas.cdtw    COMPILED")
             return False
-        print_warning(u"aeneas.cdtw NOT COMPILED")
+        print_warning(u"aeneas.cdtw    NOT COMPILED")
         print_info(u"  You can still run aeneas but it will be significantly slower")
         print_info(u"  To compile the cdtw module, run %s" % SETUP_COMMAND)
         return True
@@ -237,9 +237,9 @@ class Diagnostics(object):
         :rtype: bool
         """
         if gf.can_run_c_extension("cmfcc"):
-            print_success(u"aeneas.cmfcc COMPILED")
+            print_success(u"aeneas.cmfcc   COMPILED")
             return False
-        print_warning(u"aeneas.cmfcc NOT COMPILED")
+        print_warning(u"aeneas.cmfcc   NOT COMPILED")
         print_info(u"  You can still run aeneas but it will be significantly slower")
         print_info(u"  To compile the cmfcc module, run %s" % SETUP_COMMAND)
         return True
@@ -257,14 +257,14 @@ class Diagnostics(object):
         :rtype: bool
         """
         if not gf.is_linux():
-            print_warning(u"cew NOT AVAILABLE")
+            print_warning(u"aeneas.cew     NOT AVAILABLE")
             print_info(u"  The Python C Extension cew is not available for your OS")
             print_info(u"  You can still run aeneas but it will be a bit slower (than Linux)")
             return False
         if gf.can_run_c_extension("cew"):
-            print_success(u"aeneas.cew COMPILED")
+            print_success(u"aeneas.cew     COMPILED")
             return False
-        print_warning(u"aeneas.cew NOT COMPILED")
+        print_warning(u"aeneas.cew     NOT COMPILED")
         print_info(u"  You can still run aeneas but it will be a bit slower")
         print_info(u"  To compile the cew module, run %s" % SETUP_COMMAND)
         return True
@@ -276,12 +276,9 @@ class Diagnostics(object):
 
         Return a tuple of booleans ``(errors, warnings, c_ext_warnings)``.
 
-        :param tools: if ``True``, check aeneas tools
-        :type  tools: bool
-        :param encoding: if ``True``, check shell encoding
-        :type  encoding: bool
-        :param c_ext: if ``True``, check Python C extensions
-        :type  c_ext: bool
+        :param bool tools: if ``True``, check aeneas tools
+        :param bool encoding: if ``True``, check shell encoding
+        :param bool c_ext: if ``True``, check Python C extensions
         :rtype: (bool, bool, bool)
         """
         # errors are fatal

@@ -2,7 +2,7 @@
 # coding=utf-8
 
 """
-Compile the Python C Extension for computing the MFCCs.
+Compile the Python C Extension for computing the MFCCs from a WAVE mono file.
 
 .. versionadded:: 1.1.0
 """
@@ -23,15 +23,15 @@ __copyright__ = """
     Copyright 2015-2016, Alberto Pettarin (www.albertopettarin.it)
     """
 __license__ = "GNU AGPL v3"
-__version__ = "1.4.1"
+__version__ = "1.5.0"
 __email__ = "aeneas@readbeyond.it"
 __status__ = "Production"
 
-CMODULE = Extension("cmfcc", sources=["cmfcc_py.c", "cmfcc_func.c", "cwave_func.c"], include_dirs=[get_include()])
+CMODULE = Extension("cmfcc", sources=["cmfcc_py.c", "cmfcc_func.c", "cwave_func.c", "cint.c"], include_dirs=[get_include()])
 
 setup(
     name="cmfcc",
-    version="1.4.1",
+    version="1.5.0",
     description="""
     Python C Extension for computing the MFCCs as fast as your bare metal allows.
     """,

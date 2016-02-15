@@ -9,7 +9,7 @@ a collection of related Tasks.
 from __future__ import absolute_import
 from __future__ import print_function
 
-from aeneas.configurationobject import ConfigurationObject
+from aeneas.configuration import Configuration
 from aeneas.logger import Logger
 import aeneas.globalconstants as gc
 import aeneas.globalfunctions as gf
@@ -21,7 +21,7 @@ __copyright__ = """
     Copyright 2015-2016, Alberto Pettarin (www.albertopettarin.it)
     """
 __license__ = "GNU AGPL v3"
-__version__ = "1.4.1"
+__version__ = "1.5.0"
 __email__ = "aeneas@readbeyond.it"
 __status__ = "Production"
 
@@ -30,8 +30,7 @@ class Job(object):
     A structure representing a job, that is,
     a collection of related Tasks.
 
-    :param config_string: the job configuration string
-    :type  config_string: Unicode string
+    :param string config_string: the job configuration string
     :param logger: the logger object
     :type  logger: :class:`aeneas.logger.Logger`
 
@@ -42,7 +41,7 @@ class Job(object):
     TAG = u"Job"
 
     def __init__(self, config_string=None, logger=None):
-        self.logger = logger or Logger()
+        self.logger = logger if logger is not None else Logger()
         self.tasks = []
         self.identifier = gf.uuid_string()
         self.configuration = None
@@ -90,7 +89,7 @@ class Job(object):
         """
         The identifier of the job.
 
-        :rtype: Unicode string
+        :rtype: string
         """
         return self.__identifier
     @identifier.setter
@@ -99,7 +98,7 @@ class Job(object):
 
 
 
-class JobConfiguration(ConfigurationObject):
+class JobConfiguration(Configuration):
     """
     A structure representing a configuration for a job, that is,
     a series of directives for I/O and processing the job.
@@ -124,8 +123,7 @@ class JobConfiguration(ConfigurationObject):
     * ``PPN_JOB_OS_HIERARCHY_PREFIX``           or ``o_hierarchy_prefix``
     * ``PPN_JOB_OS_HIERARCHY_TYPE``             or ``o_hierarchy_type``
 
-    :param config_string: the job configuration string
-    :type  config_string: Unicode string
+    :param string config_string: the job configuration string
 
     :raises TypeError: if ``config_string`` is not ``None`` and
                        it is not a Unicode string

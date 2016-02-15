@@ -3,12 +3,14 @@
 
 """
 The runtime configuration object.
+
+.. versionadded:: 1.4.1
 """
 
 from __future__ import absolute_import
 from __future__ import print_function
 
-from aeneas.configurationobject import ConfigurationObject
+from aeneas.configuration import Configuration
 import aeneas.globalconstants as gc
 
 __author__ = "Alberto Pettarin"
@@ -18,21 +20,43 @@ __copyright__ = """
     Copyright 2015-2016, Alberto Pettarin (www.albertopettarin.it)
     """
 __license__ = "GNU AGPL v3"
-__version__ = "1.4.1"
+__version__ = "1.5.0"
 __email__ = "aeneas@readbeyond.it"
 __status__ = "Production"
 
-class RuntimeConfiguration(ConfigurationObject):
+class RuntimeConfiguration(Configuration):
     """
     A structure representing a runtime configuration, that is,
     a set of parameters for the algorithms which process Jobs and Tasks.
 
     Allowed keys:
 
-    * ``gc.XYZ`` or ``.xyz``
+    * :attr:`aeneas.globalconstants.RC_ALLOW_UNLISTED_LANGUAGES`: bool, default: ``False``
+    * :attr:`aeneas.globalconstants.RC_C_EXTENSIONS`: bool, default: ``True``
+    * :attr:`aeneas.globalconstants.RC_DTW_ALGORITHM`: string, default: ``stripe``
+    * :attr:`aeneas.globalconstants.RC_DTW_MARGIN`: float, default: ``60.0``
+    * :attr:`aeneas.globalconstants.RC_ESPEAK_PATH`: string, default: ``espeak``
+    * :attr:`aeneas.globalconstants.RC_FFMPEG_PATH`: string, default: ``ffmpeg``
+    * :attr:`aeneas.globalconstants.RC_FFMPEG_SAMPLE_RATE`: int, default: ``16000``
+    * :attr:`aeneas.globalconstants.RC_FFPROBE_PATH`: string, default: ``ffprobe``
+    * :attr:`aeneas.globalconstants.RC_JOB_MAX_TASKS`: int, default: ``0``
+    * :attr:`aeneas.globalconstants.RC_MFCC_FILTERS`: int, default: ``40``
+    * :attr:`aeneas.globalconstants.RC_MFCC_SIZE`: int, default: ``13``
+    * :attr:`aeneas.globalconstants.RC_MFCC_FFT_ORDER`: int, default: ``512``
+    * :attr:`aeneas.globalconstants.RC_MFCC_LOWER_FREQUENCY`: float, default: ``133.3333``
+    * :attr:`aeneas.globalconstants.RC_MFCC_UPPER_FREQUENCY`: float, default: ``6855.4976``
+    * :attr:`aeneas.globalconstants.RC_MFCC_EMPHASIS_FACTOR`: float, default: ``0.970``
+    * :attr:`aeneas.globalconstants.RC_MFCC_WINDOW_LENGTH`: float, default: ``0.100``
+    * :attr:`aeneas.globalconstants.RC_MFCC_WINDOW_SHIFT`: float, default: ``0.040``
+    * :attr:`aeneas.globalconstants.RC_TASK_MAX_AUDIO_LENGTH`: float, default: ``7200.0``
+    * :attr:`aeneas.globalconstants.RC_TASK_MAX_TEXT_LENGTH`: int, default: ``0``
+    * :attr:`aeneas.globalconstants.RC_TMP_PATH`: string, default: ``None``
+    * :attr:`aeneas.globalconstants.RC_VAD_EXTEND_SPEECH_INTERVAL_AFTER`: float, default: ``0.0``
+    * :attr:`aeneas.globalconstants.RC_VAD_EXTEND_SPEECH_INTERVAL_BEFORE`: float, default: ``0.0``
+    * :attr:`aeneas.globalconstants.RC_VAD_LOG_ENERGY_THRESHOLD`: float, default: ``0.699``
+    * :attr:`aeneas.globalconstants.RC_VAD_MIN_NONSPEECH_LENGTH`: float, default: ``0.200``
 
-    :param config_string: the configuration string
-    :type  config_string: Unicode string
+    :param string config_string: the configuration string
 
     :raises TypeError: if ``config_string`` is not ``None`` and
                        it is not a Unicode string
@@ -46,7 +70,11 @@ class RuntimeConfiguration(ConfigurationObject):
 
         (gc.RC_C_EXTENSIONS, (True, bool, ["c_ext"])),
 
-        (gc.RC_DTW_ALGORITM, ("stripe", None, ["dtw_algorithm"])),
+        (gc.RC_CEW_SUBPROCESS_ENABLED, (False, bool, ["cew_subprocess_enabled"])),
+        #(gc.RC_CEW_SUBPROCESS_PATH, ("/usr/bin/python", None, ["cew_subprocess_path"])),
+        (gc.RC_CEW_SUBPROCESS_PATH, ("python", None, ["cew_subprocess_path"])),
+        
+        (gc.RC_DTW_ALGORITHM, ("stripe", None, ["dtw_algorithm"])),
         (gc.RC_DTW_MARGIN, (60.0, float, ["dtw_margin"])),
 
         #(gc.RC_ESPEAK_PATH, ("/usr/bin/espeak", None, ["espeak_path"])),

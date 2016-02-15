@@ -2,7 +2,7 @@
 # coding=utf-8
 
 """
-Compile the Python C Extension for synthesizing text with espeak.
+Compile the Python C Extension for synthesizing text with eSpeak.
 
 .. versionadded:: 1.3.0
 """
@@ -21,7 +21,7 @@ __copyright__ = """
     Copyright 2015-2016, Alberto Pettarin (www.albertopettarin.it)
     """
 __license__ = "GNU AGPL v3"
-__version__ = "1.4.1"
+__version__ = "1.5.0"
 __email__ = "aeneas@readbeyond.it"
 __status__ = "Production"
 
@@ -29,9 +29,9 @@ CMODULE = Extension("cew", sources=["cew_py.c", "cew_func.c"], libraries=["espea
 
 setup(
     name="cew",
-    version="1.4.1",
+    version="1.5.0",
     description="""
-    Python C Extension for synthesizing text with espeak.
+    Python C Extension for synthesizing text with eSpeak.
     """,
     ext_modules=[CMODULE]
 )

@@ -22,7 +22,7 @@ __copyright__ = """
     Copyright 2015-2016, Alberto Pettarin (www.albertopettarin.it)
     """
 __license__ = "GNU AGPL 3"
-__version__ = "1.4.1"
+__version__ = "1.5.0"
 __email__ = "aeneas@readbeyond.it"
 __status__ = "Production"
 
@@ -58,10 +58,10 @@ def print_warning(msg):
 def check_import():
     try:
         import aeneas
-        print_success(u"aeneas OK")
+        print_success(u"aeneas         OK")
         return False 
     except ImportError:
-        print_error(u"aeneas ERROR")
+        print_error(u"aeneas         ERROR")
         print_info(u"  Unable to load the aeneas Python package")
         print_info(u"  This error is probably caused by:")
         print_info(u"    A. you did not download/git-clone the aeneas package properly; or")
@@ -83,15 +83,14 @@ def main():
     errors, warnings, c_ext_warnings = Diagnostics.check_all()
     if errors:
         sys.exit(1)
-    print_info(u"")
     if c_ext_warnings:
         print_warning(u"All required dependencies are met but at least one available Python C extension is not compiled")
-        print_info(u"You can still run aeneas but it will be slower")
-        print_info(u"Enjoy running aeneas!")
+        print_warning(u"You can still run aeneas but it will be slower")
+        print_warning(u"Enjoy running aeneas!")
         sys.exit(2)
     else:
         print_success(u"All required dependencies are met and all available Python C extensions are compiled")
-        print_info(u"Enjoy running aeneas!")
+        print_success(u"Enjoy running aeneas!")
         sys.exit(0)
 
 
