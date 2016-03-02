@@ -1,6 +1,6 @@
 /*
 
-Python C Extension for synthesizing text with espeak
+Python C Extension for synthesizing text with eSpeak
 
 __author__ = "Alberto Pettarin"
 __copyright__ = """
@@ -9,7 +9,7 @@ __copyright__ = """
     Copyright 2015-2016, Alberto Pettarin (www.albertopettarin.it)
     """
 __license__ = "GNU AGPL v3"
-__version__ = "1.4.1"
+__version__ = "1.5.0"
 __email__ = "aeneas@readbeyond.it"
 __status__ = "Production"
 
@@ -30,8 +30,19 @@ static int sample_rate;
 
 static FILE *wave_file = NULL;
 
-// write an uint32_t as a big endian int to file
-// that is, least significant first
+/*
+00000000  52 49 46 46 XX XX XX XX  57 41 56 45 66 6d 74 20  |RIFF....WAVEfmt |
+00000010  10 00 00 00 01 00 01 00  22 56 00 00 44 ac 00 00  |........"V..D...|
+00000020  02 00 10 00 64 61 74 61  XX XX XX XX              |....data....    |
+*/
+static const unsigned char wave_hdr[44] = {
+    'R' , 'I', 'F'  , 'F', 0x2c , 0   , 0    , 0   , 'W' , 'A' , 'V' , 'E' , 'f' , 'm' , 't', ' ',
+    0x10, 0  , 0    , 0  , 1    , 0   , 1    , 0   , 9   , 0x3d, 0   , 0   , 0x12, 0x7a, 0  , 0  ,
+    2   , 0  , 0x10 , 0  , 'd'  , 'a' , 't'  , 'a' , 0   , 0   , 0   , 0
+};
+
+// write an uint32_t as a little endian int to file
+// that is, least significant byte first
 void _write_uint32_t(FILE *f, int value) {
 	int ix;
 	for (ix = 0; ix < 4; ix++) {
@@ -45,19 +56,8 @@ void _write_uint32_t(FILE *f, int value) {
 //       will be set by _close_wave_file()
 //       once all audio samples are generated
 int _open_wave_file(char const *path, int rate) {
-	/*
-    00000000  52 49 46 46 XX XX XX XX  57 41 56 45 66 6d 74 20  |RIFF....WAVEfmt |
-    00000010  10 00 00 00 01 00 01 00  22 56 00 00 44 ac 00 00  |........"V..D...|
-    00000020  02 00 10 00 64 61 74 61  XX XX XX XX              |....data....    |
-    */
-    static unsigned char wave_hdr[44] = {
-		'R' , 'I', 'F'  , 'F', 0x2c , 0   , 0    , 0   , 'W' , 'A' , 'V' , 'E' , 'f' , 'm' , 't', ' ',
-		0x10, 0  , 0    , 0  , 1    , 0   , 1    , 0   , 9   , 0x3d, 0   , 0   , 0x12, 0x7a, 0  , 0  ,
-		2   , 0  , 0x10 , 0  , 'd'  , 'a' , 't'  , 'a' , 0   , 0   , 0   , 0
-    };
-
 	if (path == NULL) {
-        return 2;
+        return CEW_FAILURE;
     }
 
 	while (isspace(*path)) {
@@ -71,22 +71,22 @@ int _open_wave_file(char const *path, int rate) {
 	}
 	
 	if (wave_file == NULL) {
-        return 1;
+        return CEW_FAILURE;
 	}
 
 	fwrite(wave_hdr, 1, 24, wave_file);
 	_write_uint32_t(wave_file, rate);
 	_write_uint32_t(wave_file, rate * 2);
 	fwrite(&wave_hdr[32], 1, 12, wave_file);
-	return 0;
+	return CEW_SUCCESS;
 }
 
 // close wave file
 int _close_wave_file(void) {
-	unsigned int pos;
+	long pos;
 
 	if (wave_file == NULL) {
-        return 1;
+        return CEW_FAILURE;
     }
 
     // flush and get the current position,
@@ -106,13 +106,13 @@ int _close_wave_file(void) {
 	fclose(wave_file);
 	wave_file = NULL;
 
-    return 0;
+    return CEW_SUCCESS;
 }
 
 // callback for synth events
 int _synth_callback(short *wav, int numsamples, espeak_EVENT *events) {
 	if (wav == NULL) {
-        return 1;
+        return CEW_FAILURE;
 	}
 	while (events->type != 0) {
         if (events->type == espeakEVENT_SAMPLERATE) {
@@ -128,7 +128,7 @@ int _synth_callback(short *wav, int numsamples, espeak_EVENT *events) {
 	if (numsamples > 0) {
 		fwrite(wav, numsamples * 2, 1, wave_file);
 	}
-    return 0;
+    return CEW_SUCCESS;
 }
 
 // terminate synthesis and close file
@@ -145,10 +145,10 @@ int _synthesize_string(char const *text) {
         espeak_Synth(text, size + 1, 0, POS_CHARACTER, 0, synth_flags, NULL, NULL);
 	}
 	if (espeak_Synchronize() != EE_OK) {
-        return 1;
+        return CEW_FAILURE;
 	}
     current_time += last_end_time;
-    return 0;
+    return CEW_SUCCESS;
 }
 
 // set the current language
@@ -159,9 +159,9 @@ int _set_voice_code(char const *voice_code) {
     memset(&voice, 0, sizeof(voice));
     voice.languages = voice_code;
     if (espeak_SetVoiceByProperties(&voice) != EE_OK) {
-        return 1;
+        return CEW_FAILURE;
     }
-    return 0;
+    return CEW_SUCCESS;
 }
 
 // initialize the synthesizer
@@ -176,7 +176,8 @@ int _initialize_synthesizer(char const *output_file_path) {
     sample_rate = 0;
 
     // synthesizer flags
-	synth_flags = espeakCHARS_UTF8 | espeakPHONEMES | espeakENDPAUSE;
+    // TODO let the user control espeakENDPAUSE
+	synth_flags = espeakCHARS_UTF8 | espeakENDPAUSE;
 
     // writing to a file (or no output), we can use synchronous mode
     sample_rate = espeak_Initialize(AUDIO_OUTPUT_SYNCHRONOUS, 0, data_path, 0);
@@ -217,8 +218,8 @@ int _initialize_synthesizer(char const *output_file_path) {
 
 	// open wave file
     if (wave_file == NULL) {
-        if(_open_wave_file(output_file_path, sample_rate) != 0) {
-            return 1;
+        if(_open_wave_file(output_file_path, sample_rate) != CEW_SUCCESS) {
+            return CEW_FAILURE;
         }
 	}
 
@@ -226,52 +227,52 @@ int _initialize_synthesizer(char const *output_file_path) {
     current_time = 0.0;
     last_end_time = 0.0;
 
-    return 0;
+    return CEW_SUCCESS;
 }
 
 // synthesize a single text fragment
 int _synthesize_single(
         const char *output_file_path,
         int *sample_rate_ret,
-        struct FRAGMENT_INFO *fragment
+        struct FRAGMENT_INFO *fragment_ret
     ) {
 
     // open output wave file
-    if (_initialize_synthesizer(output_file_path) != 0) {
-        return 1;
+    if (_initialize_synthesizer(output_file_path) != CEW_SUCCESS) {
+        return CEW_FAILURE;
     }
 
     // set voice code
-    if (_set_voice_code((*fragment).voice_code) != 0) {
-        return 1;
+    if (_set_voice_code((*fragment_ret).voice_code) != CEW_SUCCESS) {
+        return CEW_FAILURE;
     }
 
     // synthesize text
     *sample_rate_ret = sample_rate;
-    (*fragment).begin = current_time;
-    if (_synthesize_string((*fragment).text) != 0) {
-        return 1;
+    (*fragment_ret).begin = current_time;
+    if (_synthesize_string((*fragment_ret).text) != CEW_SUCCESS) {
+        return CEW_FAILURE;
     }
-    (*fragment).end = current_time;
+    (*fragment_ret).end = current_time;
 
     // close output wave file
     _terminate_synthesis();
 
-    return 0;
+    return CEW_SUCCESS;
 }
 
 // synthesize multiple fragments
 int _synthesize_multiple(
         const char *output_file_path,
-        struct FRAGMENT_INFO **ret,
-        const int number_of_fragments,
+        struct FRAGMENT_INFO **fragments_ret,
+        const size_t number_of_fragments,
         const float quit_after,
         const int backwards,
         int *sample_rate_ret,
-        unsigned int *synthesized_ret
+        size_t *synthesized_ret
     ) {
 
-    int i, synthesized, start;
+    size_t i, synthesized, start;
 
     start = 0;
 
@@ -280,21 +281,25 @@ int _synthesize_multiple(
         // from the back we need to reach quit_after seconds of audio
 
         // open output wave file
-        if (_initialize_synthesizer(output_file_path) != 0) {
-            return 1;
+        if (_initialize_synthesizer(output_file_path) != CEW_SUCCESS) {
+            return CEW_FAILURE;
         }
 
         // synthesize from the back
-        for (i = number_of_fragments - 1; i >= 0 ; --i) {
-            if (_set_voice_code((*ret)[i].voice_code) != 0) {
-                return 1;
+        for (i = number_of_fragments - 1; ; --i) {
+            if (_set_voice_code((*fragments_ret)[i].voice_code) != CEW_SUCCESS) {
+                return CEW_FAILURE;
             }
-            if (_synthesize_string((*ret)[i].text) != 0) {
-                return 1;
+            if (_synthesize_string((*fragments_ret)[i].text) != CEW_SUCCESS) {
+                return CEW_FAILURE;
             }
             start = i;
             // check if we generated >= quit_after seconds of audio
             if (current_time >= quit_after) {
+                break;
+            }
+            // end of the loop, checked here because i is size_t i.e. unsigned!
+            if (i == 0) {
                 break;
             }
         }
@@ -304,8 +309,8 @@ int _synthesize_multiple(
     }
 
     // open output wave file
-    if (_initialize_synthesizer(output_file_path) != 0) {
-        return 1;
+    if (_initialize_synthesizer(output_file_path) != CEW_SUCCESS) {
+        return CEW_FAILURE;
     }
 
     // number of synthesized fragments
@@ -313,8 +318,8 @@ int _synthesize_multiple(
 
     // loop over all input fragments
     for (i = start; i < number_of_fragments; ++i) {
-        if (_set_voice_code((*ret)[i].voice_code) != 0) {
-            return 1;
+        if (_set_voice_code((*fragments_ret)[i].voice_code) != CEW_SUCCESS) {
+            return CEW_FAILURE;
         }
 
         // NOTE: if backwards, we move the anchor times to the first fragments,
@@ -322,11 +327,11 @@ int _synthesize_multiple(
         //       despite the fact that they will not be saved with the "correct" text
         //       this trick avoids copying data around
         //       if backwards, the user is not expected to use the time anchors anyway
-        (*ret)[i-start].begin = current_time;
-        if (_synthesize_string((*ret)[i].text) != 0) {
-            return 1;
+        (*fragments_ret)[i-start].begin = current_time;
+        if (_synthesize_string((*fragments_ret)[i].text) != CEW_SUCCESS) {
+            return CEW_FAILURE;
         }
-        (*ret)[i-start].end = current_time;
+        (*fragments_ret)[i-start].end = current_time;
         synthesized += 1;
 
         // check if we generated >= quit_after seconds of audio
@@ -342,7 +347,7 @@ int _synthesize_multiple(
     *sample_rate_ret = sample_rate;
     *synthesized_ret = synthesized;
 
-    return 0;
+    return CEW_SUCCESS;
 }
 
 

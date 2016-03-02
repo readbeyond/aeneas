@@ -1,6 +1,6 @@
 /*
 
-Python C Extension for computing the MFCC
+Python C Extension for synthesizing text with eSpeak
 
 __author__ = "Alberto Pettarin"
 __copyright__ = """
@@ -9,7 +9,7 @@ __copyright__ = """
     Copyright 2015-2016, Alberto Pettarin (www.albertopettarin.it)
     """
 __license__ = "GNU AGPL v3"
-__version__ = "1.4.1"
+__version__ = "1.5.0"
 __email__ = "aeneas@readbeyond.it"
 __status__ = "Production"
 
@@ -21,17 +21,26 @@ __status__ = "Production"
 
 #include "cew_func.h"
 
+#define DRIVER_SUCCESS 0
+#define DRIVER_FAILURE 1
+
 // print usage
-void usage(const char *prog) {
+void _usage(const char *prog) {
     printf("\n");
-    printf("Usage: %s VOICE_CODE TEXT AUDIO_FILE.wav single\n", prog);
-    printf("       %s VOICE_CODE TEXT AUDIO_FILE.wav multi QUIT_AFTER BACKWARDS\n\n", prog);
+    printf("Usage:   %s VOICE_CODE TEXT AUDIO_FILE.wav single\n", prog);
+    printf("         %s VOICE_CODE TEXT AUDIO_FILE.wav multi QUIT_AFTER BACKWARDS\n", prog);
+    printf("\n");
+    printf("Example: %s en \"Hello World\" /tmp/out.wav single\n", prog);
+    printf("         %s en \"Hello|World|My|Dear|Friend\" /tmp/out.wav multi 0.0 0\n", prog);
+    printf("         %s en \"Hello|World|My|Dear|Friend\" /tmp/out.wav multi 0.0 1\n", prog);
+    printf("         %s en \"Hello|World|My|Dear|Friend\" /tmp/out.wav multi 2.0 1\n", prog);
+    printf("\n");
 }
 
 // split a given string using a delimiter character
-// adapted from http://stackoverflow.com/questions/9210528/split-string-with-delimiters-in-c
-char** str_split(char* a_str, const char a_delim, int *count)
-{
+// adapted from
+// http://stackoverflow.com/questions/9210528/split-string-with-delimiters-in-c
+char **_str_split(char* a_str, const char a_delim, int *count) {
     char** result    = 0;
     char* tmp        = a_str;
     char* last_delim = 0;
@@ -51,8 +60,8 @@ char** str_split(char* a_str, const char a_delim, int *count)
     // add space for trailing token
     (*count) += last_delim < (a_str + strlen(a_str) - 1);
 
-    result = malloc(sizeof(char*) * (*count));
-
+    // tokenize
+    result = calloc((*count), sizeof(char*));
     if (result) {
         size_t idx  = 0;
         char* token = strtok(a_str, delim);
@@ -66,19 +75,6 @@ char** str_split(char* a_str, const char a_delim, int *count)
     return result;
 }
 
-//
-// this is a simple driver to test on the command line
-// compile with:
-//
-// gcc cew_driver.c cew_func.c -lespeak -o cew_driver
-//
-// and use it as:
-//
-// ./cew_driver en "Hello World" out.wav single                     => synth single
-// ./cew_driver en "Hello|World|My|Dear|Friend" out.wav multi 0.0 0 => synth multi normal
-// ./cew_driver en "Hello|World|My|Dear|Friend" out.wav multi 0.0 1 => synth multi normal, quit after reaching 2.0 seconds
-// ./cew_driver en "Hello|World|My|Dear|Friend" out.wav multi 2.0 1 => synth multi backwards, quit after reaching 2.0 seconds
-//
 int main(int argc, char **argv) {
 
     const char *voice_code, *text, *output_file_name, *mode;
@@ -88,11 +84,11 @@ int main(int argc, char **argv) {
     struct FRAGMENT_INFO *fragments;
     char **texts;
     int i, n;
-    unsigned int synthesized_ret;
+    size_t synthesized_ret;
 
     if (argc < 5) {
-        usage(argv[0]);
-        return 1;
+        _usage(argv[0]);
+        return DRIVER_FAILURE;
     }
     voice_code = argv[1];
     text = argv[2];
@@ -101,15 +97,15 @@ int main(int argc, char **argv) {
 
     if (strcmp(mode, "multi") == 0) {
         if (argc < 7) {
-            usage(argv[0]);
-            return 1;
+            _usage(argv[0]);
+            return DRIVER_FAILURE;
         }
         quit_after = (float)atof(argv[5]);
         backwards = atoi(argv[6]);
 
         // split text into fragments
         n = 0;
-        texts = str_split((char *)text, '|', &n);
+        texts = _str_split((char *)text, '|', &n);
 
         // create fragments
         fragments = (struct FRAGMENT_INFO *)calloc(sizeof(fragment), n);
@@ -127,12 +123,12 @@ int main(int argc, char **argv) {
             backwards,
             &sample_rate_ret,
             &synthesized_ret
-            ) != 0) {
+            ) != CEW_SUCCESS) {
             printf("Error while calling _synthesize_single()\n");
-            return 1;
+            return DRIVER_FAILURE;
         }
         printf("Sample rate: %d\n", sample_rate_ret);
-        printf("Synthesized: %u\n", synthesized_ret);
+        printf("Synthesized: %lu\n", synthesized_ret);
         for (i = 0; i < synthesized_ret; ++i) {
             printf("%d %.3f %.3f\n", i, fragments[i].begin, fragments[i].end);
         }
@@ -148,15 +144,15 @@ int main(int argc, char **argv) {
     } else {
         fragment.voice_code = voice_code;
         fragment.text = text;
-        if (_synthesize_single(output_file_name, &sample_rate_ret, &fragment) != 0) {
+        if (_synthesize_single(output_file_name, &sample_rate_ret, &fragment) != CEW_SUCCESS) {
             printf("Error while calling _synthesize_single()\n");
-            return 1;
+            return DRIVER_FAILURE;
         }
         printf("Sample rate: %d\n", sample_rate_ret);
         printf("Begin:       %.3f\n", fragment.begin);
         printf("End:         %.3f\n", fragment.end);
     }
 
-    return 0;
+    return DRIVER_SUCCESS;
 }
 

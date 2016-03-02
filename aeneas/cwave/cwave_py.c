@@ -1,6 +1,6 @@
 /*
 
-Python C Extension for reading WAVE files
+Python C Extension for reading WAVE mono files.
 
 __author__ = "Alberto Pettarin"
 __copyright__ = """
@@ -9,7 +9,7 @@ __copyright__ = """
     Copyright 2015-2016, Alberto Pettarin (www.albertopettarin.it)
     """
 __license__ = "GNU AGPL v3"
-__version__ = "1.4.1"
+__version__ = "1.5.0"
 __email__ = "aeneas@readbeyond.it"
 __status__ = "Production"
 
@@ -31,10 +31,9 @@ __status__ = "Production"
 static PyObject *get_audio_info(PyObject *self, PyObject *args) {
     PyObject *tuple;
     char *audio_file_path;
-
     FILE *audio_file_ptr;
     struct WAVE_INFO audio_info;
-    unsigned int sample_rate, total_samples;
+    uint32_t sample_rate, total_samples; // a WAVE file cannot have more than 2^32 samples
 
     // s = string
     if (!PyArg_ParseTuple(args, "s", &audio_file_path)) {
@@ -42,8 +41,8 @@ static PyObject *get_audio_info(PyObject *self, PyObject *args) {
         return NULL;
     }
 
-    memset(&audio_info, 0, sizeof(audio_info));
-    if (!(audio_file_ptr = wave_open(audio_file_path, &audio_info))) {
+    audio_file_ptr = wave_open(audio_file_path, &audio_info);
+    if (audio_file_ptr == NULL) {
         PyErr_SetString(PyExc_ValueError, "Error while opening the WAVE file");
         return NULL;
     }
@@ -63,12 +62,11 @@ static PyObject *read_audio_data(PyObject *self, PyObject *args) {
     PyArrayObject *audio_data;
     npy_intp audio_data_dimensions[1];
     char *audio_file_path;
-    unsigned int from_sample, num_samples;
-
     FILE *audio_file_ptr;
     struct WAVE_INFO audio_info;
-    unsigned int sample_rate, total_samples;
-    double *buffer;
+    uint32_t from_sample, num_samples, total_samples; // a WAVE file cannot have more than 2^32 samples
+    uint32_t sample_rate;                             // sample_rate is a uint32_t in the WAVE header
+    double *buffer;                                   // this buffer will store the data read
 
     // s = string
     // I = unsigned int
@@ -77,8 +75,8 @@ static PyObject *read_audio_data(PyObject *self, PyObject *args) {
         return NULL;
     }
 
-    memset(&audio_info, 0, sizeof(audio_info));
-    if (!(audio_file_ptr = wave_open(audio_file_path, &audio_info))) {
+    audio_file_ptr = wave_open(audio_file_path, &audio_info);
+    if (audio_file_ptr == NULL) {
         PyErr_SetString(PyExc_ValueError, "Error while opening the WAVE file");
         return NULL;
     }
@@ -93,7 +91,11 @@ static PyObject *read_audio_data(PyObject *self, PyObject *args) {
         return NULL;
     }
     buffer = (double *)calloc(num_samples, sizeof(double));
-    wave_read_double(audio_file_ptr, &audio_info, buffer, from_sample, num_samples);
+    if (wave_read_double(audio_file_ptr, &audio_info, buffer, from_sample, num_samples) != CWAVE_SUCCESS) {
+        wave_close(audio_file_ptr);
+        PyErr_SetString(PyExc_ValueError, "Error while reading WAVE data: unable to read data");
+        return NULL;
+    }
     wave_close(audio_file_ptr);
 
     // build the array to be returned
@@ -114,13 +116,19 @@ static PyMethodDef cwave_methods[] = {
         "get_audio_info",
         get_audio_info,
         METH_VARARGS,
-        "Get information about a WAVE file"
+        "Get information about a WAVE file\n"
+        ":param string audio_file_path: the file path of the audio file\n"
+        ":rtype: tuple (sample_rate, num_samples)"
     },
     {
         "read_audio_data",
         read_audio_data,
         METH_VARARGS,
-        "Get audio data from a WAVE file"
+        "Get audio data from a WAVE file\n"
+        ":param string audio_file_path: the file path of the audio file\n"
+        ":param uint from_sample: read from this sample index\n"
+        ":param uint num_samples: read this many samples\n"
+        ":rtype: tuple (sample_rate, list) where list is a list of float values, one per sample"
     },
     {
         NULL,

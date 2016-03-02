@@ -103,6 +103,15 @@ class TestExecuteTaskCLI(unittest.TestCase):
             ("", "-r=\"c_extensions=False\"")
         ], 0)
 
+    def test_exec_srt_cew_subprocess(self):
+        self.execute([
+            ("in", "../tools/res/audio.mp3"),
+            ("in", "../tools/res/subtitles.txt"),
+            ("", "task_language=en|is_text_type=subtitles|os_task_file_format=srt"),
+            ("out", "sonnet.srt"),
+            ("", "-r=\"cew_subprocess_enabled=True\"")
+        ], 0)
+
     def test_exec_srt_head(self):
         self.execute([
             ("in", "../tools/res/audio.mp3"),

@@ -20,7 +20,7 @@ __copyright__ = """
     Copyright 2015-2016, Alberto Pettarin (www.albertopettarin.it)
     """
 __license__ = "GNU AGPL v3"
-__version__ = "1.4.1"
+__version__ = "1.5.0"
 __email__ = "aeneas@readbeyond.it"
 __status__ = "Production"
 
@@ -28,12 +28,9 @@ class Logger(object):
     """
     A logger class to help with debugging and performance tests.
 
-    :param tee: if ``True``, tee (i.e., log and print to stdout)
-    :type  tee: bool
-    :param indentation: the initial indentation of the log
-    :type  indentation: int
-    :param tee_show_datetime: if ``True``, print date and time when teeing
-    :type  tee_show_datetime: bool
+    :param bool tee: if ``True``, tee (i.e., log and print to stdout)
+    :param int indentation: the initial indentation of the log
+    :param bool tee_show_datetime: if ``True``, print date and time when teeing
     :param rconf: a runtime configuration. Default: ``None``, meaning that
                   default settings will be used.
     :type  rconf: :class:`aeneas.runtimeconfiguration.RuntimeConfiguration`
@@ -56,7 +53,7 @@ class Logger(object):
         self.tee = tee
         self.indentation = indentation
         self.tee_show_datetime = tee_show_datetime
-        self.rconf = rconf or RuntimeConfiguration()
+        self.rconf = rconf if rconf is not None else RuntimeConfiguration()
 
     def __len__(self):
         return len(self.entries)
@@ -115,12 +112,10 @@ class Logger(object):
         """
         Return a Unicode string pretty print of the log entries.
 
-        :param as_list: if ``True``, return a list of Unicode strings,
-                        one for each entry, instead of a Unicode string
-        :type  as_list: bool
-        :param show_datetime: if ``True``, show the date and time of the entries
-        :type  show_datetime: bool
-        :rtype: Unicode string or list of Unicode strings
+        :param bool as_list: if ``True``, return a list of Unicode strings,
+                             one for each entry, instead of a Unicode string
+        :param bool show_datetime: if ``True``, show the date and time of the entries
+        :rtype: string or list of strings
         """
         ppl = [entry.pretty_print(show_datetime) for entry in self.entries]
         if as_list:
@@ -131,13 +126,11 @@ class Logger(object):
         """
         Add a given message to the log.
 
-        :param message: the message to be added
-        :type  message: Unicode string
+        :param string message: the message to be added
         :param severity: the severity of the message
-        :type  severity: :class:`aeneas.logger.Logger` enum
-        :param tag: the tag associated with the message;
-                    usually, the name of the class generating the entry
-        :type  tag: Unicode string
+        :type  severity: :class:`aeneas.logger.Logger`
+        :param string tag: the tag associated with the message;
+                           usually, the name of the class generating the entry
         """
         entry = _LogEntry(
             severity=severity,
@@ -160,8 +153,7 @@ class Logger(object):
         """
         Output the log to file.
 
-        :param path: the path of the log file to be written
-        :type  path: Unicode string (path)
+        :param string path: the path of the log file to be written
         """
         with io.open(path, "w", encoding="utf-8") as log_file:
             log_file.write(self.pretty_print())
@@ -174,8 +166,8 @@ class Logger(object):
         and/or string formatting.
 
         :param message: the log message to be sanitized
-        :type  message: Unicode string or list of Unicode strings
-        :rtype: Unicode string
+        :type  message: string or list of strings
+        :rtype: string
         """
         if isinstance(message, list):
             if len(message) == 0:
@@ -209,9 +201,8 @@ class _LogEntry(object):
         Returns a Unicode string containing
         the pretty printing of a given log entry.
 
-        :param show_datetime: if ``True``, print the date and time of the entry
-        :type  show_datetime: bool
-        :rtype: Unicode string
+        :param bool show_datetime: if ``True``, print the date and time of the entry
+        :rtype: string
         """
         if show_datetime:
             return u"[%s] %s %s%s: %s" % (
@@ -233,7 +224,7 @@ class _LogEntry(object):
         """
         The message of this log entry.
 
-        :rtype: Unicode string
+        :rtype: string
         """
         return self.__message
     @message.setter
@@ -245,7 +236,7 @@ class _LogEntry(object):
         """
         The severity of this log entry.
 
-        :rtype: :class:`aeneas.logger.Logger` enum
+        :rtype: :class:`aeneas.logger.Logger`
         """
         return self.__severity
     @severity.setter
@@ -257,7 +248,7 @@ class _LogEntry(object):
         """
         The tag of this log entry.
 
-        :rtype: Unicode string
+        :rtype: string
         """
         return self.__tag
     @tag.setter
@@ -269,7 +260,7 @@ class _LogEntry(object):
         """
         The indentation of this log entry.
 
-        :rtype: Unicode string
+        :rtype: string
         """
         return self.__indentation
     @indentation.setter

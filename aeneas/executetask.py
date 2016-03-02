@@ -11,9 +11,9 @@ import numpy
 
 from aeneas.adjustboundaryalgorithm import AdjustBoundaryAlgorithm
 from aeneas.audiofile import AudioFileMonoWAVE
+from aeneas.audiofilemfcc import AudioFileMFCC
 from aeneas.dtw import DTWAligner
 from aeneas.ffmpegwrapper import FFMPEGWrapper
-from aeneas.language import Language
 from aeneas.logger import Logger
 from aeneas.runtimeconfiguration import RuntimeConfiguration
 from aeneas.sd import SD
@@ -32,7 +32,7 @@ __copyright__ = """
     Copyright 2015-2016, Alberto Pettarin (www.albertopettarin.it)
     """
 __license__ = "GNU AGPL v3"
-__version__ = "1.4.1"
+__version__ = "1.5.0"
 __email__ = "aeneas@readbeyond.it"
 __status__ = "Production"
 
@@ -70,8 +70,8 @@ class ExecuteTask(object):
     def __init__(self, task, rconf=None, logger=None):
         self.task = task
         self.cleanup_info = []
-        self.logger = logger or Logger()
-        self.rconf = rconf or RuntimeConfiguration()
+        self.logger = logger if logger is not None else Logger()
+        self.rconf = rconf if rconf is not None else RuntimeConfiguration()
 
     def _log(self, message, severity=Logger.DEBUG):
         """ Log """
@@ -85,7 +85,7 @@ class ExecuteTask(object):
         :raise ExecuteTaskInputError: if there is a problem with the input parameters
         :raise ExecuteTaskExecutionError: if there is a problem during the task execution
         """
-        self._log(u"Executing task")
+        self._log(u"Executing task...")
 
         # check that we have the AudioFile object
         if self.task.audio_file is None:
@@ -123,79 +123,55 @@ class ExecuteTask(object):
         self._log(u"Both audio and text input file are present")
         self.cleanup_info = []
 
-        # real full wave    = the real audio file, converted to WAVE format
-        # real trimmed wave = real full wave, possibly with head and/or tail trimmed off
-        # synt wave         = WAVE file synthesized from text; it will be aligned to real trimmed wave
-
-        step_index = 0
+        step_index = 1
         try:
-            # STEP 0 : convert audio file to real full wave
+            # STEP 1 : convert audio file to real full wave
             self._log(u"STEP %d BEGIN" % (step_index))
             real_full_handler, real_full_path = self._convert()
             self.cleanup_info.append([real_full_handler, real_full_path])
             self._log(u"STEP %d END" % (step_index))
             step_index += 1
 
-            # STEP 1 : extract MFCCs from real full wave
+            # STEP 2 : extract MFCCs from real wave
             self._log(u"STEP %d BEGIN" % (step_index))
-            real_full_wave_full_mfcc, real_full_wave_length = self._extract_mfcc(real_full_path)
+            real_wave_mfcc = self._extract_mfcc(real_full_path)
             self._log(u"STEP %d END" % (step_index))
             step_index += 1
 
-            # STEP 2 : cut head and/or tail off
-            #          detecting head/tail if requested, and
-            #          overwriting real_path
-            #          at the end, read_path will not have the head/tail
+            # STEP 3 : set or detect head and/or tail
             self._log(u"STEP %d BEGIN" % (step_index))
-            real_wave_modified = self._cut_head_tail(real_full_path)
-            real_trimmed_path = real_full_path
+            self._set_head_tail(real_wave_mfcc)
             self._log(u"STEP %d END" % (step_index))
             step_index += 1
 
-            # STEP 3 : synthesize text to wave
+            # STEP 4 : synthesize text to wave
             self._log(u"STEP %d BEGIN" % (step_index))
             synt_handler, synt_path, synt_anchors = self._synthesize()
             self.cleanup_info.append([synt_handler, synt_path])
             self._log(u"STEP %d END" % (step_index))
             step_index += 1
 
-            # STEP 4 : align waves
+            # STEP 5 : extract MFCCs from synt wave
             self._log(u"STEP %d BEGIN" % (step_index))
-            if real_wave_modified:
-                wave_map = self._align_waves(real_trimmed_path, synt_path, None, None)
-            else:
-                wave_map = self._align_waves(real_trimmed_path, synt_path, real_full_wave_full_mfcc, real_full_wave_length)
+            synt_wave_mfcc = self._extract_mfcc(synt_path)
             self._log(u"STEP %d END" % (step_index))
             step_index += 1
 
-            # STEP 5 : align text
+            # STEP 6 : align waves
             self._log(u"STEP %d BEGIN" % (step_index))
-            text_map = self._align_text(wave_map, synt_anchors)
+            wave_path = self._align_waves(real_wave_mfcc, synt_wave_mfcc)
             self._log(u"STEP %d END" % (step_index))
             step_index += 1
 
-            # STEP 6 : translate the text_map, possibly putting back the head/tail
+            # STEP 7 : compute time map, adjusting boundaries as requested 
             self._log(u"STEP %d BEGIN" % (step_index))
-            translated_text_map = self._translate_text_map(
-                text_map,
-                real_full_wave_length
-            )
-            self._log(u"STEP %d END" % (step_index))
-            step_index += 1
-
-            # STEP 7 : adjust boundaries
-            self._log(u"STEP %d BEGIN" % (step_index))
-            adjusted_map = self._adjust_boundaries(
-                translated_text_map,
-                real_full_wave_full_mfcc,
-                real_full_wave_length
-            )
+            time_map = self._compute_time_map(wave_path, synt_anchors, real_wave_mfcc)
             self._log(u"STEP %d END" % (step_index))
             step_index += 1
 
             # STEP 8 : create syncmap and add it to task
             self._log(u"STEP %d BEGIN" % (step_index))
-            self._create_syncmap(adjusted_map)
+            self._create_syncmap(time_map)
             self._log(u"STEP %d END" % (step_index))
             step_index += 1
 
@@ -205,13 +181,11 @@ class ExecuteTask(object):
             self._log(u"STEP %d END" % (step_index))
             step_index += 1
 
-            self._log(u"Execution completed")
-            return True
+            self._log(u"Executing task... done")
         except Exception as exc:
             self._log(u"STEP %d FAILURE" % step_index, Logger.CRITICAL)
             self._cleanup()
             self._failed("%s" % (exc), True)
-        self._log(u"Executing task... done")
 
     def _failed(self, msg, during_execution=True):
         """ Bubble exception up """
@@ -245,163 +219,77 @@ class ExecuteTask(object):
         1. handler of the generated wave file
         2. path of the generated wave file
         """
-        self._log(u"Converting real audio to wav")
+        self._log(u"Converting real audio to WAVE")
         handler = None
         path = None
-        self._log(u"Creating an output tmp file")
+        self._log(u"Creating output tmp file")
         handler, path = gf.tmp_file(suffix=u".wav", root=self.rconf["tmp_path"])
-        self._log(u"Creating a FFMPEGWrapper")
+        self._log(u"Creating FFMPEGWrapper object")
         ffmpeg = FFMPEGWrapper(rconf=self.rconf, logger=self.logger)
-        self._log(u"Converting...")
+        self._log(u"Converting file...")
         ffmpeg.convert(
             input_file_path=self.task.audio_file_path_absolute,
             output_file_path=path
         )
-        self._log(u"Converting... done")
-        self._log(u"Converting real audio to wav: succeeded")
+        self._log(u"Converting file... done")
+        self._log(u"Converting real audio to WAVE... done")
         return (handler, path)
 
     def _extract_mfcc(self, audio_file_path):
         """
-        Extract the MFCCs of the real full wave.
+        Extract the MFCCs of the given mono WAVE file.
 
-        Return a pair:
-
-        1. audio MFCCs
-        2. audio length
+        Return an AudioFileMFCC object.
         """
-        self._log(u"Extracting MFCCs from real full wave")
-        audio_file = AudioFileMonoWAVE(audio_file_path, rconf=self.rconf, logger=self.logger)
-        audio_file.extract_mfcc()
-        self._log(u"Extracting MFCCs from real full wave: succeeded")
-        return (audio_file.audio_mfcc, audio_file.audio_length)
+        self._log(u"Extracting MFCCs from full wave...")
+        audio_file_mfcc = AudioFileMFCC(audio_file_path, rconf=self.rconf, logger=self.logger)
+        self._log(u"Extracting MFCCs from full wave... done")
+        return audio_file_mfcc
 
-    def _cut_head_tail(self, audio_file_path):
+    def _set_head_tail(self, audio_file_mfcc):
         """
         Set the audio file head or tail,
         suitably cutting the audio file on disk,
         and setting the corresponding parameters in the task configuration.
-
-        Return ``True`` if head or tail has been cut;
-        otherwise return ``False`` (real wave file not modified)
-
-        :rtype: bool
         """
-        self._log(u"Setting head and/or tail")
+        self._log(u"Setting head/tail...")
         head_length = self.task.configuration["i_a_head"]
         process_length = self.task.configuration["i_a_process"]
         tail_length = self.task.configuration["i_a_tail"]
-        detect_head_max = self.task.configuration["i_a_head_max"]
-        detect_head_min = self.task.configuration["i_a_head_min"]
-        detect_tail_max = self.task.configuration["i_a_tail_max"]
-        detect_tail_min = self.task.configuration["i_a_tail_min"]
-
-        # explicit head or process?
-        explicit = (
+        head_max = self.task.configuration["i_a_head_max"]
+        head_min = self.task.configuration["i_a_head_min"]
+        tail_max = self.task.configuration["i_a_tail_max"]
+        tail_min = self.task.configuration["i_a_tail_min"]
+        if (
             (head_length is not None) or
             (process_length is not None) or
             (tail_length is not None)
-        )
-
-        # at least one detect parameter?
-        detect = (
-            (detect_head_min is not None) or
-            (detect_head_max is not None) or
-            (detect_tail_min is not None) or
-            (detect_tail_max is not None)
-        )
-
-        if not (explicit or detect):
-            # nothing to do
-            self._log(u"No explicit head/process or detect head/tail")
-            self._log(u"Setting head and/or tail: succeeded")
-            return False
-
-        # we need to cut head/tail, hence load the audio data
-        audio_file = AudioFileMonoWAVE(audio_file_path, rconf=self.rconf, logger=self.logger)
-        audio_file.load_data()
-
-        if explicit:
-            self._log(u"Explicit head, process, or tail")
+        ):
+            self._log(u"Setting explicit head/process/tail...")
+            audio_file_mfcc.set_head_middle_tail(head_length, process_length, tail_length)
+            self._log(u"Setting explicit head/process/tail... done")
         else:
-            self._log(u"No explicit head, process, or tail => detecting head/tail")
-
-            head = 0.0
-            if (detect_head_min is not None) or (detect_head_max is not None):
-                self._log(u"Detecting head...")
-                detect_head_min = gf.safe_float(detect_head_min, SD.MIN_HEAD_LENGTH)
-                detect_head_max = gf.safe_float(detect_head_max, SD.MAX_HEAD_LENGTH)
-                self._log([u"detect_head_min is %.3f", detect_head_min])
-                self._log([u"detect_head_max is %.3f", detect_head_max])
-                start_detector = SD(audio_file, self.task.text_file, rconf=self.rconf, logger=self.logger)
-                head = start_detector.detect_head(detect_head_min, detect_head_max)
-                self._log([u"Detected head: %.3f", head])
-
-            tail = 0.0
-            if (detect_tail_min is not None) or (detect_tail_max is not None):
-                self._log(u"Detecting tail...")
-                detect_tail_max = gf.safe_float(detect_tail_max, SD.MAX_TAIL_LENGTH)
-                detect_tail_min = gf.safe_float(detect_tail_min, SD.MIN_TAIL_LENGTH)
-                self._log([u"detect_tail_min is %.3f", detect_tail_min])
-                self._log([u"detect_tail_max is %.3f", detect_tail_max])
-                start_detector = SD(audio_file, self.task.text_file, rconf=self.rconf, logger=self.logger)
-                tail = start_detector.detect_tail(detect_tail_min, detect_tail_max)
-                self._log([u"Detected tail: %.3f", tail])
-
-            head_length = max(0, head)
-            process_length = max(0, audio_file.audio_length - tail - head)
-            tail_length = audio_file.audio_length - head_length - process_length
-
-            # we need to set these values
-            # in the config object for later use
-            self.task.configuration["i_a_head"] = head_length
-            self.task.configuration["i_a_process"] = process_length
-            self._log([u"Set head_length:    %.3f", head_length])
-            self._log([u"Set process_length: %.3f", process_length])
-
-        # in case we are reading from config object
-        if head_length is not None:
-            self._log(u"head_length is not None, converting to float")
-            head_length = float(head_length)
-        else:
-            self._log(u"head_length is None: setting it to 0.0")
+            self._log(u"Detecting head/tail...")
+            sd = SD(audio_file_mfcc, self.task.text_file, rconf=self.rconf, logger=self.logger)
             head_length = 0.0
-        # note that process_length and tail_length are mutually exclusive
-        # with process_length having precedence over tail_length
-        if process_length is not None:
-            self._log(u"process_length is not None, converting to float")
-            process_length = float(process_length)
-            if tail_length is not None:
-                self._log(u"tail_length is not None, but it will be ignored")
-                tail_length = float(tail_length)
-        elif tail_length is not None:
-            self._log(u"tail_length is not None, converting to float")
-            tail_length = float(tail_length)
-            self._log(u"computing process_length from tail_length")
-            process_length = audio_file.audio_length - head_length - tail_length
-
-        self._log([u"is_audio_file_head_length is %s", str(head_length)])
-        self._log([u"is_audio_file_process_length is %s", str(process_length)])
-        self._log([u"is_audio_file_tail_length is %s", str(tail_length)])
-
-        self._log(u"Trimming audio data...")
-        audio_file.trim(head_length, process_length)
-        self._log(u"Trimming audio data... done")
-
-        self._log(u"Writing audio file...")
-        audio_file.write(audio_file_path)
-        self._log(u"Writing audio file... done")
-
-        self._log(u"Clearing audio data...")
-        audio_file.clear_data()
-        self._log(u"Clearing audio data... done")
-
-        self._log(u"Setting head and/or tail: succeeded")
-        return True
+            tail_length = 0.0
+            if (head_min is not None) or (head_max is not None):
+                self._log(u"Detecting HEAD...")
+                head_length = sd.detect_head(head_min, head_max)
+                self._log([u"Detected HEAD: %.3f", head_length])
+                self._log(u"Detecting HEAD... done")
+            if (tail_min is not None) or (tail_max is not None):
+                self._log(u"Detecting TAIL...")
+                tail_length = sd.detect_tail(tail_min, tail_max)
+                self._log([u"Detected TAIL: %.3f", tail_length])
+                self._log(u"Detecting TAIL... done")
+            audio_file_mfcc.set_head_middle_tail(head_length=head_length, tail_length=tail_length)
+            self._log(u"Detecting head/tail... done")
+        self._log(u"Setting head/tail... done")
 
     def _synthesize(self):
         """
-        Synthesize text into a ``wav`` file.
+        Synthesize text into a WAVE file.
 
         Return a triple:
 
@@ -427,42 +315,27 @@ class ExecuteTask(object):
         self._log(u"Synthesizing text: succeeded")
         return (handler, path, anchors)
 
-    def _align_waves(self, real_path, synt_path, real_full_wave_full_mfcc=None, real_full_wave_length=None):
+    def _align_waves(self, real_wave_mfcc, synt_wave_mfcc):
         """
-        Align two ``wav`` files.
+        Align two AudioFileMFCC objects,
+        representing WAVE files.
 
-        Return the computed alignment map, that is,
-        a list of pairs of floats, each representing
-        corresponding time instants
-        in the real and synt wave, respectively
-        ``[real_time, synt_time]``
-
-        If ``real_full_wave_full_mfcc`` and ``real_full_wave_length``
-        are not None, use them instead of computing MFCCs again.
+        Return the computed path, that is,
+        a tuple of two numpy 1D arrays of int
+        ``(real_indices, synt_indices)``,
+        where the indices are relative to the FULL wave,
+        for both the real and the synt wave.
         """
         self._log(u"Aligning waves")
         self._log(u"Creating DTWAligner object")
-        aligner = DTWAligner(real_path, synt_path, rconf=self.rconf, logger=self.logger)
-        self._log(u"Computing MFCC...")
-        if (real_full_wave_full_mfcc is not None) and (real_full_wave_length is not None):
-            self._log(u"Using real wave MFCCs already computed")
-            aligner.real_wave_full_mfcc = real_full_wave_full_mfcc
-            aligner.real_wave_length = real_full_wave_length
-            aligner.compute_mfcc(real_wave=False, synt_wave=True)
-        else:
-            self._log(u"Computing both real and synt wave MFCCs")
-            aligner.compute_mfcc(real_wave=True, synt_wave=True)
-        self._log(u"Computing MFCC... done")
+        aligner = DTWAligner(real_wave_mfcc, synt_wave_mfcc, rconf=self.rconf, logger=self.logger)
         self._log(u"Computing path...")
         aligner.compute_path()
         self._log(u"Computing path... done")
-        self._log(u"Computing map...")
-        computed_map = aligner.computed_map
-        self._log(u"Computing map... done")
         self._log(u"Aligning waves: succeeded")
-        return computed_map
+        return aligner.computed_path
 
-    def _align_text(self, wave_map, synt_anchors):
+    def _compute_time_map(self, wave_path, synt_anchors, real_wave_mfcc):
         """
         Align the text with the real wave,
         using the ``wave_map`` (containing the mapping
@@ -470,146 +343,74 @@ class ExecuteTask(object):
         (containing the start times of text fragments
         in the synt wave).
 
-        Return the computed interval map, that is,
-        a list of triples ``[start_time, end_time, fragment_id]``
+        Return the computed time map, that is,
+        a list of pairs ``[start_time, end_time]``,
+        of length equal to number of fragments + 2,
+        where the two extra elements are for
+        the HEAD (first) and TAIL (last).
         """
-        self._log(u"Aligning text")
-        self._log([u"Number of frames:    %d", len(wave_map)])
-        self._log([u"Number of fragments: %d", len(synt_anchors)])
+        self._log(u"Computing time map...")
+        self._log([u"Path length: %d", len(wave_path)])
+        self._log([u"Fragments:   %d", len(synt_anchors)])
 
-        real_times = numpy.array([t[0] for t in wave_map])
-        synt_times = numpy.array([t[1] for t in wave_map])
-        real_anchors = []
-        anchor_index = 0
-        # TODO numpy-fy this loop
-        for anchor in synt_anchors:
-            time, fragment_id, fragment_text = anchor
-            self._log(u"Looking for argmin index...")
-            # TODO allow an user-specified function instead of min
-            # partially solved by AdjustBoundaryAlgorithm
-            index = (numpy.abs(synt_times - time)).argmin()
-            self._log(u"Looking for argmin index... done")
-            real_time = real_times[index]
-            real_anchors.append([real_time, fragment_id, fragment_text])
-            self._log([u"Time for anchor %d: %f", anchor_index, real_time])
-            anchor_index += 1
+        self._log(u"Obtaining raw alignment...")
+        mws = self.rconf["mfcc_window_shift"]
+        # unpack wave_path 
+        # both real_indices and synt_indices are w.r.t. the full wave
+        real_indices, synt_indices = wave_path
+        # synt_anchors as in seconds, convert them in MFCC indices
+        anchor_indices = numpy.array([int(a[0] / mws) for a in synt_anchors])
+        # right side sets the split point at the very beginning of "next" fragment
+        begin_indices = numpy.searchsorted(synt_indices, anchor_indices, side="right")
+        # first split must occur at zero 
+        begin_indices[0] = 0.0
+        # map onto real indices, obtaining "default" boundary indices
+        boundary_indices = numpy.append(real_indices[begin_indices], real_wave_mfcc.tail_begin)
+        self._log(u"Obtaining raw alignment... done")
 
-        # dummy last anchor, starting at the real file duration
-        real_anchors.append([real_times[-1], None, None])
-
-        # compute map
-        self._log(u"Computing interval map...")
-        # TODO numpy-fy this loop
-        computed_map = []
-        for i in range(len(real_anchors) - 1):
-            fragment_id = real_anchors[i][1]
-            fragment_text = real_anchors[i][2]
-            start = real_anchors[i][0]
-            end = real_anchors[i+1][0]
-            computed_map.append([start, end, fragment_id, fragment_text])
-        self._log(u"Computing interval map... done")
-        self._log(u"Aligning text: succeeded")
-        return computed_map
-
-    def _translate_text_map(self, text_map, real_full_wave_length):
-        """
-        Translate the text_map by adding head and tail dummy fragments
-
-        Return the translated text map
-        """
-        translated = []
-        head = gf.safe_float(self.task.configuration["i_a_head"], 0)
-        translated.append([0, head, None, None])
-        end = 0
-        for element in text_map:
-            start, end, fragment_id, fragment_text = element
-            start += head
-            end += head
-            translated.append([start, end, fragment_id, fragment_text])
-        translated.append([end, real_full_wave_length, None, None])
-        return translated
-
-    def _adjust_boundaries(
-            self,
-            text_map,
-            real_wave_full_mfcc,
-            real_wave_length
-        ):
-        """
-        Adjust the boundaries between consecutive fragments.
-
-        Return the computed interval map, that is,
-        a list of triples ``[start_time, end_time, fragment_id]``
-        """
-        self._log(u"Adjusting boundaries")
-        algo = self.task.configuration["aba_algorithm"]
-        value = None
-        if algo is None:
-            self._log(u"No adjust boundary algorithm specified: returning")
-            return text_map
-        elif algo == AdjustBoundaryAlgorithm.AUTO:
-            self._log(u"Requested adjust boundary algorithm AUTO: returning")
-            return text_map
-        elif algo == AdjustBoundaryAlgorithm.AFTERCURRENT:
-            value = self.task.configuration["aba_aftercurrent_value"]
-        elif algo == AdjustBoundaryAlgorithm.BEFORENEXT:
-            value = self.task.configuration["aba_beforenext_value"]
-        elif algo == AdjustBoundaryAlgorithm.OFFSET:
-            value = self.task.configuration["aba_offset_value"]
-        elif algo == AdjustBoundaryAlgorithm.PERCENT:
-            value = self.task.configuration["aba_percent_value"]
-        elif algo == AdjustBoundaryAlgorithm.RATE:
-            value = self.task.configuration["aba_rate_value"]
-        elif algo == AdjustBoundaryAlgorithm.RATEAGGRESSIVE:
-            value = self.task.configuration["aba_rate_value"]
-        self._log([u"Requested algo %s and value %s", algo, str(value)])
-
-        self._log(u"Running VAD...")
-        vad = VAD(real_wave_full_mfcc, real_wave_length, rconf=self.rconf, logger=self.logger)
-        vad.compute_vad()
-        self._log(u"Running VAD... done")
-
-        self._log(u"Creating AdjustBoundaryAlgorithm object")
-        adjust_boundary = AdjustBoundaryAlgorithm(
-            algorithm=algo,
-            text_map=text_map,
-            speech=vad.speech,
-            nonspeech=vad.nonspeech,
-            value=value,
+        self._log(u"Adjusting boundaries...")
+        # boundary_indices contains the boundary indices in the all_mfcc of real_wave_mfcc
+        # starting with the (head-1st fragment) and ending with (-1th fragment-tail)
+        aba_algorithm, aba_parameters = self.task.configuration.aba_parameters()
+        time_map = AdjustBoundaryAlgorithm(
+            algorithm=aba_algorithm,
+            parameters=aba_parameters,
+            real_wave_mfcc=real_wave_mfcc,
+            boundary_indices=boundary_indices,
+            text_file=self.task.text_file,
             rconf=self.rconf,
             logger=self.logger
-        )
-        self._log(u"Adjusting boundaries...")
-        adjusted_map = adjust_boundary.adjust()
+        ).to_time_map()
         self._log(u"Adjusting boundaries... done")
-        self._log(u"Adjusting boundaries: succeeded")
-        return adjusted_map
 
-    def _create_syncmap(self, adjusted_map):
+        self._log(u"Computing time map... done")
+        return time_map
+
+    def _create_syncmap(self, time_map):
         """
-        Create a sync map out of the provided interval map,
+        Create a sync map out of the provided time map,
         and store it in the task object.
+
+        The time map is
+        a list of pairs ``[start_time, end_time]``,
+        of length equal to number of fragments + 2,
+        where the two extra elements are for
+        the HEAD (first) and TAIL (last).
         """
         self._log(u"Creating sync map")
-        self._log([u"Number of fragments in adjusted map (including HEAD and TAIL): %d", len(adjusted_map)])
+        self._log([u"Fragments in time map (including HEAD/TAIL): %d", len(time_map)])
 
-        # adjusted map has 2 elements (HEAD and TAIL) more than text_file
-        #if len(adjusted_map) != len(self.task.text_file.fragments) + 2:
-        #    self._log(u"The number of sync map fragments does not match the number of text fragments (+2)", Logger.CRITICAL)
-        #    return False
-
+        # new sync map to be returned
         sync_map = SyncMap()
-        head = adjusted_map[0]
-        tail = adjusted_map[-1]
 
-        # get language
-        language = Language.EN
-        self._log([u"Language set to default: %s", language])
-        if len(self.task.text_file.fragments) > 0:
-            language = self.task.text_file.fragments[0].language
-            self._log([u"Language read from text_file: %s", language])
+        # HEAD and TAIL are the first and last elements of time_map
+        head = time_map[0]
+        tail = time_map[-1]
 
-        # get head/tail format
+        # get language for HEAD/TAIL (although the actual value does not matter)
+        language = self.task.configuration["language"]
+
+        # get HEAD/TAIL format
         head_tail_format = self.task.configuration["o_h_t_format"]
         self._log([u"Head/tail format: %s", str(head_tail_format)])
 
@@ -618,20 +419,23 @@ class ExecuteTask(object):
             head_frag = TextFragment(u"HEAD", language, [u""])
             sync_map_frag = SyncMapFragment(head_frag, head[0], head[1])
             sync_map.append_fragment(sync_map_frag)
-            self._log([u"Adding head (ADD): %.3f %.3f", head[0], head[1]])
+            self._log([u"  Added head (ADD): %.3f %.3f", head[0], head[1]])
 
         # stretch first and last fragment timings if needed
         if head_tail_format == SyncMapHeadTailFormat.STRETCH:
-            self._log([u"Stretching (STRETCH): %.3f => %.3f (head) and %.3f => %.3f (tail)", adjusted_map[1][0], head[0], adjusted_map[-2][1], tail[1]])
-            adjusted_map[1][0] = head[0]
-            adjusted_map[-2][1] = tail[1]
+            self._log([u"  Stretching (STRETCH): %.3f => %.3f (head)", time_map[1][0], head[0]])
+            self._log([u"  Stretching (STRETCH): %.3f => %.3f (tail)", time_map[-2][1], tail[1]])
+            time_map[1][0] = head[0]
+            time_map[-2][1] = tail[1]
 
+        # append fragments
         i = 1
         for fragment in self.task.text_file.fragments:
-            start = adjusted_map[i][0]
-            end = adjusted_map[i][1]
+            start = time_map[i][0]
+            end = time_map[i][1]
             sync_map_frag = SyncMapFragment(fragment, start, end)
             sync_map.append_fragment(sync_map_frag)
+            self._log([u"  Added fragment %d: %.3f %.3f", i, start, end])
             i += 1
 
         # add tail sync map fragment if needed
@@ -639,7 +443,7 @@ class ExecuteTask(object):
             tail_frag = TextFragment(u"TAIL", language, [u""])
             sync_map_frag = SyncMapFragment(tail_frag, tail[0], tail[1])
             sync_map.append_fragment(sync_map_frag)
-            self._log([u"Adding tail (ADD): %.3f %.3f", tail[0], tail[1]])
+            self._log([u"  Added tail (ADD): %.3f %.3f", tail[0], tail[1]])
 
         self.task.sync_map = sync_map
         self._log(u"Creating sync map: succeeded")

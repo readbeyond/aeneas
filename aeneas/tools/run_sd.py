@@ -9,7 +9,7 @@ from __future__ import absolute_import
 from __future__ import print_function
 import sys
 
-from aeneas.audiofile import AudioFileMonoWAVE
+from aeneas.audiofilemfcc import AudioFileMFCC
 from aeneas.ffmpegwrapper import FFMPEGWrapper
 from aeneas.language import Language
 from aeneas.sd import SD
@@ -24,7 +24,7 @@ __copyright__ = """
     Copyright 2015-2016, Alberto Pettarin (www.albertopettarin.it)
     """
 __license__ = "GNU AGPL 3"
-__version__ = "1.4.1"
+__version__ = "1.5.0"
 __email__ = "aeneas@readbeyond.it"
 __status__ = "Production"
 
@@ -118,12 +118,16 @@ class RunSDCLI(AbstractCLIProgram):
             self.print_error(u"%s" % exc)
             return self.ERROR_EXIT_CODE
         try:
-            audio_file = AudioFileMonoWAVE(tmp_file_path, rconf=self.rconf, logger=self.logger)
+            audio_file_mfcc = AudioFileMFCC(tmp_file_path, rconf=self.rconf, logger=self.logger)
         except Exception as exc:
             self.print_error(u"An unexpected Exception occurred while reading the converted audio file:")
             self.print_error(u"%s" % exc)
             return self.ERROR_EXIT_CODE
         self.print_info(u"Reading audio... done")
+
+        self.print_info(u"Running VAD...")
+        audio_file_mfcc.run_vad()
+        self.print_info(u"Running VAD... done")
 
         min_head = gf.safe_float(self.has_option_with_value(u"--min-head"), None)
         max_head = gf.safe_float(self.has_option_with_value(u"--max-head"), None)
@@ -131,11 +135,11 @@ class RunSDCLI(AbstractCLIProgram):
         max_tail = gf.safe_float(self.has_option_with_value(u"--max-tail"), None)
 
         self.print_info(u"Detecting audio interval...")
-        start_detector = SD(audio_file, text_file, rconf=self.rconf, logger=self.logger)
+        start_detector = SD(audio_file_mfcc, text_file, rconf=self.rconf, logger=self.logger)
         start, end = start_detector.detect_interval(min_head, max_head, min_tail, max_tail)
         self.print_info(u"Detecting audio interval... done")
 
-        self.print_result(audio_file.audio_length, start, end)
+        self.print_result(audio_file_mfcc.audio_length, start, end)
         gf.delete_file(tmp_handler, tmp_file_path)
         return self.NO_ERROR_EXIT_CODE
 

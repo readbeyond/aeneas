@@ -617,10 +617,16 @@ The ``aeneas`` package contains the following modules:
 .. toctree::
     :maxdepth: 3
 
+    cdtw
+    cew
+    cmfcc
+    cwave
     adjustboundaryalgorithm
     analyzecontainer
     audiofile
-    configurationobject
+    audiofilemfcc
+    cewsubprocess
+    configuration
     container
     diagnostics
     downloader

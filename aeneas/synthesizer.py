@@ -22,7 +22,7 @@ __copyright__ = """
     Copyright 2015-2016, Alberto Pettarin (www.albertopettarin.it)
     """
 __license__ = "GNU AGPL v3"
-__version__ = "1.4.1"
+__version__ = "1.5.0"
 __email__ = "aeneas@readbeyond.it"
 __status__ = "Production"
 
@@ -42,8 +42,8 @@ class Synthesizer(object):
     TAG = u"Synthesizer"
 
     def __init__(self, rconf=None, logger=None):
-        self.logger = logger or Logger()
-        self.rconf = rconf or RuntimeConfiguration()
+        self.logger = logger if logger is not None else Logger()
+        self.rconf = rconf if rconf is not None else RuntimeConfiguration()
 
     def _log(self, message, severity=Logger.DEBUG):
         """ Log """
@@ -60,15 +60,15 @@ class Synthesizer(object):
         Synthesize the text contained in the given fragment list
         into a ``wav`` file.
 
+        Return a tuple ``(anchors, total_time, num_chars)``.
+
         :param text_file: the text file to be synthesized
         :type  text_file: :class:`aeneas.textfile.TextFile`
-        :param audio_file_path: the path to the output audio file
-        :type  audio_file_path: string (path)
-        :param quit_after: stop synthesizing as soon as
-                           reaching this many seconds
-        :type  quit_after: float
-        :param backwards: if ``True``, synthesizing from the end of the text file
-        :type  backwards: bool
+        :param string audio_file_path: the path to the output audio file
+        :param float quit_after: stop synthesizing as soon as
+                                 reaching this many seconds
+        :param bool backwards: if ``True``, synthesizing from the end of the text file
+        :rtype: tuple
 
         :raise TypeError: if ``text_file`` is ``None`` or not an instance of ``TextFile``
         :raise OSError: if ``audio_file_path`` cannot be written

@@ -1,6 +1,6 @@
 /*
 
-Python C Extension for synthesizing text with espeak
+Python C Extension for synthesizing text with eSpeak
 
 __author__ = "Alberto Pettarin"
 __copyright__ = """
@@ -9,7 +9,7 @@ __copyright__ = """
     Copyright 2015-2016, Alberto Pettarin (www.albertopettarin.it)
     """
 __license__ = "GNU AGPL v3"
-__version__ = "1.4.1"
+__version__ = "1.5.0"
 __email__ = "aeneas@readbeyond.it"
 __status__ = "Production"
 
@@ -28,7 +28,7 @@ static PyObject *synthesize_single(PyObject *self, PyObject *args) {
     PyObject *tuple;
     char const *output_file_path;
     struct FRAGMENT_INFO ret;
-    int sample_rate;
+    int sample_rate; // int because espeak lib returns it as such
 
     // s = string
     if (!PyArg_ParseTuple(args, "sss", &output_file_path, &ret.voice_code, &ret.text)) {
@@ -42,7 +42,6 @@ static PyObject *synthesize_single(PyObject *self, PyObject *args) {
     }
 
     // build the tuple to be returned
-    // NOTE: returning sample_rate as an int, as the espeak lib does
     tuple = PyTuple_New(3);
     PyTuple_SetItem(tuple, 0, Py_BuildValue("i", sample_rate));
     PyTuple_SetItem(tuple, 1, Py_BuildValue("f", ret.begin));
@@ -60,8 +59,8 @@ static PyObject *synthesize_multiple(PyObject *self, PyObject *args) {
     int const backwards;
     struct FRAGMENT_INFO *fragments_synt;
 
-    int sample_rate;
-    unsigned int number_of_fragments, i, synthesized;
+    int sample_rate; // int because espeak lib returns it as such
+    size_t number_of_fragments, i, synthesized;
 
     // s = string
     // f = float
@@ -107,7 +106,8 @@ static PyObject *synthesize_multiple(PyObject *self, PyObject *args) {
                 number_of_fragments,
                 quit_after,
                 backwards,
-                &sample_rate, &synthesized
+                &sample_rate,
+                &synthesized
         ) != 0) {
         PyErr_SetString(PyExc_ValueError, "Error while synthesizing multiple fragments");
         free((void*)fragments_synt);
@@ -150,13 +150,22 @@ static PyMethodDef cew_methods[] = {
         "synthesize_single",
         synthesize_single,
         METH_VARARGS,
-        "Synthesize a single text fragment with espeak"
+        "Synthesize a single text fragment with eSpeak\n"
+        ":param string output_file_path: the path of the WAVE file to be created\n"
+        ":param string voice_code: the voice code of the language to be used\n"
+        ":param string text: the text to be synthesized\n"
+        ":rtype: tuple (sample_rate, begin, end)"
     },
     {
         "synthesize_multiple",
         synthesize_multiple,
         METH_VARARGS,
-        "Synthesize multiple text fragments with espeak"
+        "Synthesize multiple text fragments with eSpeak\n"
+        ":param string output_file_path: the path of the WAVE file to be created\n"
+        ":param float quit_after: if > 0, stop synthesizing when reaching quit_after seconds\n"
+        ":param int backwards: if 1, synthesize backwards, from the last fragment to the first\n"
+        ":param list fragments: list of (voice_code, text) tuples of text fragments to be synthesized\n"
+        ":rtype: tuple (sample_rate, synthesized, list) where list is a list of (begin, end) time values"
     },
     {
         NULL,

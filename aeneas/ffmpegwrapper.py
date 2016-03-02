@@ -20,13 +20,15 @@ __copyright__ = """
     Copyright 2015-2016, Alberto Pettarin (www.albertopettarin.it)
     """
 __license__ = "GNU AGPL v3"
-__version__ = "1.4.1"
+__version__ = "1.5.0"
 __email__ = "aeneas@readbeyond.it"
 __status__ = "Production"
 
 class FFMPEGPathError(Exception):
     """
     Error raised when the path to ``ffmpeg`` is not a valid executable.
+
+    .. versionadded:: 1.4.1
     """
     pass
 
@@ -135,8 +137,8 @@ class FFMPEGWrapper(object):
     TAG = u"FFMPEGWrapper"
 
     def __init__(self, rconf=None, logger=None):
-        self.logger = logger or Logger()
-        self.rconf = rconf or RuntimeConfiguration()
+        self.logger = logger if logger is not None else Logger()
+        self.rconf = rconf if rconf is not None else RuntimeConfiguration()
 
     def _log(self, message, severity=Logger.DEBUG):
         """ Log """
@@ -166,15 +168,11 @@ class FFMPEGWrapper(object):
         you can skip a portion at the beginning and at the end
         of the original input file.
 
-        :param input_file_path: the path of the audio file to convert
-        :type  input_file_path: string
-        :param output_file_path: the path of the converted audio file
-        :type  output_file_path: string
-        :param head_length: skip these many seconds
-                            from the beginning of the audio file
-        :type  head_length: float
-        :param process_length: process these many seconds of the audio file
-        :type  process_length: float
+        :param string input_file_path: the path of the audio file to convert
+        :param string output_file_path: the path of the converted audio file
+        :param float head_length: skip these many seconds
+                                  from the beginning of the audio file
+        :param float process_length: process these many seconds of the audio file
 
         :raises FFMPEGPathError: if the path to the ``ffmpeg`` executable cannot be called
         :raise OSError: if ``input_file_path`` does not exist

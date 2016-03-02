@@ -74,6 +74,32 @@ class TestConvertSyncMapCLI(unittest.TestCase):
             ("", "-r=\"c_extensions=False\"")
         ], 0)
 
+    def test_synt_multiple_pure(self):
+        self.execute([
+            ("", "From|fairest|creatures|we|desire|increase"),
+            ("", "en"),
+            ("out", "sonnet.wav"),
+            ("", "-m"),
+            ("", "-r=\"c_extensions=False\"")
+        ], 0)
+
+    def test_synt_cew_subprocess(self):
+        self.execute([
+            ("", "From fairest creatures we desire increase"),
+            ("", "en"),
+            ("out", "sonnet.wav"),
+            ("", "-r=\"cew_subprocess_enabled=True\"")
+        ], 0)
+
+    def test_synt_multiple_cew_subprocess(self):
+        self.execute([
+            ("", "From|fairest|creatures|we|desire|increase"),
+            ("", "en"),
+            ("out", "sonnet.wav"),
+            ("", "-m"),
+            ("", "-r=\"cew_subprocess_enabled=True\"")
+        ], 0)
+
     def test_synt_missing_1(self):
         self.execute([
             ("", "From fairest creatures we desire increase"),

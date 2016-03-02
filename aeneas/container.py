@@ -34,7 +34,7 @@ __copyright__ = """
     Copyright 2015-2016, Alberto Pettarin (www.albertopettarin.it)
     """
 __license__ = "GNU AGPL v3"
-__version__ = "1.4.1"
+__version__ = "1.5.0"
 __email__ = "aeneas@readbeyond.it"
 __status__ = "Production"
 
@@ -75,8 +75,7 @@ class Container(object):
 
     An (uncompressed) directory can be used in lieu of a compressed file.
 
-    :param file_path: the path to the container file (or directory)
-    :type  file_path: string (path)
+    :param string file_path: the path to the container file (or directory)
     :param container_format: the format of the container
     :type  container_format: :class:`aeneas.container.ContainerFormat`
     :param logger: the logger object
@@ -99,7 +98,7 @@ class Container(object):
         self.file_path = file_path
         self.container_format = container_format
         self.actual_container = None
-        self.logger = logger or Logger()
+        self.logger = logger if logger is not None else Logger()
         self._log(u"Setting actual Container object")
         self._set_actual_container()
 
@@ -112,7 +111,7 @@ class Container(object):
         """
         The path of this container.
 
-        :rtype: string (path)
+        :rtype: string
         """
         return self.__file_path
     @file_path.setter
@@ -150,7 +149,7 @@ class Container(object):
         of the XML config file in this container,
         or ``None`` if not present.
 
-        :rtype: string (path)
+        :rtype: string
 
         :raise: see ``entries()``
         """
@@ -175,7 +174,7 @@ class Container(object):
         of the TXT config file in this container,
         or ``None`` if not present.
 
-        :rtype: string (path)
+        :rtype: string
 
         :raise: see ``entries()``
         """
@@ -252,11 +251,9 @@ class Container(object):
             foo/config.txt (if exact = False)
             foo/bar/config.txt (if exact = False)
 
-        :param entry: the entry name to be searched for
-        :type  entry: string (path)
-        :param exact: look for the exact entry path
-        :type  exact: bool
-        :rtype: string (path)
+        :param string entry: the entry name to be searched for
+        :param bool exact: look for the exact entry path
+        :rtype: string
 
         :raise: see ``entries()``
         """
@@ -305,8 +302,7 @@ class Container(object):
         """
         Decompress the entire container into the given directory.
 
-        :param output_path: path of the destination directory
-        :type  output_path: string (path)
+        :param string output_path: path of the destination directory
 
         :raise TypeError: if this container does not exist
         :raise ValueError: if this container contains unsafe entries,
@@ -329,8 +325,7 @@ class Container(object):
         """
         Compress the contents of the given directory.
 
-        :param input_path: path of the input directory
-        :type  input_path: string (path)
+        :param string input_path: path of the input directory
 
         :raise TypeError: if the container path has not been set
         :raise ValueError: if ``input_path`` is not an existing directory
@@ -410,7 +405,7 @@ class _ContainerTAR(object):
     def __init__(self, file_path, variant, logger=None):
         self.file_path = file_path
         self.variant = variant
-        self.logger = logger or Logger()
+        self.logger = logger if logger is not None else Logger()
 
     def entries(self):
         try:
@@ -463,7 +458,7 @@ class _ContainerZIP(object):
 
     def __init__(self, file_path, logger=None):
         self.file_path = file_path
-        self.logger = logger or Logger()
+        self.logger = logger if logger is not None else Logger()
 
     def entries(self):
         try:
@@ -512,7 +507,7 @@ class _ContainerUnpacked(object):
 
     def __init__(self, file_path, logger=None):
         self.file_path = file_path
-        self.logger = logger or Logger()
+        self.logger = logger if logger is not None else Logger()
 
     def entries(self):
         try:

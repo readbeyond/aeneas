@@ -20,11 +20,10 @@ To align two wave files:
    passing the paths of the two wave files
    in the constructor, possibly with custom arguments
    to fine-tune the alignment;
-2. call ``compute_mfcc`` to extract the MFCCs of the two wave files;
-3. call ``compute_path`` to compute the min cost path between
+2. call ``compute_path`` to compute the min cost path between
    the MFCC representations of the two wave files;
-4. obtain the map between the two wave files by reading the
-   ``computed_map`` property.
+3. obtain the path between the two wave files by reading the
+   ``computed_path`` property.
 """
 
 from __future__ import absolute_import
@@ -32,7 +31,7 @@ from __future__ import division
 from __future__ import print_function
 import numpy
 
-from aeneas.audiofile import AudioFileMonoWAVE
+from aeneas.audiofilemfcc import AudioFileMFCC
 from aeneas.logger import Logger
 from aeneas.runtimeconfiguration import RuntimeConfiguration
 import aeneas.globalfunctions as gf
@@ -44,7 +43,7 @@ __copyright__ = """
     Copyright 2015-2016, Alberto Pettarin (www.albertopettarin.it)
     """
 __license__ = "GNU AGPL v3"
-__version__ = "1.4.1"
+__version__ = "1.5.0"
 __email__ = "aeneas@readbeyond.it"
 __status__ = "Production"
 
@@ -77,138 +76,100 @@ class DTWAlgorithm(object):
 
 
 
+class DTWAlignerNotInitialized(Exception):
+    """
+    Error raised when trying to compute
+    using an DTWAligner object whose real and/or synt waves
+    are not initialized yet.
+    """
+    pass
+
+
+
 class DTWAligner(object):
     """
-    The MFCC extractor and wave aligner.
+    The audio wave aligner.
 
-    :param real_wave_path: the path to the real wav file (must be mono!)
-    :type  real_wave_path: string (path)
-    :param synt_wave_path: the path to the synthesized wav file (must be mono!)
-    :type  synt_wave_path: string (path)
+    The two waves, henceforth named real and synthesized,
+    can be passed as ``AudioFileMFCC`` objects
+    or as file paths.
+    In the latter case, MFCCs will be extracted
+    upon object creation, unless the corresponding
+    ``AudioFileMFCC`` object has been passed as well.
+
+    :param real_wave_mfcc: the real audio file
+    :type  real_wave_mfcc: :class:`aeneas.audiofile.AudioFileMFCC`
+    :param synt_wave_mfcc: the synthesized audio file
+    :type  synt_wave_mfcc: :class:`aeneas.audiofile.AudioFileMFCC`
+    :param string real_wave_path: the path to the real audio file
+    :param string synt_wave_path: the path to the synthesized audio file
     :param rconf: a runtime configuration. Default: ``None``, meaning that
                   default settings will be used.
     :type  rconf: :class:`aeneas.runtimeconfiguration.RuntimeConfiguration`
     :param logger: the logger object
     :type  logger: :class:`aeneas.logger.Logger`
 
-    :raise ValueError: if ``real_wave_path`` or ``synt_wave_path`` is ``None``
-                       or it does not exist, or if ``algorithm`` is not an allowed value
+    :raise ValueError: if ``real_wave_mfcc`` or ``synt_wave_mfcc`` is not ``None``
+                       but not of type ``AudioFileMFCC``
+    :raise ValueError: if ``real_wave_path`` or ``synt_wave_path`` is not ``None``
+                       but it cannot be read
     """
 
     TAG = u"DTWAligner"
 
-    def __init__(self, real_wave_path=None, synt_wave_path=None, rconf=None, logger=None):
+    def __init__(
+        self,
+        real_wave_mfcc=None,
+        synt_wave_mfcc=None,
+        real_wave_path=None,
+        synt_wave_path=None,
+        rconf=None,
+        logger=None
+    ):
+        if (real_wave_mfcc is not None) and (type(real_wave_mfcc) is not AudioFileMFCC):
+            raise ValueError("Real wave mfcc must be None or of type AudioFileMFCC")
+        if (synt_wave_mfcc is not None) and (type(synt_wave_mfcc) is not AudioFileMFCC):
+            raise ValueError("Synt wave mfcc must be None or of type AudioFileMFCC")
         if (real_wave_path is not None) and (not gf.file_can_be_read(real_wave_path)):
             raise ValueError("Real wave cannot be read")
         if (synt_wave_path is not None) and (not gf.file_can_be_read(synt_wave_path)):
             raise ValueError("Synt wave cannot be read")
         if (rconf is not None) and (rconf["dtw_algorithm"] not in DTWAlgorithm.ALLOWED_VALUES):
             raise ValueError("Algorithm value not allowed")
-        self.logger = logger or Logger()
-        self.rconf = rconf or RuntimeConfiguration()
+        self.logger = logger if logger is not None else Logger()
+        self.rconf = rconf if rconf is not None else RuntimeConfiguration()
+        self.real_wave_mfcc = real_wave_mfcc
+        self.synt_wave_mfcc = synt_wave_mfcc
         self.real_wave_path = real_wave_path
         self.synt_wave_path = synt_wave_path
-        self.real_wave_full_mfcc = None
-        self.synt_wave_full_mfcc = None
-        self.real_wave_length = None
-        self.synt_wave_length = None
         self.computed_path = None
+        if (self.real_wave_mfcc is None) and (self.real_wave_path is not None):
+            self.real_wave_mfcc = AudioFileMFCC(self.real_wave_path, rconf=self.rconf, logger=self.logger)
+        if (self.synt_wave_mfcc is None) and (self.synt_wave_path is not None):
+            self.synt_wave_mfcc = AudioFileMFCC(self.synt_wave_path, rconf=self.rconf, logger=self.logger)
 
     def _log(self, message, severity=Logger.DEBUG):
         """ Log """
         self.logger.log(message, severity, self.TAG)
 
     @property
-    def real_wave_full_mfcc(self):
+    def computed_path(self):
         """
-        MFCCs of the real wave, including the 0-th.
+        Return the computed path between the two waves,
+        as a tuple of two numpy 1D array of int indices: ::
 
-        :rtype: numpy 2D array
+        ([r_1, r_2, ..., r_k], [s_1, s_2, ..., s_k])
 
-        .. versionadded:: 1.1.0
+        where ``r_i`` are the indices in the real wave
+        and ``s_i`` are the indices in the synthesized wave,
+        and ``k`` is the length of the min cost path.
+
+        :rtype: tuple (see above)
         """
-        return self.__real_wave_full_mfcc
-
-    @real_wave_full_mfcc.setter
-    def real_wave_full_mfcc(self, real_wave_full_mfcc):
-        self.__real_wave_full_mfcc = real_wave_full_mfcc
-
-    @property
-    def real_wave_length(self):
-        """
-        The length, in seconds, of the real wave.
-
-        :rtype: float
-
-        .. versionadded:: 1.1.0
-        """
-        return self.__real_wave_length
-
-    @real_wave_length.setter
-    def real_wave_length(self, real_wave_length):
-        self.__real_wave_length = real_wave_length
-
-    @property
-    def synt_wave_full_mfcc(self):
-        """
-        MFCCs of the synthesized wave, including the 0-th.
-
-        :rtype: numpy 2D array
-
-        .. versionadded:: 1.1.0
-        """
-        return self.__synt_wave_full_mfcc
-
-    @synt_wave_full_mfcc.setter
-    def synt_wave_full_mfcc(self, synt_wave_full_mfcc):
-        self.__synt_wave_full_mfcc = synt_wave_full_mfcc
-
-    @property
-    def synt_wave_length(self):
-        """
-        The length, in seconds, of the synthesized wave.
-
-        :rtype: float
-
-        .. versionadded:: 1.1.0
-        """
-        return self.__synt_wave_length
-
-    @synt_wave_length.setter
-    def synt_wave_length(self, synt_wave_length):
-        self.__synt_wave_length = synt_wave_length
-
-    def compute_mfcc(self, real_wave=True, synt_wave=True):
-        """
-        Compute the MFCCs of the two waves,
-        and store them internally.
-
-        :param real_wave: if ``True``, extract MFCCs for the real wave
-        :type  real_wave: bool
-        :param synt_wave: if ``True``, extract MFCCs for the synt wave
-        :type  synt_wave: bool
-
-        :raise OSError: if the real or synt wave file cannot be read
-        """
-        if real_wave:
-            if not gf.file_can_be_read(self.real_wave_path):
-                raise OSError("Real wave path is None or it cannot be read")
-            self._log(u"Computing MFCCs for real wave...")
-            wave = AudioFileMonoWAVE(self.real_wave_path, rconf=self.rconf, logger=self.logger)
-            wave.extract_mfcc()
-            self.real_wave_full_mfcc = wave.audio_mfcc
-            self.real_wave_length = wave.audio_length
-            self._log(u"Computing MFCCs for real wave... done")
-
-        if synt_wave:
-            if not gf.file_can_be_read(self.synt_wave_path):
-                raise OSError("Synt wave path is None or it cannot be read")
-            self._log(u"Computing MFCCs for synt wave...")
-            wave = AudioFileMonoWAVE(self.synt_wave_path, rconf=self.rconf, logger=self.logger)
-            wave.extract_mfcc()
-            self.synt_wave_full_mfcc = wave.audio_mfcc
-            self.synt_wave_length = wave.audio_length
-            self._log(u"Computing MFCCs for synt wave... done")
+        return self.__computed_path
+    @computed_path.setter
+    def computed_path(self, computed_path):
+        self.__computed_path = computed_path
 
     def compute_accumulated_cost_matrix(self):
         """
@@ -236,15 +197,30 @@ class DTWAligner(object):
         """
         dtw = self._setup_dtw()
         self._log(u"Computing path...")
-        self.computed_path = dtw.compute_path()
+        wave_path = dtw.compute_path()
         self._log(u"Computing path... done")
+        self._log(u"Translating path to full wave indices...")
+        real_indices = numpy.array([t[0] for t in wave_path])
+        synt_indices = numpy.array([t[1] for t in wave_path])
+        # TODO this depends whether we are masking or not
+        real_indices += self.real_wave_mfcc.head_length
+        self.computed_path = (real_indices, synt_indices)
+        self._log(u"Translating path to full wave indices... done")
 
     def _setup_dtw(self):
-        """ Setup DTW object """
+        """
+        Set the DTW object up.
+        """
+        # check we have the AudioFileMFCC objects
+        if (self.real_wave_mfcc is None) or (self.real_wave_mfcc.middle_mfcc is None):
+            raise DTWAlignerNotInitialized("The real wave MFCCs are not initialized")
+        if (self.synt_wave_mfcc is None) or (self.synt_wave_mfcc.middle_mfcc is None):
+            raise DTWAlignerNotInitialized("The synt wave MFCCs are not initialized")
+
         # setup
         algorithm = self.rconf["dtw_algorithm"]
         delta = int(2 * self.rconf["dtw_margin"] / self.rconf["mfcc_win_shift"])
-        mfcc2_length = self.synt_wave_full_mfcc.shape[1]
+        mfcc2_length = self.synt_wave_mfcc.middle_length
         self._log([u"Requested algorithm: '%s'", algorithm])
         self._log([u"delta = %d", delta])
         self._log([u"m = %d", mfcc2_length])
@@ -262,41 +238,20 @@ class DTWAligner(object):
         if algorithm == DTWAlgorithm.EXACT:
             self._log(u"Computing with EXACT algo")
             dtw = DTWExact(
-                self.real_wave_full_mfcc,
-                self.synt_wave_full_mfcc,
+                self.real_wave_mfcc.middle_mfcc,
+                self.synt_wave_mfcc.middle_mfcc,
                 self.logger
             )
         else:
             self._log(u"Computing with STRIPE algo")
             dtw = DTWStripe(
-                self.real_wave_full_mfcc,
-                self.synt_wave_full_mfcc,
+                self.real_wave_mfcc.middle_mfcc,
+                self.synt_wave_mfcc.middle_mfcc,
                 delta,
                 self.logger
             )
         return dtw
 
-    @property
-    def computed_map(self):
-        """
-        Return the computed map between the two waves,
-        as a list of lists, each being a pair of floats: ::
-
-        [[r_1, s_1], [r_2, s_2], ..., [r_k, s_k]]
-
-        where ``r_i`` are the time instants in the real wave
-        and ``s_i`` are the time instants in the synthesized wave,
-        and ``k = n + m`` (or ``k = n + d``)
-        is the length of the min cost path.
-
-        :rtype: list of pairs of floats (see above)
-        """
-        result = []
-        for i in range(len(self.computed_path)):
-            real_time = self.computed_path[i][0] * self.rconf["mfcc_win_shift"]
-            synt_time = self.computed_path[i][1] * self.rconf["mfcc_win_shift"]
-            result.append([real_time, synt_time])
-        return result
 
 
 
@@ -308,7 +263,7 @@ class DTWStripe(object):
         self.m1 = m1
         self.m2 = m2
         self.delta = delta
-        self.logger = logger or Logger()
+        self.logger = logger if logger is not None else Logger()
 
     def _log(self, message, severity=Logger.DEBUG):
         """ Log """
@@ -567,7 +522,7 @@ class DTWExact(object):
     def __init__(self, m1, m2, logger=None):
         self.m1 = m1
         self.m2 = m2
-        self.logger = logger or Logger()
+        self.logger = logger if logger is not None else Logger()
 
     def _log(self, message, severity=Logger.DEBUG):
         """ Log """

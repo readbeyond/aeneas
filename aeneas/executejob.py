@@ -26,7 +26,7 @@ __copyright__ = """
     Copyright 2015-2016, Alberto Pettarin (www.albertopettarin.it)
     """
 __license__ = "GNU AGPL v3"
-__version__ = "1.4.1"
+__version__ = "1.5.0"
 __email__ = "aeneas@readbeyond.it"
 __status__ = "Production"
 
@@ -93,8 +93,8 @@ class ExecuteJob(object):
         self.job = job
         self.working_directory = None
         self.tmp_directory = None
-        self.logger = logger or Logger()
-        self.rconf = rconf or RuntimeConfiguration()
+        self.logger = logger if logger is not None else Logger()
+        self.rconf = rconf if rconf is not None else RuntimeConfiguration()
         if job is not None:
             self.load_job(self.job)
 
@@ -124,10 +124,8 @@ class ExecuteJob(object):
         otherwise use the provided config string
         (i.e., the wizard case).
 
-        :param container_path: the path to the input container
-        :type  container_path: string (path)
-        :param config_string: the configuration string (from wizard)
-        :type  config_string: string
+        :param string container_path: the path to the input container
+        :param string config_string: the configuration string (from wizard)
 
         :raise ExecuteJobInputError: if the given container does not contain a valid ``Job``
         """
@@ -224,9 +222,8 @@ class ExecuteJob(object):
 
         Return the path to output container.
 
-        :param output_directory_path: the path to a directory where
-                                      the output container must be created
-        :type  output_directory_path: string (path)
+        :param string output_directory_path: the path to a directory where
+                                             the output container must be created
         :rtype: string
         """
         self._log(u"Writing output container for this job")
@@ -301,9 +298,8 @@ class ExecuteJob(object):
         remove the working directory as well,
         otherwise just remove the temporary directory.
 
-        :param remove_working_directory: if ``True``, remove
-                                         the working directory as well
-        :type  remove_working_directory: bool
+        :param bool remove_working_directory: if ``True``, remove
+                                              the working directory as well
         """
         if remove_working_directory is not None:
             self._log(u"Removing working directory... ")

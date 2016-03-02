@@ -11,11 +11,10 @@ from __future__ import print_function
 import io
 import sys
 
-from aeneas.audiofile import AudioFileMonoWAVE
 from aeneas.audiofile import AudioFileUnsupportedFormatError
+from aeneas.audiofilemfcc import AudioFileMFCC
 from aeneas.ffmpegwrapper import FFMPEGWrapper
 from aeneas.tools.abstract_cli_program import AbstractCLIProgram
-from aeneas.vad import VAD
 import aeneas.globalfunctions as gf
 
 __author__ = "Alberto Pettarin"
@@ -25,7 +24,7 @@ __copyright__ = """
     Copyright 2015-2016, Alberto Pettarin (www.albertopettarin.it)
     """
 __license__ = "GNU AGPL 3"
-__version__ = "1.4.1"
+__version__ = "1.5.0"
 __email__ = "aeneas@readbeyond.it"
 __status__ = "Production"
 
@@ -51,6 +50,9 @@ class RunVADCLI(AbstractCLIProgram):
             u"%s both %s" % (INPUT_FILE, OUTPUT_BOTH),
             u"%s nonspeech %s" % (INPUT_FILE, OUTPUT_NONSPEECH),
             u"%s speech %s" % (INPUT_FILE, OUTPUT_SPEECH)
+        ],
+        "options": [
+            u"-i, --index : output intervals as indices instead of seconds",
         ]
     }
 
@@ -69,6 +71,7 @@ class RunVADCLI(AbstractCLIProgram):
         output_file_path = None
         if len(self.actual_arguments) >= 3:
             output_file_path = self.actual_arguments[2]
+        output_time = not self.has_option([u"-i", u"--index"])
 
         self.check_c_extensions("cmfcc")
         if not self.check_input_file(audio_file_path):
@@ -86,37 +89,36 @@ class RunVADCLI(AbstractCLIProgram):
             self.print_error(u"Cannot convert audio file '%s'" % audio_file_path)
             self.print_error(u"Check that its format is supported by ffmpeg")
             return self.ERROR_EXIT_CODE
-
         try:
             self.print_info(u"Extracting MFCCs...")
-            audiofile = AudioFileMonoWAVE(tmp_file_path, rconf=self.rconf, logger=self.logger)
-            audiofile.extract_mfcc()
+            audiofile = AudioFileMFCC(tmp_file_path, rconf=self.rconf, logger=self.logger)
             self.print_info(u"Extracting MFCCs... done")
+            gf.delete_file(tmp_handler, tmp_file_path)
         except (AudioFileUnsupportedFormatError, OSError):
             self.print_error(u"Cannot read the converted WAV file '%s'" % tmp_file_path)
+            gf.delete_file(tmp_handler, tmp_file_path)
             return self.ERROR_EXIT_CODE
 
         self.print_info(u"Executing VAD...")
-        vad = VAD(audiofile.audio_mfcc, audiofile.audio_length, rconf=self.rconf, logger=self.logger)
-        vad.compute_vad()
+        audiofile.run_vad()
         self.print_info(u"Executing VAD... done")
 
-        gf.delete_file(tmp_handler, tmp_file_path)
-
+        speech = audiofile.intervals(speech=True, time=output_time)
+        nonspeech = audiofile.intervals(speech=False, time=output_time)
         if mode == u"speech":
-            intervals = vad.speech
+            intervals = speech 
         elif mode == u"nonspeech":
-            intervals = vad.nonspeech
+            intervals = nonspeech
         elif mode == u"both":
-            speech = [[x[0], x[1], u"speech"] for x in vad.speech]
-            nonspeech = [[x[0], x[1], u"nonspeech"] for x in vad.nonspeech]
+            speech = [[x[0], x[1], u"speech"] for x in speech]
+            nonspeech = [[x[0], x[1], u"nonspeech"] for x in nonspeech]
             intervals = sorted(speech + nonspeech)
         intervals = [tuple(interval) for interval in intervals]
-        self.write_to_file(output_file_path, intervals)
+        self.write_to_file(output_file_path, intervals, output_time)
 
         return self.NO_ERROR_EXIT_CODE
 
-    def write_to_file(self, output_file_path, intervals):
+    def write_to_file(self, output_file_path, intervals, time):
         """
         Write intervals to file.
 
@@ -129,9 +131,9 @@ class RunVADCLI(AbstractCLIProgram):
         msg = []
         if len(intervals) > 0:
             if len(intervals[0]) == 2:
-                template = u"%.3f\t%.3f"
+                template = u"%.3f\t%.3f" if time else u"%d\t%d"
             else:
-                template = u"%.3f\t%.3f\t%s"
+                template = u"%.3f\t%.3f\t%s" if time else u"%d\t%d\t%s"
             msg = [template % (interval) for interval in intervals]
         if output_file_path is None:
             self.print_info(u"Intervals detected:")

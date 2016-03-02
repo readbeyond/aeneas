@@ -25,7 +25,7 @@ __copyright__ = """
     Copyright 2015-2016, Alberto Pettarin (www.albertopettarin.it)
     """
 __license__ = "GNU AGPL v3"
-__version__ = "1.4.1"
+__version__ = "1.5.0"
 __email__ = "aeneas@readbeyond.it"
 __status__ = "Production"
 
@@ -46,8 +46,8 @@ class MFCC(object):
     MEL_10 = 2595.0
 
     def __init__(self, rconf=None, logger=None):
-        self.logger = logger or Logger()
-        self.rconf = rconf or RuntimeConfiguration()
+        self.logger = logger if logger is not None else Logger()
+        self.rconf = rconf if rconf is not None else RuntimeConfiguration()
 
         # store parameters in local attributes
         self.filter_bank_size = self.rconf["mfcc_filters"]
@@ -73,12 +73,24 @@ class MFCC(object):
         self.logger.log(message, severity, self.TAG)
 
     @classmethod
-    def _hz2mel(cls, f):
-        return cls.MEL_10 * math.log10(1.0 + (f / 700.0))
+    def _hz2mel(cls, frequency):
+        """
+        Convert the given frequency in Hz to the Mel scale.
+
+        :param float frequency: the Hz frequency to convert
+        :rtype: float
+        """
+        return cls.MEL_10 * math.log10(1.0 + (frequency / 700.0))
 
     @classmethod
-    def _mel2hz(cls, m):
-        return 700.0 * (10 ** (m / cls.MEL_10) - 1)
+    def _mel2hz(cls, mel):
+        """
+        Convert the given Mel value to Hz frequency.
+
+        :param float mel: the Mel value to convert
+        :rtype: float
+        """
+        return 700.0 * (10 ** (mel / cls.MEL_10) - 1)
 
     def _create_dct_matrix(self):
         """
@@ -150,8 +162,7 @@ class MFCC(object):
 
         :param data: the audio data
         :type  data: 1D numpy array of float64
-        :param sample_rate: the sample rate of the audio data, in samples/s (Hz)
-        :type  sample_rate: int
+        :param int sample_rate: the sample rate of the audio data, in samples/s (Hz)
 
         :raise ValueError: if the data is not a 1D numpy array (i.e., not mono),
                            or if the data is empty

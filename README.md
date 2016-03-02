@@ -2,8 +2,8 @@
 
 **aeneas** is a Python/C library and a set of tools to automagically synchronize audio and text (aka forced alignment).
 
-* Version: 1.4.1
-* Date: 2016-02-13
+* Version: 1.5.0
+* Date: 2016-??-??
 * Developed by: [ReadBeyond](http://www.readbeyond.it/)
 * Lead Developer: [Alberto Pettarin](http://www.albertopettarin.it/)
 * License: the GNU Affero General Public License Version 3 (AGPL v3)
@@ -118,7 +118,7 @@ for detailed, step-by-step procedures for Linux, OS X, and Windows.
     thanks to the included example files.
 
 3. To compute a synchronization map `map.json` for a pair
-   (`audio.mp3`, `text.txt` in [`plain`](http://www.readbeyond.it/aeneas/docs/textfile.html#aeneas.textfile.TextFileFormat.PLAIN) text format), you can run:
+   (`audio.mp3`, `text.txt` in [plain](http://www.readbeyond.it/aeneas/docs/textfile.html#aeneas.textfile.TextFileFormat.PLAIN) text format), you can run:
 
     ```bash
     python -m aeneas.tools.execute_task \
@@ -129,7 +129,7 @@ for detailed, step-by-step procedures for Linux, OS X, and Windows.
     ```
 
    To compute a synchronization map `map.smil` for a pair
-   (`audio.mp3`, [`page.xhtml`](http://www.readbeyond.it/aeneas/docs/textfile.html#aeneas.textfile.TextFileFormat.UNPARSED) containing fragments marked by `id` attributes like `f001`),
+   (`audio.mp3`, [page.xhtml](http://www.readbeyond.it/aeneas/docs/textfile.html#aeneas.textfile.TextFileFormat.UNPARSED) containing fragments marked by `id` attributes like `f001`),
    you can run:
 
     ```bash
@@ -159,8 +159,8 @@ for detailed, step-by-step procedures for Linux, OS X, and Windows.
 
 The [documentation](http://www.readbeyond.it/aeneas/docs/)
 provides an introduction to the concepts of
-[`task`](http://www.readbeyond.it/aeneas/docs/#tasks) and
-[`job`](http://www.readbeyond.it/aeneas/docs/#job),
+[Task](http://www.readbeyond.it/aeneas/docs/#tasks) and
+[Job](http://www.readbeyond.it/aeneas/docs/#job),
 and it lists of all the options and tools available in the library.
 
 

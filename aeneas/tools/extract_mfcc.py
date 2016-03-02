@@ -11,8 +11,9 @@ import io
 import sys
 import numpy
 
-from aeneas.audiofile import AudioFileMonoWAVE
+from aeneas.audiofile import AudioFileMonoWAVENotInitialized
 from aeneas.audiofile import AudioFileUnsupportedFormatError
+from aeneas.audiofilemfcc import AudioFileMFCC
 from aeneas.ffmpegwrapper import FFMPEGWrapper
 from aeneas.tools.abstract_cli_program import AbstractCLIProgram
 import aeneas.globalfunctions as gf
@@ -24,7 +25,7 @@ __copyright__ = """
     Copyright 2015-2016, Alberto Pettarin (www.albertopettarin.it)
     """
 __license__ = "GNU AGPL 3"
-__version__ = "1.4.1"
+__version__ = "1.5.0"
 __email__ = "aeneas@readbeyond.it"
 __status__ = "Production"
 
@@ -93,12 +94,8 @@ class ExtractMFCCCLI(AbstractCLIProgram):
             return self.ERROR_EXIT_CODE
 
         try:
-            audiofile = AudioFileMonoWAVE(tmp_file_path, rconf=self.rconf, logger=self.logger)
-            audiofile.load_data()
-            audiofile.extract_mfcc()
-            audiofile.clear_data()
+            mfccs = AudioFileMFCC(tmp_file_path, rconf=self.rconf, logger=self.logger).all_mfcc
             gf.delete_file(tmp_handler, tmp_file_path)
-            mfccs = audiofile.audio_mfcc 
             if delete_first:
                 mfccs = mfccs[1:, :]
             if transpose:
@@ -125,7 +122,7 @@ class ExtractMFCCCLI(AbstractCLIProgram):
             self.print_info(u"MFCCs shape: %d %d" % (mfccs.shape))
             self.print_info(u"MFCCs saved to %s" % (output_file_path))
             return self.NO_ERROR_EXIT_CODE
-        except AudioFileUnsupportedFormatError:
+        except (AudioFileUnsupportedFormatError, AudioFileMonoWAVENotInitialized):
             self.print_error(u"Cannot read file '%s'" % (tmp_file_path))
             self.print_error(u"Check that it is a mono WAV file")
         except OSError:

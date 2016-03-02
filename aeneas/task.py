@@ -11,8 +11,9 @@ from __future__ import absolute_import
 from __future__ import print_function
 import os
 
+from aeneas.adjustboundaryalgorithm import AdjustBoundaryAlgorithm
 from aeneas.audiofile import AudioFile
-from aeneas.configurationobject import ConfigurationObject
+from aeneas.configuration import Configuration
 from aeneas.logger import Logger
 from aeneas.textfile import TextFile
 import aeneas.globalconstants as gc
@@ -25,7 +26,7 @@ __copyright__ = """
     Copyright 2015-2016, Alberto Pettarin (www.albertopettarin.it)
     """
 __license__ = "GNU AGPL v3"
-__version__ = "1.4.1"
+__version__ = "1.5.0"
 __email__ = "aeneas@readbeyond.it"
 __status__ = "Production"
 
@@ -35,8 +36,7 @@ class Task(object):
     an audio file and a list of text fragments
     to be synchronized.
 
-    :param config_string: the task configuration string
-    :type  config_string: string
+    :param string config_string: the task configuration string
     :param logger: the logger object
     :type  logger: :class:`aeneas.logger.Logger`
 
@@ -47,7 +47,7 @@ class Task(object):
     TAG = u"Task"
 
     def __init__(self, config_string=None, logger=None):
-        self.logger = logger or Logger()
+        self.logger = logger if logger is not None else Logger()
         self.identifier = gf.uuid_string()
         self.configuration = None
         self.audio_file_path = None # relative to input container root
@@ -99,7 +99,7 @@ class Task(object):
         """
         The absolute path of the audio file.
 
-        :rtype: string (path)
+        :rtype: string
         """
         return self.__audio_file_path_absolute
     @audio_file_path_absolute.setter
@@ -112,7 +112,7 @@ class Task(object):
         """
         The absolute path of the text file.
 
-        :rtype: string (path)
+        :rtype: string
         """
         return self.__text_file_path_absolute
     @text_file_path_absolute.setter
@@ -125,7 +125,7 @@ class Task(object):
         """
         The absolute path of the sync map file.
 
-        :rtype: string (path)
+        :rtype: string
         """
         return self.__sync_map_file_path_absolute
     @sync_map_file_path_absolute.setter
@@ -148,10 +148,9 @@ class Task(object):
         Return the the path of the sync map file created,
         or ``None`` if an error occurred.
 
-        :param container_root_path: the path to the root directory
-                                    for the output container
-        :type  container_root_path: string (path)
-        :rtype: string (path)
+        :param string container_root_path: the path to the root directory
+                                           for the output container
+        :rtype: string
         """
         if self.sync_map is None:
             self._log(u"sync_map is None", Logger.CRITICAL)
@@ -181,7 +180,6 @@ class Task(object):
         self._log([u"audio_ref is %s", audio_ref])
 
         self._log(u"Calling sync_map.write...")
-        # TODO just pass self.configuration?
         parameters = {
             gc.PPN_TASK_OS_FILE_SMIL_PAGE_REF : page_ref,
             gc.PPN_TASK_OS_FILE_SMIL_AUDIO_REF : audio_ref
@@ -217,7 +215,6 @@ class Task(object):
                 (self.text_file_path_absolute is not None) and
                 (self.configuration["language"] is not None)
             ):
-            # TODO just pass self.configuration?
             # the following values might be None
             parameters = {
                 gc.PPN_TASK_IS_TEXT_FILE_IGNORE_REGEX : self.configuration["i_t_ignore_regex"],
@@ -240,7 +237,7 @@ class Task(object):
 
 
 
-class TaskConfiguration(ConfigurationObject):
+class TaskConfiguration(Configuration):
     """
     A structure representing a configuration for a task, that is,
     a series of directives for I/O and processing the task.
@@ -276,8 +273,7 @@ class TaskConfiguration(ConfigurationObject):
     * ``PPN_TASK_OS_FILE_SMIL_AUDIO_REF``             or ``o_smil_audio_ref``
     * ``PPN_TASK_OS_FILE_SMIL_PAGE_REF``              or ``o_smil_page_ref``
 
-    :param config_string: the job configuration string
-    :type  config_string: Unicode string
+    :param string config_string: the job configuration string
 
     :raises TypeError: if ``config_string`` is not ``None`` and
                        it is not a Unicode string
@@ -319,6 +315,28 @@ class TaskConfiguration(ConfigurationObject):
 
     def __init__(self, config_string=None):
         super(TaskConfiguration, self).__init__(config_string)
+
+    def aba_parameters(self):
+        """
+        Return a tuple ``(aba_algorithm, aba_parameters)``
+        representing the AdjustBoundaryAlgorithm
+        algorithm and parameters.
+
+        :rtype: tuple
+        """
+        ABA_MAP = {
+            AdjustBoundaryAlgorithm.AFTERCURRENT : [self[gc.PPN_TASK_ADJUST_BOUNDARY_AFTERCURRENT_VALUE]],
+            AdjustBoundaryAlgorithm.AUTO : [],
+            AdjustBoundaryAlgorithm.BEFORENEXT : [self[gc.PPN_TASK_ADJUST_BOUNDARY_BEFORENEXT_VALUE]],
+            AdjustBoundaryAlgorithm.OFFSET : [self[gc.PPN_TASK_ADJUST_BOUNDARY_OFFSET_VALUE]],
+            AdjustBoundaryAlgorithm.PERCENT : [self[gc.PPN_TASK_ADJUST_BOUNDARY_PERCENT_VALUE]],
+            AdjustBoundaryAlgorithm.RATE : [self[gc.PPN_TASK_ADJUST_BOUNDARY_RATE_VALUE]],
+            AdjustBoundaryAlgorithm.RATEAGGRESSIVE : [self[gc.PPN_TASK_ADJUST_BOUNDARY_RATE_VALUE]]
+        }
+        aba_algorithm = self["aba_algorithm"]
+        if aba_algorithm is None:
+            aba_algorithm = AdjustBoundaryAlgorithm.AUTO
+        return (aba_algorithm, ABA_MAP[aba_algorithm])
 
 
 

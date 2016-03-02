@@ -4,8 +4,8 @@ aeneas
 **aeneas** is a Python/C library and a set of tools to automagically
 synchronize audio and text (aka forced alignment).
 
--  Version: 1.4.1
--  Date: 2016-02-13
+-  Version: 1.5.0
+-  Date: 2016-??-??
 -  Developed by: `ReadBeyond <http://www.readbeyond.it/>`__
 -  Lead Developer: `Alberto Pettarin <http://www.albertopettarin.it/>`__
 -  License: the GNU Affero General Public License Version 3 (AGPL v3)
@@ -133,7 +133,7 @@ Usage
 
 3. To compute a synchronization map ``map.json`` for a pair
    (``audio.mp3``, ``text.txt`` in
-   ```plain`` <http://www.readbeyond.it/aeneas/docs/textfile.html#aeneas.textfile.TextFileFormat.PLAIN>`__
+   `plain <http://www.readbeyond.it/aeneas/docs/textfile.html#aeneas.textfile.TextFileFormat.PLAIN>`__
    text format), you can run:
 
    .. code:: bash
@@ -145,7 +145,7 @@ Usage
            map.json
 
 To compute a synchronization map ``map.smil`` for a pair (``audio.mp3``,
-```page.xhtml`` <http://www.readbeyond.it/aeneas/docs/textfile.html#aeneas.textfile.TextFileFormat.UNPARSED>`__
+`page.xhtml <http://www.readbeyond.it/aeneas/docs/textfile.html#aeneas.textfile.TextFileFormat.UNPARSED>`__
 containing fragments marked by ``id`` attributes like ``f001``), you can
 run:
 
@@ -177,9 +177,9 @@ to parse the input assets and format the output sync map files. See the
 
 The `documentation <http://www.readbeyond.it/aeneas/docs/>`__ provides
 an introduction to the concepts of
-```task`` <http://www.readbeyond.it/aeneas/docs/#tasks>`__ and
-```job`` <http://www.readbeyond.it/aeneas/docs/#job>`__, and it lists of
-all the options and tools available in the library.
+`Task <http://www.readbeyond.it/aeneas/docs/#tasks>`__ and
+`Job <http://www.readbeyond.it/aeneas/docs/#job>`__, and it lists of all
+the options and tools available in the library.
 
 Documentation and Support
 -------------------------

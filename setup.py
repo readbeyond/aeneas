@@ -17,7 +17,7 @@ __copyright__ = """
     Copyright 2015-2016, Alberto Pettarin (www.albertopettarin.it)
     """
 __license__ = "GNU AGPL 3"
-__version__ = "1.4.1"
+__version__ = "1.5.0"
 __email__ = "aeneas@readbeyond.it"
 __status__ = "Production"
 
@@ -40,7 +40,7 @@ INCLUDE_DIRS = [misc_util.get_numpy_include_dirs()]
 
 EXTENSION_CDTW = Extension(
     "aeneas.cdtw.cdtw",
-    ["aeneas/cdtw/cdtw_py.c", "aeneas/cdtw/cdtw_func.c"],
+    ["aeneas/cdtw/cdtw_py.c", "aeneas/cdtw/cdtw_func.c", "aeneas/cdtw/cint.c"],
     include_dirs=[get_include()]
 )
 EXTENSION_CEW = Extension(
@@ -50,7 +50,7 @@ EXTENSION_CEW = Extension(
 )
 EXTENSION_CMFCC = Extension(
     "aeneas.cmfcc.cmfcc",
-    ["aeneas/cmfcc/cmfcc_py.c", "aeneas/cmfcc/cmfcc_func.c", "aeneas/cmfcc/cwave_func.c"],
+    ["aeneas/cmfcc/cmfcc_py.c", "aeneas/cmfcc/cmfcc_func.c", "aeneas/cmfcc/cwave_func.c", "aeneas/cmfcc/cint.c"],
     include_dirs=[get_include()]
 )
 # cwave is ready, but currently not used
@@ -84,7 +84,7 @@ setup(
         "aeneas.cwave": ["*.c", "*.h"],
         "aeneas.tools": ["res/*"]
     },
-    version="1.4.1.0",
+    version="1.5.0.0",
     description=SHORT_DESCRIPTION,
     author="Alberto Pettarin",
     author_email="alberto@albertopettarin.it",

@@ -42,6 +42,13 @@ class TestExecuteJobCLI(unittest.TestCase):
             ("", "-r=\"c_extensions=False\"")
         ], 0)
 
+    def test_exec_container_cew_subprocess(self):
+        self.execute([
+            ("in", "../tools/res/job.zip"),
+            ("out", ""),
+            ("", "-r=\"cew_subprocess_enabled=True\"")
+        ], 0)
+
     def test_exec_container_mfcc_window_shift(self):
         self.execute([
             ("in", "../tools/res/job.zip"),

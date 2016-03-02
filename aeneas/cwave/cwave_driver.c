@@ -1,6 +1,6 @@
 /*
 
-Python C Extension for computing the MFCC
+Python C Extension for reading WAVE mono files.
 
 __author__ = "Alberto Pettarin"
 __copyright__ = """
@@ -9,25 +9,11 @@ __copyright__ = """
     Copyright 2015-2016, Alberto Pettarin (www.albertopettarin.it)
     """
 __license__ = "GNU AGPL v3"
-__version__ = "1.4.1"
+__version__ = "1.5.0"
 __email__ = "aeneas@readbeyond.it"
 __status__ = "Production"
 
 */
-
-//
-// this is a simple driver to test on the command line
-//
-// you can compile it with:
-//
-// $ gcc cwave_driver.c cwave_func.c -o cwave_driver
-//
-// use it as follows:
-//
-// ./cwave_driver audio.wav       => print info about the WAVE file
-// ./cwave_driver audio.wav 0 100 => print the value of the first 100 samples, as (signed) double
-// ./cwave_driver audio.wav 25 75 => print the value of the samples with index (starting at 0) 25-99, as (signed) double
-//
 
 #include <stdio.h>
 #include <string.h>
@@ -35,17 +21,32 @@ __status__ = "Production"
 
 #include "cwave_func.h"
 
+#define DRIVER_SUCCESS 0
+#define DRIVER_FAILURE 1
+
+// print usage
+void _usage(const char *prog) {
+    printf("\n");
+    printf("Usage: $ %s AUDIO.wav [FROM_SAMPLE] [NUM_SAMPLES]\n", prog);
+    printf("\n");
+    printf("Example: %s ../tools/res/audio.wav\n", prog);
+    printf("         %s ../tools/res/audio.wav 0 100\n", prog);
+    printf("         %s ../tools/res/audio.wav 25 75\n", prog);
+    printf("\n");
+}
+
 int main(int argc, char **argv) {
     FILE *audio_file_ptr;
     struct WAVE_INFO audio_info;
     char *filename;
     double *buffer;
     double duration;
-    unsigned int i, from_sample, num_samples;
+    uint32_t i, from_sample, num_samples;   // a WAVE file cannot have more 2^32 samples
 
+    // parse arguments
     if (argc < 2) {
-        printf("\nUsage: $ %s AUDIO.wav [FROM_SAMPLE] [NUM_SAMPLES]\n\n", argv[0]);
-        return 1;
+        _usage(argv[0]);
+        return DRIVER_FAILURE;
     }
     filename = argv[1];
     from_sample = 0;
@@ -55,20 +56,24 @@ int main(int argc, char **argv) {
         num_samples = atol(argv[3]);
     }
 
-    memset(&audio_info, 0, sizeof(audio_info));
-    if (!(audio_file_ptr = wave_open(filename, &audio_info))) {
+    audio_file_ptr = wave_open(filename, &audio_info);
+    if (audio_file_ptr == NULL) {
         printf("Error: cannot open file %s\n", filename);
-        return 1;
+        return DRIVER_FAILURE;
     }
     duration = 1.0 * audio_info.coNumSamples / audio_info.leSampleRate;
 
     if (num_samples > 0) {
         buffer = (double *)calloc(num_samples, sizeof(double));
-        if (!wave_read_double(audio_file_ptr, &audio_info, buffer, from_sample, num_samples)) {
+        if (buffer == NULL) {
+            printf("Error: cannot allocate buffer\n");
+            return DRIVER_FAILURE;
+        }
+        if (wave_read_double(audio_file_ptr, &audio_info, buffer, from_sample, num_samples) != CWAVE_SUCCESS) {
             printf("Error: cannot read the specified range: %u %u\n", from_sample, num_samples);
             free((void *)buffer);
             buffer = NULL;
-            return 1;
+            return DRIVER_FAILURE;
         }
         for (i = 0; i < num_samples; ++i) {
             printf("%.12f\n", buffer[i]);
@@ -86,5 +91,5 @@ int main(int argc, char **argv) {
     }
 
     wave_close(audio_file_ptr);
-    return 0;
+    return DRIVER_SUCCESS;
 }

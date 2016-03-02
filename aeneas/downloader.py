@@ -19,7 +19,7 @@ __copyright__ = """
     Copyright 2015-2016, Alberto Pettarin (www.albertopettarin.it)
     """
 __license__ = "GNU AGPL v3"
-__version__ = "1.4.1"
+__version__ = "1.5.0"
 __email__ = "aeneas@readbeyond.it"
 __status__ = "Production"
 
@@ -37,8 +37,8 @@ class Downloader(object):
     TAG = u"Downloader"
 
     def __init__(self, rconf=None, logger=None):
-        self.logger = logger or Logger()
-        self.rconf = rconf or RuntimeConfiguration()
+        self.logger = logger if logger is not None else Logger()
+        self.rconf = rconf if rconf is not None else RuntimeConfiguration()
 
     def _log(self, message, severity=Logger.DEBUG):
         """ Log """
@@ -73,25 +73,19 @@ class Downloader(object):
 
         Return the path of the downloaded file.
 
-        :param source_url: the URL of the YouTube video
-        :type  source_url: string (url)
-        :param download: if ``True``, download the audio stream
-                         best matching ``preferred_index`` or ``preferred_format``
-                         and ``largest_audio``;
-                         if ``False``, return the list of available audio streams
-        :type  download: bool
-        :param output_file_path: the path where the downloaded audio should be saved;
-                                 if ``None``, create a temporary file
-        :type  output_file_path: string (path)
-        :param preferred_index: preferably download this audio stream
-        :type  preferred_index: int
-        :param largest_audio: if ``True``, download the largest audio stream available;
-                              if ``False``, download the smallest one.
-        :type  largest_audio: bool
-        :param preferred_format: preferably download this audio format
-        :type  preferred_format: string
+        :param string source_url: the URL of the YouTube video
+        :param bool download: if ``True``, download the audio stream
+                              best matching ``preferred_index`` or ``preferred_format``
+                              and ``largest_audio``;
+                              if ``False``, return the list of available audio streams
+        :param string output_file_path: the path where the downloaded audio should be saved;
+                                        if ``None``, create a temporary file
+        :param int preferred_index: preferably download this audio stream
+        :param bool largest_audio: if ``True``, download the largest audio stream available;
+                                   if ``False``, download the smallest one.
+        :param string preferred_format: preferably download this audio format
 
-        :rtype: string (path) or list of pafy audio streams
+        :rtype: string or list of pafy audio streams
 
         :raise ImportError: if ``pafy`` is not installed
         :raise OSError: if ``output_file_path`` cannot be written
