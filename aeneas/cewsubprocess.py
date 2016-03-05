@@ -62,7 +62,7 @@ class CEWSubprocess(object):
         """ Log """
         self.logger.log(message, severity, self.TAG)
 
-    def synthesize_single(self, audio_file_path, language, text):
+    def synthesize_single(self, audio_file_path, voice_code, text):
         """
         Create a ``wav`` audio file containing the synthesized text.
 
@@ -70,14 +70,13 @@ class CEWSubprocess(object):
         otherwise ``espeak`` might fail.
 
         Return the duration of the synthesized audio file, in seconds.
-        
+
         :param string audio_file_path: the path of the output audio file
-        :param language: the language to use
-        :type  language: :class:`aeneas.language.Language`
+        :param string voice_code: the code of the voice to use
         :param string text: the text to synthesize
         :rtype: float
         """
-        u_text = [(language, text)]
+        u_text = [(voice_code, text)]
         sr, sf, intervals = self.synthesize_multiple(audio_file_path, 0, 0, u_text)
         if len(intervals) > 0:
             return intervals[0][1]
@@ -106,12 +105,12 @@ class CEWSubprocess(object):
 
         self._log(u"Populating the text file...")
         with io.open(text_file_path, "w", encoding="utf-8") as tmp_text_file:
-            for f_lang, f_text in u_text:
-                tmp_text_file.write(u"%s %s\n" % (f_lang, f_text))
+            for f_voice_code, f_text in u_text:
+                tmp_text_file.write(u"%s %s\n" % (f_voice_code, f_text))
         self._log(u"Populating the text file... done")
 
         arguments = [
-            self.rconf["cew_subprocess_path"],
+            self.rconf[RuntimeConfiguration.CEW_SUBPROCESS_PATH],
             "-m",
             "aeneas.cewsubprocess",
             "%.3f" % c_quit_after,
@@ -128,7 +127,7 @@ class CEWSubprocess(object):
             stderr=subprocess.PIPE,
             universal_newlines=True)
         proc.communicate()
-        
+
         self._log(u"Reading output data...")
         with io.open(data_file_path, "r", encoding="utf-8") as data_file:
             lines = data_file.read().splitlines()
@@ -175,19 +174,19 @@ def main():
             line = line.replace(u"\n", u"").replace(u"\r", u"")
             idx = line.find(" ")
             if idx > 0:
-                f_lang = line[:idx]
+                f_voice_code = line[:idx]
                 f_text = line[idx+1:]
-                #print("%s => '%s' and '%s'" % (line, f_lang, f_text))
-                s_text.append((f_lang, f_text))
+                #print("%s => '%s' and '%s'" % (line, f_voice_code, f_text))
+                s_text.append((f_voice_code, f_text))
 
     # convert to bytes/unicode as required by subprocess
     c_text = []
     if gf.PY2:
-        for f_lang, f_text in s_text:
-            c_text.append((gf.safe_bytes(f_lang), gf.safe_bytes(f_text)))
+        for f_voice_code, f_text in s_text:
+            c_text.append((gf.safe_bytes(f_voice_code), gf.safe_bytes(f_text)))
     else:
-        for f_lang, f_text in s_text:
-            c_text.append((gf.safe_unicode(f_lang), gf.safe_unicode(f_text)))
+        for f_voice_code, f_text in s_text:
+            c_text.append((gf.safe_unicode(f_voice_code), gf.safe_unicode(f_text)))
 
     try:
         # synthesize with cew
@@ -203,7 +202,7 @@ def main():
         with io.open(data_file_path, "w", encoding="utf-8") as data:
             data.write(u"%d\n" % (sr))
             data.write(u"%d\n" % (sf))
-            data.write(u"\n".join([u"%.6f %.6f" % (i[0], i[1]) for i in intervals ]))
+            data.write(u"\n".join([u"%.6f %.6f" % (i[0], i[1]) for i in intervals]))
 
     except Exception as exc:
         print(u"Exception %s" % str(exc))

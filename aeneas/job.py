@@ -69,11 +69,11 @@ class Job(object):
     def __str__(self):
         return gf.safe_str(self.__unicode__())
 
-    def append_task(self, task):
+    def add_task(self, task):
         """
-        Append a task to this job.
+        Add a task to this job.
 
-        :param task: the task to be appended
+        :param task: the task to be added
         :type  task: :class:`aeneas.task.Task`
         """
         self.tasks.append(task)

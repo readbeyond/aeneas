@@ -42,6 +42,13 @@ class TestExecuteJobCLI(unittest.TestCase):
             ("", "-r=\"c_extensions=False\"")
         ], 0)
 
+    def test_exec_container_cew_subprocess_flag(self):
+        self.execute([
+            ("in", "../tools/res/job.zip"),
+            ("out", ""),
+            ("", "--cewsubprocess")
+        ], 0)
+
     def test_exec_container_cew_subprocess(self):
         self.execute([
             ("in", "../tools/res/job.zip"),

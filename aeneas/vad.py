@@ -62,20 +62,20 @@ class VAD(object):
         :type  wave_energy: numpy 1D array
         """
         self._log(u"Computing VAD for wave")
-        mfcc_window_shift = self.rconf["mfcc_win_shift"]
-        log_energy_threshold = self.rconf["vad_log_energy_thr"]
-        min_nonspeech_length = int(self.rconf["vad_min_ns_len"] / mfcc_window_shift)
-        extend_before = int(self.rconf["vad_extend_s_before"] / mfcc_window_shift)
-        extend_after = int(self.rconf["vad_extend_s_after"] / mfcc_window_shift)
+        mfcc_window_shift = self.rconf.mws
+        log_energy_threshold = self.rconf[RuntimeConfiguration.VAD_LOG_ENERGY_THRESHOLD]
+        min_nonspeech_length = int(self.rconf[RuntimeConfiguration.VAD_MIN_NONSPEECH_LENGTH] / mfcc_window_shift)
+        extend_before = int(self.rconf[RuntimeConfiguration.VAD_EXTEND_SPEECH_INTERVAL_BEFORE] / mfcc_window_shift)
+        extend_after = int(self.rconf[RuntimeConfiguration.VAD_EXTEND_SPEECH_INTERVAL_AFTER] / mfcc_window_shift)
         energy_length = len(wave_energy)
         energy_threshold = numpy.min(wave_energy) + log_energy_threshold
         self._log([u"MFCC window shift (s):         %.3f", mfcc_window_shift])
         self._log([u"Log energy threshold:          %.3f", log_energy_threshold])
-        self._log([u"Min nonspeech length (s):      %.3f", self.rconf["vad_min_ns_len"]])
+        self._log([u"Min nonspeech length (s):      %.3f", self.rconf[RuntimeConfiguration.VAD_MIN_NONSPEECH_LENGTH]])
         self._log([u"Min nonspeech length (frames): %d", min_nonspeech_length])
-        self._log([u"Extend speech before (s):      %.3f", self.rconf["vad_extend_s_before"]])
+        self._log([u"Extend speech before (s):      %.3f", self.rconf[RuntimeConfiguration.VAD_EXTEND_SPEECH_INTERVAL_BEFORE]])
         self._log([u"Extend speech before (frames): %d", extend_before])
-        self._log([u"Extend speech after (s):       %.3f", self.rconf["vad_extend_s_after"]])
+        self._log([u"Extend speech after (s):       %.3f", self.rconf[RuntimeConfiguration.VAD_EXTEND_SPEECH_INTERVAL_AFTER]])
         self._log([u"Extend speech after (frames):  %d", extend_after])
         self._log([u"Energy vector length (frames): %d", energy_length])
         self._log([u"Energy threshold (log):        %.3f", energy_threshold])

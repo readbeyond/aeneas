@@ -569,12 +569,12 @@ class Validator(object):
             self._failed(u"Unable to create at least one Task from the container.")
             return
 
-        if self.rconf["job_max_tasks"] > 0:
+        if self.rconf[RuntimeConfiguration.JOB_MAX_TASKS] > 0:
             self._log(u"Checking that the Job does not have too many Tasks")
-            if len(job) > self.rconf["job_max_tasks"]:
+            if len(job) > self.rconf[RuntimeConfiguration.JOB_MAX_TASKS]:
                 self._failed(u"The Job has %d Tasks, more than the maximum allowed (%d)." % (
                     len(job),
-                    self.rconf["job_max_tasks"]
+                    self.rconf[RuntimeConfiguration.JOB_MAX_TASKS]
                 ))
                 return
 

@@ -11,6 +11,7 @@ from __future__ import print_function
 import sys
 
 from aeneas.language import Language
+from aeneas.runtimeconfiguration import RuntimeConfiguration
 from aeneas.synthesizer import Synthesizer
 from aeneas.tools.abstract_cli_program import AbstractCLIProgram
 import aeneas.globalconstants as gc
@@ -107,7 +108,7 @@ class SynthesizeTextCLI(AbstractCLIProgram):
             return self.ERROR_EXIT_CODE
 
         language = gf.safe_unicode(self.actual_arguments[2])
-        if (not language in Language.ALLOWED_VALUES) and (not self.rconf["allow_unlisted_languages"]):
+        if (not language in Language.ALLOWED_VALUES) and (not self.rconf[RuntimeConfiguration.ALLOW_UNLISTED_LANGUAGES]):
             self.print_error(u"Language '%s' is not supported" % (language))
             return self.ERROR_EXIT_CODE
 

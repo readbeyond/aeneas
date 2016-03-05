@@ -50,14 +50,14 @@ class MFCC(object):
         self.rconf = rconf if rconf is not None else RuntimeConfiguration()
 
         # store parameters in local attributes
-        self.filter_bank_size = self.rconf["mfcc_filters"]
-        self.mfcc_size = self.rconf["mfcc_size"]
-        self.fft_order = self.rconf["mfcc_order"]
-        self.lower_frequency = self.rconf["mfcc_lower_freq"]
-        self.upper_frequency = self.rconf["mfcc_upper_freq"]
-        self.emphasis_factor = self.rconf["mfcc_emph"]
-        self.window_length = self.rconf["mfcc_win_len"]
-        self.window_shift = self.rconf["mfcc_win_shift"]
+        self.filter_bank_size = self.rconf[RuntimeConfiguration.MFCC_FILTERS]
+        self.mfcc_size = self.rconf[RuntimeConfiguration.MFCC_SIZE]
+        self.fft_order = self.rconf[RuntimeConfiguration.MFCC_FFT_ORDER]
+        self.lower_frequency = self.rconf[RuntimeConfiguration.MFCC_LOWER_FREQUENCY]
+        self.upper_frequency = self.rconf[RuntimeConfiguration.MFCC_UPPER_FREQUENCY]
+        self.emphasis_factor = self.rconf[RuntimeConfiguration.MFCC_EMPHASIS_FACTOR]
+        self.window_length = self.rconf[RuntimeConfiguration.MFCC_WINDOW_LENGTH]
+        self.window_shift = self.rconf[RuntimeConfiguration.MFCC_WINDOW_SHIFT]
 
         # initialize DCT matrix
         self._create_dct_matrix()
@@ -122,7 +122,7 @@ class MFCC(object):
         dmelbw = (melmax - melmin) / (self.filter_bank_size + 1)
         filt_edge = MFCC._mel2hz(melmin + dmelbw * numpy.arange(self.filter_bank_size + 2, dtype='d'))
 
-        # TODO numpify this code
+        # TODO can this code be written more numpy-style?
         #      (the performance loss is negligible, it is just ugly to see)
         for whichfilt in range(0, self.filter_bank_size):
             # int() casts to native int instead of working with numpy.float64

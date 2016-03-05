@@ -96,12 +96,18 @@ setup(
         "lxml>=3.0",
         "numpy>=1.9"
     ],
-    extras_require={"pafy": ["pafy>=0.3"]},
+    extras_require={
+        "full": ["pafy>=0.3.74", "Pillow>=3.1.1", "poio-api>=0.3.6"],
+        "pafy": ["pafy>=0.3.74"],
+        "pillow": ["Pillow>=3.1.1"],
+        "poio": ["poio-api>=0.3.6"]
+    },
     scripts=[
         "bin/aeneas_convert_syncmap",
         "bin/aeneas_download",
         "bin/aeneas_execute_job",
         "bin/aeneas_execute_task",
+        "bin/aeneas_plot_waveform",
         "bin/aeneas_synthesize_text",
         "bin/aeneas_validate",
     ],

@@ -12,8 +12,9 @@ from __future__ import print_function
 import sys
 
 from aeneas.executejob import ExecuteJob
-from aeneas.tools.abstract_cli_program import AbstractCLIProgram
+from aeneas.runtimeconfiguration import RuntimeConfiguration
 from aeneas.validator import Validator
+from aeneas.tools.abstract_cli_program import AbstractCLIProgram
 import aeneas.globalfunctions as gf
 
 __author__ = "Alberto Pettarin"
@@ -50,6 +51,7 @@ class ExecuteJobCLI(AbstractCLIProgram):
             u"%s %s \"%s\"" % (CONTAINER_FILE_NO_CONFIG, OUTPUT_DIRECTORY, CONFIG_STRING)
         ],
         "options": [
+            u"--cewsubprocess : run cewsubprocess"
             u"--skip-validator : do not validate the given container and/or config string"
         ]
     }
@@ -68,6 +70,8 @@ class ExecuteJobCLI(AbstractCLIProgram):
         if (len(self.actual_arguments)) > 2 and (not self.actual_arguments[2].startswith(u"-")):
             config_string = self.actual_arguments[2]
         validate = not self.has_option(u"--skip-validator")
+        if self.has_option(u"--cewsubprocess"):
+            self.rconf[RuntimeConfiguration.CEW_SUBPROCESS_ENABLED] = True
 
         if not self.check_input_file(container_path):
             return self.ERROR_EXIT_CODE

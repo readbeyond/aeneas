@@ -227,7 +227,7 @@ class TestSynthesizeTextCLI(unittest.TestCase):
                 ("in", "../tools/res/plain.txt"),
                 ("", "en"),
                 ("out", "synthesized.wav"),
-                ("", "-r=\"c_extensions=False|espeak_path=%s\"" % path)
+                ("", "-r=\"c_extensions=False|tts=espeak|tts_path=%s\"" % path)
             ], 0)
 
     def test_synt_path_bad(self):
@@ -237,7 +237,7 @@ class TestSynthesizeTextCLI(unittest.TestCase):
             ("in", "../tools/res/plain.txt"),
             ("", "en"),
             ("out", "synthesized.wav"),
-            ("", "-r=\"c_extensions=False|espeak_path=%s\"" % path)
+            ("", "-r=\"c_extensions=False|tts=espeak|tts_path=%s\"" % path)
         ], 1)
 
 

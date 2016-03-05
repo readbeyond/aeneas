@@ -15,6 +15,7 @@ from aeneas.task import Task
 from aeneas.task import TaskConfiguration
 from aeneas.textfile import TextFileFormat
 from aeneas.textfile import TextFragment
+from aeneas.timevalue import TimeValue
 import aeneas.globalfunctions as gf
 
 class TestTask(unittest.TestCase):
@@ -22,11 +23,11 @@ class TestTask(unittest.TestCase):
     def dummy_sync_map(self):
         sync_map = SyncMap()
         frag = TextFragment(u"f001", Language.EN, [u"Fragment 1"])
-        sync_map.append_fragment(SyncMapFragment(frag, 0, 12.345))
+        sync_map.add_fragment(SyncMapFragment(frag, 0, 12.345))
         frag = TextFragment(u"f002", Language.EN, [u"Fragment 2"])
-        sync_map.append_fragment(SyncMapFragment(frag, 12.345, 23.456))
+        sync_map.add_fragment(SyncMapFragment(frag, 12.345, 23.456))
         frag = TextFragment(u"f003", Language.EN, [u"Fragment 3"])
-        sync_map.append_fragment(SyncMapFragment(frag, 23.456, 34.567))
+        sync_map.add_fragment(SyncMapFragment(frag, 23.456, 34.567))
         return sync_map
 
     def setter(self, attribute, value, expected):
@@ -117,7 +118,7 @@ class TestTask(unittest.TestCase):
         task.audio_file_path_absolute = gf.absolute_path("res/container/job/assets/p001.mp3", __file__)
         self.assertIsNotNone(task.audio_file)
         self.assertEqual(task.audio_file.file_size, 426735)
-        self.assertAlmostEqual(task.audio_file.audio_length, 53.3, places=1)
+        self.assertAlmostEqual(task.audio_file.audio_length, TimeValue("53.3"), places=1)
 
     def test_set_audio_file_path_absolute_error(self):
         task = Task()
@@ -216,13 +217,13 @@ class TestTask(unittest.TestCase):
         self.setter("aba_algorithm", AdjustBoundaryAlgorithm.AUTO, AdjustBoundaryAlgorithm.AUTO)
 
     def test_tc_adjust_boundary_aftercurrent_value(self):
-        self.setter("aba_aftercurrent_value", u"0.100", 0.100)
+        self.setter("aba_aftercurrent_value", u"0.100", TimeValue("0.100"))
 
     def test_tc_adjust_boundary_beforenext_value(self):
-        self.setter("aba_beforenext_value", u"0.100", 0.100)
+        self.setter("aba_beforenext_value", u"0.100", TimeValue("0.100"))
 
     def test_tc_adjust_boundary_offset_value(self):
-        self.setter("aba_offset_value", u"0.100", 0.100)
+        self.setter("aba_offset_value", u"0.100", TimeValue("0.100"))
 
     def test_tc_adjust_boundary_percent_value(self):
         self.setter("aba_percent_value", u"75", 75)

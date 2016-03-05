@@ -10,10 +10,11 @@ from __future__ import division
 from __future__ import print_function
 import numpy
 
-from aeneas.audiofile import AudioFileMonoWAVE
+from aeneas.audiofile import AudioFile
 from aeneas.logger import Logger
 from aeneas.mfcc import MFCC
 from aeneas.runtimeconfiguration import RuntimeConfiguration
+from aeneas.timevalue import TimeValue
 from aeneas.vad import VAD
 import aeneas.globalfunctions as gf
 
@@ -45,15 +46,16 @@ class AudioFileMFCC(object):
         HEAD   = :middle_begin
         MIDDLE = middle_begin:middle_end
         TAIL   = middle_end:
-    
+
     HEAD and TAIL are ignored for alignment purposes.
 
     This class heavily uses NumPy views, and in-place operations
     to avoid creating temporary data or copying data around.
 
     :param string file_path: the path of the PCM16 mono WAVE file, or ``None``
-    :param audio_file: the mono WAVE file, or ``None``
-    :type  audio_file: :class:`aeneas.audiofile.AudioFileMonoWAVE`
+    :param bool file_path_is_mono_wave: set to ``True`` if the audio file at ``file_path`` is a PCM16 mono WAVE file
+    :param audio_file: an audio file, or ``None``
+    :type  audio_file: :class:`aeneas.audiofile.AudioFile`
     :param rconf: a runtime configuration. Default: ``None``, meaning that
                   default settings will be used.
     :type  rconf: :class:`aeneas.runtimeconfiguration.RuntimeConfiguration`
@@ -66,8 +68,16 @@ class AudioFileMFCC(object):
     """
 
     TAG = u"AudioFileMFCC"
-    
-    def __init__(self, file_path=None, mfcc_matrix=None, audio_file=None, rconf=None, logger=None):
+
+    def __init__(
+            self,
+            file_path=None,
+            file_path_is_mono_wave=False,
+            mfcc_matrix=None,
+            audio_file=None,
+            rconf=None,
+            logger=None
+    ):
         if (file_path is None) and (audio_file is None) and (mfcc_matrix is None):
             raise ValueError(u"You must initialize with at least one of: file_path, audio_file, or mfcc_matrix")
         self.logger = logger if logger is not None else Logger()
@@ -83,23 +93,33 @@ class AudioFileMFCC(object):
         self._log(u"Initializing MFCCs...")
         if mfcc_matrix is not None:
             self.__mfcc = mfcc_matrix
-            self.audio_length = float(self.all_length) * self.rconf["mfcc_window_shift"] 
+            self.audio_length = self.all_length * self.rconf.mws
         elif (self.file_path is not None) or (self.audio_file is not None):
+            audio_file_was_none = False
             if self.audio_file is None:
-                self.audio_file = AudioFileMonoWAVE(self.file_path, rconf=self.rconf, logger=self.logger)
+                audio_file_was_none = True
+                self.audio_file = AudioFile(
+                    self.file_path,
+                    is_mono_wave=file_path_is_mono_wave,
+                    rconf=self.rconf,
+                    logger=self.logger
+                )
+                # NOTE load audio samples into memory, if not present already
+                self.audio_file.audio_samples
             gf.run_c_extension_with_fallback(
                 self._log,
                 "cmfcc",
                 self._compute_mfcc_c_extension,
                 self._compute_mfcc_pure_python,
                 (),
-                c_extension=self.rconf["c_ext"]
+                c_extension=self.rconf[RuntimeConfiguration.C_EXTENSIONS]
             )
             self.audio_length = self.audio_file.audio_length
-            self._log(u"Clearing the audio data...")
-            self.audio_file.clear_data()
-            self.audio_file = None
-            self._log(u"Clearing the audio data... done")
+            if audio_file_was_none:
+                self._log(u"Clearing the audio data...")
+                self.audio_file.clear_data()
+                self.audio_file = None
+                self._log(u"Clearing the audio data... done")
         self.__middle_begin = 0
         self.__middle_end = self.__mfcc.shape[1]
         self._log(u"Initializing MFCCs... done")
@@ -110,8 +130,8 @@ class AudioFileMFCC(object):
 
     def __unicode__(self):
         msg = [
-            u"File path:         %s" % self.file_path,
-            u"Audio length (s):  %s" % gf.safe_float(self.audio_length),
+            u"File path:        %s" % self.file_path,
+            u"Audio length (s): %s" % gf.safe_float(self.audio_length),
         ]
         return u"\n".join(msg)
 
@@ -219,7 +239,7 @@ class AudioFileMFCC(object):
         computed as ``number of samples / sample_rate``,
         hence it might differ than ``len(self.__mfcc) * mfcc_window_shift``.
 
-        :rtype: float
+        :rtype: :class:`aeneas.timevalue.TimeValue`
         """
         return self.__audio_length
     @audio_length.setter
@@ -264,7 +284,7 @@ class AudioFileMFCC(object):
     def masked_map(self):
         """
         Return the map
-        from the MFCC speech frame indices 
+        from the MFCC speech frame indices
         to the MFCC FULL frame indices.
 
         :rtype: numpy 1D array
@@ -325,14 +345,14 @@ class AudioFileMFCC(object):
         """
         Return a list of intervals::
 
-        [[b_1, e_1], [b_2, e_2], ..., [b_k, e_k]]
+        [(b_1, e_1), (b_2, e_2), ..., (b_k, e_k)]
 
         where ``b_i`` is the time when the ``i``-th interval begins,
         and ``e_i`` is the time when it ends.
 
         :param bool speech: if ``True``, return speech intervals,
                             otherwise return nonspeech intervals
-        :param bool time: if ``True``, return values in seconds (float),
+        :param bool time: if ``True``, return values in seconds (TimeValue),
                           otherwise in indices (int)
         :rtype: list of pairs (see above)
         """
@@ -344,7 +364,7 @@ class AudioFileMFCC(object):
             self._log(u"Converting nonspeech runs to intervals")
             intervals = self.__nonspeech_intervals
         if time:
-            mws = self.rconf["mfcc_win_shift"]
+            mws = self.rconf.mws
             return [(i[0] * mws, (i[1] + 1) * mws) for i in intervals]
         return intervals
 
@@ -364,7 +384,8 @@ class AudioFileMFCC(object):
             return None
         return self._binary_search_intervals(self.__nonspeech_intervals, index)
 
-    def _binary_search_intervals(self, intervals, index):
+    @classmethod
+    def _binary_search_intervals(cls, intervals, index):
         """
         Binary search for the interval containing index,
         assuming there is such an interval.
@@ -372,7 +393,7 @@ class AudioFileMFCC(object):
         """
         start = 0
         end = len(intervals) - 1
-        while (start <= end):
+        while start <= end:
             middle_index = start + ((end - start) // 2)
             middle = intervals[middle_index]
             if (middle[0] <= index) and (index < middle[1]):
@@ -444,14 +465,14 @@ class AudioFileMFCC(object):
             self.__mfcc = (aeneas.cmfcc.cmfcc.compute_from_data(
                 self.audio_file.audio_samples,
                 self.audio_file.audio_sample_rate,
-                self.rconf["mfcc_filters"],
-                self.rconf["mfcc_size"],
-                self.rconf["mfcc_order"],
-                self.rconf["mfcc_lower_freq"],
-                self.rconf["mfcc_upper_freq"],
-                self.rconf["mfcc_emph"],
-                self.rconf["mfcc_win_len"],
-                self.rconf["mfcc_win_shift"]
+                self.rconf[RuntimeConfiguration.MFCC_FILTERS],
+                self.rconf[RuntimeConfiguration.MFCC_SIZE],
+                self.rconf[RuntimeConfiguration.MFCC_FFT_ORDER],
+                self.rconf[RuntimeConfiguration.MFCC_LOWER_FREQUENCY],
+                self.rconf[RuntimeConfiguration.MFCC_UPPER_FREQUENCY],
+                self.rconf[RuntimeConfiguration.MFCC_EMPHASIS_FACTOR],
+                self.rconf[RuntimeConfiguration.MFCC_WINDOW_LENGTH],
+                self.rconf[RuntimeConfiguration.MFCC_WINDOW_SHIFT]
             )[0]).transpose()
             self._log(u"Computing MFCCs using C extension... done")
             return (True, None)
@@ -532,29 +553,44 @@ class AudioFileMFCC(object):
         vad = VAD(rconf=self.rconf, logger=self.logger)
         self._log(u"Running VAD...")
         self.__mfcc_mask = vad.run_vad(self.__mfcc[0])
-        self.__mfcc_mask_map = (numpy.where(self.__mfcc_mask == True))[0]
+        self.__mfcc_mask_map = (numpy.where(self.__mfcc_mask))[0]
         self._log(u"Running VAD... done")
         self._log(u"Storing speech and nonspeech intervals...")
-        #runs = _compute_runs((numpy.where(self.__mfcc_mask == True))[0])
+        # where( == True) already computed, reusing
+        #runs = _compute_runs((numpy.where(self.__mfcc_mask))[0])
         runs = _compute_runs(self.__mfcc_mask_map)
         self.__speech_intervals = [(r[0], r[-1]) for r in runs]
-        runs = _compute_runs((numpy.where(self.__mfcc_mask == False))[0])
+        # where( == False) not already computed, computing now
+        runs = _compute_runs((numpy.where(~self.__mfcc_mask))[0])
         self.__nonspeech_intervals = [(r[0], r[-1]) for r in runs]
         self._log(u"Storing speech and nonspeech intervals... done")
 
     def set_head_middle_tail(self, head_length=None, middle_length=None, tail_length=None):
         """
-        Set HEAD, MIDDLE, TAIL explicitly.
+        Set the HEAD, MIDDLE, TAIL explicitly.
 
         If a parameter is ``None``, it will be ignored.
-        If both MIDDLE and TAIL are specified, only MIDDLE will be applied.
+        If both ``middle_length`` and ``tail_length`` are specified,
+        only ``middle_length`` will be applied.
 
-        :param float head_length: the length of HEAD, in seconds
-        :param float middle_length: the length of MIDDLE, in seconds
-        :param float tail_length: the length of TAIL, in seconds
+        :param head_length: the length of HEAD, in seconds
+        :type  head_length: :class:`aeneas.timevalue.TimeValue` 
+        :param middle_length: the length of MIDDLE, in seconds
+        :type  middle_length: :class:`aeneas.timevalue.TimeValue`
+        :param tail_length: the length of TAIL, in seconds
+        :type  tail_length: :class:`aeneas.timevalue.TimeValue`
+        :raises: TypeError if one of the arguments is not ``None``
+                 or :class:`aeneas.timevalue.TimeValue`
         """
+        for variable, name in [
+            (head_length, "head_length"),
+            (middle_length, "middle_length"),
+            (tail_length, "tail_length")
+        ]:
+            if (variable is not None) and (not isinstance(variable, TimeValue)):
+                raise TypeError("%s is not None or TimeValue" % name)
         self._log(u"Setting head middle tail...")
-        mws = self.rconf["mfcc_win_shift"]
+        mws = self.rconf.mws
         self._log([u"Before: 0 %d %d %d", self.middle_begin, self.middle_end, self.all_length])
         if head_length is not None:
             self.middle_begin = int(head_length / mws)

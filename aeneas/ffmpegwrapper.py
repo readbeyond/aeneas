@@ -189,14 +189,14 @@ class FFMPEGWrapper(object):
             raise OSError("Output file cannot be written")
 
         # call ffmpeg
-        arguments = [self.rconf["ffmpeg_path"]]
+        arguments = [self.rconf[RuntimeConfiguration.FFMPEG_PATH]]
         arguments.extend(["-i", input_file_path])
         if head_length is not None:
             arguments.extend(["-ss", head_length])
         if process_length is not None:
             arguments.extend(["-t", process_length])
-        if self.rconf["ffmpeg_sample_rate"] in self.FFMPEG_PARAMETERS_MAP:
-            arguments.extend(self.FFMPEG_PARAMETERS_MAP[self.rconf["ffmpeg_sample_rate"]])
+        if self.rconf[RuntimeConfiguration.FFMPEG_SAMPLE_RATE] in self.FFMPEG_PARAMETERS_MAP:
+            arguments.extend(self.FFMPEG_PARAMETERS_MAP[self.rconf[RuntimeConfiguration.FFMPEG_SAMPLE_RATE]])
         else:
             arguments.extend(self.FFMPEG_PARAMETERS_DEFAULT)
         arguments.append(output_file_path)
@@ -213,7 +213,7 @@ class FFMPEGWrapper(object):
             proc.stdin.close()
             proc.stderr.close()
         except OSError:
-            self._log([u"Unable to call the '%s' ffmpeg executable", self.rconf["ffmpeg_path"]], Logger.CRITICAL)
+            self._log([u"Unable to call the '%s' ffmpeg executable", self.rconf[RuntimeConfiguration.FFMPEG_PATH]], Logger.CRITICAL)
             raise FFMPEGPathError("Unable to call the specified ffmpeg executable")
         self._log(u"Call completed")
 

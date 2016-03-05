@@ -11,10 +11,11 @@ import io
 import sys
 import numpy
 
-from aeneas.audiofile import AudioFileMonoWAVENotInitialized
+from aeneas.audiofile import AudioFileConverterError
+from aeneas.audiofile import AudioFileNotInitialized
 from aeneas.audiofile import AudioFileUnsupportedFormatError
 from aeneas.audiofilemfcc import AudioFileMFCC
-from aeneas.ffmpegwrapper import FFMPEGWrapper
+from aeneas.runtimeconfiguration import RuntimeConfiguration
 from aeneas.tools.abstract_cli_program import AbstractCLIProgram
 import aeneas.globalfunctions as gf
 
@@ -82,20 +83,8 @@ class ExtractMFCCCLI(AbstractCLIProgram):
         if not self.check_output_file(output_file_path):
             return self.ERROR_EXIT_CODE
 
-        tmp_handler, tmp_file_path = gf.tmp_file(suffix=u".wav", root=self.rconf["tmp_path"])
         try:
-            self.print_info(u"Converting audio file to mono...")
-            converter = FFMPEGWrapper(rconf=self.rconf, logger=self.logger)
-            converter.convert(input_file_path, tmp_file_path)
-            self.print_info(u"Converting audio file to mono... done")
-        except OSError:
-            self.print_error(u"Cannot convert audio file '%s'" % input_file_path)
-            self.print_error(u"Check that its format is supported by ffmpeg")
-            return self.ERROR_EXIT_CODE
-
-        try:
-            mfccs = AudioFileMFCC(tmp_file_path, rconf=self.rconf, logger=self.logger).all_mfcc
-            gf.delete_file(tmp_handler, tmp_file_path)
+            mfccs = AudioFileMFCC(input_file_path, rconf=self.rconf, logger=self.logger).all_mfcc
             if delete_first:
                 mfccs = mfccs[1:, :]
             if transpose:
@@ -122,9 +111,12 @@ class ExtractMFCCCLI(AbstractCLIProgram):
             self.print_info(u"MFCCs shape: %d %d" % (mfccs.shape))
             self.print_info(u"MFCCs saved to %s" % (output_file_path))
             return self.NO_ERROR_EXIT_CODE
-        except (AudioFileUnsupportedFormatError, AudioFileMonoWAVENotInitialized):
-            self.print_error(u"Cannot read file '%s'" % (tmp_file_path))
-            self.print_error(u"Check that it is a mono WAV file")
+        except AudioFileConverterError:
+            self.print_error(u"Unable to call the ffmpeg executable '%s'" % (self.rconf[RuntimeConfiguration.FFMPEG_PATH]))
+            self.print_error(u"Make sure the path to ffmpeg is correct")
+        except (AudioFileUnsupportedFormatError, AudioFileNotInitialized):
+            self.print_error(u"Cannot read file '%s'" % (input_file_path))
+            self.print_error(u"Check that its format is supported by ffmpeg")
         except OSError:
             self.print_error(u"Cannot write file '%s'" % (output_file_path))
 

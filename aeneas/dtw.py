@@ -134,7 +134,7 @@ class DTWAligner(object):
             raise ValueError("Real wave cannot be read")
         if (synt_wave_path is not None) and (not gf.file_can_be_read(synt_wave_path)):
             raise ValueError("Synt wave cannot be read")
-        if (rconf is not None) and (rconf["dtw_algorithm"] not in DTWAlgorithm.ALLOWED_VALUES):
+        if (rconf is not None) and (rconf[RuntimeConfiguration.DTW_ALGORITHM] not in DTWAlgorithm.ALLOWED_VALUES):
             raise ValueError("Algorithm value not allowed")
         self.logger = logger if logger is not None else Logger()
         self.rconf = rconf if rconf is not None else RuntimeConfiguration()
@@ -218,8 +218,8 @@ class DTWAligner(object):
             raise DTWAlignerNotInitialized("The synt wave MFCCs are not initialized")
 
         # setup
-        algorithm = self.rconf["dtw_algorithm"]
-        delta = int(2 * self.rconf["dtw_margin"] / self.rconf["mfcc_win_shift"])
+        algorithm = self.rconf[RuntimeConfiguration.DTW_ALGORITHM]
+        delta = int(2 * self.rconf[RuntimeConfiguration.DTW_MARGIN] / self.rconf[RuntimeConfiguration.MFCC_WINDOW_SHIFT])
         mfcc2_length = self.synt_wave_mfcc.middle_length
         self._log([u"Requested algorithm: '%s'", algorithm])
         self._log([u"delta = %d", delta])
@@ -227,7 +227,7 @@ class DTWAligner(object):
         # check if delta is >= length of synt wave
         if mfcc2_length <= delta:
             self._log(u"We have mfcc2_length <= delta")
-            if (self.rconf["c_ext"]) and (gf.can_run_c_extension()):
+            if (self.rconf[RuntimeConfiguration.C_EXTENSIONS]) and (gf.can_run_c_extension()):
                 # the C code can be run: since it is still faster, do not run EXACT
                 self._log(u"C extensions enabled and loaded: not selecting EXACT algorithm")
             else:

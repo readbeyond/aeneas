@@ -18,6 +18,7 @@ import tempfile
 import uuid
 
 import aeneas.globalconstants as gc
+from aeneas.timevalue import TimeValue
 
 __author__ = "Alberto Pettarin"
 __copyright__ = """
@@ -53,11 +54,11 @@ def custom_tmp_dir():
     Return the path of the temporary directory to use.
 
     On POSIX OSes (Linux and OS X), return the value of
-    :class:`aeneas.globalconstants.RC_TMP_PATH_DEFAULT_POSIX`
+    :class:`aeneas.globalconstants.TMP_PATH_DEFAULT_POSIX`
     (e.g., ``/tmp/``).
 
     On non-POSIX OSes, return the value of
-    :class:`aeneas.globalconstants.RC_TMP_PATH_DEFAULT_NONPOSIX`
+    :class:`aeneas.globalconstants.TMP_PATH_DEFAULT_NONPOSIX`
     (i.e., ``None``), so that ``tempfile``
     will use the directory specified by the
     environment/user TMP/TEMP variable.
@@ -65,8 +66,8 @@ def custom_tmp_dir():
     :rtype: string
     """
     if is_posix():
-        return gc.RC_TMP_PATH_DEFAULT_POSIX
-    return gc.RC_TMP_PATH_DEFAULT_NONPOSIX
+        return gc.TMP_PATH_DEFAULT_POSIX
+    return gc.TMP_PATH_DEFAULT_NONPOSIX
 
 def tmp_directory(root=None):
     """
@@ -114,6 +115,20 @@ def file_extension(path):
     if ext.startswith("."):
         ext = ext[1:]
     return ext
+
+def mimetype_from_path(path):
+    """
+    Return a mimetype from the file extension.
+
+    :param string path: the file path
+    :rtype: string
+    """
+    extension = file_extension(path)
+    if not extension is None:
+        extension = extension.lower()
+        if extension in gc.MIMETYPE_MAP:
+            return gc.MIMETYPE_MAP[extension]
+    return None
 
 def file_name_without_extension(path):
     """
@@ -408,10 +423,10 @@ def time_from_ttml(string):
     """
     Parse the given ``SS.mmms`` string
     (TTML values have an "s" suffix, e.g. ``1.234s``)
-    and return a float time value.
+    and return a time value.
 
     :param string string: the string to be parsed
-    :rtype: float
+    :rtype: :class:`aeneas.timevalue.TimeValue` 
     """
     if (string is None) or (len(string) < 2):
         return 0
@@ -440,14 +455,14 @@ def time_to_ttml(time_value):
 
 def time_from_ssmmm(string):
     """
-    Parse the given ``SS.mmm`` string and return a float time value.
+    Parse the given ``SS.mmm`` string and return a time value.
 
     :param string string: the string to be parsed
-    :rtype: float
+    :rtype: :class:`aeneas.timevalue.TimeValue`
     """
     if (string is None) or (len(string) < 1):
-        return 0.000
-    return float(string)
+        return TimeValue("0.000")
+    return TimeValue(string)
 
 def time_to_ssmmm(time_value):
     """
@@ -469,24 +484,24 @@ def time_to_ssmmm(time_value):
 
 def time_from_hhmmssmmm(string, decimal_separator="."):
     """
-    Parse the given ``HH:MM:SS.mmm`` string and return a float time value.
+    Parse the given ``HH:MM:SS.mmm`` string and return a time value.
 
     :param string string: the string to be parsed
     :param string decimal_separator: the decimal separator to be used
-    :rtype: float
+    :rtype: :class:`aeneas.timevalue.TimeValue`
     """
     if decimal_separator == ",":
         pattern = HHMMSS_MMM_PATTERN_COMMA
     else:
         pattern = HHMMSS_MMM_PATTERN
-    v_length = 0.000
+    v_length = TimeValue("0.000")
     try:
         match = pattern.search(string)
         if match is not None:
             v_h = int(match.group(1))
             v_m = int(match.group(2))
             v_s = int(match.group(3))
-            v_f = float("0." + match.group(4))
+            v_f = TimeValue("0." + match.group(4))
             v_length = v_h * 3600 + v_m * 60 + v_s + v_f
     except:
         pass
@@ -694,7 +709,7 @@ def run_c_extension_with_fallback(
     .. versionadded:: 1.4.0
     """
     computed = False
-    if c_extension:
+    if (c_extension) and (c_function is not None):
         log_function(u"C extensions enabled")
         if can_run_c_extension(extension):
             log_function([u"C extensions enabled and %s can be loaded", extension])
@@ -703,7 +718,7 @@ def run_c_extension_with_fallback(
             log_function([u"C extensions enabled but %s cannot be loaded", extension])
     else:
         log_function(u"C extensions disabled")
-    if not computed:
+    if (not computed) and (py_function is not None):
         log_function(u"Running the pure Python code")
         computed, result = py_function(*args)
     if not computed:

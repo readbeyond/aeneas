@@ -133,7 +133,7 @@ class ExecuteJob(object):
 
         # create working directory where the input container
         # will be decompressed
-        self.working_directory = gf.tmp_directory(root=self.rconf["tmp_path"])
+        self.working_directory = gf.tmp_directory(root=self.rconf[RuntimeConfiguration.TMP_PATH])
         self._log([u"Created working directory '%s'", self.working_directory])
 
         try:
@@ -196,10 +196,10 @@ class ExecuteJob(object):
             self._failed(u"The job object is None", "execution")
         if len(self.job) == 0:
             self._failed(u"The job has no tasks", "execution")
-        if (self.rconf["job_max_tasks"] > 0) and (len(self.job) > self.rconf["job_max_tasks"]):
+        if (self.rconf[RuntimeConfiguration.JOB_MAX_TASKS] > 0) and (len(self.job) > self.rconf[RuntimeConfiguration.JOB_MAX_TASKS]):
             self._failed(u"The Job has %d Tasks, more than the maximum allowed (%d)." % (
                 len(self.job),
-                self.rconf["job_max_tasks"]
+                self.rconf[RuntimeConfiguration.JOB_MAX_TASKS]
             ), "execution")
         self._log([u"Number of tasks: '%d'", len(self.job)])
 
@@ -238,7 +238,7 @@ class ExecuteJob(object):
         # will be created
         # this temporary directory will be compressed into
         # the output container
-        self.tmp_directory = gf.tmp_directory(root=self.rconf["tmp_path"])
+        self.tmp_directory = gf.tmp_directory(root=self.rconf[RuntimeConfiguration.TMP_PATH])
         self._log([u"Created temporary directory '%s'", self.tmp_directory])
 
         for task in self.job.tasks:

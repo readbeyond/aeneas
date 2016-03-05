@@ -535,10 +535,10 @@ useful for debugging:
 
 #. ``aeneas.tools.convert_syncmap``: convert a sync map from a format to another
 #. ``aeneas.tools.download``: download a file from a Web resource (currently, audio from a YouTube video)
-#. ``aeneas.tools.espeak_wrapper``: a wrapper around ``espeak``
-#. ``aeneas.tools.extract_mfcc``: extract MFCCs from a monoaural wav file
+#. ``aeneas.tools.extract_mfcc``: extract MFCCs from a monoaural WAVE file
 #. ``aeneas.tools.ffmpeg_wrapper``: a wrapper around ``ffmpeg``
 #. ``aeneas.tools.ffprobe_wrapper``: a wrapper around ``ffprobe``
+#. ``aeneas.tools.plot_waveform``: plot a waveform and sets of labels to file
 #. ``aeneas.tools.read_audio``: read the properties of an audio file
 #. ``aeneas.tools.read_text``: read a text file and show the extracted text fragments
 #. ``aeneas.tools.run_sd``: read an audio file and the corresponding text file and detect the audio head/tail
@@ -634,6 +634,7 @@ The ``aeneas`` package contains the following modules:
     espeakwrapper
     executejob
     executetask
+    festivalwrapper
     ffmpegwrapper
     ffprobewrapper
     hierarchytype
@@ -642,12 +643,15 @@ The ``aeneas`` package contains the following modules:
     language
     logger
     mfcc
+    plotter
     runtimeconfiguration
     sd
     syncmap
     synthesizer
     task
     textfile
+    timevalue
+    ttswrapper
     vad
     validator
     globalconstants
