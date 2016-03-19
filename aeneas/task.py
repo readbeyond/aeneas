@@ -16,6 +16,7 @@ from aeneas.audiofile import AudioFile
 from aeneas.configuration import Configuration
 from aeneas.logger import Logger
 from aeneas.textfile import TextFile
+from aeneas.timevalue import TimeValue
 import aeneas.globalconstants as gc
 import aeneas.globalfunctions as gf
 
@@ -180,7 +181,11 @@ class Task(object):
         self._log([u"audio_ref is %s", audio_ref])
 
         self._log(u"Calling sync_map.write...")
+        afpa = self.audio_file_path_absolute
+        if afpa is not None:
+            afpa = os.path.abspath(afpa)
         parameters = {
+            "audio_file_path_absolute": afpa,
             gc.PPN_TASK_OS_FILE_SMIL_PAGE_REF : page_ref,
             gc.PPN_TASK_OS_FILE_SMIL_AUDIO_REF : audio_ref
         }
@@ -286,19 +291,19 @@ class TaskConfiguration(Configuration):
         (gc.PPN_TASK_CUSTOM_ID, (None, None, ["custom_id"])),
         (gc.PPN_TASK_DESCRIPTION, (None, None, ["description"])),
         (gc.PPN_TASK_LANGUAGE, (None, None, ["language"])),
-        (gc.PPN_TASK_ADJUST_BOUNDARY_AFTERCURRENT_VALUE, (None, float, ["aba_aftercurrent_value"])),
+        (gc.PPN_TASK_ADJUST_BOUNDARY_AFTERCURRENT_VALUE, (None, TimeValue, ["aba_aftercurrent_value"])),
         (gc.PPN_TASK_ADJUST_BOUNDARY_ALGORITHM, (None, None, ["aba_algorithm"])),
-        (gc.PPN_TASK_ADJUST_BOUNDARY_BEFORENEXT_VALUE, (None, float, ["aba_beforenext_value"])),
-        (gc.PPN_TASK_ADJUST_BOUNDARY_OFFSET_VALUE, (None, float, ["aba_offset_value"])),
+        (gc.PPN_TASK_ADJUST_BOUNDARY_BEFORENEXT_VALUE, (None, TimeValue, ["aba_beforenext_value"])),
+        (gc.PPN_TASK_ADJUST_BOUNDARY_OFFSET_VALUE, (None, TimeValue, ["aba_offset_value"])),
         (gc.PPN_TASK_ADJUST_BOUNDARY_PERCENT_VALUE, (None, int, ["aba_percent_value"])),
         (gc.PPN_TASK_ADJUST_BOUNDARY_RATE_VALUE, (None, float, ["aba_rate_value"])),
-        (gc.PPN_TASK_IS_AUDIO_FILE_DETECT_HEAD_MAX, (None, float, ["i_a_head_max"])),
-        (gc.PPN_TASK_IS_AUDIO_FILE_DETECT_HEAD_MIN, (None, float, ["i_a_head_min"])),
-        (gc.PPN_TASK_IS_AUDIO_FILE_DETECT_TAIL_MAX, (None, float, ["i_a_tail_max"])),
-        (gc.PPN_TASK_IS_AUDIO_FILE_DETECT_TAIL_MIN, (None, float, ["i_a_tail_min"])),
-        (gc.PPN_TASK_IS_AUDIO_FILE_HEAD_LENGTH, (None, float, ["i_a_head"])),
-        (gc.PPN_TASK_IS_AUDIO_FILE_PROCESS_LENGTH, (None, float, ["i_a_process"])),
-        (gc.PPN_TASK_IS_AUDIO_FILE_TAIL_LENGTH, (None, float, ["i_a_tail"])),
+        (gc.PPN_TASK_IS_AUDIO_FILE_DETECT_HEAD_MAX, (None, TimeValue, ["i_a_head_max"])),
+        (gc.PPN_TASK_IS_AUDIO_FILE_DETECT_HEAD_MIN, (None, TimeValue, ["i_a_head_min"])),
+        (gc.PPN_TASK_IS_AUDIO_FILE_DETECT_TAIL_MAX, (None, TimeValue, ["i_a_tail_max"])),
+        (gc.PPN_TASK_IS_AUDIO_FILE_DETECT_TAIL_MIN, (None, TimeValue, ["i_a_tail_min"])),
+        (gc.PPN_TASK_IS_AUDIO_FILE_HEAD_LENGTH, (None, TimeValue, ["i_a_head"])),
+        (gc.PPN_TASK_IS_AUDIO_FILE_PROCESS_LENGTH, (None, TimeValue, ["i_a_process"])),
+        (gc.PPN_TASK_IS_AUDIO_FILE_TAIL_LENGTH, (None, TimeValue, ["i_a_tail"])),
         (gc.PPN_TASK_IS_TEXT_FILE_FORMAT, (None, None, ["i_t_format"])),
         (gc.PPN_TASK_IS_TEXT_FILE_IGNORE_REGEX, (None, None, ["i_t_ignore_regex"])),
         (gc.PPN_TASK_IS_TEXT_FILE_TRANSLITERATE_MAP, (None, None, ["i_t_transliterate_map"])),
@@ -308,6 +313,7 @@ class TaskConfiguration(Configuration):
         (gc.PPN_TASK_OS_FILE_FORMAT, (None, None, ["o_format"])),
         (gc.PPN_TASK_OS_FILE_HEAD_TAIL_FORMAT, (None, None, ["o_h_t_format"])),
         (gc.PPN_TASK_OS_FILE_ID_REGEX, (None, None, ["o_id_regex"])),
+        (gc.PPN_TASK_OS_FILE_LEVELS, (None, None, ["o_levels"])),
         (gc.PPN_TASK_OS_FILE_NAME, (None, None, ["o_name"])),
         (gc.PPN_TASK_OS_FILE_SMIL_AUDIO_REF, (None, None, ["o_smil_audio_ref"])),
         (gc.PPN_TASK_OS_FILE_SMIL_PAGE_REF, (None, None, ["o_smil_page_ref"])),

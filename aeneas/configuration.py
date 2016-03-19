@@ -71,7 +71,7 @@ class Configuration(object):
 
         if config_string is not None:
             # strip leading/trailing " or ' characters
-            if (config_string[0] == config_string[-1]) and (config_string[0] in [u"\"", u"'"]):
+            if (len(config_string) > 0) and (config_string[0] == config_string[-1]) and (config_string[0] in [u"\"", u"'"]):
                 config_string = config_string[1:-1]
             # populate values from config_string,
             # ignoring keys not present in FIELDS
@@ -115,7 +115,7 @@ class Configuration(object):
     def config_string(self):
         """
         Build the storable string corresponding
-        to this job configuration object.
+        to this configuration object.
 
         :rtype: string
         """

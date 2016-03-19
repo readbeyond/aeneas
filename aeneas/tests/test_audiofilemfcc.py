@@ -2,19 +2,18 @@
 # coding=utf-8
 
 import numpy
-import os
 import unittest
 
-from aeneas.audiofilemfcc import AudioFileMFCC
-from aeneas.audiofile import AudioFileMonoWAVE
+from aeneas.audiofile import AudioFile
 from aeneas.audiofile import AudioFileUnsupportedFormatError
+from aeneas.audiofilemfcc import AudioFileMFCC
+from aeneas.timevalue import TimeValue
 import aeneas.globalfunctions as gf
 
 class TestAudioFileMFCC(unittest.TestCase):
 
     AUDIO_FILE_WAVE = "res/audioformats/mono.16000.wav"
     AUDIO_FILE_EMPTY = "res/audioformats/p001.empty"
-    AUDIO_FILE_NOT_WAVE = "res/audioformats/p001.mp3"
     NOT_EXISTING_FILE = "res/audioformats/x/y/z/not_existing.wav"
 
     def load(self, path):
@@ -33,22 +32,23 @@ class TestAudioFileMFCC(unittest.TestCase):
             audiofile = self.load(None)
     
     def test_load_audio_file(self):
-        af = AudioFileMonoWAVE(gf.absolute_path(self.AUDIO_FILE_WAVE, __file__))
+        af = AudioFile(gf.absolute_path(self.AUDIO_FILE_WAVE, __file__))
+        af.read_samples_from_file()
         audiofile = AudioFileMFCC(audio_file=af)
         self.assertIsNotNone(audiofile.all_mfcc)
-        self.assertAlmostEqual(audiofile.audio_length, 53.3, places=1) # 53.266
+        self.assertAlmostEqual(audiofile.audio_length, TimeValue("53.3"), places=1) # 53.266
 
     def test_load_mfcc_matrix(self):
         mfccs = numpy.zeros((13, 250))
         audiofile = AudioFileMFCC(mfcc_matrix=mfccs)
         self.assertIsNotNone(audiofile.all_mfcc)
-        self.assertAlmostEqual(audiofile.audio_length, 10.0, places=1)
+        self.assertAlmostEqual(audiofile.audio_length, TimeValue("10.0"), places=1)
 
     def test_load_path(self):
         audiofile = self.load(self.AUDIO_FILE_WAVE)
         self.assertEqual(audiofile.all_mfcc.shape[0], 13)
         self.assertEqual(audiofile.all_mfcc.shape[1], 1331)
-        self.assertAlmostEqual(audiofile.audio_length, 53.3, places=1) # 53.266
+        self.assertAlmostEqual(audiofile.audio_length, TimeValue("53.3"), places=1) # 53.266
 
     def test_load_on_non_existing_path(self):
         with self.assertRaises(OSError):
@@ -57,10 +57,7 @@ class TestAudioFileMFCC(unittest.TestCase):
     def test_load_on_empty(self):
         with self.assertRaises(AudioFileUnsupportedFormatError):
             audiofile = self.load(self.AUDIO_FILE_EMPTY)
-
-    def test_load_not_wave_file(self):
-        with self.assertRaises(AudioFileUnsupportedFormatError):
-            audiofile = self.load(self.AUDIO_FILE_NOT_WAVE)
+            audiofile.audio_samples
 
     def test_reverse(self):
         audiofile = self.load(self.AUDIO_FILE_WAVE)
@@ -194,7 +191,7 @@ class TestAudioFileMFCC(unittest.TestCase):
 
     def test_set_head1(self):
         audiofile = self.load(self.AUDIO_FILE_WAVE)
-        audiofile.set_head_middle_tail(head_length=0)
+        audiofile.set_head_middle_tail(head_length=TimeValue("0.000"))
         self.assertEqual(audiofile.all_length, 1331)
         self.assertEqual(audiofile.head_length, 0)
         self.assertEqual(audiofile.middle_length, 1331)
@@ -202,7 +199,7 @@ class TestAudioFileMFCC(unittest.TestCase):
 
     def test_set_head2(self):
         audiofile = self.load(self.AUDIO_FILE_WAVE)
-        audiofile.set_head_middle_tail(head_length=1.0)
+        audiofile.set_head_middle_tail(head_length=TimeValue("1.000"))
         self.assertEqual(audiofile.all_length, 1331)
         self.assertEqual(audiofile.head_length, 25)
         self.assertEqual(audiofile.middle_length, 1306)
@@ -210,7 +207,7 @@ class TestAudioFileMFCC(unittest.TestCase):
 
     def test_set_middle1(self):
         audiofile = self.load(self.AUDIO_FILE_WAVE)
-        audiofile.set_head_middle_tail(middle_length=0)
+        audiofile.set_head_middle_tail(middle_length=TimeValue("0.000"))
         self.assertEqual(audiofile.all_length, 1331)
         self.assertEqual(audiofile.head_length, 0)
         self.assertEqual(audiofile.middle_length, 0)
@@ -218,7 +215,7 @@ class TestAudioFileMFCC(unittest.TestCase):
 
     def test_set_middle2(self):
         audiofile = self.load(self.AUDIO_FILE_WAVE)
-        audiofile.set_head_middle_tail(middle_length=10)
+        audiofile.set_head_middle_tail(middle_length=TimeValue("10.000"))
         self.assertEqual(audiofile.all_length, 1331)
         self.assertEqual(audiofile.head_length, 0)
         self.assertEqual(audiofile.middle_length, 250)
@@ -226,7 +223,7 @@ class TestAudioFileMFCC(unittest.TestCase):
 
     def test_set_tail1(self):
         audiofile = self.load(self.AUDIO_FILE_WAVE)
-        audiofile.set_head_middle_tail(tail_length=0)
+        audiofile.set_head_middle_tail(tail_length=TimeValue("0.000"))
         self.assertEqual(audiofile.all_length, 1331)
         self.assertEqual(audiofile.head_length, 0)
         self.assertEqual(audiofile.middle_length, 1331)
@@ -234,7 +231,7 @@ class TestAudioFileMFCC(unittest.TestCase):
 
     def test_set_tail2(self):
         audiofile = self.load(self.AUDIO_FILE_WAVE)
-        audiofile.set_head_middle_tail(tail_length=1.0)
+        audiofile.set_head_middle_tail(tail_length=TimeValue("1.000"))
         self.assertEqual(audiofile.all_length, 1331)
         self.assertEqual(audiofile.head_length, 0)
         self.assertEqual(audiofile.middle_length, 1306)
@@ -242,7 +239,7 @@ class TestAudioFileMFCC(unittest.TestCase):
 
     def test_set_head_tail(self):
         audiofile = self.load(self.AUDIO_FILE_WAVE)
-        audiofile.set_head_middle_tail(head_length=2.0, tail_length=2.0)
+        audiofile.set_head_middle_tail(head_length=TimeValue("2.000"), tail_length=TimeValue("2.000"))
         self.assertEqual(audiofile.all_length, 1331)
         self.assertEqual(audiofile.head_length, 50)
         self.assertEqual(audiofile.middle_length, 1231)
@@ -250,7 +247,7 @@ class TestAudioFileMFCC(unittest.TestCase):
 
     def test_set_head_middle(self):
         audiofile = self.load(self.AUDIO_FILE_WAVE)
-        audiofile.set_head_middle_tail(head_length=2.0, middle_length=18.0)
+        audiofile.set_head_middle_tail(head_length=TimeValue("2.000"), middle_length=TimeValue("18.000"))
         self.assertEqual(audiofile.all_length, 1331)
         self.assertEqual(audiofile.head_length, 50)
         self.assertEqual(audiofile.middle_length, 450)
@@ -258,7 +255,7 @@ class TestAudioFileMFCC(unittest.TestCase):
 
     def test_set_middle_tail(self):
         audiofile = self.load(self.AUDIO_FILE_WAVE)
-        audiofile.set_head_middle_tail(middle_length=20.0, tail_length=50.0)
+        audiofile.set_head_middle_tail(middle_length=TimeValue("20.000"), tail_length=TimeValue("50.000"))
         self.assertEqual(audiofile.all_length, 1331)
         self.assertEqual(audiofile.head_length, 0)
         self.assertEqual(audiofile.middle_length, 500)
@@ -308,12 +305,12 @@ class TestAudioFileMFCC(unittest.TestCase):
         self.assertNotEqual(audiofile.masked_middle_length, 0)
         self.assertIsNotNone(audiofile.masked_middle_map)
         pre = audiofile.masked_middle_length
-        audiofile.set_head_middle_tail(head_length=0.440, tail_length=1.200)
+        audiofile.set_head_middle_tail(head_length=TimeValue("0.440"), tail_length=TimeValue("1.200"))
         self.assertEqual(pre, audiofile.masked_middle_length)
-        audiofile.set_head_middle_tail(head_length=0.480, tail_length=1.240)
+        audiofile.set_head_middle_tail(head_length=TimeValue("0.480"), tail_length=TimeValue("1.240"))
         self.assertNotEqual(pre, audiofile.masked_middle_length)
         pre = audiofile.masked_middle_length
-        audiofile.set_head_middle_tail(head_length=10.000, tail_length=10.000)
+        audiofile.set_head_middle_tail(head_length=TimeValue("10.000"), tail_length=TimeValue("10.000"))
         self.assertNotEqual(pre, audiofile.masked_middle_length)
 
 

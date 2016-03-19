@@ -305,7 +305,7 @@ class AbstractCLIProgram(object):
             if log_path is not None:
                 args.remove("%s=%s" % (flag, log_path))
             elif flag in set_args:
-                handler, log_path = gf.tmp_file(suffix=u".log", root=self.rconf["tmp_path"])
+                handler, log_path = gf.tmp_file(suffix=u".log", root=self.rconf[RuntimeConfiguration.TMP_PATH])
                 args.remove(flag)
             if log_path is not None:
                 self.log_file_path = log_path

@@ -58,17 +58,17 @@ class TestJob(unittest.TestCase):
         job.configuration = jobconf
         self.assertIsNotNone(job.configuration)
 
-    def test_job_append_task(self):
+    def test_job_add_task(self):
         job = Job()
         self.assertEqual(len(job), 0)
         task1 = Task()
-        job.append_task(task1)
+        job.add_task(task1)
         self.assertEqual(len(job), 1)
         task2 = Task()
-        job.append_task(task2)
+        job.add_task(task2)
         self.assertEqual(len(job), 2)
         task3 = Task()
-        job.append_task(task3)
+        job.add_task(task3)
         self.assertEqual(len(job), 3)
 
     def test_job_clear_tasks(self):

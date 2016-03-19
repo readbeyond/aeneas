@@ -12,6 +12,7 @@ import subprocess
 
 from aeneas.logger import Logger
 from aeneas.runtimeconfiguration import RuntimeConfiguration
+from aeneas.timevalue import TimeValue
 import aeneas.globalfunctions as gf
 
 __author__ = "Alberto Pettarin"
@@ -210,7 +211,7 @@ class FFPROBEWrapper(object):
             raise OSError("Input file cannot be read")
 
         # call ffprobe
-        arguments = [self.rconf["ffprobe_path"]]
+        arguments = [self.rconf[RuntimeConfiguration.FFPROBE_PATH]]
         arguments.extend(self.FFPROBE_PARAMETERS)
         arguments.append(audio_file_path)
         self._log([u"Calling with arguments '%s'", arguments])
@@ -226,7 +227,7 @@ class FFPROBEWrapper(object):
             proc.stdin.close()
             proc.stderr.close()
         except OSError:
-            self._log([u"Unable to call the '%s' ffprobe executable", self.rconf["ffprobe_path"]], Logger.CRITICAL)
+            self._log([u"Unable to call the '%s' ffprobe executable", self.rconf[RuntimeConfiguration.FFPROBE_PATH]], Logger.CRITICAL)
             raise FFPROBEPathError("Unable to call the specified ffprobe executable")
         self._log(u"Call completed")
 
@@ -263,24 +264,20 @@ class FFPROBEWrapper(object):
                 results[key] = value
                 self._log([u"Found property '%s'='%s'", key, value])
 
-        # convert duration to float
-        if self.STDOUT_DURATION in results:
-            self._log([u"Found duration: '%s'", results[self.STDOUT_DURATION]])
-            results[self.STDOUT_DURATION] = gf.safe_float(
-                results[self.STDOUT_DURATION],
-                None
-            )
-        else:
-            self._log(u"No duration found in stdout", Logger.WARNING)
-
-        # if audio_length is still None, try scanning ffprobe stderr output
-        if results[self.STDOUT_DURATION] is None:
+        try:
+            self._log([u"Duration found in stdout: '%s'", results[self.STDOUT_DURATION]])
+            results[self.STDOUT_DURATION] = TimeValue(results[self.STDOUT_DURATION])
+            self._log(u"Valid duration")
+        except:
+            self._log(u"Invalid duration", Logger.WARNING)
+            results[self.STDOUT_DURATION] = None
+            # try scanning ffprobe stderr output
             for line in stderrdata.splitlines():
                 match = self.STDERR_DURATION_REGEX.search(line)
                 if match is not None:
                     self._log([u"Found matching line '%s'", line])
                     results[self.STDOUT_DURATION] = gf.time_from_hhmmssmmm(line)
-                    self._log([u"Extracted duration '%f'", results[self.STDOUT_DURATION]])
+                    self._log([u"Extracted duration '%.3f'", results[self.STDOUT_DURATION]])
                     break
 
         if results[self.STDOUT_DURATION] is None:

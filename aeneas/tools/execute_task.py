@@ -15,6 +15,7 @@ from aeneas.downloader import Downloader
 from aeneas.executetask import ExecuteTask
 from aeneas.idsortingalgorithm import IDSortingAlgorithm
 from aeneas.language import Language
+from aeneas.runtimeconfiguration import RuntimeConfiguration
 from aeneas.syncmap import SyncMapFormat
 from aeneas.syncmap import SyncMapHeadTailFormat
 from aeneas.task import Task
@@ -44,13 +45,131 @@ class ExecuteTaskCLI(AbstractCLIProgram):
     AUDIO_FILE = gf.relative_path("res/audio.mp3", __file__)
 
     DEMOS = {
+        u"--example-cewsubprocess" : {
+            u"description": u"input: plain text, output: tsv, run via cewsubprocess",
+            u"audio": AUDIO_FILE,
+            u"text": gf.relative_path("res/plain.txt", __file__),
+            u"config": u"task_language=en|is_text_type=plain|os_task_file_format=tsv",
+            u"syncmap": "output/sonnet.cewsubprocess.tsv",
+            u"options": u"-r=\"cew_subprocess_enabled=True\"",
+            u"show": False
+        },
+        u"--example-eaf" : {
+            u"description": u"input: plain text, output: EAF",
+            u"audio": AUDIO_FILE,
+            u"text": gf.relative_path("res/plain.txt", __file__),
+            u"config": u"task_language=en|is_text_type=plain|os_task_file_format=eaf",
+            u"syncmap": "output/sonnet.eaf",
+            u"options": u"",
+            u"show": True
+        },
+        u"--example-festival" : {
+            u"description": u"input: plain text, output: tsv, tts engine: festival",
+            u"audio": AUDIO_FILE,
+            u"text": gf.relative_path("res/plain.txt", __file__),
+            u"config": u"task_language=en|is_text_type=plain|os_task_file_format=tsv",
+            u"syncmap": "output/sonnet.festival.tsv",
+            u"options": u"-r=\"tts=festival|tts_path=text2wave\"",
+            u"show": False
+        },
+        u"--example-flatten-12" : {
+            u"description": u"input: mplain text (multilevel), output: JSON, levels to output: 1 and 2",
+            u"audio": AUDIO_FILE,
+            u"text": gf.relative_path("res/mplain.txt", __file__),
+            u"config": u"task_language=en|is_text_type=mplain|os_task_file_format=json|os_task_file_levels=12",
+            u"syncmap": "output/sonnet.flatten12.json",
+            u"options": u"",
+            u"show": False
+        },
+        u"--example-flatten-2" : {
+            u"description": u"input: mplain text (multilevel), output: JSON, levels to output: 2",
+            u"audio": AUDIO_FILE,
+            u"text": gf.relative_path("res/mplain.txt", __file__),
+            u"config": u"task_language=en|is_text_type=mplain|os_task_file_format=json|os_task_file_levels=2",
+            u"syncmap": "output/sonnet.flatten2.json",
+            u"options": u"",
+            u"show": False
+        },
+        u"--example-flatten-3" : {
+            u"description": u"input: mplain text (multilevel), output: JSON, levels to output: 3",
+            u"audio": AUDIO_FILE,
+            u"text": gf.relative_path("res/mplain.txt", __file__),
+            u"config": u"task_language=en|is_text_type=mplain|os_task_file_format=json|os_task_file_levels=3",
+            u"syncmap": "output/sonnet.flatten3.json",
+            u"options": u"",
+            u"show": False
+        },
+        u"--example-head-tail" : {
+            u"description": u"input: plain text, output: tsv, explicit head and tail",
+            u"audio": AUDIO_FILE,
+            u"text": gf.relative_path("res/plain.txt", __file__),
+            u"config": u"task_language=en|is_text_type=plain|os_task_file_format=tsv|is_audio_file_head_length=0.400|is_audio_file_tail_length=0.500|os_task_file_head_tail_format=stretch",
+            u"syncmap": "output/sonnet.headtail.tsv",
+            u"options": u"",
+            u"show": False
+        },
         u"--example-json" : {
             u"description": u"input: plain text, output: JSON",
             u"audio": AUDIO_FILE,
             u"text": gf.relative_path("res/plain.txt", __file__),
             u"config": u"task_language=en|is_text_type=plain|os_task_file_format=json",
             u"syncmap": "output/sonnet.json",
-            u"options": u""
+            u"options": u"",
+            u"show": True
+        },
+        u"--example-mplain-json" : {
+            u"description": u"input: multilevel plain text (mplain), output: JSON",
+            u"audio": AUDIO_FILE,
+            u"text": gf.relative_path("res/mplain.txt", __file__),
+            u"config": u"task_language=en|is_text_type=mplain|os_task_file_format=json",
+            u"syncmap": "output/sonnet.mplain.json",
+            u"options": u"",
+            u"show": False
+        },
+        u"--example-mplain-smil" : {
+            u"description": u"input: multilevel plain text (mplain), output: SMIL",
+            u"audio": AUDIO_FILE,
+            u"text": gf.relative_path("res/mplain.txt", __file__),
+            u"config": u"task_language=en|is_text_type=mplain|os_task_file_format=smil|os_task_file_smil_audio_ref=p001.mp3|os_task_file_smil_page_ref=p001.xhtml",
+            u"syncmap": "output/sonnet.mplain.smil",
+            u"options": u"",
+            u"show": True
+        },
+        u"--example-mws" : {
+            u"description": u"input: plain text, output: JSON, resolution: 0.500s",
+            u"audio": AUDIO_FILE,
+            u"text": gf.relative_path("res/plain.txt", __file__),
+            u"config": u"task_language=en|is_text_type=plain|os_task_file_format=json",
+            u"syncmap": "output/sonnet.mws.json",
+            u"options": u"-r=\"mfcc_window_length=1.500|mfcc_window_shift=0.500\"",
+            u"show": False
+        },
+        u"--example-py" : {
+            u"description": u"input: plain text, output: JSON, pure python",
+            u"audio": AUDIO_FILE,
+            u"text": gf.relative_path("res/plain.txt", __file__),
+            u"config": u"task_language=en|is_text_type=plain|os_task_file_format=json",
+            u"syncmap": "output/sonnet.cext.json",
+            u"options": u"-r=\"c_extensions=False\"",
+            u"show": False
+        },
+        u"--example-sd" : {
+            u"description": u"input: plain text, output: tsv, head/tail detection",
+            u"audio": AUDIO_FILE,
+            u"text": gf.relative_path("res/plain.txt", __file__),
+            u"config": u"task_language=en|is_text_type=plain|os_task_file_format=tsv|is_audio_file_detect_head_max=10.000|is_audio_file_detect_tail_max=10.000",
+            u"syncmap": "output/sonnet.sd.tsv",
+            u"options": u"",
+            u"show": False
+        },
+        u"--example-speect" : {
+            u"description": u"input: plain text, output: tsv, tts engine: speect",
+            u"audio": AUDIO_FILE,
+            u"text": gf.relative_path("res/plain.txt", __file__),
+            u"config": u"task_language=en|is_text_type=plain|os_task_file_format=tsv",
+            u"syncmap": "output/sonnet.speect.tsv",
+            u"options": u"-r=\"tts=speect|tts_path=aeneas/extra/ctw_speect/ctw_speect.py\"",
+            u"show": False
         },
         u"--example-srt" : {
             u"description": u"input: subtitles text, output: SRT",
@@ -58,7 +177,8 @@ class ExecuteTaskCLI(AbstractCLIProgram):
             u"text": gf.relative_path("res/subtitles.txt", __file__),
             u"config": u"task_language=en|is_text_type=subtitles|os_task_file_format=srt",
             u"syncmap": "output/sonnet.srt",
-            u"options": u""
+            u"options": u"",
+            u"show": True
         },
         u"--example-smil" : {
             u"description": u"input: unparsed text, output: SMIL",
@@ -66,7 +186,8 @@ class ExecuteTaskCLI(AbstractCLIProgram):
             u"text": gf.relative_path("res/page.xhtml", __file__),
             u"config": u"task_language=en|is_text_type=unparsed|is_text_unparsed_id_regex=f[0-9]+|is_text_unparsed_id_sort=numeric|os_task_file_format=smil|os_task_file_smil_audio_ref=p001.mp3|os_task_file_smil_page_ref=p001.xhtml",
             u"syncmap": "output/sonnet.smil",
-            u"options": u""
+            u"options": u"",
+            u"show": True
         },
         u"--example-youtube" : {
             u"description": u"input: audio from YouTube, output: TXT",
@@ -74,7 +195,8 @@ class ExecuteTaskCLI(AbstractCLIProgram):
             u"text": gf.relative_path("res/plain.txt", __file__),
             u"config": u"task_language=en|is_text_type=plain|os_task_file_format=txt",
             u"syncmap": "output/sonnet.txt",
-            u"options": u"-y"
+            u"options": u"-y",
+            u"show": True
         }
     }
 
@@ -99,6 +221,7 @@ class ExecuteTaskCLI(AbstractCLIProgram):
         u"  os_task_file_format                     : output sync map format (*)",
         u"  os_task_file_id_regex                   : id regex for the output sync map (subtitles, plain)",
         u"  os_task_file_head_tail_format           : format audio head/tail (*)",
+        u"  os_task_file_levels                     : output the specified levels (mplain)",
         u"  os_task_file_smil_audio_ref             : value for the audio ref (smil, smilh, smilm)",
         u"  os_task_file_smil_page_ref              : value for the text ref (smil, smilh, smilm)",
         u"",
@@ -125,7 +248,7 @@ class ExecuteTaskCLI(AbstractCLIProgram):
         "description": u"Execute a Task.",
         "synopsis": [
             u"--examples",
-            u"[--example-json|--example-srt|--example-smil]",
+            u"--examples-all",
             u"--list-parameters",
             u"--list-values PARAM",
             u"AUDIO TEXT CONFIG_STRING OUTPUT_FILE",
@@ -135,11 +258,6 @@ class ExecuteTaskCLI(AbstractCLIProgram):
             u"--examples"
         ],
         "options": [
-            u"--example-json : run example with JSON output",
-            u"--example-smil : run example with SMIL output",
-            u"--example-srt : run example with SRT output",
-            u"--example-youtube : run example with audio downloaded from YouTube",
-            u"--examples : print a list of examples",
             u"--keep-audio : do not delete the audio file downloaded from YouTube (-y only)",
             u"--largest-audio : download largest audio stream (-y only)",
             u"--list-parameters : list all parameters",
@@ -147,6 +265,7 @@ class ExecuteTaskCLI(AbstractCLIProgram):
             u"--output-html : output HTML file for fine tuning",
             u"--skip-validator : do not validate the given config string",
             u"-e, --examples : print examples",
+            u"--examples-all : print all examples",
             u"-y, --youtube : download audio from YouTube video",
         ]
     }
@@ -161,7 +280,10 @@ class ExecuteTaskCLI(AbstractCLIProgram):
             return self.print_help()
 
         if self.has_option([u"-e", u"--examples"]):
-            return self.print_examples()
+            return self.print_examples(False)
+
+        if self.has_option(u"--examples-all"):
+            return self.print_examples(True)
 
         if self.has_option([u"--list-parameters"]):
             return self.print_parameters()
@@ -172,10 +294,9 @@ class ExecuteTaskCLI(AbstractCLIProgram):
         elif self.has_option(u"--list-values"):
             return self.print_values(u"?")
 
-        # TODO simplify me
-
         # NOTE list() is needed for Python3, where keys() is not a list!
         demo = self.has_option(list(self.DEMOS.keys()))
+        demo_parameters = u"" 
         download_from_youtube = self.has_option([u"-y", u"--youtube"])
         largest_audio = self.has_option(u"--largest-audio")
         keep_audio = self.has_option(u"--keep-audio")
@@ -191,7 +312,21 @@ class ExecuteTaskCLI(AbstractCLIProgram):
                     text_file_path = demo_parameters[u"text"]
                     config_string = demo_parameters[u"config"]
                     sync_map_file_path = demo_parameters[u"syncmap"]
-                    if key == u"--example-youtube":
+                    # TODO allow injecting rconf options directly from DEMOS options field
+                    if key == u"--example-cewsubprocess":
+                        self.rconf[RuntimeConfiguration.CEW_SUBPROCESS_ENABLED] = True
+                    elif key == u"--example-festival":
+                        self.rconf[RuntimeConfiguration.TTS] = "festival"
+                        self.rconf[RuntimeConfiguration.TTS_PATH] = "text2wave"
+                    elif key == u"--example-mws":
+                        self.rconf[RuntimeConfiguration.MFCC_WINDOW_LENGTH] = "1.500"
+                        self.rconf[RuntimeConfiguration.MFCC_WINDOW_SHIFT] = "0.500"
+                    elif key == u"--example-py":
+                        self.rconf[RuntimeConfiguration.C_EXTENSIONS] = False
+                    elif key == u"--example-speect":
+                        self.rconf[RuntimeConfiguration.TTS] = "custom"
+                        self.rconf[RuntimeConfiguration.TTS_PATH] = "aeneas/extra/ctw_speect/ctw_speect.py"
+                    elif key == u"--example-youtube":
                         download_from_youtube = True
                     break
         else:
@@ -231,6 +366,8 @@ class ExecuteTaskCLI(AbstractCLIProgram):
             msg.append(u"  Text file:     %s" % text_file_path)
             msg.append(u"  Config string: %s" % config_string)
             msg.append(u"  Sync map file: %s" % sync_map_file_path)
+            if len(demo_parameters[u"options"]) > 0:
+                msg.append(u"  Options:       %s" % demo_parameters[u"options"])
             self.print_info(u"\n".join(msg))
 
         if validate:
@@ -255,7 +392,9 @@ class ExecuteTaskCLI(AbstractCLIProgram):
                 )
                 self.print_info(u"Downloading audio from '%s' ... done" % youtube_url)
             except ImportError:
-                self.print_error(u"You need to install Pythom module pafy to download audio from YouTube. Run:")
+                self.print_error(u"You need to install Python module pafy to download audio from YouTube. Run:")
+                self.print_error(u"$ pip install pafy")
+                self.print_error(u"or, to install for all users:")
                 self.print_error(u"$ sudo pip install pafy")
                 return self.ERROR_EXIT_CODE
             except Exception as exc:
@@ -320,27 +459,31 @@ class ExecuteTaskCLI(AbstractCLIProgram):
 
 
 
-    def print_examples(self):
+    def print_examples(self, full=False):
         """
         Print the examples and exit.
+
+        :param bool full: if ``True``, print all examples; otherwise,
+                          print only selected ones
         """
         msg = []
         i = 1
         for key in sorted(self.DEMOS.keys()):
             example = self.DEMOS[key]
-            msg.append(u"Example %d (%s)" % (i, example[u"description"]))
-            msg.append(u"  $ CONFIG_STRING=\"%s\"" % (example[u"config"]))
-            msg.append(u"  $ python -m aeneas.tools.%s %s %s \"$CONFIG_STRING\" %s %s" % (
-                self.NAME,
-                example[u"audio"],
-                example[u"text"],
-                example[u"syncmap"],
-                example[u"options"]
-            ))
-            msg.append(u"  or")
-            msg.append(u"  $ python -m aeneas.tools.%s %s" % (self.NAME, key))
-            msg.append(u"")
-            i += 1
+            if full or example["show"]:
+                msg.append(u"Example %d (%s)" % (i, example[u"description"]))
+                msg.append(u"  $ CONFIG_STRING=\"%s\"" % (example[u"config"]))
+                msg.append(u"  $ python -m aeneas.tools.%s %s %s \"$CONFIG_STRING\" %s %s" % (
+                    self.NAME,
+                    example[u"audio"],
+                    example[u"text"],
+                    example[u"syncmap"],
+                    example[u"options"]
+                ))
+                msg.append(u"  or")
+                msg.append(u"  $ python -m aeneas.tools.%s %s" % (self.NAME, key))
+                msg.append(u"")
+                i += 1
         self.print_generic(u"\n" + u"\n".join(msg) + u"\n")
         return self.HELP_EXIT_CODE
 

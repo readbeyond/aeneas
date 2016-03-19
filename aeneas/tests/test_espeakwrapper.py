@@ -7,6 +7,7 @@ from aeneas.espeakwrapper import ESPEAKWrapper
 from aeneas.language import Language
 from aeneas.textfile import TextFile
 from aeneas.textfile import TextFragment
+from aeneas.runtimeconfiguration import RuntimeConfiguration
 import aeneas.globalfunctions as gf
 
 class TestESPEAKWrapper(unittest.TestCase):
@@ -19,10 +20,11 @@ class TestESPEAKWrapper(unittest.TestCase):
                 handler = None
                 output_file_path = ofp
             try:
-                espeak = ESPEAKWrapper()
-                espeak.rconf["c_extensions"] = c_ext
-                espeak.rconf["cew_subprocess_enabled"] = cew_subprocess
-                result = espeak.synthesize_single(text, language, output_file_path)
+                rconf = RuntimeConfiguration()
+                rconf[RuntimeConfiguration.C_EXTENSIONS] = c_ext
+                rconf[RuntimeConfiguration.CEW_SUBPROCESS_ENABLED] = cew_subprocess
+                tts_engine = ESPEAKWrapper(rconf=rconf)
+                result = tts_engine.synthesize_single(text, language, output_file_path)
                 gf.delete_file(handler, output_file_path)
                 if zero_length:
                     self.assertEqual(result, 0)
@@ -43,10 +45,11 @@ class TestESPEAKWrapper(unittest.TestCase):
                 handler = None
                 output_file_path = ofp
             try:
-                espeak = ESPEAKWrapper()
-                espeak.rconf["c_extensions"] = c_ext 
-                espeak.rconf["cew_subprocess_enabled"] = cew_subprocess
-                anchors, total_time, num_chars = espeak.synthesize_multiple(
+                rconf = RuntimeConfiguration()
+                rconf[RuntimeConfiguration.C_EXTENSIONS] = c_ext
+                rconf[RuntimeConfiguration.CEW_SUBPROCESS_ENABLED] = cew_subprocess
+                tts_engine = ESPEAKWrapper(rconf=rconf)
+                anchors, total_time, num_chars = tts_engine.synthesize_multiple(
                     text_file,
                     output_file_path,
                     quit_after,
@@ -67,7 +70,7 @@ class TestESPEAKWrapper(unittest.TestCase):
     def tfl(self, frags):
         tfl = TextFile()
         for language, lines in frags:
-            tfl.append_fragment(TextFragment(language=language, lines=lines, filtered_lines=lines))
+            tfl.add_fragment(TextFragment(language=language, lines=lines, filtered_lines=lines))
         return tfl
 
     def test_multiple_tfl_none(self):

@@ -9,9 +9,12 @@ from __future__ import absolute_import
 from __future__ import print_function
 import sys
 
+from aeneas.audiofile import AudioFileConverterError
+from aeneas.audiofile import AudioFileNotInitialized
+from aeneas.audiofile import AudioFileUnsupportedFormatError
 from aeneas.audiofilemfcc import AudioFileMFCC
-from aeneas.ffmpegwrapper import FFMPEGWrapper
 from aeneas.language import Language
+from aeneas.runtimeconfiguration import RuntimeConfiguration
 from aeneas.sd import SD
 from aeneas.tools.abstract_cli_program import AbstractCLIProgram
 import aeneas.globalconstants as gc
@@ -93,7 +96,7 @@ class RunSDCLI(AbstractCLIProgram):
             return self.ERROR_EXIT_CODE
 
         language = gf.safe_unicode(self.actual_arguments[2])
-        if (not language in Language.ALLOWED_VALUES) and (not self.rconf["allow_unlisted_languages"]):
+        if (not language in Language.ALLOWED_VALUES) and (not self.rconf[RuntimeConfiguration.ALLOW_UNLISTED_LANGUAGES]):
             self.print_error(u"Language '%s' is not supported" % (language))
             return self.ERROR_EXIT_CODE
 
@@ -110,17 +113,17 @@ class RunSDCLI(AbstractCLIProgram):
 
         self.print_info(u"Reading audio...")
         try:
-            tmp_handler, tmp_file_path = gf.tmp_file(suffix=u".wav", root=self.rconf["tmp_path"])
-            converter = FFMPEGWrapper(rconf=self.rconf, logger=self.logger)
-            converter.convert(audio_file_path, tmp_file_path)
-        except Exception as exc:
-            self.print_error(u"An unexpected Exception occurred while converting the audio file:")
-            self.print_error(u"%s" % exc)
+            audio_file_mfcc = AudioFileMFCC(audio_file_path, rconf=self.rconf, logger=self.logger)
+        except AudioFileConverterError:
+            self.print_error(u"Unable to call the ffmpeg executable '%s'" % (self.rconf[RuntimeConfiguration.FFMPEG_PATH]))
+            self.print_error(u"Make sure the path to ffmpeg is correct")
             return self.ERROR_EXIT_CODE
-        try:
-            audio_file_mfcc = AudioFileMFCC(tmp_file_path, rconf=self.rconf, logger=self.logger)
+        except (AudioFileUnsupportedFormatError, AudioFileNotInitialized):
+            self.print_error(u"Cannot read file '%s'" % (audio_file_path))
+            self.print_error(u"Check that its format is supported by ffmpeg")
+            return self.ERROR_EXIT_CODE
         except Exception as exc:
-            self.print_error(u"An unexpected Exception occurred while reading the converted audio file:")
+            self.print_error(u"An unexpected Exception occurred while reading the audio file:")
             self.print_error(u"%s" % exc)
             return self.ERROR_EXIT_CODE
         self.print_info(u"Reading audio... done")
@@ -140,7 +143,6 @@ class RunSDCLI(AbstractCLIProgram):
         self.print_info(u"Detecting audio interval... done")
 
         self.print_result(audio_file_mfcc.audio_length, start, end)
-        gf.delete_file(tmp_handler, tmp_file_path)
         return self.NO_ERROR_EXIT_CODE
 
     def print_result(self, audio_len, start, end):

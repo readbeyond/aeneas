@@ -124,13 +124,14 @@ class Logger(object):
 
     def log(self, message, severity=INFO, tag=u""):
         """
-        Add a given message to the log.
+        Add a given message to the log, and return its time.
 
         :param string message: the message to be added
         :param severity: the severity of the message
         :type  severity: :class:`aeneas.logger.Logger`
         :param string tag: the tag associated with the message;
                            usually, the name of the class generating the entry
+        :rtype: datetime
         """
         entry = _LogEntry(
             severity=severity,
@@ -142,6 +143,7 @@ class Logger(object):
         self.entries.append(entry)
         if self.tee:
             gf.safe_print(entry.pretty_print(show_datetime=self.tee_show_datetime))
+        return entry.time
 
     def clear(self):
         """

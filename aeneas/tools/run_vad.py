@@ -11,9 +11,11 @@ from __future__ import print_function
 import io
 import sys
 
+from aeneas.audiofile import AudioFileConverterError
+from aeneas.audiofile import AudioFileNotInitialized
 from aeneas.audiofile import AudioFileUnsupportedFormatError
 from aeneas.audiofilemfcc import AudioFileMFCC
-from aeneas.ffmpegwrapper import FFMPEGWrapper
+from aeneas.runtimeconfiguration import RuntimeConfiguration
 from aeneas.tools.abstract_cli_program import AbstractCLIProgram
 import aeneas.globalfunctions as gf
 
@@ -79,32 +81,29 @@ class RunVADCLI(AbstractCLIProgram):
         if (output_file_path is not None) and (not self.check_output_file(output_file_path)):
             return self.ERROR_EXIT_CODE
 
-        tmp_handler, tmp_file_path = gf.tmp_file(suffix=u".wav", root=self.rconf["tmp_path"])
+        self.print_info(u"Reading audio...")
         try:
-            self.print_info(u"Converting audio file to mono...")
-            converter = FFMPEGWrapper(rconf=self.rconf, logger=self.logger)
-            converter.convert(audio_file_path, tmp_file_path)
-            self.print_info(u"Converting audio file to mono... done")
-        except OSError:
-            self.print_error(u"Cannot convert audio file '%s'" % audio_file_path)
+            audio_file_mfcc = AudioFileMFCC(audio_file_path, rconf=self.rconf, logger=self.logger)
+        except AudioFileConverterError:
+            self.print_error(u"Unable to call the ffmpeg executable '%s'" % (self.rconf[RuntimeConfiguration.FFMPEG_PATH]))
+            self.print_error(u"Make sure the path to ffmpeg is correct")
+            return self.ERROR_EXIT_CODE
+        except (AudioFileUnsupportedFormatError, AudioFileNotInitialized):
+            self.print_error(u"Cannot read file '%s'" % (audio_file_path))
             self.print_error(u"Check that its format is supported by ffmpeg")
             return self.ERROR_EXIT_CODE
-        try:
-            self.print_info(u"Extracting MFCCs...")
-            audiofile = AudioFileMFCC(tmp_file_path, rconf=self.rconf, logger=self.logger)
-            self.print_info(u"Extracting MFCCs... done")
-            gf.delete_file(tmp_handler, tmp_file_path)
-        except (AudioFileUnsupportedFormatError, OSError):
-            self.print_error(u"Cannot read the converted WAV file '%s'" % tmp_file_path)
-            gf.delete_file(tmp_handler, tmp_file_path)
+        except Exception as exc:
+            self.print_error(u"An unexpected Exception occurred while reading the audio file:")
+            self.print_error(u"%s" % exc)
             return self.ERROR_EXIT_CODE
+        self.print_info(u"Reading audio... done")
 
         self.print_info(u"Executing VAD...")
-        audiofile.run_vad()
+        audio_file_mfcc.run_vad()
         self.print_info(u"Executing VAD... done")
 
-        speech = audiofile.intervals(speech=True, time=output_time)
-        nonspeech = audiofile.intervals(speech=False, time=output_time)
+        speech = audio_file_mfcc.intervals(speech=True, time=output_time)
+        nonspeech = audio_file_mfcc.intervals(speech=False, time=output_time)
         if mode == u"speech":
             intervals = speech 
         elif mode == u"nonspeech":

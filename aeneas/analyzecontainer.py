@@ -179,7 +179,7 @@ class AnalyzeContainer(object):
                     sync_map_root_directory,
                     job_os_hierarchy_type
                 )
-                job.append_task(task)
+                job.add_task(task)
 
         if parameters[gc.PPN_JOB_IS_HIERARCHY_TYPE] == HierarchyType.PAGED:
             self._log(u"Looking for text/audio pairs in paged hierarchy")
@@ -230,7 +230,7 @@ class AnalyzeContainer(object):
                         sync_map_root_directory,
                         job_os_hierarchy_type
                     )
-                    job.append_task(task)
+                    job.add_task(task)
                 elif len(text_files) > 1:
                     self._log([u"More than one text file in '%s'", matched_directory])
                 elif len(audio_files) > 1:
@@ -315,7 +315,7 @@ class AnalyzeContainer(object):
                 sync_map_root_directory,
                 job_os_hierarchy_type
             )
-            job.append_task(task)
+            job.add_task(task)
 
         return job
 

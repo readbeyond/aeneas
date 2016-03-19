@@ -17,15 +17,17 @@ that is, detect the audio head and the audio length.
 from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
+
 import numpy
 
-from aeneas.audiofile import AudioFileMonoWAVE
 from aeneas.audiofilemfcc import AudioFileMFCC
 from aeneas.dtw import DTWAligner
 from aeneas.logger import Logger
 from aeneas.runtimeconfiguration import RuntimeConfiguration
 from aeneas.synthesizer import Synthesizer
-from aeneas.vad import VAD
+from aeneas.timevalue import Decimal
+from aeneas.timevalue import TimeValue
+from aeneas.timevalue import InvalidOperation
 import aeneas.globalfunctions as gf
 
 __author__ = "Alberto Pettarin"
@@ -56,7 +58,7 @@ class SD(object):
 
     TAG = u"SD"
 
-    QUERY_FACTOR = 1.0
+    QUERY_FACTOR = Decimal("1.0")
     """
     Multiply the max head/tail length by this factor
     to get the minimum query length to be synthesized.
@@ -65,7 +67,7 @@ class SD(object):
     .. versionadded:: 1.5.0
     """
 
-    AUDIO_FACTOR = 2.5
+    AUDIO_FACTOR = Decimal("2.5")
     """
     Multiply the max head/tail length by this factor
     to get the minimum length in the audio that will be searched
@@ -76,18 +78,18 @@ class SD(object):
     .. versionadded:: 1.5.0
     """
 
-    MAX_LENGTH = 10.0
+    MAX_LENGTH = TimeValue("10.000")
     """
     Try detecting audio head or tail up to this many seconds.
-    Default: ``10.0``.
+    Default: ``10.000``.
 
     .. versionadded:: 1.2.0
     """
 
-    MIN_LENGTH = 0.0
+    MIN_LENGTH = TimeValue("0.000")
     """
     Try detecting audio head or tail of at least this many seconds.
-    Default: ``0.0``.
+    Default: ``0.000``.
 
     .. versionadded:: 1.2.0
     """
@@ -137,11 +139,11 @@ class SD(object):
         self._log([u"Tail length:  %.3f", tail])
         self._log([u"Begin:        %.3f", begin])
         self._log([u"End:          %.3f", end])
-        if (begin >= 0.0) and (end > begin):
+        if (begin >= TimeValue("0.0")) and (end > begin):
             self._log([u"Returning %.3f %.3f", begin, end])
             return (begin, end)
         self._log(u"Returning (0.0, 0.0)")
-        return (0.0, 0.0)
+        return (TimeValue("0.0"), TimeValue("0.0"))
 
     def detect_head(self, min_head_length=None, max_head_length=None):
         """
@@ -184,8 +186,8 @@ class SD(object):
             if value is None:
                 value = default
             try:
-                value = float(value)
-            except (TypeError, ValueError):
+                value = TimeValue(value)
+            except (TypeError, ValueError, InvalidOperation):
                 raise TypeError(u"The value of %s is not a number" % name)
             if value < 0:
                 raise ValueError(u"The value of %s is negative" % name)
@@ -193,7 +195,7 @@ class SD(object):
         
         min_length = _sanitize(min_length, self.MIN_LENGTH, "min_length")
         max_length = _sanitize(max_length, self.MAX_LENGTH, "max_length")
-        mws = self.rconf["mfcc_window_shift"]
+        mws = self.rconf.mws
         min_length_frames = int(min_length / mws)
         max_length_frames = int(max_length / mws)
         self._log([u"MFCC window shift s:     %.3f", mws])
@@ -206,7 +208,7 @@ class SD(object):
         self._log(u"Synthesizing query...")
         synt_duration = max_length * self.QUERY_FACTOR
         self._log([u"Synthesizing at least %.3f seconds", synt_duration])
-        tmp_handler, tmp_file_path = gf.tmp_file(suffix=u".wav", root=self.rconf["tmp_path"])
+        tmp_handler, tmp_file_path = gf.tmp_file(suffix=u".wav", root=self.rconf[RuntimeConfiguration.TMP_PATH])
         synt = Synthesizer(rconf=self.rconf, logger=self.logger)
         anchors, total_time, synthesized_chars = synt.synthesize(
             self.text_file,

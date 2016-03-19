@@ -19,29 +19,62 @@ __status__ = "Production"
 
 ### CONSTANTS ###
 
+CONFIG_RESERVED_CHARACTERS = ["~"]
+""" List of reserved characters which are forbidden in configuration files """
+
+CONFIG_STRING_ASSIGNMENT_SYMBOL = "="
+""" Assignment symbol in config string ``key=value`` pairs """
+
+CONFIG_STRING_SEPARATOR_SYMBOL = "|"
+""" Separator of ``key=value`` pairs in config strings """
+
+PARSED_TEXT_SEPARATOR = "|"
+""" Separator for input text files in parsed format """
+
 CONFIG_TXT_FILE_NAME = "config.txt"
 """ File name for the TXT configuration file in containers """
 
 CONFIG_XML_FILE_NAME = "config.xml"
 """ File name for the XML configuration file in containers """
 
-CONFIG_XML_TASKS_TAG = "tasks"
-""" ``<tasks>`` tag in the XML configuration file """
-
 CONFIG_XML_TASK_TAG = "task"
 """ ``<task>`` tag in the XML configuration file """
 
-CONFIG_RESERVED_CHARACTERS = ["~"]
-""" List of reserved characters which are forbidden in configuration files """
+CONFIG_XML_TASKS_TAG = "tasks"
+""" ``<tasks>`` tag in the XML configuration file """
 
-CONFIG_STRING_SEPARATOR_SYMBOL = "|"
-""" Separator of ``key=value`` pairs in config strings """
+MIMETYPE_MAP = {
+    "aac": "audio/aac",
+    "aiff": "audio/x-aiff",
+    "flac": "audio/flac",
+    "mp3": "audio/mpeg",
+    "mp4": "audio/mp4",
+    "oga": "audio/x-vorbis+ogg",
+    "ogg": "audio/x-vorbis+ogg",
+    "wav": "audio/x-wav",
+    "webm": "video/webm"
+}
+""" Map from audio file extension to mimetype """
 
-CONFIG_STRING_ASSIGNMENT_SYMBOL = "="
-""" Assignment symbol in config string ``key=value`` pairs """
+TMP_PATH_DEFAULT_NONPOSIX = None
+"""
+Default temporary directory path for non-POSIX OSes.
+Set to ``None`` so that ``tempfile`` will select
+the most approriate temporary directory root path.
 
-PARSED_TEXT_SEPARATOR = "|"
-""" Separator for input text files in parsed format """
+.. versionadded:: 1.4.1
+"""
+
+TMP_PATH_DEFAULT_POSIX = "/tmp/"
+"""
+Default temporary directory path for POSIX OSes.
+
+.. versionadded:: 1.4.1
+"""
+
+
+
+### PARAMETER NAMES ###
 
 # reserved parameter names (RPN)
 RPN_JOB_IDENTIFIER = "job_identifier"
@@ -787,6 +820,26 @@ Example::
 .. versionadded:: 1.3.1
 """
 
+PPN_TASK_OS_FILE_LEVELS = "os_task_file_levels"
+"""
+If the input text file is multilevel,
+only outputs the specified levels.
+
+This parameter has no effect for single-level
+input text files or output sync map formats.
+
+Usage: config string, TXT config file, XML config file
+
+Values: string
+
+Example::
+
+    os_task_file_levels=123
+    os_task_file_levels=3
+
+.. versionadded:: 1.5.0
+"""
+
 PPN_TASK_OS_FILE_NAME = "os_task_file_name"
 """
 The name of the sync map file output for the task.
@@ -897,269 +950,6 @@ Example::
 
     os_task_file_name=$PREFIX.smil
 
-"""
-
-
-
-### RUNTIMECONFIGURATION ###
-
-RC_ALLOW_UNLISTED_LANGUAGES = "allow_unlisted_languages"
-"""
-If ``True``, allow using a language code not listed in ``languages.py``;
-otherwise, raise an error if the user attempts to use a language not listed.
-Default: ``True``.
-
-.. versionadded:: 1.4.1
-"""
-
-RC_C_EXTENSIONS = "c_extensions"
-"""
-If ``True`` and Python C extensions are available, use them.
-Otherwise, use pure Python code.
-Default: ``True``.
-
-.. versionadded:: 1.4.1
-"""
-
-RC_CEW_SUBPROCESS_ENABLED = "cew_subprocess_enabled"
-"""
-If ``True``, calls to ``aeneas.cew`` will be done via ``subprocess``.
-Default: ``False``.
-
-Note this is a temporary workaround and it might be removed
-at any time.
-
-.. versionadded:: 1.5.0
-"""
-
-RC_CEW_SUBPROCESS_PATH = "cew_subprocess_path"
-"""
-Use the given path to the python executable
-when calling ``aeneas.cew`` via ``subprocess``.
-Default: ``python``.
-
-.. versionadded:: 1.5.0
-"""
-
-RC_DTW_ALGORITHM = "dtw_algorithm"
-"""
-DTW aligner algorithm.
-Default: ``stripe``.
-
-.. versionadded:: 1.4.1
-"""
-
-RC_DTW_MARGIN = "dtw_margin"
-"""
-DTW aligner margin, in seconds, for the ``stripe`` algorithm.
-Default: ``60``, corresponding to ``60s`` ahead and behind
-(i.e., ``120s`` total margin).
-
-.. versionadded:: 1.4.1
-"""
-
-RC_ESPEAK_PATH = "espeak_path"
-"""
-Path to the ``espeak`` executable.
-Default: ``espeak``.
-
-.. versionadded:: 1.4.1
-"""
-
-RC_FFMPEG_PATH = "ffmpeg_path"
-"""
-Path to the ``ffmpeg`` executable.
-Default: ``ffmpeg``.
-
-.. versionadded:: 1.4.1
-"""
-
-RC_FFMPEG_SAMPLE_RATE = "ffmpeg_sample_rate"
-"""
-Sample rate for ``ffmpeg``, in Hertz.
-Default: ``16000``.
-
-.. versionadded:: 1.4.1
-"""
-
-RC_FFPROBE_PATH = "ffprobe_path"
-"""
-Path to the ``ffprobe`` executable.
-Default: ``ffprobe``.
-
-.. versionadded:: 1.4.1
-"""
-
-RC_JOB_MAX_TASKS = "job_max_tasks"
-"""
-Maximum number of Tasks of a Job.
-If a Job has more Tasks than this value,
-it will not be executed and an error will be raised.
-Use ``0`` for disabling this check.
-Default: ``0`` (disabled).
-
-.. versionadded:: 1.4.1
-"""
-
-RC_MFCC_FILTERS = "mfcc_filters"
-"""
-Number of filters for extracting MFCCs.
-Default: ``40``.
-
-.. versionadded:: 1.4.1
-"""
-
-RC_MFCC_SIZE = "mfcc_size"
-"""
-Number of MFCCs to extract, including the 0th.
-Default: ``13``.
-
-.. versionadded:: 1.4.1
-"""
-
-RC_MFCC_FFT_ORDER = "mfcc_fft_order"
-"""
-Order of the RFFT for extracting MFCCs.
-It must be a power of two.
-Default: ``512``.
-
-.. versionadded:: 1.4.1
-"""
-
-RC_MFCC_LOWER_FREQUENCY = "mfcc_lower_frequency"
-"""
-Lower frequency to be used for extracting MFCCs, in Hertz.
-Default: ``133.3333``.
-
-.. versionadded:: 1.4.1
-"""
-
-RC_MFCC_UPPER_FREQUENCY = "mfcc_upper_frequency"
-"""
-Upper frequency to be used for extracting MFCCs, in Hertz.
-Default: ``6855.4976``.
-
-.. versionadded:: 1.4.1
-"""
-
-RC_MFCC_EMPHASIS_FACTOR = "mfcc_emphasis_factor"
-"""
-Emphasis factor to be applied to MFCCs.
-Default: ``0.970``.
-
-.. versionadded:: 1.4.1
-"""
-
-RC_MFCC_WINDOW_LENGTH = "mfcc_window_length"
-"""
-Length of the window for extracting MFCCs, in seconds.
-It is usual to set it between 1.5 and 4 times
-the value of ``RC_MFCC_WINDOW_SHIFT``.
-Default: ``0.100``.
-
-.. versionadded:: 1.4.1
-"""
-
-RC_MFCC_WINDOW_SHIFT = "mfcc_window_shift"
-"""
-Shift of the window for extracting MFCCs, in seconds.
-This parameter is basically the time step
-of the synchronization maps output.
-Default: ``0.040``.
-
-.. versionadded:: 1.4.1
-"""
-
-RC_TASK_MAX_AUDIO_LENGTH = "task_max_audio_length"
-"""
-Maximum length of the audio file of a Task, in seconds.
-If a Task has an audio file longer than this value,
-it will not be executed and an error will be raised.
-Use ``0`` for disabling this check.
-Default: ``7200`` seconds.
-
-.. versionadded:: 1.4.1
-"""
-
-RC_TASK_MAX_TEXT_LENGTH = "task_max_text_length"
-"""
-Maximum number of text fragments in the text file of a Task.
-If a Task has more text fragments than this value,
-it will not be executed and an error will be raised.
-Use ``0`` for disabling this check.
-Default: ``0`` (disabled).
-
-.. versionadded:: 1.4.1
-"""
-
-RC_TMP_PATH = "tmp_path"
-"""
-Path to the temporary directory to be used.
-Default: ``None``, meaning that the default temporary directory
-will be set by ``RC_TMP_PATH_DEFAULT_POSIX``
-or ``RC_TMP_PATH_DEFAULT_NONPOSIX``.
-
-.. versionadded:: 1.4.1
-"""
-
-RC_VAD_EXTEND_SPEECH_INTERVAL_AFTER = "vad_extend_speech_after"
-"""
-Extend to the right (after/future)
-a speech interval found by the VAD algorithm,
-by this many seconds.
-Default: ``0`` seconds.
-
-.. versionadded:: 1.4.1
-"""
-
-RC_VAD_EXTEND_SPEECH_INTERVAL_BEFORE = "vad_extend_speech_before"
-"""
-Extend to the left (before/past)
-a speech interval found by the VAD algorithm,
-by this many seconds.
-Default: ``0`` seconds.
-
-.. versionadded:: 1.4.1
-"""
-
-RC_VAD_LOG_ENERGY_THRESHOLD = "vad_log_energy_threshold"
-"""
-Threshold for the VAD algorithm to decide
-that a given frame contains speech.
-Note that this is the log10 of the energy coefficient.
-Default: ``0.699`` = ``log10(5)``, that is, a frame must have
-an energy at least 5 times higher than the minimum
-to be considered a speech frame.
-
-.. versionadded:: 1.4.1
-"""
-
-RC_VAD_MIN_NONSPEECH_LENGTH = "vad_min_nonspeech_length"
-"""
-Minimum length, in seconds, of a nonspeech interval.
-Default: ``0.200`` seconds.
-
-.. versionadded:: 1.4.1
-"""
-
-
-
-### DEFAULT VALUES ###
-
-RC_TMP_PATH_DEFAULT_POSIX = "/tmp/"
-"""
-Default temporary directory path for POSIX OSes.
-
-.. versionadded:: 1.4.1
-"""
-
-RC_TMP_PATH_DEFAULT_NONPOSIX = None
-"""
-Default temporary directory path for non-POSIX OSes.
-Set to ``None`` so that ``tempfile`` will select
-the most approriate temporary directory root path.
-
-.. versionadded:: 1.4.1
 """
 
 

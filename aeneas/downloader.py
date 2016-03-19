@@ -100,10 +100,10 @@ class Downloader(object):
                 else:
                     self._log([u"Audio stream index %d not allowed", preferred_index], Logger.WARNING)
                     self._log(u"Ignoring the requested audio stream index", Logger.WARNING)
-            # filter by preferred format
+            # selecting by preferred format
             streams = audiostreams
             if preferred_format is not None:
-                self._log([u"Filtering audiostreams by preferred format %s", preferred_format])
+                self._log([u"Selecting audiostreams by preferred format %s", preferred_format])
                 streams = [audiostream for audiostream in streams if audiostream.extension == preferred_format]
                 if len(streams) < 1:
                     self._log([u"No audiostream with preferred format %s", preferred_format])
@@ -137,7 +137,7 @@ class Downloader(object):
         output_path = output_file_path
         if output_file_path is None:
             self._log(u"output_path is None: creating temp file")
-            handler, output_path = gf.tmp_file(root=self.rconf["tmp_path"])
+            handler, output_path = gf.tmp_file(root=self.rconf[RuntimeConfiguration.TMP_PATH])
         else:
             if not gf.file_can_be_written(output_path):
                 self._log([u"Path '%s' cannot be written (wrong permissions?)", output_path], Logger.CRITICAL)

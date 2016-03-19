@@ -270,16 +270,16 @@ class TestExecuteTaskCLI(unittest.TestCase):
 
     def test_exec_srt_path(self):
         home = os.path.expanduser("~")
-        espeak_path = os.path.join(home, ".bin/myespeak")
+        tts_path = os.path.join(home, ".bin/myespeak")
         ffmpeg_path = os.path.join(home, ".bin/myffmpeg")
         ffprobe_path = os.path.join(home, ".bin/myffprobe")
-        if gf.file_exists(espeak_path) and gf.file_exists(ffmpeg_path) and gf.file_exists(ffprobe_path):
+        if gf.file_exists(tts_path) and gf.file_exists(ffmpeg_path) and gf.file_exists(ffprobe_path):
             self.execute([
                 ("in", "../tools/res/audio.mp3"),
                 ("in", "../tools/res/subtitles.txt"),
                 ("", "task_language=en|is_text_type=subtitles|os_task_file_format=srt"),
                 ("out", "sonnet.srt"),
-                ("", "-r=\"espeak_path=%s|ffmpeg_path=%s|ffprobe_path=%s\"" % (espeak_path, ffmpeg_path, ffprobe_path))
+                ("", "-r=\"tts_path=%s|ffmpeg_path=%s|ffprobe_path=%s\"" % (tts_path, ffmpeg_path, ffprobe_path))
             ], 0)
 
     def test_exec_srt_tmp_path(self):
@@ -292,6 +292,89 @@ class TestExecuteTaskCLI(unittest.TestCase):
             ("", "-r=\"tmp_path=%s\"" % (tmp_path))
         ], 0)
         gf.delete_directory(tmp_path)
+
+    def test_visible_example_eaf(self):
+        self.execute([
+            ("", "--example-eaf")
+        ], 0)
+
+    def test_visible_example_json(self):
+        self.execute([
+            ("", "--example-json")
+        ], 0)
+
+    def test_visible_example_mplain_smil(self):
+        self.execute([
+            ("", "--example-mplain-smil")
+        ], 0)
+
+    def test_visible_example_smil(self):
+        self.execute([
+            ("", "--example-smil")
+        ], 0)
+
+    def test_visible_example_srt(self):
+        self.execute([
+            ("", "--example-srt")
+        ], 0)
+
+    def test_hidden_example_cewsubprocess(self):
+        self.execute([
+            ("", "--example-cewsubprocess")
+        ], 0)
+
+    def test_hidden_example_festival(self):
+        self.execute([
+            ("", "--example-festival")
+        ], 0)
+
+    def test_hidden_example_flatten_12(self):
+        self.execute([
+            ("", "--example-flatten-12")
+        ], 0)
+
+    def test_hidden_example_flatten_2(self):
+        self.execute([
+            ("", "--example-flatten-2")
+        ], 0)
+
+    def test_hidden_example_flatten_3(self):
+        self.execute([
+            ("", "--example-flatten-3")
+        ], 0)
+
+    def test_hidden_example_head_tail(self):
+        self.execute([
+            ("", "--example-head-tail")
+        ], 0)
+
+    def test_hidden_example_mplain_json(self):
+        self.execute([
+            ("", "--example-mplain-json")
+        ], 0)
+
+    def test_hidden_example_mws(self):
+        self.execute([
+            ("", "--example-mws")
+        ], 0)
+
+    def test_hidden_example_py(self):
+        self.execute([
+            ("", "--example-py")
+        ], 0)
+
+    def test_hidden_example_sd(self):
+        self.execute([
+            ("", "--example-sd")
+        ], 0)
+
+    def test_hidden_example_speect(self):
+        # unable to run speect with Python 3,
+        # perform the test only on Python 2
+        if gf.PY2:
+            self.execute([
+                ("", "--example-speect")
+            ], 0)
 
     def test_exec_srt_max_audio_length(self):
         self.execute([
@@ -381,6 +464,11 @@ class TestExecuteTaskCLI(unittest.TestCase):
             ("out", "sonnet.txt"),
             ("", "-y"),
             ("", "--largest-audio")
+        ], 0)
+
+    def zzz_test_visible_example_youtube(self):
+        self.execute([
+            ("", "--example-youtube")
         ], 0)
 
 

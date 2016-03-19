@@ -115,6 +115,8 @@ class DownloadCLI(AbstractCLIProgram):
             return self.NO_ERROR_EXIT_CODE
         except ImportError:
             self.print_error(u"You need to install Python module pafy to download audio from YouTube. Run:")
+            self.print_error(u"$ pip install pafy")
+            self.print_error(u"or, to install for all users:")
             self.print_error(u"$ sudo pip install pafy")
         except Exception as exc:
             self.print_error(u"An unexpected Exception occurred while downloading audio from YouTube:")

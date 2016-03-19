@@ -87,7 +87,7 @@ class Diagnostics(object):
                 print_info(u"  you might want to 'export PYTHONIOENCODING=UTF-8' in your shell")
             else:
                 print_info(u"  you might want to 'set PYTHONIOENCODING=UTF-8' in your shell")
-            return True 
+            return True
         return False
 
     @classmethod
@@ -101,7 +101,6 @@ class Diagnostics(object):
         """
         try:
             from aeneas.ffprobewrapper import FFPROBEWrapper
-            import aeneas.globalfunctions as gf
             file_path = gf.absolute_path(u"tools/res/audio.mp3", __file__)
             prober = FFPROBEWrapper()
             properties = prober.read_properties(file_path)
@@ -126,7 +125,6 @@ class Diagnostics(object):
         """
         try:
             from aeneas.ffmpegwrapper import FFMPEGWrapper
-            import aeneas.globalfunctions as gf
             input_file_path = gf.absolute_path(u"tools/res/audio.mp3", __file__)
             handler, output_file_path = gf.tmp_file(suffix=u".wav")
             converter = FFMPEGWrapper()
@@ -154,7 +152,6 @@ class Diagnostics(object):
         try:
             from aeneas.espeakwrapper import ESPEAKWrapper
             from aeneas.language import Language
-            import aeneas.globalfunctions as gf
             text = u"From fairest creatures we desire increase,"
             language = Language.EN
             handler, output_file_path = gf.tmp_file(suffix=u".wav")
@@ -188,13 +185,15 @@ class Diagnostics(object):
         """
         try:
             from aeneas.tools.convert_syncmap import ConvertSyncMapCLI
-            from aeneas.tools.download import DownloadCLI
-            from aeneas.tools.espeak_wrapper import ESPEAKWrapperCLI
+            # disabling this check, as it is optional
+            #from aeneas.tools.download import DownloadCLI
             from aeneas.tools.execute_job import ExecuteJobCLI
             from aeneas.tools.execute_task import ExecuteTaskCLI
             from aeneas.tools.extract_mfcc import ExtractMFCCCLI
             from aeneas.tools.ffmpeg_wrapper import FFMPEGWrapperCLI
             from aeneas.tools.ffprobe_wrapper import FFPROBEWrapperCLI
+            # disabling this check, as it is optional
+            #from aeneas.tools.plot_waveform import PlotWaveformCLI
             from aeneas.tools.read_audio import ReadAudioCLI
             from aeneas.tools.read_text import ReadTextCLI
             from aeneas.tools.run_sd import RunSDCLI
@@ -312,15 +311,11 @@ def main():
     errors, warnings, c_ext_warnings = Diagnostics.check_all()
     if errors:
         sys.exit(1)
-    #print_info(u"")
     if c_ext_warnings:
         print_warning(u"All required dependencies are met but at least one available Python C extension is not compiled")
-        #print_info(u"You can still run aeneas but it will be slower")
-        #print_info(u"Enjoy running aeneas!")
         sys.exit(2)
     else:
         print_success(u"All required dependencies are met and all available Python C extensions are compiled")
-        #print_info(u"Enjoy running aeneas!")
         sys.exit(0)
 
 

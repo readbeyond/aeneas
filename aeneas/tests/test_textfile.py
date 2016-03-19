@@ -21,6 +21,7 @@ class TestTextFile(unittest.TestCase):
     EMPTY_FILE_PATH = "res/inputtext/empty.txt"
     BLANK_FILE_PATH = "res/inputtext/blank.txt"
     PLAIN_FILE_PATH = "res/inputtext/sonnet_plain.txt"
+    MPLAIN_FILE_PATH = "res/inputtext/sonnet_mplain.txt"
     UNPARSED_PARAMETERS = {
         gc.PPN_JOB_IS_TEXT_UNPARSED_ID_REGEX : "f[0-9]*",
         gc.PPN_JOB_IS_TEXT_UNPARSED_CLASS_REGEX : "ra",
@@ -125,20 +126,14 @@ class TestTextFile(unittest.TestCase):
         with self.assertRaises(TypeError):
             tfl = TextFile(parameters=["foo"])
 
-    def test_invalid_fragments(self):
-        tfl = TextFile()
-        with self.assertRaises(TypeError):
-            tfl.fragments = "foo"
-
     def test_empty_fragments(self):
         tfl = TextFile()
-        tfl.fragments = []
         self.assertEqual(len(tfl), 0)
 
-    def test_invalid_fragment(self):
+    def test_invalid_add_fragment(self):
         tfl = TextFile()
         with self.assertRaises(TypeError):
-            tfl.fragments = ["foo"]
+            tfl.add_fragment("foo")
 
     def test_read_empty(self):
         for fmt in TextFileFormat.ALLOWED_VALUES:
@@ -322,23 +317,52 @@ class TestTextFile(unittest.TestCase):
         self.assertEqual(len(tfl), 5)
         self.assertEqual(tfl.chars, 50)
 
-    def test_append_fragment(self):
+    def test_add_fragment(self):
         tfl = TextFile()
         self.assertEqual(len(tfl), 0)
-        tfl.append_fragment(TextFragment(u"a1", Language.EN, [u"fragment 1"]))
+        tfl.add_fragment(TextFragment(u"a1", Language.EN, [u"fragment 1"]))
         self.assertEqual(len(tfl), 1)
         self.assertEqual(tfl.chars, 10)
 
-    def test_append_fragment_multiple(self):
+    def test_add_fragment_multiple(self):
         tfl = TextFile()
         self.assertEqual(len(tfl), 0)
-        tfl.append_fragment(TextFragment(u"a1", Language.EN, [u"fragment 1"]))
+        tfl.add_fragment(TextFragment(u"a1", Language.EN, [u"fragment 1"]))
         self.assertEqual(len(tfl), 1)
-        tfl.append_fragment(TextFragment(u"a2", Language.EN, [u"fragment 2"]))
+        tfl.add_fragment(TextFragment(u"a2", Language.EN, [u"fragment 2"]))
         self.assertEqual(len(tfl), 2)
-        tfl.append_fragment(TextFragment(u"a3", Language.EN, [u"fragment 3"]))
+        tfl.add_fragment(TextFragment(u"a3", Language.EN, [u"fragment 3"]))
         self.assertEqual(len(tfl), 3)
         self.assertEqual(tfl.chars, 30)
+
+    def test_get_subtree_bad(self):
+        tfl = self.load()
+        with self.assertRaises(TypeError):
+            sub = tfl.get_subtree("abc")
+        with self.assertRaises(TypeError):
+            sub = tfl.get_subtree(None)
+        with self.assertRaises(TypeError):
+            sub = tfl.get_subtree(tfl.fragments[0])
+
+    def test_get_subtree(self):
+        tfl = self.load(input_file_path=self.MPLAIN_FILE_PATH, fmt=TextFileFormat.MPLAIN, expected_length=5)
+        children = tfl.fragments_tree.children
+        self.assertEqual(len(children), 5)
+        sub = tfl.get_subtree(children[0])
+        self.assertEqual(len(sub), 1)
+        sub = tfl.get_subtree(children[1])
+        self.assertEqual(len(sub), 4)
+        sub = tfl.get_subtree(children[2])
+        self.assertEqual(len(sub), 4)
+        sub = tfl.get_subtree(children[3])
+        self.assertEqual(len(sub), 4)
+        sub = tfl.get_subtree(children[4])
+        self.assertEqual(len(sub), 2)
+
+    def test_children_not_empty(self):
+        tfl = self.load(input_file_path=self.MPLAIN_FILE_PATH, fmt=TextFileFormat.MPLAIN, expected_length=5)
+        children = tfl.children_not_empty
+        self.assertEqual(len(children), 5)
 
     def test_get_slice_no_args(self):
         tfl = self.load()

@@ -49,12 +49,12 @@ class TestSyncMap(unittest.TestCase):
     def test_append_none(self):
         syn = SyncMap()
         with self.assertRaises(TypeError):
-            syn.append_fragment(None)
+            syn.add_fragment(None)
 
     def test_append_invalid_fragment(self):
         syn = SyncMap()
         with self.assertRaises(TypeError):
-            syn.append_fragment("foo")
+            syn.add_fragment("foo")
 
     def test_read_none(self):
         syn = SyncMap()

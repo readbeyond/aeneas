@@ -9,6 +9,7 @@ from __future__ import absolute_import
 from __future__ import print_function
 import sys
 
+from aeneas.textfile import TextFileFormat
 from aeneas.tools.abstract_cli_program import AbstractCLIProgram
 import aeneas.globalconstants as gc
 import aeneas.globalfunctions as gf
@@ -72,7 +73,8 @@ class ReadTextCLI(AbstractCLIProgram):
         text_format = gf.safe_unicode(self.actual_arguments[0])
         if text_format == u"list":
             text = gf.safe_unicode(self.actual_arguments[1])
-        elif text_format in [u"parsed", u"plain", u"subtitles", u"unparsed"]:
+        #elif text_format in [u"mplain", u"parsed", u"plain", u"subtitles", u"unparsed"]:
+        elif text_format in TextFileFormat.ALLOWED_VALUES:
             text = self.actual_arguments[1]
             if not self.check_input_file(text):
                 return self.ERROR_EXIT_CODE

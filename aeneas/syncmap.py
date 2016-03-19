@@ -29,6 +29,7 @@ import os
 
 from aeneas.logger import Logger
 from aeneas.textfile import TextFragment
+from aeneas.tree import Tree
 import aeneas.globalconstants as gc
 import aeneas.globalfunctions as gf
 
@@ -57,6 +58,44 @@ class SyncMapFormat(object):
     for the synchronization maps.
     """
 
+    AUD = "aud"
+    """
+    Alias for AUDM
+    """
+
+    AUDH = "audh"
+    """
+    Tab-separated plain text,
+    with human-readable time values
+    and fragment text::
+
+        00:00:00.000   00:00:01.234   Text of fragment 1
+        00:00:01.234   00:00:05.678   Text of fragment 2
+        00:00:05.678   00:00:07.890   Text of fragment 3
+
+    * Multiple levels: no
+    * Multiple lines: no
+
+    .. versionadded:: 1.5.0
+    """
+
+    AUDM = "audm"
+    """
+    Tab-separated plain text,
+    with machine-readable time values
+    and fragment text,
+    compatible with ``Audacity``::
+
+        0.000   1.234   Text fragment 1
+        1.234   5.678   Text fragment 2
+        5.678   7.890   Text fragment 3
+
+    * Multiple levels: no
+    * Multiple lines: no
+
+    .. versionadded:: 1.5.0
+    """
+
     CSV = "csv"
     """
     Alias for CSVM
@@ -71,6 +110,9 @@ class SyncMapFormat(object):
         f002,00:00:01.234,00:00:05.678,Second fragment text
         f003,00:00:05.678,00:00:07.890,Third fragment text
 
+    * Multiple levels: no
+    * Multiple lines: no
+
     .. versionadded:: 1.0.4
     """
 
@@ -83,12 +125,58 @@ class SyncMapFormat(object):
         f002,1.234,5.678,Second fragment text
         f003,5.678,7.890,Third fragment text
 
+    * Multiple levels: no
+    * Multiple lines: no
+
     .. versionadded:: 1.2.0
     """
 
     DFXP = "dfxp"
     """
     Alias for TTML
+
+    .. versionadded:: 1.4.1
+    """
+
+    EAF = "eaf"
+    """
+    ELAN EAF::
+
+        <?xml version="1.0" encoding="UTF-8"?>
+        <ANNOTATION_DOCUMENT AUTHOR="aeneas" DATE="2016-01-01T00:00:00+00:00" FORMAT="2.8" VERSION="2.8" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="http://www.mpi.nl/tools/elan/EAFv2.8.xsd">
+            <HEADER MEDIA_FILE="" TIME_UNITS="milliseconds"></HEADER>
+            <TIME_ORDER>
+                <TIME_SLOT TIME_SLOT_ID="ts001b" TIME_VALUE="0"/>
+                <TIME_SLOT TIME_SLOT_ID="ts001e" TIME_VALUE="1234"/>
+                <TIME_SLOT TIME_SLOT_ID="ts002b" TIME_VALUE="1234"/>
+                <TIME_SLOT TIME_SLOT_ID="ts002e" TIME_VALUE="5678"/>
+                <TIME_SLOT TIME_SLOT_ID="ts003b" TIME_VALUE="5678"/>
+                <TIME_SLOT TIME_SLOT_ID="ts003e" TIME_VALUE="7890"/>
+            </TIME_ORDER>
+            <TIER LINGUISTIC_TYPE_REF="utterance" TIER_ID="tier1">
+                <ANNOTATION>
+                    <ALIGNABLE_ANNOTATION ANNOTATION_ID="f001" TIME_SLOT_REF1="ts001b" TIME_SLOT_REF2="ts001e">
+                        <ANNOTATION_VALUE>First fragment text</ANNOTATION_VALUE>
+                    </ALIGNABLE_ANNOTATION>
+                </ANNOTATION>
+                <ANNOTATION>
+                    <ALIGNABLE_ANNOTATION ANNOTATION_ID="f002" TIME_SLOT_REF1="ts002b" TIME_SLOT_REF2="ts002e">
+                        <ANNOTATION_VALUE>First fragment text</ANNOTATION_VALUE>
+                    </ALIGNABLE_ANNOTATION>
+                </ANNOTATION>
+                <ANNOTATION>
+                    <ALIGNABLE_ANNOTATION ANNOTATION_ID="f003" TIME_SLOT_REF1="ts003b" TIME_SLOT_REF2="ts003e">
+                        <ANNOTATION_VALUE>First fragment text</ANNOTATION_VALUE>
+                    </ALIGNABLE_ANNOTATION>
+                </ANNOTATION>
+            </TIER>
+            <LINGUISTIC_TYPE LINGUISTIC_TYPE_ID="utterance" TIME_ALIGNABLE="true"/>
+        </ANNOTATION_DOCUMENT>
+
+    * Multiple levels: no
+    * Multiple lines: no
+
+    .. versionadded:: 1.5.0
     """
 
     JSON = "json"
@@ -102,6 +190,7 @@ class SyncMapFormat(object):
            "language": "en",
            "begin": 0.000,
            "end": 1.234,
+           "children": [],
            "lines": [
             "First fragment text"
            ]
@@ -111,6 +200,7 @@ class SyncMapFormat(object):
            "language": "en",
            "begin": 1.234,
            "end": 5.678,
+           "children": [],
            "lines": [
             "Second fragment text",
             "Second line of second fragment"
@@ -121,6 +211,7 @@ class SyncMapFormat(object):
            "language": "en",
            "begin": 5.678,
            "end": 7.890,
+           "children": [],
            "lines": [
             "Third fragment text",
             "Second line of third fragment"
@@ -128,6 +219,9 @@ class SyncMapFormat(object):
           }
          ]
         }
+
+    * Multiple levels: yes (output only)
+    * Multiple lines: yes
 
     .. versionadded:: 1.2.0
     """
@@ -149,6 +243,13 @@ class SyncMapFormat(object):
          ]
         }
 
+    * Multiple levels: no
+    * Multiple lines: no
+
+    Deprecated, it will be removed in v2.0.0.
+
+    .. deprecated:: 1.5.0
+
     .. versionadded:: 1.2.0
     """
 
@@ -169,6 +270,10 @@ class SyncMapFormat(object):
         Third fragment text
         Second line of third fragment
 
+    * Multiple levels: no
+    * Multiple lines: yes
+
+    .. versionadded:: 1.4.1
     """
 
     SMIL = "smil"
@@ -183,22 +288,25 @@ class SyncMapFormat(object):
 
         <smil xmlns="http://www.w3.org/ns/SMIL" xmlns:epub="http://www.idpf.org/2007/ops" version="3.0">
          <body>
-          <seq id="s000001" epub:textref="p001.xhtml">
-           <par id="p000001">
+          <seq id="seq000001" epub:textref="p001.xhtml">
+           <par id="par000001">
             <text src="p001.xhtml#f001"/>
             <audio clipBegin="00:00:00.000" clipEnd="00:00:01.234" src="../Audio/p001.mp3"/>
            </par>
-           <par id="p000002">
+           <par id="par000002">
             <text src="p001.xhtml#f002"/>
             <audio clipBegin="00:00:01.234" clipEnd="00:00:05.678" src="../Audio/p001.mp3"/>
            </par>
-           <par id="p000003">
+           <par id="par000003">
             <text src="p001.xhtml#f003"/>
             <audio clipBegin="00:00:05.678" clipEnd="00:00:07.890" src="../Audio/p001.mp3"/>
            </par>
           </seq>
          </body>
         </smil>
+
+    * Multiple levels: yes (output only)
+    * Multiple lines: no
 
     .. versionadded:: 1.2.0
     """
@@ -210,22 +318,25 @@ class SyncMapFormat(object):
 
         <smil xmlns="http://www.w3.org/ns/SMIL" xmlns:epub="http://www.idpf.org/2007/ops" version="3.0">
          <body>
-          <seq id="s000001" epub:textref="p001.xhtml">
-           <par id="p000001">
+          <seq id="seq000001" epub:textref="p001.xhtml">
+           <par id="par000001">
             <text src="p001.xhtml#f001"/>
             <audio clipBegin="0.000" clipEnd="1.234" src="../Audio/p001.mp3"/>
            </par>
-           <par id="p000002">
+           <par id="par000002">
             <text src="p001.xhtml#f002"/>
             <audio clipBegin="1.234" clipEnd="5.678" src="../Audio/p001.mp3"/>
            </par>
-           <par id="p000003">
+           <par id="par000003">
             <text src="p001.xhtml#f003"/>
             <audio clipBegin="5.678" clipEnd="7.890" src="../Audio/p001.mp3"/>
            </par>
           </seq>
          </body>
         </smil>
+
+    * Multiple levels: yes (output only)
+    * Multiple lines: no
 
     .. versionadded:: 1.2.0
     """
@@ -249,6 +360,8 @@ class SyncMapFormat(object):
         Third fragment text
         Second line of third fragment
 
+    * Multiple levels: no
+    * Multiple lines: yes
     """
 
     SSV = "ssv"
@@ -258,6 +371,9 @@ class SyncMapFormat(object):
         0.000 1.234 f001 "First fragment text"
         1.234 5.678 f002 "Second fragment text"
         5.678 7.890 f003 "Third fragment text"
+
+    * Multiple levels: no
+    * Multiple lines: no
 
     .. versionadded:: 1.0.4
     """
@@ -271,6 +387,9 @@ class SyncMapFormat(object):
         00:00:01.234 00:00:05.678 f002 "Second fragment text"
         00:00:05.678 00:00:07.890 f003 "Third fragment text"
 
+    * Multiple levels: no
+    * Multiple lines: no
+
     .. versionadded:: 1.0.4
     """
 
@@ -282,6 +401,9 @@ class SyncMapFormat(object):
         0.000 1.234 f001 "First fragment text"
         1.234 5.678 f002 "Second fragment text"
         5.678 7.890 f003 "Third fragment text"
+
+    * Multiple levels: no
+    * Multiple lines: no
 
     .. versionadded:: 1.2.0
     """
@@ -301,6 +423,10 @@ class SyncMapFormat(object):
         00:00:05.678,00:00:07.890
         Third fragment text[br]Second line of third fragment
 
+    * Multiple levels: no
+    * Multiple lines: yes
+
+    .. versionadded:: 1.4.1
     """
 
     TAB = "tab"
@@ -324,6 +450,9 @@ class SyncMapFormat(object):
         00:00:01.234   00:00:05.678   f002
         00:00:05.678   00:00:07.890   f003
 
+    * Multiple levels: no
+    * Multiple lines: no
+
     .. versionadded:: 1.0.4
     """
 
@@ -336,6 +465,9 @@ class SyncMapFormat(object):
         0.000   1.234   f001
         1.234   5.678   f002
         5.678   7.890   f003
+
+    * Multiple levels: no
+    * Multiple lines: no
 
     .. versionadded:: 1.2.0
     """
@@ -362,6 +494,8 @@ class SyncMapFormat(object):
          </body>
         </tt>
 
+    * Multiple levels: yes (output only)
+    * Multiple lines: yes
     """
 
     TXT = "txt"
@@ -378,6 +512,9 @@ class SyncMapFormat(object):
         f002 00:00:01.234 00:00:05.678 "Second fragment text"
         f003 00:00:05.678 00:00:07.890 "Third fragment text"
 
+    * Multiple levels: no
+    * Multiple lines: no
+
     .. versionadded:: 1.0.4
     """
 
@@ -391,13 +528,15 @@ class SyncMapFormat(object):
         f002 1.234 5.678 "Second fragment text"
         f003 5.678 7.890 "Third fragment text"
 
+    * Multiple levels: no
+    * Multiple lines: no
+
     .. versionadded:: 1.2.0
     """
 
     VTT = "vtt"
     """
-    WebVTT caption/subtitle format
-    (it might have multiple lines per fragment)::
+    WebVTT caption/subtitle format::
 
         WEBVTT
 
@@ -414,39 +553,40 @@ class SyncMapFormat(object):
         00:00:05.678 --> 00:00:07.890
         Third fragment text
         Second line of third fragment
-
+    
+    * Multiple levels: no
+    * Multiple lines: yes
     """
 
     XML = "xml"
     """
-    XML (it might have multiple lines per fragment)::
+    XML::
 
         <?xml version="1.0" encoding="UTF-8" ?>
         <map>
          <fragment id="f001" begin="0.000" end="1.234">
           <line>First fragment text</line>
+          <children></children>
          </fragment>
          <fragment id="f002" begin="1.234" end="5.678">
           <line>Second fragment text</line>
           <line>Second line of second fragment</line>
+          <children></children>
          </fragment>
          <fragment id="f003" begin="5.678" end="7.890">
           <line>Third fragment text</line>
           <line>Second line of third fragment</line>
+          <children></children>
          </fragment>
         </map>
 
+    * Multiple levels: yes (output only)
+    * Multiple lines: yes
     """
 
     XML_LEGACY = "xml_legacy"
     """
-    XML, legacy format.
-
-    Deprecated, it will be removed in v2.0.0. Use XML instead.
-
-    .. deprecated:: 1.2.0
-
-    ::
+    XML, legacy format::
 
         <?xml version="1.0" encoding="UTF-8" ?>
         <map>
@@ -467,14 +607,23 @@ class SyncMapFormat(object):
          </fragment>
         </map>
 
+    * Multiple levels: no
+    * Multiple lines: no
+
+    Deprecated, it will be removed in v2.0.0. Use XML instead.
+
+    .. deprecated:: 1.2.0
     """
 
-
     ALLOWED_VALUES = [
+        AUD,
+        AUDH,
+        AUDM,
         CSV,
         CSVH,
         CSVM,
         DFXP,
+        EAF,
         JSON,
         RBSE,
         SBV,
@@ -541,7 +690,7 @@ class SyncMap(object):
     TAG = u"SyncMap"
 
     def __init__(self, logger=None):
-        self.fragments = []
+        self.fragments_tree = Tree()
         self.logger = logger if logger is not None else Logger()
 
     def _log(self, message, severity=Logger.DEBUG):
@@ -557,7 +706,39 @@ class SyncMap(object):
     def __str__(self):
         return gf.safe_str(self.__unicode__())
 
-    def to_json(self):
+    @property
+    def fragments_tree(self):
+        """
+        Return the current tree of fragments.
+
+        :rtype: :class:`aeneas.tree.Tree`
+        """
+        return self.__fragments_tree
+    @fragments_tree.setter
+    def fragments_tree(self, fragments_tree):
+        self.__fragments_tree = fragments_tree
+
+    @property
+    def is_single_level(self):
+        """
+        Return ``True`` if the sync map
+        is single level.
+        
+        :rtype: bool
+        """
+        return self.fragments_tree.height <= 2
+
+    @property
+    def fragments(self):
+        """
+        The current list of text fragments.
+
+        :rtype: list of :class:`aeneas.syncmap.SyncMapFragment`
+        """
+        return self.fragments_tree.vchildren_not_empty
+
+    @property
+    def json_string(self):
         """
         Return a JSON representation of the sync map.
 
@@ -565,52 +746,47 @@ class SyncMap(object):
 
         .. versionadded:: 1.3.1
         """
-        output_fragments = []
-        for fragment in self.fragments:
-            text = fragment.text_fragment
-            output_fragments.append({
-                "id" : text.identifier,
-                "language" : text.language,
-                "lines" : text.lines,
-                "begin" : gf.time_to_ssmmm(fragment.begin),
-                "end" : gf.time_to_ssmmm(fragment.end)
-            })
+        def visit_children(node):
+            """ Recursively visit the fragments_tree """
+            output_fragments = []
+            for child in node.children_not_empty:
+                fragment = child.value
+                text = fragment.text_fragment
+                output_fragments.append({
+                    "id" : text.identifier,
+                    "language" : text.language,
+                    "lines" : text.lines,
+                    "begin" : gf.time_to_ssmmm(fragment.begin),
+                    "end" : gf.time_to_ssmmm(fragment.end),
+                    "children": visit_children(child)
+                })
+            return output_fragments
+        output_fragments = visit_children(self.fragments_tree)
         return gf.safe_unicode(
             json.dumps({"fragments": output_fragments}, indent=1, sort_keys=True)
         )
 
-    def append_fragment(self, fragment):
+    def add_fragment(self, fragment, as_last=True):
         """
-        Append the given sync map fragment.
+        Add the given sync map fragment.
 
-        :param fragment: the sync map fragment to be appended
+        :param fragment: the sync map fragment to be added
         :type  fragment: :class:`aeneas.syncmap.SyncMapFragment`
+        :param bool as_last: if ``True``, append fragment; otherwise prepend it
 
         :raise TypeError: if ``fragment`` is ``None`` or
                           it is not an instance of ``SyncMapFragment``
         """
         if not isinstance(fragment, SyncMapFragment):
             raise TypeError("fragment is not an instance of SyncMapFragment")
-        self.fragments.append(fragment)
-
-    @property
-    def fragments(self):
-        """
-        The current list of sync map fragments.
-
-        :rtype: list of :class:`aeneas.syncmap.SyncMapFragment`
-        """
-        return self.__fragments
-    @fragments.setter
-    def fragments(self, fragments):
-        self.__fragments = fragments
+        self.fragments_tree.add_child(Tree(value=fragment), as_last=as_last)
 
     def clear(self):
         """
         Clear the sync map.
         """
         self._log(u"Clearing sync map")
-        self.fragments = []
+        self.fragments_tree = Tree()
 
     def output_html_for_tuning(
             self,
@@ -643,7 +819,7 @@ class SyncMap(object):
         )
         template = template.replace(
             self.FINETUNEAS_REPLACE_FRAGMENTS,
-            u"fragments = (%s).fragments;" % self.to_json()
+            u"fragments = (%s).fragments;" % self.json_string
         )
         if gc.PPN_TASK_OS_FILE_FORMAT in parameters:
             output_format = parameters[gc.PPN_TASK_OS_FILE_FORMAT]
@@ -690,10 +866,14 @@ class SyncMap(object):
         :raise OSError: if ``input_file_path`` does not exist
         """
         map_read_function = {
+            SyncMapFormat.AUD: partial(self._read_aud, parse_time=gf.time_from_ssmmm),
+            SyncMapFormat.AUDH: partial(self._read_aud, parse_time=gf.time_from_hhmmssmmm),
+            SyncMapFormat.AUDM: partial(self._read_aud, parse_time=gf.time_from_ssmmm),
             SyncMapFormat.CSV: partial(self._read_csv, parse_time=gf.time_from_ssmmm),
             SyncMapFormat.CSVH: partial(self._read_csv, parse_time=gf.time_from_hhmmssmmm),
             SyncMapFormat.CSVM: partial(self._read_csv, parse_time=gf.time_from_ssmmm),
             SyncMapFormat.DFXP: self._read_ttml,
+            SyncMapFormat.EAF: self._read_eaf,
             SyncMapFormat.JSON: self._read_json,
             SyncMapFormat.RBSE: self._read_rbse,
             SyncMapFormat.SBV: partial(self._read_sub, use_newline=True),
@@ -757,10 +937,14 @@ class SyncMap(object):
         :raise OSError: if ``output_file_path`` cannot be written
         """
         map_write_function = {
+            SyncMapFormat.AUD: partial(self._write_aud, format_time=gf.time_to_ssmmm),
+            SyncMapFormat.AUDH: partial(self._write_aud, format_time=gf.time_to_hhmmssmmm),
+            SyncMapFormat.AUDM: partial(self._write_aud, format_time=gf.time_to_ssmmm),
             SyncMapFormat.CSV: partial(self._write_csv, format_time=gf.time_to_ssmmm),
             SyncMapFormat.CSVH: partial(self._write_csv, format_time=gf.time_to_hhmmssmmm),
             SyncMapFormat.CSVM: partial(self._write_csv, format_time=gf.time_to_ssmmm),
             SyncMapFormat.DFXP: partial(self._write_ttml, parameters=parameters),
+            SyncMapFormat.EAF: partial(self._write_eaf, parameters=parameters),
             SyncMapFormat.JSON: self._write_json,
             SyncMapFormat.RBSE: self._write_rbse,
             SyncMapFormat.SBV: partial(self._write_sub, use_newline=True),
@@ -818,11 +1002,41 @@ class SyncMap(object):
         with io.open(output_file_path, "w", encoding="utf-8") as output_file:
             map_write_function[sync_map_format](output_file)
 
+    def _read_aud(self, input_file, parse_time):
+        """ Read from AUD file """
+        identifier_index = 1
+        for line in input_file.readlines():
+            split = line.strip().split("\t")
+            self.add_fragment(
+                SyncMapFragment(
+                    text_fragment=TextFragment(
+                        identifier = u"f" + str(identifier_index).zfill(6),
+                        lines=[split[2]]
+                    ),
+                    begin=parse_time(split[0]),
+                    end=parse_time(split[1])
+                )
+            )
+            identifier_index += 1
+
+    def _write_aud(self, output_file, format_time):
+        """ Write to AUD file """
+        msg = []
+        for fragment in self.fragments:
+            msg.append(
+                u"%s\t%s\t%s" % (
+                    format_time(fragment.begin),
+                    format_time(fragment.end),
+                    u" ".join(fragment.text_fragment.lines)
+                )
+            )
+        output_file.write(u"\n".join(msg))
+
     def _read_csv(self, input_file, parse_time):
         """ Read from CSV file """
         for line in input_file.readlines():
             split = line.strip().split(u",")
-            self.append_fragment(
+            self.add_fragment(
                 SyncMapFragment(
                     text_fragment=TextFragment(
                         identifier=split[0],
@@ -847,11 +1061,94 @@ class SyncMap(object):
             )
         output_file.write(u"\n".join(msg))
 
+    def _read_eaf(self, input_file):
+        """ Read from EAF file """
+        # namespaces
+        xsi = "http://www.w3.org/2001/XMLSchema-instance"
+        ns_map = {"xsi" : xsi}
+        # get root
+        root = etree.fromstring(gf.safe_bytes(input_file.read()))
+        # get time slots
+        time_slots = dict()
+        for ts in root.iter("TIME_SLOT"):
+            time_slots[ts.get("TIME_SLOT_ID")] = gf.time_from_ssmmm(ts.get("TIME_VALUE")) / 1000
+        # parse annotations
+        for alignable in root.iter("ALIGNABLE_ANNOTATION"):
+            identifier = gf.safe_unicode(alignable.get("ANNOTATION_ID"))
+            begin = time_slots[alignable.get("TIME_SLOT_REF1")]
+            end = time_slots[alignable.get("TIME_SLOT_REF2")]
+            lines = []
+            for value in alignable.iter("ANNOTATION_VALUE"):
+                lines.append(gf.safe_unicode(value.text))
+            self.add_fragment(
+                SyncMapFragment(
+                    text_fragment=TextFragment(
+                        identifier=identifier,
+                        lines=lines
+                    ),
+                    begin=begin,
+                    end=end
+                )
+            )
+
+    def _write_eaf(self, output_file, parameters=None):
+        """ Write to EAF file """
+        # namespaces
+        xsi = "http://www.w3.org/2001/XMLSchema-instance"
+        ns_map = {"xsi" : xsi}
+        # build doc
+        doc = etree.Element("ANNOTATION_DOCUMENT", nsmap=ns_map)
+        doc.attrib["{%s}noNamespaceSchemaLocation" % xsi] = "http://www.mpi.nl/tools/elan/EAFv2.8.xsd"
+        doc.attrib["AUTHOR"] = "aeneas"
+        doc.attrib["DATE"] = "2016-01-01T00:00:00+00:00"
+        doc.attrib["FORMAT"] = "2.8"
+        doc.attrib["VERSION"] = "2.8"
+        # header
+        header = etree.SubElement(doc, "HEADER")
+        header.attrib["MEDIA_FILE"] = ""
+        header.attrib["TIME_UNITS"] = "milliseconds"
+        if (not parameters is None) and ("audio_file_path_absolute" in parameters):
+            media = etree.SubElement(header, "MEDIA_DESCRIPTOR")
+            media.attrib["MEDIA_URL"] = "file://%s" % parameters["audio_file_path_absolute"]
+            media.attrib["MIME_TYPE"] = gf.mimetype_from_path(parameters["audio_file_path_absolute"])
+        # time order
+        time_order = etree.SubElement(doc, "TIME_ORDER")
+        # tier
+        tier = etree.SubElement(doc, "TIER")
+        tier.attrib["LINGUISTIC_TYPE_REF"] = "utterance"
+        tier.attrib["TIER_ID"] = "tier1"
+        i = 1
+        for fragment in self.fragments:
+            # time slots
+            begin_id = "ts%06db" % i
+            end_id = "ts%06de" % i
+            slot = etree.SubElement(time_order, "TIME_SLOT")
+            slot.attrib["TIME_SLOT_ID"] = begin_id
+            slot.attrib["TIME_VALUE"] = "%d" % (fragment.begin * 1000)
+            slot = etree.SubElement(time_order, "TIME_SLOT")
+            slot.attrib["TIME_SLOT_ID"] = end_id
+            slot.attrib["TIME_VALUE"] = "%d" % (fragment.end * 1000)
+            # annotation
+            annotation = etree.SubElement(tier, "ANNOTATION")
+            alignable = etree.SubElement(annotation, "ALIGNABLE_ANNOTATION")
+            alignable.attrib["ANNOTATION_ID"] = fragment.text_fragment.identifier
+            alignable.attrib["TIME_SLOT_REF1"] = begin_id
+            alignable.attrib["TIME_SLOT_REF2"] = end_id
+            value = etree.SubElement(alignable, "ANNOTATION_VALUE")
+            value.text = u" ".join(fragment.text_fragment.lines)
+            i += 1
+        # linguistic type
+        ling = etree.SubElement(doc, "LINGUISTIC_TYPE")
+        ling.attrib["LINGUISTIC_TYPE_ID"] = "utterance"
+        ling.attrib["TIME_ALIGNABLE"] = "true"
+        # write tree
+        self._write_tree_to_file(doc, output_file, xml_declaration=True)
+
     def _read_json(self, input_file):
         """ Read from JSON file """
         contents_dict = json.loads(input_file.read())
         for fragment in contents_dict["fragments"]:
-            self.append_fragment(
+            self.add_fragment(
                 SyncMapFragment(
                     text_fragment=TextFragment(
                         identifier=fragment["id"],
@@ -865,13 +1162,13 @@ class SyncMap(object):
 
     def _write_json(self, output_file):
         """ Write to JSON file """
-        output_file.write(self.to_json())
+        output_file.write(self.json_string)
 
     def _read_rbse(self, input_file):
         """ Read from RBSE file """
         contents_dict = json.loads(input_file.read())
         for fragment in contents_dict["smil_data"]:
-            self.append_fragment(
+            self.add_fragment(
                 SyncMapFragment(
                     text_fragment=TextFragment(
                         identifier=fragment["id"],
@@ -929,7 +1226,7 @@ class SyncMap(object):
                     end = gf.time_from_hhmmssmmm(child.get("clipEnd"))
                     if end is None:
                         end = gf.time_from_ssmmm(child.get("clipEnd"))
-            self.append_fragment(
+            self.add_fragment(
                 SyncMapFragment(
                     text_fragment=TextFragment(
                         identifier=identifier,
@@ -956,21 +1253,56 @@ class SyncMap(object):
         smil_elem.attrib["version"] = "3.0"
         body_elem = etree.SubElement(smil_elem, "{%s}body" % smil_ns)
         seq_elem = etree.SubElement(body_elem, "{%s}seq" % smil_ns)
-        seq_elem.attrib["id"] = "s" + str(1).zfill(6)
+        seq_elem.attrib["id"] = "seq" + str(1).zfill(6)
         seq_elem.attrib["{%s}textref" % epub_ns] = text_ref
-        i = 1
-        for fragment in self.fragments:
-            text = fragment.text_fragment
-            par_elem = etree.SubElement(seq_elem, "{%s}par" % smil_ns)
-            par_elem.attrib["id"] = "p" + str(i).zfill(6)
-            text_elem = etree.SubElement(par_elem, "{%s}text" % smil_ns)
-            text_elem.attrib["src"] = "%s#%s" % (text_ref, text.identifier)
-            audio_elem = etree.SubElement(par_elem, "{%s}audio" % smil_ns)
-            audio_elem.attrib["src"] = audio_ref
-            audio_elem.attrib["clipBegin"] = format_time(fragment.begin)
-            audio_elem.attrib["clipEnd"] = format_time(fragment.end)
-            i += 1
-
+        
+        if self.is_single_level:
+            # single level
+            i = 1
+            for fragment in self.fragments:
+                text = fragment.text_fragment
+                par_elem = etree.SubElement(seq_elem, "{%s}par" % smil_ns)
+                par_elem.attrib["id"] = "par" + str(i).zfill(6)
+                text_elem = etree.SubElement(par_elem, "{%s}text" % smil_ns)
+                text_elem.attrib["src"] = "%s#%s" % (text_ref, text.identifier)
+                audio_elem = etree.SubElement(par_elem, "{%s}audio" % smil_ns)
+                audio_elem.attrib["src"] = audio_ref
+                audio_elem.attrib["clipBegin"] = format_time(fragment.begin)
+                audio_elem.attrib["clipEnd"] = format_time(fragment.end)
+                i += 1
+        else:
+            # TODO support generic multiple levels
+            # multiple levels
+            par_index = 1
+            for par_child in self.fragments_tree.children_not_empty:
+                par_seq_elem = etree.SubElement(seq_elem, "{%s}seq" % smil_ns)
+                #par_seq_elem.attrib["id"] = "p" + str(par_index).zfill(6)
+                par_seq_elem.attrib["{%s}type" % epub_ns] = "paragraph"
+                par_seq_elem.attrib["{%s}textref" % epub_ns] = text_ref + "#" + par_child.value.text_fragment.identifier
+                sen_index = 1
+                for sen_child in par_child.children_not_empty:
+                    sen_seq_elem = etree.SubElement(par_seq_elem, "{%s}seq" % smil_ns)
+                    #sen_seq_elem.attrib["id"] = par_seq_elem.attrib["id"] + "s" + str(sen_index).zfill(6)
+                    sen_seq_elem.attrib["{%s}type" % epub_ns] = "sentence"
+                    sen_seq_elem.attrib["{%s}textref" % epub_ns] = text_ref + "#" + sen_child.value.text_fragment.identifier
+                    wor_index = 1
+                    for wor_child in sen_child.children_not_empty:
+                        fragment = wor_child.value
+                        text = fragment.text_fragment
+                        wor_seq_elem = etree.SubElement(sen_seq_elem, "{%s}seq" % smil_ns)
+                        #wor_seq_elem.attrib["id"] = sen_seq_elem.attrib["id"] + "s" + str(wor_index).zfill(6)
+                        wor_seq_elem.attrib["{%s}type" % epub_ns] = "word"
+                        wor_seq_elem.attrib["{%s}textref" % epub_ns] = text_ref + "#" + text.identifier
+                        wor_par_elem = etree.SubElement(wor_seq_elem, "{%s}par" % smil_ns)
+                        text_elem = etree.SubElement(wor_par_elem, "{%s}text" % smil_ns)
+                        text_elem.attrib["src"] = "%s#%s" % (text_ref, text.identifier)
+                        audio_elem = etree.SubElement(wor_par_elem, "{%s}audio" % smil_ns)
+                        audio_elem.attrib["src"] = audio_ref
+                        audio_elem.attrib["clipBegin"] = format_time(fragment.begin)
+                        audio_elem.attrib["clipEnd"] = format_time(fragment.end)
+                        wor_index +=1
+                    sen_index +=1
+                par_index +=1
         # write tree
         self._write_tree_to_file(smil_elem, output_file, xml_declaration=False)
 
@@ -999,7 +1331,7 @@ class SyncMap(object):
                         # should never happen, but just in case...
                         if len(fragment_lines) == 0:
                             fragment_lines = [u""]
-                        self.append_fragment(
+                        self.add_fragment(
                             SyncMapFragment(
                                 text_fragment=TextFragment(
                                     identifier=identifier,
@@ -1061,7 +1393,7 @@ class SyncMap(object):
                         # should never happen, but just in case...
                         if len(fragment_lines) == 0:
                             fragment_lines = [u""]
-                        self.append_fragment(
+                        self.add_fragment(
                             SyncMapFragment(
                                 text_fragment=TextFragment(
                                     identifier=identifier,
@@ -1098,7 +1430,7 @@ class SyncMap(object):
         """ Read from SSV file """
         for line in input_file.readlines():
             split = line.strip().split(" ")
-            self.append_fragment(
+            self.add_fragment(
                 SyncMapFragment(
                     text_fragment=TextFragment(
                         identifier=split[2],
@@ -1127,7 +1459,7 @@ class SyncMap(object):
         """ Read from TSV file """
         for line in input_file.readlines():
             split = line.strip().split("\t")
-            self.append_fragment(
+            self.add_fragment(
                 SyncMapFragment(
                     text_fragment=TextFragment(
                         identifier=split[2],
@@ -1162,7 +1494,7 @@ class SyncMap(object):
             begin = gf.time_from_ttml(elem.get("begin"))
             end = gf.time_from_ttml(elem.get("end"))
             fragment_lines = self._get_lines_from_node_text(elem)
-            self.append_fragment(
+            self.add_fragment(
                 SyncMapFragment(
                     text_fragment=TextFragment(
                         identifier=identifier,
@@ -1197,17 +1529,37 @@ class SyncMap(object):
         #head_elem = etree.SubElement(tt_elem, "{%s}head" % ttml_ns)
         body_elem = etree.SubElement(tt_elem, "{%s}body" % ttml_ns)
         div_elem = etree.SubElement(body_elem, "{%s}div" % ttml_ns)
-        for fragment in self.fragments:
-            text = fragment.text_fragment
-            p_string = u"<p xml:id=\"%s\" begin=\"%s\" end=\"%s\">%s</p>" % (
-                text.identifier,
-                gf.time_to_ttml(fragment.begin),
-                gf.time_to_ttml(fragment.end),
-                u"<br/>".join(text.lines)
-            )
-            p_elem = etree.fromstring(p_string)
-            div_elem.append(p_elem)
-
+        
+        if self.is_single_level:
+            # single level
+            for fragment in self.fragments:
+                text = fragment.text_fragment
+                p_string = u"<p xml:id=\"%s\" begin=\"%s\" end=\"%s\">%s</p>" % (
+                    text.identifier,
+                    gf.time_to_ttml(fragment.begin),
+                    gf.time_to_ttml(fragment.end),
+                    u"<br/>".join(text.lines)
+                )
+                p_elem = etree.fromstring(p_string)
+                div_elem.append(p_elem)
+        else:
+            # TODO support generic multiple levels
+            # multiple levels
+            for par_child in self.fragments_tree.children_not_empty:
+                text = par_child.value.text_fragment
+                p_elem = etree.SubElement(div_elem, "{%s}p" % ttml_ns)
+                p_elem.attrib["id"] = text.identifier
+                for sen_child in par_child.children_not_empty:
+                    text = sen_child.value.text_fragment
+                    sen_span_elem = etree.SubElement(p_elem, "{%s}span" % ttml_ns)
+                    sen_span_elem.attrib["id"] = text.identifier
+                    for wor_child in sen_child.children_not_empty:
+                        fragment = wor_child.value
+                        wor_span_elem = etree.SubElement(sen_span_elem, "{%s}span" % ttml_ns)
+                        wor_span_elem.attrib["id"] = fragment.text_fragment.identifier
+                        wor_span_elem.attrib["begin"] = gf.time_to_ttml(fragment.begin)
+                        wor_span_elem.attrib["end"] = gf.time_to_ttml(fragment.end)
+                        wor_span_elem.text = u"<br/>".join(fragment.text_fragment.lines)
         # write tree
         self._write_tree_to_file(tt_elem, output_file)
 
@@ -1215,7 +1567,7 @@ class SyncMap(object):
         """ Read from TXT file """
         for line in input_file.readlines():
             split = line.strip().split(" ")
-            self.append_fragment(
+            self.add_fragment(
                 SyncMapFragment(
                     text_fragment=TextFragment(
                         identifier=split[0],
@@ -1266,7 +1618,7 @@ class SyncMap(object):
                         # should never happen, but just in case...
                         if len(fragment_lines) == 0:
                             fragment_lines = [u""]
-                        self.append_fragment(
+                        self.add_fragment(
                             SyncMapFragment(
                                 text_fragment=TextFragment(
                                     identifier=identifier,
@@ -1309,7 +1661,7 @@ class SyncMap(object):
             for child in frag:
                 if child.tag == "line":
                     lines.append(gf.safe_unicode(child.text))
-            self.append_fragment(
+            self.add_fragment(
                 SyncMapFragment(
                     text_fragment=TextFragment(
                         identifier=identifier,
@@ -1322,15 +1674,21 @@ class SyncMap(object):
 
     def _write_xml(self, output_file):
         """ Write to XML file """
+        def visit_children(node, parent_elem):
+            """ Recursively visit the fragments_tree """
+            for child in node.children_not_empty:
+                fragment = child.value
+                fragment_elem = etree.SubElement(parent_elem, "fragment")
+                fragment_elem.attrib["id"] = fragment.text_fragment.identifier
+                fragment_elem.attrib["begin"] = gf.time_to_ssmmm(fragment.begin)
+                fragment_elem.attrib["end"] = gf.time_to_ssmmm(fragment.end)
+                for line in fragment.text_fragment.lines:
+                    line_elem = etree.SubElement(fragment_elem, "line")
+                    line_elem.text = line
+                children_elem = etree.SubElement(fragment_elem, "children")
+                visit_children(child, children_elem)
         map_elem = etree.Element("map")
-        for fragment in self.fragments:
-            fragment_elem = etree.SubElement(map_elem, "fragment")
-            fragment_elem.attrib["id"] = fragment.text_fragment.identifier
-            fragment_elem.attrib["begin"] = gf.time_to_ssmmm(fragment.begin)
-            fragment_elem.attrib["end"] = gf.time_to_ssmmm(fragment.end)
-            for line in fragment.text_fragment.lines:
-                line_elem = etree.SubElement(fragment_elem, "line")
-                line_elem.text = line
+        visit_children(self.fragments_tree, map_elem)
         self._write_tree_to_file(map_elem, output_file)
 
     def _read_xml_legacy(self, input_file):
@@ -1344,7 +1702,7 @@ class SyncMap(object):
                     begin = gf.time_from_ssmmm(child.text)
                 elif child.tag == "end":
                     end = gf.time_from_ssmmm(child.text)
-            self.append_fragment(
+            self.add_fragment(
                 SyncMapFragment(
                     text_fragment=TextFragment(
                         identifier=identifier,

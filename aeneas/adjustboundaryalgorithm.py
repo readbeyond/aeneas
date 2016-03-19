@@ -9,6 +9,7 @@ the boundary point between two fragments.
 """
 
 from __future__ import absolute_import
+from __future__ import division
 from __future__ import print_function
 import numpy
 
@@ -16,6 +17,8 @@ from aeneas.audiofilemfcc import AudioFileMFCC
 from aeneas.logger import Logger
 from aeneas.runtimeconfiguration import RuntimeConfiguration
 from aeneas.textfile import TextFile
+from aeneas.timevalue import Decimal
+from aeneas.timevalue import TimeValue
 
 __author__ = "Alberto Pettarin"
 __copyright__ = """
@@ -55,33 +58,106 @@ class AdjustBoundaryAlgorithm(object):
     """
 
     AFTERCURRENT = "aftercurrent"
-    """ Set the boundary at ``value`` seconds
-    after the end of the current fragment """
+    """
+    Set the boundary at ``value`` seconds
+    after the end of the current fragment.
+
+    Example (value ``0.200`` seconds):
+    
+    .. image:: _static/aftercurrent.200.png
+       :scale: 100%
+       :align: center
+       :alt: Comparison between AUTO labels and AFTERCURRENT labels with 0.200 seconds offset
+    """
 
     AUTO = "auto"
-    """ Auto (no adjustment) """
+    """
+    Auto (no adjustment).
+    
+    Example:
+
+    .. image:: _static/auto.png
+       :scale: 100%
+       :align: center
+       :alt: The AUTO method does not change the time intervals
+    """
 
     BEFORENEXT = "beforenext"
-    """ Set the boundary at ``value`` seconds
-    before the beginning of the next fragment """
+    """
+    Set the boundary at ``value`` seconds
+    before the beginning of the next fragment.
+
+    Example (value ``0.200`` seconds):
+
+    .. image:: _static/beforenext.200.png
+       :scale: 100%
+       :align: center
+       :alt: Comparison between AUTO labels and BEFORENEXT labels with 0.200 seconds offset
+    """
 
     OFFSET = "offset"
-    """ Offset the current boundaries by ``value`` seconds
+    """
+    Offset the current boundaries by ``value`` seconds.
+
+    Example (value ``-0.200`` seconds):
+    
+    .. image:: _static/offset.m200.png
+       :scale: 100%
+       :align: center
+       :alt: Comparison between AUTO labels and OFFSET labels with value -0.200
+
+    Example (value ``0.200`` seconds):
+
+    .. image:: _static/offset.200.png
+       :scale: 100%
+       :align: center
+       :alt: Comparison between AUTO labels and OFFSET labels with value 0.200
 
     .. versionadded:: 1.1.0
     """
 
     PERCENT = "percent"
-    """ Set the boundary at ``value`` percent of
-    the nonspeech interval between the current and the next fragment """
+    """
+    Set the boundary at ``value`` percent of
+    the nonspeech interval between the current and the next fragment.
+
+    Example (value ``25`` %):
+
+    .. image:: _static/percent.25.png
+       :scale: 100%
+       :align: center
+       :alt: Comparison between AUTO labels and PERCENT labels with value 25 %
+
+    Example (value ``50`` %):
+
+    .. image:: _static/percent.50.png
+       :scale: 100%
+       :align: center
+       :alt: Comparison between AUTO labels and PERCENT labels with value 50 %
+
+    Example (value ``75`` %):
+
+    .. image:: _static/percent.75.png
+       :scale: 100%
+       :align: center
+       :alt: Comparison between AUTO labels and PERCENT labels with value 75 %
+    
+    """
 
     RATE = "rate"
-    """ Adjust boundaries trying to respect the
-    ``value`` characters/second constraint """
+    """
+    Adjust boundaries trying to respect the
+    ``value`` characters/second constraint.
+
+    Example (value ``XX``): TBW
+    """
 
     RATEAGGRESSIVE = "rateaggressive"
-    """ Adjust boundaries trying to respect the
-    ``value`` characters/second constraint (aggressive mode)
+    """
+    Adjust boundaries trying to respect the
+    ``value`` characters/second constraint (aggressive mode).
+
+    Example (value ``XX``): TBW
 
     .. versionadded:: 1.1.0
     """
@@ -96,16 +172,6 @@ class AdjustBoundaryAlgorithm(object):
         RATEAGGRESSIVE
     ]
     """ List of all the allowed values """
-
-    DEFAULT_MAX_RATE = 21.0
-    """ Default max rate (used only when ``RATE`` or ``RATEAGGRESSIVE``
-    algorithms are used) """
-
-    DEFAULT_PERCENT = 50
-    """ Default percent value (used only when ``PERCENT`` algorithm is used) """
-
-    TOLERANCE = 0.001
-    """ Tolerance when comparing floats """
 
     TAG = u"AdjustBoundaryAlgorithm"
 
@@ -123,9 +189,9 @@ class AdjustBoundaryAlgorithm(object):
             raise ValueError("Algorithm value not allowed")
         if boundary_indices is None:
             raise TypeError("boundary_indices is None")
-        if (real_wave_mfcc is None) or (type(real_wave_mfcc) is not AudioFileMFCC):
+        if (real_wave_mfcc is None) or (not isinstance(real_wave_mfcc, AudioFileMFCC)):
             raise TypeError("real_wave_mfcc is None or not an AudioFileMFCC object")
-        if (text_file is None) or (type(text_file) is not TextFile):
+        if (text_file is None) or (not isinstance(text_file, TextFile)):
             raise TypeError("text_file is None or not a TextFile object")
         self.algorithm = algorithm
         self.parameters = parameters
@@ -172,23 +238,25 @@ class AdjustBoundaryAlgorithm(object):
         AUTO (do not modify)
         """
         self._log(u"Called _adjust_auto")
-        self._apply_offset(0.0)
+        self._apply_offset(TimeValue("0.000"))
 
     def _adjust_offset(self):
         """
         OFFSET
         """
         self._log(u"Called _adjust_offset")
+        # NOTE self.parameters[0] is TimeValue
         self._apply_offset(self.parameters[0])
 
     def _adjust_percent(self):
         """
-        PERCENT 
+        PERCENT
         """
         def new_time(begin, end, current):
-            mws = self.rconf["mfcc_window_shift"]
-            percent = max(min(float(self.parameters[0]) / 100, 100.0), 0.0)
-            return (int((begin + (end + 1 - begin) * percent) * mws * 1000)) / 1000.0
+            """ Compute new time """
+            # NOTE self.parameters[0] is an int
+            percent = max(min(Decimal(self.parameters[0]) / 100, 100), 0)
+            return (begin + (end + 1 - begin) * percent) * self.rconf.mws
         self._log(u"Called _adjust_percent")
         self._adjust_on_nonspeech(new_time)
 
@@ -197,8 +265,10 @@ class AdjustBoundaryAlgorithm(object):
         AFTERCURRENT
         """
         def new_time(begin, end, current):
-            mws = self.rconf["mfcc_window_shift"]
-            delay = max(float(self.parameters[0]), 0.0)
+            """ Compute new time """
+            mws = self.rconf.mws
+            # NOTE self.parameters[0] is TimeValue
+            delay = max(self.parameters[0], TimeValue("0.000"))
             tentative = begin * mws + delay
             if tentative > (end + 1) * mws:
                 return current * mws
@@ -208,11 +278,13 @@ class AdjustBoundaryAlgorithm(object):
 
     def _adjust_beforenext(self):
         """
-        BEFORENEXT 
+        BEFORENEXT
         """
         def new_time(begin, end, current):
-            mws = self.rconf["mfcc_window_shift"]
-            delay = max(float(self.parameters[0]), 0.0)
+            """ Compute new time """
+            mws = self.rconf.mws
+            # NOTE self.parameters[0] is TimeValue
+            delay = max(self.parameters[0], TimeValue("0.000"))
             tentative = (end + 1) * mws - delay
             if tentative < begin * mws:
                 return current * mws
@@ -222,17 +294,17 @@ class AdjustBoundaryAlgorithm(object):
 
     def _adjust_rate(self, aggressive=False):
         self._log(u"Called _adjust_rate")
-
         # if only one fragment, return unchanged
-        if len(self.text_file.fragments) <= 1:
+        if len(self.text_file) <= 1:
             self._log(u"Only one fragment, returning")
-            self._apply_offset(0.0)
+            self._apply_offset(TimeValue("0.000"))
             return
 
         # compute fragments too fast
-        mws = self.rconf["mfcc_window_shift"]
-        max_rate = float(self.parameters[0])
-        times = (self.boundary_indices * self.rconf["mfcc_window_shift"])
+        mws = self.rconf.mws
+        # NOTE self.parameters[0] is float 
+        max_rate = self.parameters[0]
+        times = self.boundary_indices * mws
         durations = numpy.diff(times)
         lengths = numpy.array([f.chars for f in self.text_file.fragments])
         # compute rates, dealing with division by zero
@@ -245,7 +317,7 @@ class AdjustBoundaryAlgorithm(object):
         # if no fragment is faster, return unchanged
         if len(faster) == 0:
             self._log([u"No fragment faster than max rate %.3f", max_rate])
-            self._apply_offset(0.0)
+            self._apply_offset(TimeValue("0.000"))
             return
 
         # try fixing faster fragments
@@ -279,9 +351,9 @@ class AdjustBoundaryAlgorithm(object):
                     rates[index] = lengths[index] / durations[index]
                 else:
                     self._log(u"  Cannot move begin time back (slack <= 0)")
-                
+
             # if aggressive and not completely fixed, try moving end time forward
-            if (aggressive) and (not fixed) and (index < len(self.text_file.fragments) - 1):
+            if (aggressive) and (not fixed) and (index < len(self.text_file) - 1):
                 self._log(u"  Trying to move end time forward...")
                 lacking = lengths[index] / max_rate - durations[index]
                 self._log([u"  Overflow current fragment: %.3f", lacking])
@@ -312,18 +384,22 @@ class AdjustBoundaryAlgorithm(object):
                 self._log([u"Fragment %d is faster and could not be fixed", index], Logger.WARNING)
 
         # create intervals and return
-        self.intervals = ([list(z) for z in zip(times, numpy.roll(times, -1))[:-1]])
-        self._add_head_tail()
+        self._times_to_intervals(times)
 
-    def _add_head_tail(self):
+    def _times_to_intervals(self, times):
         """
-        Add artificial head and tail intervals.
+        Transform a list of time values into a list of intervals.
+
+        For example: [0,1,2,3,4] => [[0,1], [1,2], [2,3], [3,4]]
+
+        :param times: the time values
+        :type  times: list of :class:`aeneas.timevalue.TimeValue`
         """
+        self._log(u"Converting times to intervals...")
+        intervals = [[times[i], times[i+1]] for i in range(len(times) - 1)]
+        self._log(u"Converting times to intervals... done")
         self._log(u"Adding head and tail...")
-        intervals = [[0.0, self.intervals[0][0]]]
-        intervals.extend(self.intervals)
-        intervals.append([self.intervals[-1][1], self.real_wave_mfcc.audio_length])
-        self.intervals = intervals
+        self.intervals = [[TimeValue("0.000"), intervals[0][0]]] + intervals + [[intervals[-1][1], self.real_wave_mfcc.audio_length]]
         self._log(u"Adding head and tail... done")
 
     def _apply_offset(self, offset):
@@ -331,22 +407,22 @@ class AdjustBoundaryAlgorithm(object):
         Apply the given offset (negative, zero, or positive)
         to all times.
 
-        :param float offset: the offset, in seconds
+        :param offset: the offset, in seconds
+        :type  offset: :class:`aeneas.timevalue.TimeValue`
         """
-        times = (self.boundary_indices * self.rconf["mfcc_window_shift"]) + offset
-        if numpy.min(times) < 0.0:
+        times = (self.boundary_indices * self.rconf.mws) + offset
+        if numpy.min(times) < TimeValue("0.000"):
             self._log(u"After applying offset some boundary times are negative", Logger.WARNING)
         if numpy.max(times) > self.real_wave_mfcc.audio_length:
             self._log(u"After applying offset some boundary times are beyond audio file duration", Logger.WARNING)
-        times = numpy.clip(times, 0.0, self.real_wave_mfcc.audio_length)
-        self.intervals = ([list(z) for z in zip(times, numpy.roll(times, -1))[:-1]])
-        self._add_head_tail()
+        times = numpy.clip(times, TimeValue("0.000"), self.real_wave_mfcc.audio_length)
+        self._times_to_intervals(times)
 
     def _adjust_on_nonspeech(self, adjust_function):
         """
         Apply the adjust function to each boundary point
         falling inside (extrema included) of a nonspeech interval.
-        
+
         The adjust function is not applied to a boundary index
         if there are two or more boundary indices falling
         inside the same nonspeech interval.
@@ -358,13 +434,13 @@ class AdjustBoundaryAlgorithm(object):
         indices of the nonspeech interval, and the current boundary index.
         """
         self._log(u"Called _adjust_on_nonspeech")
-        mws = self.rconf["mfcc_window_shift"]
+        mws = self.rconf.mws
         nonspeech_intervals = self.real_wave_mfcc.intervals(speech=False, time=False)
         #
         # first iteration
         # nonspeech_counter[i] is the number of boundary indices
         # falling in the i-th nonspeech interval
-        # 
+        #
         self._log(u"  First iteration...")
         nonspeech_counter = numpy.zeros(len(nonspeech_intervals), dtype=int)
         i = 0 # index of current boundary_index
@@ -394,7 +470,7 @@ class AdjustBoundaryAlgorithm(object):
         # all the other boundary indices are returned unchanged
         #
         self._log(u"  Second iteration...")
-        times = numpy.zeros(len(self.boundary_indices), dtype=float)
+        times = numpy.zeros(len(self.boundary_indices), dtype=TimeValue)
         i = 0
         j = 0
         while i < len(self.boundary_indices):
@@ -429,8 +505,7 @@ class AdjustBoundaryAlgorithm(object):
             self._log([u"Not adjusting %d %.3f", cbi, times[i]])
             i += 1
         self._log(u"  Second iteration... done")
-        self.intervals = ([list(z) for z in zip(times, numpy.roll(times, -1))[:-1]])
-        self._add_head_tail()
+        self._times_to_intervals(times)
 
 
 

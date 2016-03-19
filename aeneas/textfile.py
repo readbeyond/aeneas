@@ -13,6 +13,7 @@ import re
 
 from aeneas.idsortingalgorithm import IDSortingAlgorithm
 from aeneas.logger import Logger
+from aeneas.tree import Tree
 import aeneas.globalconstants as gc
 import aeneas.globalfunctions as gf
 
@@ -32,24 +33,44 @@ class TextFileFormat(object):
     Enumeration of the supported formats for text files.
     """
 
-    SUBTITLES = "subtitles"
+    MPLAIN = "mplain"
     """
-    The text file contains the fragments,
-    each fragment is contained in one or more consecutive lines,
-    separated by (at least) a blank line,
-    without explicitly-assigned identifiers.
-    Use this format if you want to output to SRT/TTML/VTT
-    and you want to keep multilines in the output file::
+    Multilevel version of the ``PLAIN`` format.
+    
+    The text file contains fragments on multiple levels:
+    paragraphs are separated by (at least) a blank line,
+    sentences are on different lines,
+    words will be recognized automatically::
 
-        Fragment on a single row
+        First sentence of Paragraph One.
+        Second sentence of Paragraph One.
 
-        Fragment on two rows
-        because it is quite long
+        First sentence of Paragraph Two.
 
-        Another one liner
+        First sentence of Paragraph Three.
+        Second sentence of Paragraph Three.
+        Third sentence of Paragraph Three.
 
-        Another fragment
-        on two rows
+    The above will produce the following text tree::
+
+        Paragraph1 ("First ... One.")
+          Sentence1 ("First ... One.")
+            Word1 ("First")
+            Word2 ("sentence")
+            ...
+            Word5 ("One.")
+          Sentence2 ("Second ... One.")
+            Word1 ("Second")
+            Word2 ("sentence")
+            ...
+            Word5 ("One.")
+        Paragraph2 ("First ... Two.")
+          Sentence1 ("First ... Two.")
+            Word1 ("First")
+            Word2 ("sentence")
+            ...
+            Word5 ("Two.")
+        ...
 
     """
 
@@ -74,6 +95,27 @@ class TextFileFormat(object):
         Text of the first fragment
         Text of the second fragment
         Text of the third fragment
+
+    """
+
+    SUBTITLES = "subtitles"
+    """
+    The text file contains the fragments,
+    each fragment is contained in one or more consecutive lines,
+    separated by (at least) a blank line,
+    without explicitly-assigned identifiers.
+    Use this format if you want to output to SRT/TTML/VTT
+    and you want to keep multilines in the output file::
+
+        Fragment on a single row
+
+        Fragment on two rows
+        because it is quite long
+
+        Another one liner
+
+        Another fragment
+        on two rows
 
     """
 
@@ -121,7 +163,7 @@ class TextFileFormat(object):
 
     """
 
-    ALLOWED_VALUES = [SUBTITLES, PARSED, PLAIN, UNPARSED]
+    ALLOWED_VALUES = [MPLAIN, PARSED, PLAIN, SUBTITLES, UNPARSED]
     """ List of all the allowed values """
 
 
@@ -295,13 +337,11 @@ class TextFile(object):
             parameters=None,
             logger=None
         ):
+        self.logger = logger if logger is not None else Logger()
         self.file_path = file_path
         self.file_format = file_format
-        self.parameters = parameters
-        self.fragments = []
-        self.logger = logger if logger is not None else Logger()
-        if self.parameters is None:
-            self.parameters = {}
+        self.parameters = {} if parameters is None else parameters
+        self.fragments_tree = Tree()
         if (self.file_path is not None) and (self.file_format is not None):
             self._read_from_file()
 
@@ -317,6 +357,33 @@ class TextFile(object):
     def _log(self, message, severity=Logger.DEBUG):
         """ Log """
         self.logger.log(message, severity, self.TAG)
+
+    @property
+    def fragments_tree(self):
+        """
+        Return the current tree of fragments.
+
+        :rtype: :class:`aeneas.tree.Tree`
+        """
+        return self.__fragments_tree
+    @fragments_tree.setter
+    def fragments_tree(self, fragments_tree):
+        self.__fragments_tree = fragments_tree
+
+    @property
+    def children_not_empty(self):
+        """
+        Return the direct not empty children of the root of the fragments tree,
+        as ``TextFile`` objects.
+
+        :rtype: list of :class:`aeneas.textfile.TextFile`
+        """
+        children = []
+        for child_node in self.fragments_tree.children_not_empty:
+            child_text_file = self.get_subtree(child_node)
+            child_text_file.set_language(child_node.value.language)
+            children.append(child_text_file)
+        return children
 
     @property
     def chars(self):
@@ -389,25 +456,34 @@ class TextFile(object):
 
         :rtype: list of :class:`aeneas.textfile.TextFragment`
         """
-        return self.__fragments
-    @fragments.setter
-    def fragments(self, fragments):
-        if fragments is not None:
-            if not isinstance(fragments, list):
-                raise TypeError("fragments is not an instance of list")
-            for fragment in fragments:
-                if not isinstance(fragment, TextFragment):
-                    raise TypeError("fragments contains an element which is not an instance of TextFragment")
-        self.__fragments = fragments
+        return self.fragments_tree.vchildren_not_empty
 
-    def append_fragment(self, fragment):
+    def add_fragment(self, fragment, as_last=True):
         """
-        Append the given text fragment to the current list.
+        Add the given text fragment to the current list.
 
-        :param fragment: the text fragment to be appended
+        :param fragment: the text fragment to be added
         :type  fragment: :class:`aeneas.textfile.TextFragment`
+        :param bool as_last: if ``True`` append fragment, otherwise prepend it
         """
-        self.fragments.append(fragment)
+        if not isinstance(fragment, TextFragment):
+            raise TypeError("fragment must be an instance of TextFragment")
+        self.fragments_tree.add_child(Tree(value=fragment), as_last=as_last)
+
+    def get_subtree(self, root):
+        """
+        Return a new TextFile object,
+        rooted at the given node ``root``.
+
+        :param root: the root node
+        :type  root: :class:`aeneas.tree.Tree`
+        :rtype: :class:`aeneas.textfile.TextFile`
+        """
+        if not isinstance(root, Tree):
+            raise TypeError("root is not an instance of Tree")
+        new_text_file = TextFile()
+        new_text_file.fragments_tree = root
+        return new_text_file
 
     def get_slice(self, start=None, end=None):
         """
@@ -429,7 +505,7 @@ class TextFile(object):
             end = len(self)
         new_text = TextFile()
         for fragment in self.fragments[start:end]:
-            new_text.append_fragment(fragment)
+            new_text.add_fragment(fragment)
         return new_text
 
     def set_language(self, language):
@@ -448,7 +524,7 @@ class TextFile(object):
         Clear the list of text fragments.
         """
         self._log(u"Clearing text fragments")
-        self.fragments = []
+        self.fragments_tree = Tree()
 
     def read_from_list(self, lines):
         """
@@ -495,15 +571,87 @@ class TextFile(object):
 
         # parse the contents
         map_read_function = {
-            TextFileFormat.SUBTITLES: self._read_subtitles,
+            TextFileFormat.MPLAIN: self._read_mplain,
             TextFileFormat.PARSED: self._read_parsed,
             TextFileFormat.PLAIN: self._read_plain,
+            TextFileFormat.SUBTITLES: self._read_subtitles,
             TextFileFormat.UNPARSED: self._read_unparsed
         }
         map_read_function[self.file_format](lines)
 
         # log the number of fragments
         self._log([u"Parsed %d fragments", len(self.fragments)])
+
+    def _read_mplain(self, lines):
+        """
+        Read text fragments from a multilevel format text file.
+
+        :param list lines: the lines of the subtitles text file
+        """
+        self._log(u"Parsing fragments from subtitles text format")
+        lines = [line.strip() for line in lines]
+        pairs = []
+        i = 1
+        current = 0
+        tree = Tree()
+        while current < len(lines):
+            line_text = lines[current]
+            if len(line_text) > 0:
+                sentences = [line_text]
+                following = current + 1
+                while (following < len(lines)) and (len(lines[following]) > 0):
+                    sentences.append(lines[following])
+                    following += 1
+
+                # here sentences holds the sentences for this paragraph
+
+                # create paragraph node
+                paragraph_identifier = u"p%06d" % i
+                paragraph_lines = [u" ".join(sentences)]
+                paragraph_fragment = TextFragment(
+                    identifier=paragraph_identifier,
+                    lines=paragraph_lines,
+                    filtered_lines=paragraph_lines # TODO maybe?
+                )
+                paragraph_node = Tree(value=paragraph_fragment)
+                tree.add_child(paragraph_node)
+                self._log([u"Paragraph %s", paragraph_identifier])
+
+                # create sentences nodes
+                j = 1
+                for s in sentences:
+                    sentence_identifier = paragraph_identifier + u"s%06d" % j
+                    sentence_lines = [s]
+                    sentence_fragment = TextFragment(
+                        identifier=sentence_identifier,
+                        lines=sentence_lines,
+                        filtered_lines=sentence_lines # TODO maybe?
+                    )
+                    sentence_node = Tree(value=sentence_fragment)
+                    paragraph_node.add_child(sentence_node)
+                    j += 1
+                    self._log([u"  Sentence %s", sentence_identifier])
+
+                    # create words nodes
+                    k = 1
+                    for w in [w for w in s.split() if len(w) > 0]:
+                        word_identifier = sentence_identifier + u"w%06d" % k
+                        word_lines = [w]
+                        word_fragment = TextFragment(
+                            identifier=word_identifier,
+                            lines=word_lines,
+                            filtered_lines=word_lines # TODO maybe?
+                        )
+                        word_node = Tree(value=word_fragment)
+                        sentence_node.add_child(word_node)
+                        k += 1
+                        self._log([u"    Word %s", word_identifier])
+
+                # keep iterating
+                current = following
+                i += 1
+            current += 1
+        self.fragments_tree = tree
 
     def _read_subtitles(self, lines):
         """
@@ -658,7 +806,7 @@ class TextFile(object):
         self._log(u"Creating TextFragment objects")
         text_filter = self._build_text_filter()
         for pair in pairs:
-            self.append_fragment(
+            self.add_fragment(
                 TextFragment(
                     identifier=pair[0],
                     lines=pair[1],
@@ -694,7 +842,7 @@ class TextFile(object):
                 }
                 try:
                     inner_filter = cls(**params)
-                    text_filter.append(inner_filter)
+                    text_filter.add_filter(inner_filter)
                     self._log([u"Creating %s object... done", cls_name])
                 except ValueError:
                     self._log([u"Creating %s object... failed", cls_name], Logger.WARNING)
@@ -731,14 +879,18 @@ class TextFilter(object):
         """ Log """
         self.logger.log(message, severity, self.TAG)
 
-    def append(self, new_filter):
+    def add_filter(self, new_filter, as_last=True):
         """
-        Append (to the right) a new filter to this filter.
+        Compose this filter with the given ``new_filter`` filter.
 
-        :param new_filter: the filter to be appended
+        :param new_filter: the filter to be composed
         :type  new_filter: :class:`aeneas.textfile.TextFilter`
+        :param bool as_last: if ``True``, compose to the right, otherwise to the left
         """
-        self.filters.append(new_filter)
+        if as_last:
+            self.filters.append(new_filter)
+        else:
+            self.filters = [new_filter] + self.filters
 
     def apply_filter(self, strings):
         """
