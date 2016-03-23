@@ -38,7 +38,7 @@ class ReadAudioCLI(AbstractCLIProgram):
     HELP = {
         "description": u"Read audio file properties.",
         "synopsis": [
-            u"AUDIO_FILE"
+            (u"AUDIO_FILE", True)
         ],
         "options": [
         ],

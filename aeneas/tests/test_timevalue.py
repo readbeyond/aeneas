@@ -4,16 +4,16 @@
 import unittest
 import numpy
 
-from aeneas.timevalue import Decimal 
-from aeneas.timevalue import TimeValue 
+from aeneas.timevalue import Decimal
+from aeneas.timevalue import TimeValue
 
-class TestSD(unittest.TestCase):
+class TestTimeValue(unittest.TestCase):
 
     def check(self, value, expected=None):
         self.assertTrue(isinstance(value, TimeValue))
         if expected is not None:
             self.assertEqual(value, expected)
-    
+
     def check_numpy(self, value, expected=None):
         #print(type(value))
         #print(type(value[0]))

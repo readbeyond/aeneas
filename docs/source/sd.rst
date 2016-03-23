@@ -1,4 +1,4 @@
-SD
+sd
 ==
 
 .. automodule:: aeneas.sd

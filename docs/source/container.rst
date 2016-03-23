@@ -1,4 +1,4 @@
-Container
+container
 =========
 
 .. automodule:: aeneas.container

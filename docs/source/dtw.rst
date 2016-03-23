@@ -1,4 +1,4 @@
-DTW
+dtw
 ===
 
 .. automodule:: aeneas.dtw

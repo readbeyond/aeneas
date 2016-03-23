@@ -1,8 +1,17 @@
 #!/usr/bin/env python
 # coding=utf-8
 
+
 """
-A structure describing the properties of a text file.
+This module contains the following classes:
+
+* :class:`~aeneas.textfile.TextFile`, representing a text file;
+* :class:`~aeneas.textfile.TextFileFormat`, an enumeration of text file formats;
+* :class:`~aeneas.textfile.TextFilter`, an abstract class for filtering text;
+* :class:`~aeneas.textfile.TextFilterIgnoreRegex`, a regular expression text filter;
+* :class:`~aeneas.textfile.TextFilterTransliterate`, a transliteration text filter;
+* :class:`~aeneas.textfile.TextFragment`, representing a single text fragment;
+* :class:`~aeneas.textfile.TransliterationMap`, a full transliteration map.
 """
 
 from __future__ import absolute_import
@@ -12,7 +21,7 @@ import io
 import re
 
 from aeneas.idsortingalgorithm import IDSortingAlgorithm
-from aeneas.logger import Logger
+from aeneas.logger import Loggable
 from aeneas.tree import Tree
 import aeneas.globalconstants as gc
 import aeneas.globalfunctions as gf
@@ -36,7 +45,7 @@ class TextFileFormat(object):
     MPLAIN = "mplain"
     """
     Multilevel version of the ``PLAIN`` format.
-    
+
     The text file contains fragments on multiple levels:
     paragraphs are separated by (at least) a blank line,
     sentences are on different lines,
@@ -71,6 +80,58 @@ class TextFileFormat(object):
             ...
             Word5 ("Two.")
         ...
+
+    """
+
+    MUNPARSED = "munparsed"
+    """
+    Multilevel version of the ``UNPARSED`` format.
+
+    The text file contains fragments on three levels:
+    level 1 (paragraph), level 2 (sentence), level 3 (word)::
+
+        <?xml version="1.0" encoding="UTF-8"?>
+        <html xmlns="http://www.w3.org/1999/xhtml" xmlns:epub="http://www.idpf.org/2007/ops" lang="en" xml:lang="en">
+         <head>
+          <meta charset="utf-8"/>
+          <link rel="stylesheet" href="../Styles/style.css" type="text/css"/>
+          <title>Sonnet I</title>
+         </head>
+         <body>
+          <div id="divTitle">
+           <h1>
+            <span id="p000001">
+             <span id="p000001s000001">
+              <span id="p000001s000001w000001">I</span>
+             </span>
+            </span>
+           </h1>
+          </div>
+          <div id="divSonnet">
+           <p class="stanza" id="p000002">
+            <span id="p000002s000001">
+             <span id="p000002s000001w000001">From</span>
+             <span id="p000002s000001w000002">fairest</span>
+             <span id="p000002s000001w000003">creatures</span>
+             <span id="p000002s000001w000004">we</span>
+             <span id="p000002s000001w000005">desire</span>
+             <span id="p000002s000001w000006">increase,</span>
+            </span><br/>
+            <span id="p000002s000002">
+             <span id="p000002s000002w000001">That</span>
+             <span id="p000002s000002w000002">thereby</span>
+             <span id="p000002s000002w000003">beauty’s</span>
+             <span id="p000002s000002w000004">rose</span>
+             <span id="p000002s000002w000005">might</span>
+             <span id="p000002s000002w000006">never</span>
+             <span id="p000002s000002w000007">die,</span>
+            </span><br/>
+            ...
+           </p>
+           ...
+          </div>
+         </body>
+        </html>
 
     """
 
@@ -132,7 +193,6 @@ class TextFileFormat(object):
         <html xmlns="http://www.w3.org/1999/xhtml" xmlns:epub="http://www.idpf.org/2007/ops" lang="en" xml:lang="en">
          <head>
           <meta charset="utf-8"/>
-          <meta name="viewport" content="width=768,height=1024"/>
           <link rel="stylesheet" href="../Styles/style.css" type="text/css"/>
           <title>Sonnet I</title>
          </head>
@@ -163,7 +223,7 @@ class TextFileFormat(object):
 
     """
 
-    ALLOWED_VALUES = [MPLAIN, PARSED, PLAIN, SUBTITLES, UNPARSED]
+    ALLOWED_VALUES = [MPLAIN, MUNPARSED, PARSED, PLAIN, SUBTITLES, UNPARSED]
     """ List of all the allowed values """
 
 
@@ -172,18 +232,17 @@ class TextFragment(object):
     """
     A text fragment.
 
-    Note: internally, all the text objects are Unicode strings.
+    Internally, all the text objects are Unicode strings.
 
     :param string identifier: the identifier of the fragment
     :param language: the language of the text of the fragment
-    :type  language: :class:`aeneas.language.Language`
+    :type  language: :class:`~aeneas.language.Language`
     :param list lines: the lines in which text is split up
     :param list filtered_lines: the lines in which text is split up,
                                 possibly filtered for the alignment purpose
-
-    :raise TypeError: if ``identifier`` is not a Unicode string
-    :raise TypeError: if ``lines`` is not an instance of ``list`` or
-                      it contains an element which is not a Unicode string
+    :raises: TypeError: if ``identifier`` is not a Unicode string
+    :raises: TypeError: if ``lines`` is not an instance of ``list`` or
+                        it contains an element which is not a Unicode string
     """
 
     TAG = u"TextFragment"
@@ -219,6 +278,8 @@ class TextFragment(object):
 
         :rtype: int
         """
+        if self.lines is None:
+            return 0
         return sum([len(line) for line in self.lines])
 
     @property
@@ -232,7 +293,7 @@ class TextFragment(object):
     @identifier.setter
     def identifier(self, identifier):
         if (identifier is not None) and (not gf.is_unicode(identifier)):
-            raise TypeError("identifier is not a Unicode string")
+            raise TypeError(u"identifier is not a Unicode string")
         self.__identifier = identifier
 
     @property
@@ -240,14 +301,14 @@ class TextFragment(object):
         """
         The language of the text fragment.
 
-        :rtype: :class:`aeneas.language.Language`
+        :rtype: :class:`~aeneas.language.Language`
         """
         return self.__language
     @language.setter
     def language(self, language):
         # NOTE disabling this check to allow for language codes not listed in Language
         #if (language is not None) and (language not in Language.ALLOWED_VALUES):
-        #    raise ValueError("language value is not allowed")
+        #    raise ValueError(u"language value is not allowed")
         self.__language = language
 
     @property
@@ -255,17 +316,17 @@ class TextFragment(object):
         """
         The lines of the text fragment.
 
-        :rtype: list of Unicode strings
+        :rtype: list of strings
         """
         return self.__lines
     @lines.setter
     def lines(self, lines):
         if lines is not None:
             if not isinstance(lines, list):
-                raise TypeError("lines is not an instance of list")
+                raise TypeError(u"lines is not an instance of list")
             for line in lines:
                 if not gf.is_unicode(line):
-                    raise TypeError("lines contains an element which is not a Unicode string")
+                    raise TypeError(u"lines contains an element which is not a Unicode string")
         self.__lines = lines
 
     @property
@@ -306,24 +367,23 @@ class TextFragment(object):
 
 
 
-class TextFile(object):
+class TextFile(Loggable):
     """
-    A list of text fragments.
-
-    Note: internally, all the text objects are Unicode strings.
+    A tree of text fragments, representing a text file.
 
     :param string file_path: the path to the text file.
                              If not ``None`` (and also ``file_format`` is not ``None``),
                              the file will be read immediately.
     :param file_format: the format of the text file
-    :type  file_format: :class:`aeneas.textfile.TextFileFormat`
+    :type  file_format: :class:`~aeneas.textfile.TextFileFormat`
     :param dict parameters: additional parameters used to parse the text file
+    :param rconf: a runtime configuration
+    :type  rconf: :class:`~aeneas.runtimeconfiguration.RuntimeConfiguration`
     :param logger: the logger object
-    :type  logger: :class:`aeneas.logger.Logger`
-
-    :raise OSError: if ``file_path`` cannot be read
-    :raise TypeError: if ``parameters`` is not an instance of ``dict``
-    :raise ValueError: if ``file_format`` value is not allowed
+    :type  logger: :class:`~aeneas.logger.Logger`
+    :raises: OSError: if ``file_path`` cannot be read
+    :raises: TypeError: if ``parameters`` is not an instance of ``dict``
+    :raises: ValueError: if ``file_format`` value is not allowed
     """
 
     DEFAULT_ID_FORMAT = u"f%06d"
@@ -335,9 +395,10 @@ class TextFile(object):
             file_path=None,
             file_format=None,
             parameters=None,
+            rconf=None,
             logger=None
         ):
-        self.logger = logger if logger is not None else Logger()
+        super(TextFile, self).__init__(rconf=rconf, logger=logger)
         self.file_path = file_path
         self.file_format = file_format
         self.parameters = {} if parameters is None else parameters
@@ -349,21 +410,23 @@ class TextFile(object):
         return len(self.fragments)
 
     def __unicode__(self):
-        return u"\n".join([f.__unicode__() for f in self.fragments])
+        msg = []
+        if self.fragments_tree is not None:
+            for node in self.fragments_tree.pre:
+                if not node.is_empty:
+                    indent = u" " * 2 * (node.level - 1)
+                    msg.append(u"%s%s" % (indent, node.value.__unicode__()))
+        return u"\n".join(msg)
 
     def __str__(self):
         return gf.safe_str(self.__unicode__())
-
-    def _log(self, message, severity=Logger.DEBUG):
-        """ Log """
-        self.logger.log(message, severity, self.TAG)
 
     @property
     def fragments_tree(self):
         """
         Return the current tree of fragments.
 
-        :rtype: :class:`aeneas.tree.Tree`
+        :rtype: :class:`~aeneas.tree.Tree`
         """
         return self.__fragments_tree
     @fragments_tree.setter
@@ -376,7 +439,7 @@ class TextFile(object):
         Return the direct not empty children of the root of the fragments tree,
         as ``TextFile`` objects.
 
-        :rtype: list of :class:`aeneas.textfile.TextFile`
+        :rtype: list of :class:`~aeneas.textfile.TextFile`
         """
         children = []
         for child_node in self.fragments_tree.children_not_empty:
@@ -406,7 +469,7 @@ class TextFile(object):
     @file_path.setter
     def file_path(self, file_path):
         if (file_path is not None) and (not gf.file_can_be_read(file_path)):
-            raise OSError("Text file '%s' cannot be read" % file_path)
+            self.log_exc(u"Text file '%s' cannot be read" % (file_path), None, True, OSError)
         self.__file_path = file_path
 
     @property
@@ -414,13 +477,13 @@ class TextFile(object):
         """
         The format of the text file.
 
-        :rtype: :class:`aeneas.textfile.TextFileFormat`
+        :rtype: :class:`~aeneas.textfile.TextFileFormat`
         """
         return self.__file_format
     @file_format.setter
     def file_format(self, file_format):
         if (file_format is not None) and (file_format not in TextFileFormat.ALLOWED_VALUES):
-            raise ValueError("Text file format '%s' is not allowed" % file_format)
+            self.log_exc(u"Text file format '%s' is not allowed" % (file_format), None, True, ValueError)
         self.__file_format = file_format
 
     @property
@@ -434,13 +497,13 @@ class TextFile(object):
     @parameters.setter
     def parameters(self, parameters):
         if (parameters is not None) and (not isinstance(parameters, dict)):
-            raise TypeError("parameters is not an instance of dict")
+            self.log_exc(u"parameters is not an instance of dict", None, True, TypeError)
         self.__parameters = parameters
 
     @property
     def characters(self):
         """
-        The number of characters in this text.
+        The number of characters in this text file.
 
         :rtype: int
         """
@@ -452,35 +515,38 @@ class TextFile(object):
     @property
     def fragments(self):
         """
-        The current list of text fragments.
+        The current list of text fragments
+        which are the children of the root node
+        of the text file tree.
 
-        :rtype: list of :class:`aeneas.textfile.TextFragment`
+        :rtype: list of :class:`~aeneas.textfile.TextFragment`
         """
         return self.fragments_tree.vchildren_not_empty
 
     def add_fragment(self, fragment, as_last=True):
         """
-        Add the given text fragment to the current list.
+        Add the given text fragment as the first or last child of the root node
+        of the text file tree.
 
         :param fragment: the text fragment to be added
-        :type  fragment: :class:`aeneas.textfile.TextFragment`
+        :type  fragment: :class:`~aeneas.textfile.TextFragment`
         :param bool as_last: if ``True`` append fragment, otherwise prepend it
         """
         if not isinstance(fragment, TextFragment):
-            raise TypeError("fragment must be an instance of TextFragment")
+            self.log_exc(u"fragment is not an instance of TextFragment", None, True, TypeError)
         self.fragments_tree.add_child(Tree(value=fragment), as_last=as_last)
 
     def get_subtree(self, root):
         """
-        Return a new TextFile object,
+        Return a new :class:`~aeneas.textfile.TextFile` object,
         rooted at the given node ``root``.
 
         :param root: the root node
-        :type  root: :class:`aeneas.tree.Tree`
-        :rtype: :class:`aeneas.textfile.TextFile`
+        :type  root: :class:`~aeneas.tree.Tree`
+        :rtype: :class:`~aeneas.textfile.TextFile`
         """
         if not isinstance(root, Tree):
-            raise TypeError("root is not an instance of Tree")
+            self.log_exc(u"root is not an instance of Tree", None, True, TypeError)
         new_text_file = TextFile()
         new_text_file.fragments_tree = root
         return new_text_file
@@ -490,9 +556,9 @@ class TextFile(object):
         Return a new list of text fragments,
         indexed from start (included) to end (excluded).
 
-        :param int start: the start index
-        :param int end: the end index
-        :rtype: :class:`aeneas.textfile.TextFile`
+        :param int start: the start index, included
+        :param int end: the end index, excluded
+        :rtype: :class:`~aeneas.textfile.TextFile`
         """
         if start is not None:
             start = min(max(0, start), len(self) - 1)
@@ -513,17 +579,17 @@ class TextFile(object):
         Set the given language for all the text fragments.
 
         :param language: the language of the text fragments
-        :type  language: :class:`aeneas.language.Language`
+        :type  language: :class:`~aeneas.language.Language`
         """
-        self._log([u"Setting language: '%s'", language])
+        self.log([u"Setting language: '%s'", language])
         for fragment in self.fragments:
             fragment.language = language
 
     def clear(self):
         """
-        Clear the list of text fragments.
+        Clear the text file, removing all the current fragments.
         """
-        self._log(u"Clearing text fragments")
+        self.log(u"Clearing text fragments")
         self.fragments_tree = Tree()
 
     def read_from_list(self, lines):
@@ -534,7 +600,7 @@ class TextFile(object):
 
         :param list lines: the text fragments
         """
-        self._log(u"Reading text fragments from list")
+        self.log(u"Reading text fragments from list")
         self._read_plain(lines)
 
     def read_from_list_with_ids(self, lines):
@@ -545,7 +611,7 @@ class TextFile(object):
 
         :param list lines: the list of ``[id, text]`` fragments (see above)
         """
-        self._log(u"Reading text fragments from list with ids")
+        self.log(u"Reading text fragments from list with ids")
         self._create_text_fragments([(line[0], [line[1]]) for line in lines])
 
     def _read_from_file(self):
@@ -554,15 +620,13 @@ class TextFile(object):
         """
         # test if we can read the given file
         if not gf.file_can_be_read(self.file_path):
-            self._log([u"File '%s' cannot be read", self.file_path], Logger.CRITICAL)
-            raise OSError("Input file cannot be read")
+            self.log_exc(u"File '%s' cannot be read" % (self.file_path), None, True, OSError)
 
         if self.file_format not in TextFileFormat.ALLOWED_VALUES:
-            self._log([u"Text file format '%s' is not supported.", self.file_format], Logger.CRITICAL)
-            raise ValueError("Text file format not supported")
+            self.log_exc(u"Text file format '%s' is not supported." % (self.file_format), None, True, ValueError)
 
         # read the contents of the file
-        self._log([u"Reading contents of file '%s'", self.file_path])
+        self.log([u"Reading contents of file '%s'", self.file_path])
         with io.open(self.file_path, "r", encoding="utf-8") as text_file:
             lines = text_file.readlines()
 
@@ -572,6 +636,7 @@ class TextFile(object):
         # parse the contents
         map_read_function = {
             TextFileFormat.MPLAIN: self._read_mplain,
+            TextFileFormat.MUNPARSED: self._read_munparsed,
             TextFileFormat.PARSED: self._read_parsed,
             TextFileFormat.PLAIN: self._read_plain,
             TextFileFormat.SUBTITLES: self._read_subtitles,
@@ -580,7 +645,24 @@ class TextFile(object):
         map_read_function[self.file_format](lines)
 
         # log the number of fragments
-        self._log([u"Parsed %d fragments", len(self.fragments)])
+        self.log([u"Parsed %d fragments", len(self.fragments)])
+
+    def _mplain_word_separator(self):
+        """
+        Get the word separator to split words in mplain format.
+
+        :rtype: string
+        """
+        word_separator = gf.safe_get(self.parameters, gc.PPN_TASK_IS_TEXT_MPLAIN_WORD_SEPARATOR, u" ")
+        if (word_separator is None) or (word_separator == "space"):
+            return u" "
+        elif word_separator == "equal":
+            return u"="
+        elif word_separator == "pipe":
+            return u"|"
+        elif word_separator == "tab":
+            return u"\u0009"
+        return word_separator
 
     def _read_mplain(self, lines):
         """
@@ -588,7 +670,9 @@ class TextFile(object):
 
         :param list lines: the lines of the subtitles text file
         """
-        self._log(u"Parsing fragments from subtitles text format")
+        self.log(u"Parsing fragments from subtitles text format")
+        word_separator = self._mplain_word_separator()
+        self.log([u"Word separator is: '%s'", word_separator])
         lines = [line.strip() for line in lines]
         pairs = []
         i = 1
@@ -611,11 +695,11 @@ class TextFile(object):
                 paragraph_fragment = TextFragment(
                     identifier=paragraph_identifier,
                     lines=paragraph_lines,
-                    filtered_lines=paragraph_lines # TODO maybe?
+                    filtered_lines=paragraph_lines
                 )
                 paragraph_node = Tree(value=paragraph_fragment)
                 tree.add_child(paragraph_node)
-                self._log([u"Paragraph %s", paragraph_identifier])
+                self.log([u"Paragraph %s", paragraph_identifier])
 
                 # create sentences nodes
                 j = 1
@@ -625,32 +709,120 @@ class TextFile(object):
                     sentence_fragment = TextFragment(
                         identifier=sentence_identifier,
                         lines=sentence_lines,
-                        filtered_lines=sentence_lines # TODO maybe?
+                        filtered_lines=sentence_lines
                     )
                     sentence_node = Tree(value=sentence_fragment)
                     paragraph_node.add_child(sentence_node)
                     j += 1
-                    self._log([u"  Sentence %s", sentence_identifier])
+                    self.log([u"  Sentence %s", sentence_identifier])
 
                     # create words nodes
                     k = 1
-                    for w in [w for w in s.split() if len(w) > 0]:
+                    for w in [w for w in s.split(word_separator) if len(w) > 0]:
                         word_identifier = sentence_identifier + u"w%06d" % k
                         word_lines = [w]
                         word_fragment = TextFragment(
                             identifier=word_identifier,
                             lines=word_lines,
-                            filtered_lines=word_lines # TODO maybe?
+                            filtered_lines=word_lines
                         )
                         word_node = Tree(value=word_fragment)
                         sentence_node.add_child(word_node)
                         k += 1
-                        self._log([u"    Word %s", word_identifier])
+                        self.log([u"    Word %s", word_identifier])
 
                 # keep iterating
                 current = following
                 i += 1
             current += 1
+        self.log(u"Storing tree")
+        self.fragments_tree = tree
+
+    def _read_munparsed(self, lines):
+        """
+        Read text fragments from an munparsed format text file.
+
+        :param list lines: the lines of the unparsed text file
+        """
+        def nodes_at_level(root, level):
+            """ Return a dict with the bs4 filter parameters """
+            LEVEL_TO_REGEX_MAP = [
+                None,
+                gc.PPN_TASK_IS_TEXT_MUNPARSED_L1_ID_REGEX,
+                gc.PPN_TASK_IS_TEXT_MUNPARSED_L2_ID_REGEX,
+                gc.PPN_TASK_IS_TEXT_MUNPARSED_L3_ID_REGEX,
+            ]
+            attribute_name = "id"
+            regex_string = self.parameters[LEVEL_TO_REGEX_MAP[level]]
+            indent = u" " * 2 * (level - 1)
+            self.log([u"%sRegex for %s: '%s'", indent, attribute_name, regex_string])
+            regex = re.compile(r".*\b" + regex_string + r"\b.*")
+            return root.findAll(attrs={ attribute_name: regex })
+        #
+        # TODO better and/or parametric parsing,
+        #      for example, removing tags but keeping text, etc.
+        #
+        self.log(u"Parsing fragments from munparsed text format")
+        # transform text in a soup object
+        self.log(u"Creating soup")
+        soup = BeautifulSoup("\n".join(lines), "lxml")
+        # extract according to class_regex and id_regex
+        text_from_id = {}
+        ids = []
+        self.log(u"Finding l1 elements")
+        tree = Tree()
+        for l1_node in nodes_at_level(soup, 1):
+            has_word = False
+            try:
+                l1_id = gf.safe_unicode(l1_node["id"])
+                self.log([u"Found l1 node with id:   '%s'", l1_id])
+                l1_text = []
+                paragraph_node = Tree()
+                paragraph_text = []
+                for l2_node in nodes_at_level(l1_node, 2):
+                    l2_id = gf.safe_unicode(l2_node["id"])
+                    self.log([u"  Found l2 node with id:   '%s'", l2_id])
+                    l2_text = []
+                    sentence_node = Tree()
+                    paragraph_node.add_child(sentence_node)
+                    sentence_text = []
+                    for l3_node in nodes_at_level(l2_node, 3):
+                        l3_id = gf.safe_unicode(l3_node["id"])
+                        l3_text = gf.safe_unicode(l3_node.text)
+                        self.log([u"    Found l3 node with id:   '%s'", l3_id])
+                        self.log([u"    Found l3 node with text: '%s'", l3_text])
+                        word_fragment = TextFragment(
+                            identifier=l3_id,
+                            lines=[l3_text],
+                            filtered_lines=[l3_text]
+                        )
+                        word_node = Tree(value=word_fragment)
+                        sentence_node.add_child(word_node)
+                        sentence_text.append(l3_text)
+                        has_word = True
+                    sentence_text = u" ".join(sentence_text)
+                    paragraph_text.append(sentence_text)
+                    sentence_node.value = TextFragment(
+                        identifier=l2_id,
+                        lines=[sentence_text],
+                        filtered_lines=[sentence_text]
+                    )
+                    self.log([u"  Found l2 node with text: '%s'" % sentence_text])
+                if has_word:
+                    paragraph_text = u" ".join(paragraph_text)
+                    paragraph_node.value = TextFragment(
+                        identifier=l1_id,
+                        lines=[paragraph_text],
+                        filtered_lines=[paragraph_text]
+                    )
+                    tree.add_child(paragraph_node)
+                    self.log([u"Found l1 node with text: '%s'" % paragraph_text])
+                else:
+                    self.log(u"Found l1 node but it has no words, skipping")
+            except KeyError:
+                self.log_warn(u"KeyError while parsing a l1 node")
+        # append to fragments
+        self.log(u"Storing tree")
         self.fragments_tree = tree
 
     def _read_subtitles(self, lines):
@@ -658,10 +830,9 @@ class TextFile(object):
         Read text fragments from a subtitles format text file.
 
         :param list lines: the lines of the subtitles text file
-
-        :raise ValueError: if the id regex is not valid
+        :raises: ValueError: if the id regex is not valid
         """
-        self._log(u"Parsing fragments from subtitles text format")
+        self.log(u"Parsing fragments from subtitles text format")
         id_format = self._get_id_format()
         lines = [line.strip() for line in lines]
         pairs = []
@@ -690,7 +861,7 @@ class TextFile(object):
         :param dict parameters: additional parameters for parsing
                                 (e.g., class/id regex strings)
         """
-        self._log(u"Parsing fragments from parsed text format")
+        self.log(u"Parsing fragments from parsed text format")
         pairs = []
         for line in lines:
             pieces = line.split(gc.PARSED_TEXT_SEPARATOR)
@@ -708,10 +879,9 @@ class TextFile(object):
         :param list lines: the lines of the plain text file
         :param dict parameters: additional parameters for parsing
                                 (e.g., class/id regex strings)
-
-        :raise ValueError: if the id regex is not valid
+        :raises: ValueError: if the id regex is not valid
         """
-        self._log(u"Parsing fragments from plain text format")
+        self.log(u"Parsing fragments from plain text format")
         id_format = self._get_id_format()
         lines = [line.strip() for line in lines]
         pairs = []
@@ -739,7 +909,7 @@ class TextFile(object):
                 if filter_name in self.parameters:
                     regex_string = self.parameters[filter_name]
                     if regex_string is not None:
-                        self._log([u"Regex for %s: '%s'", attribute_name, regex_string])
+                        self.log([u"Regex for %s: '%s'", attribute_name, regex_string])
                         regex = re.compile(r".*\b" + regex_string + r"\b.*")
                         attributes[attribute_name] = regex
             return attributes
@@ -747,17 +917,17 @@ class TextFile(object):
         # TODO better and/or parametric parsing,
         #      for example, removing tags but keeping text, etc.
         #
-        self._log(u"Parsing fragments from unparsed text format")
+        self.log(u"Parsing fragments from unparsed text format")
 
         # transform text in a soup object
-        self._log(u"Creating soup")
+        self.log(u"Creating soup")
         soup = BeautifulSoup("\n".join(lines), "lxml")
 
         # extract according to class_regex and id_regex
         text_from_id = {}
         ids = []
         filter_attributes = filter_attributes()
-        self._log([u"Finding elements matching attributes '%s'", filter_attributes])
+        self.log([u"Finding elements matching attributes '%s'", filter_attributes])
         nodes = soup.findAll(attrs=filter_attributes)
         for node in nodes:
             try:
@@ -766,7 +936,7 @@ class TextFile(object):
                 text_from_id[f_id] = f_text
                 ids.append(f_id)
             except KeyError:
-                self._log(u"KeyError while parsing a node", Logger.WARNING)
+                self.log_warn(u"KeyError while parsing a node")
 
         # sort by ID as requested
         id_sort = gf.safe_get(
@@ -775,11 +945,11 @@ class TextFile(object):
             default_value=IDSortingAlgorithm.UNSORTED,
             can_return_none=False
         )
-        self._log([u"Sorting text fragments using '%s'", id_sort])
+        self.log([u"Sorting text fragments using '%s'", id_sort])
         sorted_ids = IDSortingAlgorithm(id_sort).sort(ids)
 
         # append to fragments
-        self._log(u"Appending fragments")
+        self.log(u"Appending fragments")
         self._create_text_fragments([(key, [text_from_id[key]]) for key in sorted_ids])
 
     def _get_id_format(self):
@@ -792,9 +962,8 @@ class TextFile(object):
         )
         try:
             identifier = id_format % 1
-        except (TypeError, ValueError):
-            self._log([u"String '%s' is not a valid id format", id_format], Logger.WARNING)
-            raise ValueError("String '%s' is not a valid id format" % id_format)
+        except (TypeError, ValueError) as exc:
+            self.log_exc(u"String '%s' is not a valid id format" % (id_format), exc, True, ValueError)
         return id_format
 
     def _create_text_fragments(self, pairs):
@@ -803,7 +972,7 @@ class TextFile(object):
 
         :param list pairs: a list of pairs, each pair being (id, [line_1, ..., line_n])
         """
-        self._log(u"Creating TextFragment objects")
+        self.log(u"Creating TextFragment objects")
         text_filter = self._build_text_filter()
         for pair in pairs:
             self.add_fragment(
@@ -819,7 +988,7 @@ class TextFile(object):
         Build a suitable TextFilter object.
         """
         text_filter = TextFilter(logger=self.logger)
-        self._log(u"Created TextFilter object")
+        self.log(u"Created TextFilter object")
         for key, cls, param_name in [
                 (
                     gc.PPN_TASK_IS_TEXT_FILE_IGNORE_REGEX,
@@ -835,7 +1004,7 @@ class TextFile(object):
             cls_name = cls.__name__
             param_value = gf.safe_get(self.parameters, key, None)
             if param_value is not None:
-                self._log([u"Creating %s object...", cls_name])
+                self.log([u"Creating %s object...", cls_name])
                 params = {
                     param_name : param_value,
                     "logger" : self.logger
@@ -843,14 +1012,14 @@ class TextFile(object):
                 try:
                     inner_filter = cls(**params)
                     text_filter.add_filter(inner_filter)
-                    self._log([u"Creating %s object... done", cls_name])
-                except ValueError:
-                    self._log([u"Creating %s object... failed", cls_name], Logger.WARNING)
+                    self.log([u"Creating %s object... done", cls_name])
+                except ValueError as exc:
+                    self.log_exc(u"Creating %s object failed" % (cls_name), exc, False, None)
         return text_filter
 
 
 
-class TextFilter(object):
+class TextFilter(Loggable):
     """
     A text filter is a function acting on a list of strings,
     and returning a new list of strings derived from the former
@@ -859,32 +1028,28 @@ class TextFilter(object):
     For example, a filter might apply a regex to the input string,
     or it might transliterate its characters.
 
-    Filters can be chained.
+    Filters can be chained, to the left or to the right.
 
-    Note: internally, all the text objects are Unicode strings.
-
+    :param rconf: a runtime configuration
+    :type  rconf: :class:`~aeneas.runtimeconfiguration.RuntimeConfiguration`
     :param logger: the logger object
-    :type  logger: :class:`aeneas.logger.Logger`
+    :type  logger: :class:`~aeneas.logger.Logger`
     """
-
-    TAG = u"TextFilter"
 
     SPACES_REGEX = re.compile(" [ ]+")
 
-    def __init__(self, logger=None):
-        self.filters = []
-        self.logger = logger if logger is not None else Logger()
+    TAG = u"TextFilter"
 
-    def _log(self, message, severity=Logger.DEBUG):
-        """ Log """
-        self.logger.log(message, severity, self.TAG)
+    def __init__(self, rconf=None, logger=None):
+        super(TextFilter, self).__init__(rconf=rconf, logger=logger)
+        self.filters = []
 
     def add_filter(self, new_filter, as_last=True):
         """
         Compose this filter with the given ``new_filter`` filter.
 
         :param new_filter: the filter to be composed
-        :type  new_filter: :class:`aeneas.textfile.TextFilter`
+        :type  new_filter: :class:`~aeneas.textfile.TextFilter`
         :param bool as_last: if ``True``, compose to the right, otherwise to the left
         """
         if as_last:
@@ -901,7 +1066,7 @@ class TextFilter(object):
         result = strings
         for filt in self.filters:
             result = filt.apply_filter(result)
-        self._log([u"Applying regex: '%s' => '%s'", strings, result])
+        self.log([u"Applying regex: '%s' => '%s'", strings, result])
         return result
 
 
@@ -913,20 +1078,21 @@ class TextFilterIgnoreRegex(TextFilter):
     Leading/trailing spaces, and repeated spaces are removed.
 
     :param regex regex: the regular expression to be applied
+    :param rconf: a runtime configuration
+    :type  rconf: :class:`~aeneas.runtimeconfiguration.RuntimeConfiguration`
     :param logger: the logger object
-    :type  logger: :class:`aeneas.logger.Logger`
-
-    :raise ValueError: if ``regex`` is not a valid regex
+    :type  logger: :class:`~aeneas.logger.Logger`
+    :raises: ValueError: if ``regex`` is not a valid regex
     """
 
     TAG = u"TextFilterIgnoreRegex"
 
-    def __init__(self, regex, logger=None):
+    def __init__(self, regex, rconf=None, logger=None):
         try:
             self.regex = re.compile(regex)
         except:
-            raise ValueError("String '%s' is not a valid regular expression" % regex)
-        TextFilter.__init__(self, logger)
+            raise ValueError(u"String '%s' is not a valid regular expression" % regex)
+        TextFilter.__init__(self, rconf=rconf, logger=logger)
 
     def apply_filter(self, strings):
         return [self._apply_single(s) for s in strings]
@@ -948,29 +1114,30 @@ class TextFilterTransliterate(TextFilter):
     Leading/trailing spaces, and repeated spaces are removed.
 
     :param map_object: the map object
-    :type  map_object: :class:`aeneas.textfile.TransliterationMap`
+    :type  map_object: :class:`~aeneas.textfile.TransliterationMap`
     :param string map_file_path: the path to a map file
+    :param rconf: a runtime configuration
+    :type  rconf: :class:`~aeneas.runtimeconfiguration.RuntimeConfiguration`
     :param logger: the logger object
-    :type  logger: :class:`aeneas.logger.Logger`
-
-    :raise OSError: if ``map_file_path`` cannot be read
-    :raise TypeError: if ``map_object`` is not an instance
-                      of :class:`aeneas.textfile.TransliterationMap`
+    :type  logger: :class:`~aeneas.logger.Logger`
+    :raises: OSError: if ``map_file_path`` cannot be read
+    :raises: TypeError: if ``map_object`` is not an instance
+                        of :class:`~aeneas.textfile.TransliterationMap`
     """
 
     TAG = u"TextFilterTransliterate"
 
-    def __init__(self, map_file_path=None, map_object=None, logger=None):
+    def __init__(self, map_file_path=None, map_object=None, rconf=None, logger=None):
         if map_object is not None:
             if not isinstance(map_object, TransliterationMap):
-                raise TypeError("map_object is not an instance of TransliterationMap")
+                raise TypeError(u"map_object is not an instance of TransliterationMap")
             self.trans_map = map_object
         elif map_file_path is not None:
             self.trans_map = TransliterationMap(
                 file_path=map_file_path,
                 logger=logger
             )
-        TextFilter.__init__(self, logger)
+        TextFilter.__init__(self, rconf=rconf, logger=logger)
 
     def apply_filter(self, strings):
         return [self._apply_single(s) for s in strings]
@@ -985,7 +1152,7 @@ class TextFilterTransliterate(TextFilter):
 
 
 
-class TransliterationMap(object):
+class TransliterationMap(Loggable):
     """
     A transliteration map is a dictionary that maps Unicode characters
     to their equivalent Unicode characters or strings (character sequences).
@@ -997,26 +1164,23 @@ class TransliterationMap(object):
     included at the top of the ``transliteration.map`` sample file.
 
     :param string file_path: the path to the map file to be read
+    :param rconf: a runtime configuration
+    :type  rconf: :class:`~aeneas.runtimeconfiguration.RuntimeConfiguration`
     :param logger: the logger object
-    :type  logger: :class:`aeneas.logger.Logger`
-
-    :raise OSError: if ``file_path`` cannot be read
+    :type  logger: :class:`~aeneas.logger.Logger`
+    :raises: OSError: if ``file_path`` cannot be read
     """
-
-    TAG = u"TransliterationMap"
 
     CODEPOINT_REGEX = re.compile(r"U\+([0-9A-Fa-f]+)")
     DELETE_REGEX = re.compile(r"^([^ ]+)$")
     REPLACE_REGEX = re.compile(r"^([^ ]+) ([^ ]+)$")
 
-    def __init__(self, file_path, logger=None):
-        self.trans_map = {}
-        self.logger = logger if logger is not None else Logger()
-        self.file_path = file_path
+    TAG = u"TransliterationMap"
 
-    def _log(self, message, severity=Logger.DEBUG):
-        """ Log """
-        self.logger.log(message, severity, self.TAG)
+    def __init__(self, file_path, rconf=None, logger=None):
+        super(TransliterationMap, self).__init__(rconf=rconf, logger=logger)
+        self.trans_map = {}
+        self.file_path = file_path
 
     @property
     def file_path(self):
@@ -1029,7 +1193,7 @@ class TransliterationMap(object):
     @file_path.setter
     def file_path(self, file_path):
         if (file_path is not None) and (not gf.file_can_be_read(file_path)):
-            raise OSError("Map file '%s' cannot be read" % file_path)
+            self.log_exc(u"Map file '%s' cannot be read" % (file_path), None, True, OSError)
         self.__file_path = file_path
         self._build_map()
 
@@ -1067,14 +1231,14 @@ class TransliterationMap(object):
             replacement = self._process_second_group(result.group(2))
             for char in what:
                 self.trans_map[char] = replacement
-                self._log([u"Adding rule: replace '%s' with '%s'", char, replacement])
+                self.log([u"Adding rule: replace '%s' with '%s'", char, replacement])
         else:
             result = self.DELETE_REGEX.match(line)
             if result is not None:
                 what = self._process_first_group(result.group(1))
                 for char in what:
                     self.trans_map[char] = ""
-                    self._log([u"Adding rule: delete '%s'", char])
+                    self.log([u"Adding rule: delete '%s'", char])
 
     def _process_first_group(self, group):
         """
@@ -1118,7 +1282,7 @@ class TransliterationMap(object):
 
     def _parse_codepoint(self, string):
         """
-        Parse the given string, either a Unicode character or U+....,
+        Parse the given string, either a Unicode character or ``U+....``,
         and return the corresponding Unicode code point as int.
         """
         if len(string) > 1:
@@ -1132,8 +1296,8 @@ class TransliterationMap(object):
     def _match_to_int(cls, match):
         """
         Convert to int the first group of the match,
-        representing the hex number in CODEPOINT_REGEX
-        (e.g., 12AB in U+12AB).
+        representing the hex number in :data:`aeneas.textfile.TransliterationMap.CODEPOINT_REGEX`
+        (e.g., ``12AB`` in ``U+12AB``).
         """
         try:
             return int(match.group(1), 16)

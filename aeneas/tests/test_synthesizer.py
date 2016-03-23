@@ -20,7 +20,7 @@ class TestSynthesizer(unittest.TestCase):
         def inner(c_ext, cew_subprocess):
             handler, output_file_path = gf.tmp_file(suffix=".wav")
             tfl = TextFile(gf.absolute_path(path, __file__), TextFileFormat.PLAIN)
-            tfl.set_language(Language.EN)
+            tfl.set_language(Language.ENG)
             synth = Synthesizer(logger=logger)
             synth.rconf[RuntimeConfiguration.C_EXTENSIONS] = c_ext
             synth.rconf[RuntimeConfiguration.CEW_SUBPROCESS_ENABLED] = cew_subprocess

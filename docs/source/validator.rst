@@ -1,4 +1,4 @@
-Validator
+validator
 =========
 
 .. automodule:: aeneas.validator

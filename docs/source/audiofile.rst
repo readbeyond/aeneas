@@ -1,4 +1,4 @@
-AudioFile
+audiofile
 =========
 
 .. automodule:: aeneas.audiofile

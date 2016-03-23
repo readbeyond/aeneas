@@ -2,8 +2,10 @@
 # coding=utf-8
 
 """
-Enumeration of the allowed hierarchy types inside a
-:class:`aeneas.container.Container`.
+This module contains the following classes:
+
+* :class:`~aeneas.hierarchytype.HierarchyType`,
+  enumerating the allowed hierarchy types of a :class:`~aeneas.container.Container`.
 """
 
 __author__ = "Alberto Pettarin"
@@ -19,8 +21,8 @@ __status__ = "Production"
 
 class HierarchyType:
     """
-    Enumeration of the allowed hierarchy types inside a
-    :class:`aeneas.container.Container`.
+    Enumeration of the allowed hierarchy types of a
+    :class:`~aeneas.container.Container`.
     """
 
     FLAT = "flat"

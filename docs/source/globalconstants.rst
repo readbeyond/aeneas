@@ -1,5 +1,5 @@
-Global constants (globalconstants)
-==================================
+globalconstants
+===============
 
 .. automodule:: aeneas.globalconstants
     :members:

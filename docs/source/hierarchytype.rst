@@ -1,4 +1,4 @@
-HierarchyType
+hierarchytype
 =============
 
 .. automodule:: aeneas.hierarchytype

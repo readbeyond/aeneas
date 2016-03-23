@@ -1,4 +1,4 @@
-Job
+job
 ===
 
 .. automodule:: aeneas.job

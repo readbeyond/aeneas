@@ -5,7 +5,7 @@ import numpy
 import unittest
 
 from aeneas.audiofile import AudioFile
-from aeneas.audiofile import AudioFileNotInitialized
+from aeneas.audiofile import AudioFileNotInitializedError
 from aeneas.audiofile import AudioFileUnsupportedFormatError
 from aeneas.timevalue import TimeValue
 import aeneas.globalfunctions as gf
@@ -209,7 +209,7 @@ class TestAudioFile(unittest.TestCase):
 
     def test_preallocate(self):
         audiofile = AudioFile()
-        with self.assertRaises(AudioFileNotInitialized):
+        with self.assertRaises(AudioFileNotInitializedError):
             audiofile.audio_samples
         audiofile.preallocate_memory(100)
         self.assertEqual(len(audiofile.audio_samples), 0)

@@ -3,6 +3,8 @@ recursive-include aeneas/cew *
 recursive-include aeneas/cint *
 recursive-include aeneas/cmfcc *
 recursive-include aeneas/cwave *
+recursive-include aeneas/extra *
+prune aeneas/extra/ctw_speect
 recursive-include aeneas/res *
 recursive-include aeneas/tools/res *
 include aeneas_check_setup.py

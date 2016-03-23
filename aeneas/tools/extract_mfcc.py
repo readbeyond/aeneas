@@ -12,7 +12,7 @@ import sys
 import numpy
 
 from aeneas.audiofile import AudioFileConverterError
-from aeneas.audiofile import AudioFileNotInitialized
+from aeneas.audiofile import AudioFileNotInitializedError
 from aeneas.audiofile import AudioFileUnsupportedFormatError
 from aeneas.audiofilemfcc import AudioFileMFCC
 from aeneas.runtimeconfiguration import RuntimeConfiguration
@@ -42,7 +42,7 @@ class ExtractMFCCCLI(AbstractCLIProgram):
     HELP = {
         "description": u"Extract MFCCs from a given audio file as a fat matrix.",
         "synopsis": [
-            u"AUDIO_FILE OUTPUT_FILE"
+            (u"AUDIO_FILE OUTPUT_FILE", True)
         ],
         "examples": [
             u"%s %s" % (INPUT_FILE, OUTPUT_FILE)
@@ -109,12 +109,12 @@ class ExtractMFCCCLI(AbstractCLIProgram):
                 #       hence, converting back to bytes, which works in Python 3 too
                 numpy.savetxt(output_file_path, mfccs, fmt=gf.safe_bytes(output_text_format))
             self.print_info(u"MFCCs shape: %d %d" % (mfccs.shape))
-            self.print_info(u"MFCCs saved to %s" % (output_file_path))
+            self.print_success(u"MFCCs saved to '%s'" % (output_file_path))
             return self.NO_ERROR_EXIT_CODE
         except AudioFileConverterError:
             self.print_error(u"Unable to call the ffmpeg executable '%s'" % (self.rconf[RuntimeConfiguration.FFMPEG_PATH]))
             self.print_error(u"Make sure the path to ffmpeg is correct")
-        except (AudioFileUnsupportedFormatError, AudioFileNotInitialized):
+        except (AudioFileUnsupportedFormatError, AudioFileNotInitializedError):
             self.print_error(u"Cannot read file '%s'" % (input_file_path))
             self.print_error(u"Check that its format is supported by ffmpeg")
         except OSError:

@@ -1,4 +1,4 @@
-Plotter
+plotter
 =======
 
 .. automodule:: aeneas.plotter

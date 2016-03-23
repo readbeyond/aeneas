@@ -1,4 +1,4 @@
-AdjustBoundaryAlgorithm
+adjustboundaryalgorithm
 =======================
 
 .. automodule:: aeneas.adjustboundaryalgorithm

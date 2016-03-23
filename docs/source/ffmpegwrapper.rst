@@ -1,4 +1,4 @@
-FFMPEGWrapper
+ffmpegwrapper
 =============
 
 .. automodule:: aeneas.ffmpegwrapper

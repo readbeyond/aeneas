@@ -4,8 +4,6 @@
 """
 aeneas.cdtw is a Python C extension for computing the DTW.
 
-The functions provided by this module are:
-
 .. function:: cdtw.compute_best_path(mfcc1, mfcc2, delta)
 
     Compute the DTW (approximated) best path
@@ -27,10 +25,10 @@ The functions provided by this module are:
     (it can be less than ``n + m`` if diagonal steps
     are selected in the best path).
 
-    :param mfcc1: the MFCCs of the first wave
-    :type  mfcc1: numpy 2D array (n, mfcc_size)
-    :param mfcc2: the MFCCs of the second wave
-    :type  mfcc2: numpy 2D array (m, mfcc_size)
+    :param mfcc1: the MFCCs of the first wave ``(n, mfcc_size)``
+    :type  mfcc1: :class:`numpy.ndarray`
+    :param mfcc2: the MFCCs of the second wave ``(m, mfcc_size)``
+    :type  mfcc2: :class:`numpy.ndarray`
     :param int delta: the margin parameter
     :rtype: list of tuples
 
@@ -47,13 +45,13 @@ The functions provided by this module are:
     if there is not enough memory to allocate the cost matrix.
 
     The returned tuple ``(cost_matrix, centers)``
-    contains the cost matrix (numpy 2D array of shape (n, delta))
-    and the row centers (numpy 1D array of size n).
+    contains the cost matrix (NumPy 2D array of shape (n, delta))
+    and the row centers (NumPy 1D array of size n).
 
-    :param mfcc1: the MFCCs of the first wave
-    :type  mfcc1: numpy 2D array (n, mfcc_size)
-    :param mfcc2: the MFCCs of the second wave
-    :type  mfcc2: numpy 2D array (m, mfcc_size)
+    :param mfcc1: the MFCCs of the first wave ``(n, mfcc_size)``
+    :type  mfcc1: :class:`numpy.ndarray`
+    :param mfcc2: the MFCCs of the second wave ``(m, mfcc_size)``
+    :type  mfcc2: :class:`numpy.ndarray`
     :param int delta: the margin parameter
     :rtype: tuple
 
@@ -73,14 +71,14 @@ The functions provided by this module are:
     the accumulated cost matrix.
     Hence, this call should not fail for memory reasons.
 
-    The returned numpy 2D array of shape (n, delta)
+    The returned NumPy 2D array of shape ``(n, delta)``
     contains the accumulated cost matrix.
 
-    :param cost_matrix: the cost matrix
-    :type  cost_matrix: numpy 2D array (n, delta)
-    :param centers: the row centers
-    :type  centers: numpy 1D array (n)
-    :rtype: numpy 2D matrix (n, delta)
+    :param cost_matrix: the cost matrix ``(n, delta)``
+    :type  cost_matrix: :class:`numpy.ndarray`
+    :param centers: the row centers ``(n,)``
+    :type  centers: :class:`numpy.ndarray`
+    :rtype: :class:`numpy.ndarray`
 
 .. function:: cdtw.compute_best_path_step(accumulated_cost_matrix, centers)
 
@@ -102,10 +100,10 @@ The functions provided by this module are:
     (it can be less than ``n + m`` if diagonal steps
     are selected in the best path).
 
-    :param cost_matrix: the accumulated cost matrix
-    :type  cost_matrix: numpy 2D array (n, delta)
-    :param centers: the row centers
-    :type  centers: numpy 1D array (n)
+    :param cost_matrix: the accumulated cost matrix ``(n, delta)``
+    :type  cost_matrix: :class:`numpy.ndarray`
+    :param centers: the row centers ``(n, )``
+    :type  centers: :class:`numpy.ndarray`
     :rtype: list of tuples
 """
 

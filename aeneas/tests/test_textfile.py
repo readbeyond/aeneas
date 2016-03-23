@@ -21,9 +21,14 @@ class TestTextFile(unittest.TestCase):
     EMPTY_FILE_PATH = "res/inputtext/empty.txt"
     BLANK_FILE_PATH = "res/inputtext/blank.txt"
     PLAIN_FILE_PATH = "res/inputtext/sonnet_plain.txt"
+    PARSED_FILE_PATH = "res/inputtext/sonnet_parsed.txt"
     MPLAIN_FILE_PATH = "res/inputtext/sonnet_mplain.txt"
+    MUNPARSED_FILE_PATH = "res/inputtext/sonnet_munparsed.xhtml"
     UNPARSED_PARAMETERS = {
-        gc.PPN_JOB_IS_TEXT_UNPARSED_ID_REGEX : "f[0-9]*",
+        gc.PPN_TASK_IS_TEXT_MUNPARSED_L1_ID_REGEX : "p[0-9]+",
+        gc.PPN_TASK_IS_TEXT_MUNPARSED_L2_ID_REGEX : "p[0-9]+s[0-9]+",
+        gc.PPN_TASK_IS_TEXT_MUNPARSED_L3_ID_REGEX : "p[0-9]+s[0-9]+w[0-9]+",
+        gc.PPN_JOB_IS_TEXT_UNPARSED_ID_REGEX : "f[0-9]+",
         gc.PPN_JOB_IS_TEXT_UNPARSED_CLASS_REGEX : "ra",
         gc.PPN_JOB_IS_TEXT_UNPARSED_ID_SORT : IDSortingAlgorithm.UNSORTED,
     }
@@ -174,15 +179,63 @@ class TestTextFile(unittest.TestCase):
             ]:
                 self.load(path, TextFileFormat.SUBTITLES, 15, self.ID_REGEX_PARAMETERS_BAD)
 
+    def test_read_mplain(self):
+        self.load(self.MPLAIN_FILE_PATH, TextFileFormat.MPLAIN, 5)
+
+    def test_read_mplain_variations(self):
+        for path in [
+                "res/inputtext/sonnet_mplain_with_end_newline.txt",
+                "res/inputtext/sonnet_mplain_no_end_newline.txt",
+                "res/inputtext/sonnet_mplain_multiple_blank.txt"
+        ]:
+            self.load(path, TextFileFormat.MPLAIN, 5)
+
+    def test_read_munparsed(self):
+        tfl = self.load(self.MUNPARSED_FILE_PATH, TextFileFormat.MUNPARSED, 5, self.UNPARSED_PARAMETERS)
+        self.assertEqual(len(tfl.fragments_tree.vleaves), 107)
+
+    def test_read_munparsed_diff_id(self):
+        parameters = {
+            gc.PPN_TASK_IS_TEXT_MUNPARSED_L1_ID_REGEX : "p[0-9]+",
+            gc.PPN_TASK_IS_TEXT_MUNPARSED_L2_ID_REGEX : "s[0-9]+",
+            gc.PPN_TASK_IS_TEXT_MUNPARSED_L3_ID_REGEX : "w[0-9]+",
+        }
+        tfl = self.load("res/inputtext/sonnet_munparsed_diff_id.xhtml", TextFileFormat.MUNPARSED, 5, parameters)
+        self.assertEqual(len(tfl.fragments_tree.vleaves), 107)
+
+    def test_read_munparsed_bad_param_l1(self):
+        parameters = {
+            gc.PPN_TASK_IS_TEXT_MUNPARSED_L1_ID_REGEX : "k[0-9]+",
+            gc.PPN_TASK_IS_TEXT_MUNPARSED_L2_ID_REGEX : "s[0-9]+",
+            gc.PPN_TASK_IS_TEXT_MUNPARSED_L3_ID_REGEX : "w[0-9]+",
+        }
+        tfl = self.load("res/inputtext/sonnet_munparsed_diff_id.xhtml", TextFileFormat.MUNPARSED, 0, parameters)
+
+    def test_read_munparsed_bad_param_l2(self):
+        parameters = {
+            gc.PPN_TASK_IS_TEXT_MUNPARSED_L1_ID_REGEX : "p[0-9]+",
+            gc.PPN_TASK_IS_TEXT_MUNPARSED_L2_ID_REGEX : "k[0-9]+",
+            gc.PPN_TASK_IS_TEXT_MUNPARSED_L3_ID_REGEX : "w[0-9]+",
+        }
+        tfl = self.load("res/inputtext/sonnet_munparsed_diff_id.xhtml", TextFileFormat.MUNPARSED, 0, parameters)
+
+    def test_read_munparsed_bad_param_l3(self):
+        parameters = {
+            gc.PPN_TASK_IS_TEXT_MUNPARSED_L1_ID_REGEX : "p[0-9]+",
+            gc.PPN_TASK_IS_TEXT_MUNPARSED_L2_ID_REGEX : "s[0-9]+",
+            gc.PPN_TASK_IS_TEXT_MUNPARSED_L3_ID_REGEX : "k[0-9]+",
+        }
+        tfl = self.load("res/inputtext/sonnet_munparsed_diff_id.xhtml", TextFileFormat.MUNPARSED, 0, parameters)
+
     def test_read_plain(self):
-        self.load("res/inputtext/sonnet_plain.txt", TextFileFormat.PLAIN, 15)
+        self.load(self.PLAIN_FILE_PATH, TextFileFormat.PLAIN, 15)
 
     def test_read_plain_id_regex(self):
-        self.load("res/inputtext/sonnet_plain.txt", TextFileFormat.PLAIN, 15, self.ID_REGEX_PARAMETERS)
+        self.load(self.PLAIN_FILE_PATH, TextFileFormat.PLAIN, 15, self.ID_REGEX_PARAMETERS)
 
     def test_read_plain_id_regex_bad(self):
         with self.assertRaises(ValueError):
-            self.load("res/inputtext/sonnet_plain.txt", TextFileFormat.PLAIN, 15, self.ID_REGEX_PARAMETERS_BAD)
+            self.load(self.PLAIN_FILE_PATH, TextFileFormat.PLAIN, 15, self.ID_REGEX_PARAMETERS_BAD)
 
     def test_read_plain_utf8(self):
         self.load("res/inputtext/sonnet_plain_utf8.txt", TextFileFormat.PLAIN, 15)
@@ -195,7 +248,7 @@ class TestTextFile(unittest.TestCase):
             self.load("res/inputtext/sonnet_plain_utf8.txt", TextFileFormat.PLAIN, 15, self.ID_REGEX_PARAMETERS_BAD)
 
     def test_read_parsed(self):
-        self.load("res/inputtext/sonnet_parsed.txt", TextFileFormat.PARSED, 15)
+        self.load(self.PARSED_FILE_PATH, TextFileFormat.PARSED, 15)
 
     def test_read_parsed_bad(self):
         for path in [
@@ -277,17 +330,17 @@ class TestTextFile(unittest.TestCase):
 
     def test_set_language(self):
         tfl = self.load()
-        tfl.set_language(Language.EN)
+        tfl.set_language(Language.ENG)
         for fragment in tfl.fragments:
-            self.assertEqual(fragment.language, Language.EN)
-        tfl.set_language(Language.IT)
+            self.assertEqual(fragment.language, Language.ENG)
+        tfl.set_language(Language.ITA)
         for fragment in tfl.fragments:
-            self.assertEqual(fragment.language, Language.IT)
+            self.assertEqual(fragment.language, Language.ITA)
 
     def test_set_language_on_empty(self):
         tfl = TextFile()
         self.assertEqual(len(tfl), 0)
-        tfl.set_language(Language.EN)
+        tfl.set_language(Language.ENG)
         self.assertEqual(len(tfl), 0)
         self.assertEqual(tfl.chars, 0)
 
@@ -320,18 +373,18 @@ class TestTextFile(unittest.TestCase):
     def test_add_fragment(self):
         tfl = TextFile()
         self.assertEqual(len(tfl), 0)
-        tfl.add_fragment(TextFragment(u"a1", Language.EN, [u"fragment 1"]))
+        tfl.add_fragment(TextFragment(u"a1", Language.ENG, [u"fragment 1"]))
         self.assertEqual(len(tfl), 1)
         self.assertEqual(tfl.chars, 10)
 
     def test_add_fragment_multiple(self):
         tfl = TextFile()
         self.assertEqual(len(tfl), 0)
-        tfl.add_fragment(TextFragment(u"a1", Language.EN, [u"fragment 1"]))
+        tfl.add_fragment(TextFragment(u"a1", Language.ENG, [u"fragment 1"]))
         self.assertEqual(len(tfl), 1)
-        tfl.add_fragment(TextFragment(u"a2", Language.EN, [u"fragment 2"]))
+        tfl.add_fragment(TextFragment(u"a2", Language.ENG, [u"fragment 2"]))
         self.assertEqual(len(tfl), 2)
-        tfl.add_fragment(TextFragment(u"a3", Language.EN, [u"fragment 3"]))
+        tfl.add_fragment(TextFragment(u"a3", Language.ENG, [u"fragment 3"]))
         self.assertEqual(len(tfl), 3)
         self.assertEqual(tfl.chars, 30)
 

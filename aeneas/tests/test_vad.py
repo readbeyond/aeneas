@@ -52,7 +52,7 @@ class TestVAD(unittest.TestCase):
 
     def perform(self, input_file_path, speech_length, nonspeech_length):
         audiofile = AudioFileMFCC(gf.absolute_path(input_file_path, __file__))
-        audiofile.run_vad() 
+        audiofile.run_vad()
         self.assertEqual(len(audiofile.intervals(speech=True)), speech_length)
         self.assertEqual(len(audiofile.intervals(speech=False)), nonspeech_length)
 

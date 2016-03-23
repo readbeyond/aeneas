@@ -1,4 +1,4 @@
-TTSWrapper
+ttswrapper
 ==========
 
 .. automodule:: aeneas.ttswrapper

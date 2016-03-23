@@ -1,0 +1,17 @@
+$ python -m aeneas.tools.execute_task --example-youtube
+
+[INFO] Running example task with arguments:
+  YouTube URL:   https://www.youtube.com/watch?v=rU4a7AA8wM0
+  Text file:     aeneas/tools/res/plain.txt
+  Config string: task_language=eng|is_text_type=plain|os_task_file_format=txt
+  Sync map file: output/sonnet.txt
+  Options:       -y
+[INFO] Downloading audio from 'https://www.youtube.com/watch?v=rU4a7AA8wM0' ...
+[INFO] Downloading audio from 'https://www.youtube.com/watch?v=rU4a7AA8wM0' ... done
+[INFO] Creating task...
+[INFO] Creating task... done
+[INFO] Executing task...
+[INFO] Executing task... done
+[INFO] Creating output sync map file...
+[INFO] Creating output sync map file... done
+[INFO] Created file 'output/sonnet.txt'

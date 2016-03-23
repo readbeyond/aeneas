@@ -1,4 +1,4 @@
-ExecuteJob
+executejob
 ==========
 
 .. automodule:: aeneas.executejob

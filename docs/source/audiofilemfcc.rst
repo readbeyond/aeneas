@@ -1,4 +1,4 @@
-AudioFileMFCC
+audiofilemfcc
 =============
 
 .. automodule:: aeneas.audiofilemfcc

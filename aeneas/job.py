@@ -2,15 +2,17 @@
 # coding=utf-8
 
 """
-A structure representing a job, that is,
-a collection of related Tasks.
+This module contains the following classes:
+
+* :class:`~aeneas.job.Job`, representing a job;
+* :class:`~aeneas.job.JobConfiguration`, representing a job configuration.
 """
 
 from __future__ import absolute_import
 from __future__ import print_function
 
 from aeneas.configuration import Configuration
-from aeneas.logger import Logger
+from aeneas.logger import Loggable
 import aeneas.globalconstants as gc
 import aeneas.globalfunctions as gf
 
@@ -25,32 +27,27 @@ __version__ = "1.5.0"
 __email__ = "aeneas@readbeyond.it"
 __status__ = "Production"
 
-class Job(object):
+class Job(Loggable):
     """
     A structure representing a job, that is,
     a collection of related Tasks.
 
     :param string config_string: the job configuration string
+    :param rconf: a runtime configuration
+    :type  rconf: :class:`~aeneas.runtimeconfiguration.RuntimeConfiguration`
     :param logger: the logger object
-    :type  logger: :class:`aeneas.logger.Logger`
-
-    :raises TypeError: if ``config_string`` is not ``None`` and
-                       not a Unicode string
+    :type  logger: :class:`~aeneas.logger.Logger`
+    :raises: TypeError: if ``config_string`` is not ``None`` and
+                        not a Unicode string
     """
 
     TAG = u"Job"
 
-    def __init__(self, config_string=None, logger=None):
-        self.logger = logger if logger is not None else Logger()
+    def __init__(self, config_string=None, rconf=None, logger=None):
+        super(Job, self).__init__(rconf=rconf, logger=logger)
         self.tasks = []
         self.identifier = gf.uuid_string()
-        self.configuration = None
-        if config_string is not None:
-            self.configuration = JobConfiguration(config_string)
-
-    def _log(self, message, severity=Logger.DEBUG):
-        """ Log """
-        self.logger.log(message, severity, self.TAG)
+        self.configuration = None if config_string is None else JobConfiguration(config_string)
 
     def __len__(self):
         return len(self.tasks)
@@ -74,7 +71,7 @@ class Job(object):
         Add a task to this job.
 
         :param task: the task to be added
-        :type  task: :class:`aeneas.task.Task`
+        :type  task: :class:`~aeneas.task.Task`
         """
         self.tasks.append(task)
 
@@ -105,32 +102,32 @@ class JobConfiguration(Configuration):
 
     Allowed keys:
 
-    * ``PPN_JOB_DESCRIPTION``                   or ``description``
-    * ``PPN_JOB_LANGUAGE``                      or ``language``
-    * ``PPN_JOB_IS_AUDIO_FILE_NAME_REGEX``      or ``i_a_name_regex``
-    * ``PPN_JOB_IS_AUDIO_FILE_RELATIVE_PATH``   or ``i_a_relative_path``
-    * ``PPN_JOB_IS_HIERARCHY_PREFIX``           or ``i_hierarchy_prefix``
-    * ``PPN_JOB_IS_HIERARCHY_TYPE``             or ``i_hierarchy_type``
-    * ``PPN_JOB_IS_TASK_DIRECTORY_NAME_REGEX``  or ``i_task_directory_name_regex``
-    * ``PPN_JOB_IS_TEXT_FILE_FORMAT``           or ``i_t_format``
-    * ``PPN_JOB_IS_TEXT_FILE_NAME_REGEX``       or ``i_t_name_regex``
-    * ``PPN_JOB_IS_TEXT_FILE_RELATIVE_PATH``    or ``i_t_relative_path``
-    * ``PPN_JOB_IS_TEXT_UNPARSED_CLASS_REGEX``  or ``i_t_unparsed_class_regex``
-    * ``PPN_JOB_IS_TEXT_UNPARSED_ID_REGEX``     or ``i_t_unparsed_id_regex``
-    * ``PPN_JOB_IS_TEXT_UNPARSED_ID_SORT``      or ``i_t_unparsed_id_sort``
-    * ``PPN_JOB_OS_CONTAINER_FORMAT``           or ``o_container_format``
-    * ``PPN_JOB_OS_FILE_NAME``                  or ``o_name``
-    * ``PPN_JOB_OS_HIERARCHY_PREFIX``           or ``o_hierarchy_prefix``
-    * ``PPN_JOB_OS_HIERARCHY_TYPE``             or ``o_hierarchy_type``
+    * :data:`~aeneas.globalconstants.PPN_JOB_DESCRIPTION`                   or ``description``
+    * :data:`~aeneas.globalconstants.PPN_JOB_LANGUAGE`                      or ``language``
+    * :data:`~aeneas.globalconstants.PPN_JOB_IS_AUDIO_FILE_NAME_REGEX`      or ``i_a_name_regex``
+    * :data:`~aeneas.globalconstants.PPN_JOB_IS_AUDIO_FILE_RELATIVE_PATH`   or ``i_a_relative_path``
+    * :data:`~aeneas.globalconstants.PPN_JOB_IS_HIERARCHY_PREFIX`           or ``i_hierarchy_prefix``
+    * :data:`~aeneas.globalconstants.PPN_JOB_IS_HIERARCHY_TYPE`             or ``i_hierarchy_type``
+    * :data:`~aeneas.globalconstants.PPN_JOB_IS_TASK_DIRECTORY_NAME_REGEX`  or ``i_task_directory_name_regex``
+    * :data:`~aeneas.globalconstants.PPN_JOB_IS_TEXT_FILE_NAME_REGEX`       or ``i_t_name_regex``
+    * :data:`~aeneas.globalconstants.PPN_JOB_IS_TEXT_FILE_RELATIVE_PATH`    or ``i_t_relative_path``
+    * :data:`~aeneas.globalconstants.PPN_JOB_OS_CONTAINER_FORMAT`           or ``o_container_format``
+    * :data:`~aeneas.globalconstants.PPN_JOB_OS_FILE_NAME`                  or ``o_name``
+    * :data:`~aeneas.globalconstants.PPN_JOB_OS_HIERARCHY_PREFIX`           or ``o_hierarchy_prefix``
+    * :data:`~aeneas.globalconstants.PPN_JOB_OS_HIERARCHY_TYPE`             or ``o_hierarchy_type``
+    * :data:`~aeneas.globalconstants.PPN_JOB_IS_TEXT_FILE_FORMAT`           or ``i_t_format``
+    * :data:`~aeneas.globalconstants.PPN_JOB_IS_TEXT_MUNPARSED_L1_ID_REGEX` or ``i_t_munparsed_l1_id_regex``
+    * :data:`~aeneas.globalconstants.PPN_JOB_IS_TEXT_MUNPARSED_L2_ID_REGEX` or ``i_t_munparsed_l2_id_regex``
+    * :data:`~aeneas.globalconstants.PPN_JOB_IS_TEXT_MUNPARSED_L3_ID_REGEX` or ``i_t_munparsed_l3_id_regex``
+    * :data:`~aeneas.globalconstants.PPN_JOB_IS_TEXT_UNPARSED_CLASS_REGEX`  or ``i_t_unparsed_class_regex``
+    * :data:`~aeneas.globalconstants.PPN_JOB_IS_TEXT_UNPARSED_ID_REGEX`     or ``i_t_unparsed_id_regex``
+    * :data:`~aeneas.globalconstants.PPN_JOB_IS_TEXT_UNPARSED_ID_SORT`      or ``i_t_unparsed_id_sort``
 
     :param string config_string: the job configuration string
-
-    :raises TypeError: if ``config_string`` is not ``None`` and
-                       it is not a Unicode string
-    :raises KeyError: if trying to access a key not listed above
+    :raises: TypeError: if ``config_string`` is not ``None`` and
+                        it is not a Unicode string
+    :raises: KeyError: if trying to access a key not listed above
     """
-
-    TAG = u"JobConfiguration"
 
     FIELDS = [
         (gc.PPN_JOB_DESCRIPTION, (None, None, ["description"])),
@@ -140,17 +137,23 @@ class JobConfiguration(Configuration):
         (gc.PPN_JOB_IS_HIERARCHY_PREFIX, (None, None, ["i_hierarchy_prefix"])),
         (gc.PPN_JOB_IS_HIERARCHY_TYPE, (None, None, ["i_hierarchy_type"])),
         (gc.PPN_JOB_IS_TASK_DIRECTORY_NAME_REGEX, (None, None, ["i_task_directory_name_regex"])),
-        (gc.PPN_JOB_IS_TEXT_FILE_FORMAT, (None, None, ["i_t_format"])),
         (gc.PPN_JOB_IS_TEXT_FILE_NAME_REGEX, (None, None, ["i_t_name_regex"])),
         (gc.PPN_JOB_IS_TEXT_FILE_RELATIVE_PATH, (None, None, ["i_t_relative_path"])),
-        (gc.PPN_JOB_IS_TEXT_UNPARSED_CLASS_REGEX, (None, None, ["i_t_unparsed_class_regex"])),
-        (gc.PPN_JOB_IS_TEXT_UNPARSED_ID_REGEX, (None, None, ["i_t_unparsed_id_regex"])),
-        (gc.PPN_JOB_IS_TEXT_UNPARSED_ID_SORT, (None, None, ["i_t_unparsed_id_sort"])),
         (gc.PPN_JOB_OS_CONTAINER_FORMAT, (None, None, ["o_container_format"])),
         (gc.PPN_JOB_OS_FILE_NAME, (None, None, ["o_name"])),
         (gc.PPN_JOB_OS_HIERARCHY_PREFIX, (None, None, ["o_hierarchy_prefix"])),
         (gc.PPN_JOB_OS_HIERARCHY_TYPE, (None, None, ["o_hierarchy_type"])),
+        # TODO the following ones should probably go
+        (gc.PPN_JOB_IS_TEXT_FILE_FORMAT, (None, None, ["i_t_format"])),
+        (gc.PPN_JOB_IS_TEXT_MUNPARSED_L1_ID_REGEX, (None, None, ["i_t_munparsed_l1_id_regex"])),
+        (gc.PPN_JOB_IS_TEXT_MUNPARSED_L2_ID_REGEX, (None, None, ["i_t_munparsed_l2_id_regex"])),
+        (gc.PPN_JOB_IS_TEXT_MUNPARSED_L3_ID_REGEX, (None, None, ["i_t_munparsed_l3_id_regex"])),
+        (gc.PPN_JOB_IS_TEXT_UNPARSED_CLASS_REGEX, (None, None, ["i_t_unparsed_class_regex"])),
+        (gc.PPN_JOB_IS_TEXT_UNPARSED_ID_REGEX, (None, None, ["i_t_unparsed_id_regex"])),
+        (gc.PPN_JOB_IS_TEXT_UNPARSED_ID_SORT, (None, None, ["i_t_unparsed_id_sort"])),
     ]
+
+    TAG = u"JobConfiguration"
 
     def __init__(self, config_string=None):
         super(JobConfiguration, self).__init__(config_string)

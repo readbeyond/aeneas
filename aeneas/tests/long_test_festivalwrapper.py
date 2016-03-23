@@ -4,7 +4,6 @@
 import unittest
 
 from aeneas.festivalwrapper import FESTIVALWrapper
-from aeneas.language import Language
 from aeneas.textfile import TextFile
 from aeneas.textfile import TextFragment
 from aeneas.runtimeconfiguration import RuntimeConfiguration
@@ -70,53 +69,53 @@ class TestFESTIVALWrapper(unittest.TestCase):
             self.synthesize_multiple(None, zero_length=True)
 
     def test_multiple_invalid_output_path(self):
-        tfl = self.tfl([(Language.EN, [u"word"])])
+        tfl = self.tfl([(FESTIVALWrapper.ENG, [u"word"])])
         with self.assertRaises(OSError):
             self.synthesize_multiple(tfl, ofp="x/y/z/not_existing.wav")
 
     def test_multiple_no_fragments(self):
         tfl = TextFile()
-        tfl.set_language(Language.EN)
+        tfl.set_language(FESTIVALWrapper.ENG)
         with self.assertRaises(ValueError):
             self.synthesize_multiple(tfl)
 
     def test_multiple_unicode_ascii(self):
-        tfl = self.tfl([(Language.EN, [u"word"])])
+        tfl = self.tfl([(FESTIVALWrapper.ENG, [u"word"])])
         self.synthesize_multiple(tfl)
 
     def test_multiple_unicode_unicode(self):
-        tfl = self.tfl([(Language.EN, [u"Ausführliche"])])
+        tfl = self.tfl([(FESTIVALWrapper.ENG, [u"Ausführliche"])])
         self.synthesize_multiple(tfl)
 
     # TODO disabling this test, festival does not handle empty text
     #def test_multiple_empty(self):
-    #    tfl = self.tfl([(Language.EN, [u""])])
+    #    tfl = self.tfl([(FESTIVALWrapper.ENG, [u""])])
     #    self.synthesize_multiple(tfl)
 
     # TODO disabling this test, festival does not handle empty text
     #def test_multiple_empty_multiline(self):
-    #    tfl = self.tfl([(Language.EN, [u"", u"", u""])])
+    #    tfl = self.tfl([(FESTIVALWrapper.ENG, [u"", u"", u""])])
     #    self.synthesize_multiple(tfl)
 
     # TODO disabling this test, festival does not handle empty text
     #def test_multiple_empty_fragments(self):
     #    tfl = self.tfl([
-    #        (Language.EN, [u""]),
-    #        (Language.EN, [u""]),
-    #        (Language.EN, [u""]),
+    #        (FESTIVALWrapper.ENG, [u""]),
+    #        (FESTIVALWrapper.ENG, [u""]),
+    #        (FESTIVALWrapper.ENG, [u""]),
     #    ])
     #    self.synthesize_multiple(tfl)
 
     def test_multiple_empty_mixed(self):
-        tfl = self.tfl([(Language.EN, [u"Word", u"", u"Word"])])
+        tfl = self.tfl([(FESTIVALWrapper.ENG, [u"Word", u"", u"Word"])])
         self.synthesize_multiple(tfl)
 
     # TODO disabling this test, festival does not handle empty text
     #def test_multiple_empty_mixed_fragments(self):
     #    tfl = self.tfl([
-    #        (Language.EN, [u"Word"]),
-    #        (Language.EN, [u""]),
-    #        (Language.EN, [u"Word"]),
+    #        (FESTIVALWrapper.ENG, [u"Word"]),
+    #        (FESTIVALWrapper.ENG, [u""]),
+    #        (FESTIVALWrapper.ENG, [u"Word"]),
     #    ])
     #    self.synthesize_multiple(tfl)
 
@@ -126,36 +125,36 @@ class TestFESTIVALWrapper(unittest.TestCase):
             self.synthesize_multiple(tfl)
 
     def test_multiple_variation_language(self):
-        tfl = self.tfl([(Language.EN_GB, [u"Word"])])
+        tfl = self.tfl([(FESTIVALWrapper.ENG_GBR, [u"Word"])])
         self.synthesize_multiple(tfl)
 
     def test_single_none(self):
         with self.assertRaises(TypeError):
-            self.synthesize_single(None, Language.EN)
+            self.synthesize_single(None, FESTIVALWrapper.ENG)
 
     def test_single_invalid_output_path(self):
         with self.assertRaises(OSError):
-            self.synthesize_single(u"word", Language.EN, ofp="x/y/z/not_existing.wav")
+            self.synthesize_single(u"word", FESTIVALWrapper.ENG, ofp="x/y/z/not_existing.wav")
 
     def test_single_empty_string(self):
-        self.synthesize_single(u"", Language.EN, zero_length=True)
+        self.synthesize_single(u"", FESTIVALWrapper.ENG, zero_length=True)
 
     def test_single_text_str_ascii(self):
         with self.assertRaises(TypeError):
-            self.synthesize_single(b"Word", Language.EN)
+            self.synthesize_single(b"Word", FESTIVALWrapper.ENG)
 
     def test_single_text_str_unicode(self):
         with self.assertRaises(TypeError):
-            self.synthesize_single(b"Ausf\xc3\xbchrliche", Language.EN)
+            self.synthesize_single(b"Ausf\xc3\xbchrliche", FESTIVALWrapper.ENG)
 
     def test_single_text_unicode_ascii(self):
-        self.synthesize_single(u"Word", Language.EN)
+        self.synthesize_single(u"Word", FESTIVALWrapper.ENG)
 
     def test_single_text_unicode_unicode(self):
-        self.synthesize_single(u"Ausführliche", Language.EN)
+        self.synthesize_single(u"Ausführliche", FESTIVALWrapper.ENG)
 
     def test_single_variation_language(self):
-        self.synthesize_single(u"Word", Language.EN_GB)
+        self.synthesize_single(u"Word", FESTIVALWrapper.ENG_GBR)
 
     def test_single_invalid_language(self):
         with self.assertRaises(ValueError):

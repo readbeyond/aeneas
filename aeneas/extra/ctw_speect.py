@@ -15,7 +15,6 @@ import speect.audio_riff
 
 from aeneas.audiofile import AudioFile
 from aeneas.language import Language
-from aeneas.logger import Logger
 from aeneas.timevalue import TimeValue
 from aeneas.ttswrapper import TTSWrapper
 import aeneas.globalfunctions as gf
@@ -44,26 +43,31 @@ class CustomTTSWrapper(TTSWrapper):
 
     in the ``RuntimeConfiguration`` object.
 
-    :param rconf: a runtime configuration. Default: ``None``, meaning that
-                  default settings will be used.
-    :type  rconf: :class:`aeneas.runtimeconfiguration.RuntimeConfiguration`
+    :param rconf: a runtime configuration
+    :type  rconf: :class:`~aeneas.runtimeconfiguration.RuntimeConfiguration`
     :param logger: the logger object
-    :type  logger: :class:`aeneas.logger.Logger`
+    :type  logger: :class:`~aeneas.logger.Logger`
     """
 
     TAG = u"CustomTTSWrapper"
+
+    #
+    # NOTE in this example we load an English voice,
+    #      hence we support only English language,
+    #      and we map it to a dummy voice code
+    #
+    ENG = Language.ENG
+    """ English """
+    LANGUAGE_TO_VOICE_CODE = {
+        ENG : ENG
+    }
+    DEFAULT_LANGUAGE = ENG
 
     #
     # NOTE in this example we load a voice producing
     #      audio data in PCM16 mono WAVE (RIFF) format
     #
     OUTPUT_MONO_WAVE = True
-
-    #
-    # NOTE in this example we load an English voice,
-    #      hence we support only English language
-    #
-    SUPPORTED_LANGUAGES = [Language.EN]
 
     def __init__(self, rconf=None, logger=None):
         super(CustomTTSWrapper, self).__init__(
@@ -72,7 +76,6 @@ class CustomTTSWrapper(TTSWrapper):
             has_python_call=True,
             rconf=rconf,
             logger=logger)
-        self.default_language = Language.EN
 
     def _synthesize_multiple_python(self, text_file, output_file_path, quit_after=None, backwards=False):
         """
@@ -89,12 +92,12 @@ class CustomTTSWrapper(TTSWrapper):
         #      generating wave data for each fragment,
         #      and concatenating them together
         #
-        self._log(u"Calling TTS engine via Python...")
+        self.log(u"Calling TTS engine via Python...")
         try:
             # get sample rate and encoding
             du_nu, sample_rate, encoding, da_nu = self._synthesize_single_helper(
                 text=u"Dummy text to get sample_rate",
-                voice_code=self.default_language
+                voice_code=self.DEFAULT_LANGUAGE
             )
 
             # open output file
@@ -113,9 +116,21 @@ class CustomTTSWrapper(TTSWrapper):
                 fragments = fragments[::-1]
             for fragment in fragments:
                 # language to voice code
+                #
+                # NOTE since voice_code is actually ignored
+                # in _synthesize_single_helper(),
+                # the value of voice_code is irrelevant
+                #
+                # however, in general you need to apply
+                # the _language_to_voice_code() function that maps
+                # the text language to a voice code
+                #
+                # here we apply the _language_to_voice_code() defined in super()
+                # that sets voice_code = fragment.language
+                #
                 voice_code = self._language_to_voice_code(fragment.language)
                 # synthesize and get the duration of the output file
-                self._log([u"Synthesizing fragment %d", num])
+                self.log([u"Synthesizing fragment %d", num])
                 duration, sr_nu, enc_nu, data = self._synthesize_single_helper(
                     text=(fragment.filtered_text + u" "),
                     voice_code=voice_code
@@ -125,19 +140,19 @@ class CustomTTSWrapper(TTSWrapper):
                 # increase the character counter
                 num_chars += fragment.characters
                 # append new data
-                self._log([u"Fragment %d starts at: %.3f", num, current_time])
+                self.log([u"Fragment %d starts at: %.3f", num, current_time])
                 if duration > 0:
-                    self._log([u"Fragment %d duration: %.3f", num, duration])
+                    self.log([u"Fragment %d duration: %.3f", num, duration])
                     current_time += duration
                     # if backwards, we append the data reversed
                     output_file.add_samples(data, reverse=backwards)
                 else:
-                    self._log([u"Fragment %d has zero duration", num])
+                    self.log([u"Fragment %d has zero duration", num])
                 # increment fragment counter
                 num += 1
                 # check if we must stop synthesizing because we have enough audio
                 if (quit_after is not None) and (current_time > quit_after):
-                    self._log([u"Quitting after reached duration %.3f", current_time])
+                    self.log([u"Quitting after reached duration %.3f", current_time])
                     break
 
             # if backwards, we need to reverse the audio samples again
@@ -145,20 +160,18 @@ class CustomTTSWrapper(TTSWrapper):
                 output_file.reverse()
 
             # write output file
-            self._log([u"Writing audio file '%s'", output_file_path])
+            self.log([u"Writing audio file '%s'", output_file_path])
             output_file.write(file_path=output_file_path)
         except Exception as exc:
-            self._log(u"Calling TTS engine via Python... failed")
-            self._log(u"An unexpected exception occurred while calling TTS engine via Python:", Logger.WARNING)
-            self._log([u"%s", exc], Logger.WARNING)
+            self.log_exc(u"An unexpected error occurred while calling TTS engine via Python", exc, False, None)
             return (False, None)
 
         # return output
         # NOTE anchors do not make sense if backwards
-        self._log([u"Returning %d time anchors", len(anchors)])
-        self._log([u"Current time %.3f", current_time])
-        self._log([u"Synthesized %d characters", num_chars])
-        self._log(u"Calling TTS engine via Python... done")
+        self.log([u"Returning %d time anchors", len(anchors)])
+        self.log([u"Current time %.3f", current_time])
+        self.log([u"Synthesized %d characters", num_chars])
+        self.log(u"Calling TTS engine via Python... done")
         return (True, (anchors, current_time, num_chars))
 
     def _synthesize_single_python(self, text, voice_code, output_file_path):
@@ -167,7 +180,7 @@ class CustomTTSWrapper(TTSWrapper):
 
         :rtype: tuple (result, (duration, sample_rate, encoding, data))
         """
-        self._log(u"Synthesizing using Python call...")
+        self.log(u"Synthesizing using Python call...")
         data = self._synthesize_single_helper(text, voice_code, output_file_path)
         return (True, data)
 
@@ -183,6 +196,10 @@ class CustomTTSWrapper(TTSWrapper):
         # NOTE in this example, we assume that the Speect voice data files
         #      are located in the same directory of this .py source file
         #      and that the voice JSON file is called "voice.json"
+        #
+        # NOTE the voice_code value is ignored in this example,
+        #      but in general one might select a voice file to load,
+        #      depending on voice_code
         #
         voice_json_path = gf.safe_str(gf.absolute_path("voice.json", __file__))
         voice = speect.SVoice(voice_json_path)

@@ -2,7 +2,9 @@
 # coding=utf-8
 
 """
-Enumeration of the supported languages.
+This module contains the following classes:
+
+* :class:`~aeneas.language.Language`, an enumeration of the supported languages.
 """
 
 __author__ = "Alberto Pettarin"
@@ -20,299 +22,278 @@ class Language(object):
     """
     Enumeration of the supported languages.
 
-    The language is indicated by the language code accepted by ``espeak``,
-    which is the ISO 639-1 code (2 or 3 letters) for most languages.
+    A language is supported by ``aeneas`` if at least one of the built-in
+    TTS engine wrappers supports it.
+    Note that each TTS engine wrapper supports only a subset
+    of the languages listed below.
+
+    Consult the documentation of your TTS engine wrapper to
+    see the list of languages supported by it:
+
+    * :class:`~aeneas.espeakwrapper.ESPEAKWrapper` (default TTS)
+    * :class:`~aeneas.festivalwrapper.FESTIVALWrapper`
+    * :class:`~aeneas.nuancettsapiwrapper.NuanceTTSAPIWrapper`
+
+    Each language is indicated by its ISO 639-3 language code.
     """
 
-    AF = "af"
-    """ Afrikaans (not tested) """
+    AFR = "afr"
+    """ Afrikaans """
 
-    AN = "an"
-    """ Aragonese (not tested) """
+    ARA = "ara"
+    """ Arabic """
 
-    BG = "bg"
+    ARG = "arg"
+    """ Aragonese """
+
+    BOS = "bos"
+    """ Bosnian """
+
+    BUL = "bul"
     """ Bulgarian """
 
-    BS = "bs"
-    """ Bosnian (not tested) """
-
-    CA = "ca"
+    CAT = "cat"
     """ Catalan """
 
-    CS = "cs"
+    CES = "ces"
     """ Czech """
 
-    CY = "cy"
+    CMN = "cmn"
+    """ Mandarin Chinese """
+
+    CYM = "cym"
     """ Welsh """
 
-    DA = "da"
+    DAN = "dan"
     """ Danish """
 
-    DE = "de"
+    DEU = "deu"
     """ German """
 
-    EL = "el"
+    ELL = "ell"
     """ Greek (Modern) """
 
-    EN = "en"
+    ENG = "eng"
     """ English """
 
-    EN_GB = "en-gb"
-    """ English (British) """
+    EPO = "epo"
+    """ Esperanto """
 
-    EN_SC = "en-sc"
-    """ English (Scottish) (not tested) """
-
-    EN_UK_NORTH = "en-uk-north"
-    """ English (Northern) (not tested) """
-
-    EN_UK_RP = "en-uk-rp"
-    """ English (Received Pronunciation) (not tested) """
-
-    EN_UK_WMIDS = "en-uk-wmids"
-    """ English (Midlands) (not tested) """
-
-    EN_US = "en-us"
-    """ English (US) """
-
-    EN_WI = "en-wi"
-    """ English (West Indies) (not tested) """
-
-    EO = "eo"
-    """ Esperanto (not tested) """
-
-    ES = "es"
-    """ Spanish (Castillan) """
-
-    ES_LA = "es-la"
-    """ Spanish (Latin America) (not tested) """
-
-    ET = "et"
+    EST = "est"
     """ Estonian """
 
-    FA = "fa"
+    EUS = "eus"
+    """ Basque """
+
+    FAS = "fas"
     """ Persian """
 
-    FA_PIN = "fa-pin"
-    """ Persian (Pinglish) """
-
-    FI = "fi"
+    FIN = "fin"
     """ Finnish """
 
-    FR = "fr"
+    FRA = "fra"
     """ French """
 
-    FR_BE = "fr-be"
-    """ French (Belgium) (not tested) """
+    GLE = "gle"
+    """ Irish """
 
-    FR_FR = "fr-fr"
-    """ French (France) """
-
-    GA = "ga"
-    """ Irish (Gaelic) """
+    GLG = "glg"
+    """ Galician """
 
     GRC = "grc"
     """ Greek (Ancient) """
 
-    HI = "hi"
-    """ Hindi (not tested) """
+    HEB = "heb"
+    """ Hebrew """
 
-    HR = "hr"
+    HIN = "hin"
+    """ Hindi """
+
+    HRV = "hrv"
     """ Croatian """
 
-    HU = "hu"
+    HUN = "hun"
     """ Hungarian """
 
-    HY = "hy"
-    """ Armenian (not tested) """
+    HYE = "hye"
+    """ Armenian """
 
-    HY_WEST = "hy-west"
-    """ Armenian (West) (not tested) """
+    IND = "ind"
+    """ Indonesian """
 
-    ID = "id"
-    """ Indonesian (not tested) """
-
-    IS = "is"
+    ISL = "isl"
     """ Icelandic """
 
-    IT = "it"
+    ITA = "ita"
     """ Italian """
 
     JBO = "jbo"
-    """ Lojban (not tested) """
+    """ Lojban """
 
-    KA = "ka"
-    """ Georgian (not tested) """
+    JPN = "jpn"
+    """ Japanese """
 
-    KN = "kn"
-    """ Kannada (not tested) """
+    KAN = "kan"
+    """ Kannada """
 
-    KU = "ku"
-    """ Kurdish (not tested) """
+    KAT = "kat"
+    """ Georgian """
 
-    LA = "la"
+    KOR = "kor"
+    """ Korean """
+
+    KUR = "kur"
+    """ Kurdish """
+
+    LAT = "lat"
     """ Latin """
 
-    LFN = "lfn"
-    """ Lingua Franca Nova (not tested) """
-
-    LT = "lt"
-    """ Lithuanian """
-
-    LV = "lv"
+    LAV = "lav"
     """ Latvian """
 
-    MK = "mk"
-    """ Macedonian (not tested) """
+    LFN = "lfn"
+    """ Lingua Franca Nova """
 
-    ML = "ml"
-    """ Malayalam (not tested) """
+    LIT = "lit"
+    """ Lithuanian """
 
-    MS = "ms"
-    """ Malay (not tested) """
+    MAL = "mal"
+    """ Malayalam """
 
-    NE = "ne"
-    """ Nepali (not tested) """
+    MKD = "mkd"
+    """ Macedonian """
 
-    NL = "nl"
+    MSA = "msa"
+    """ Malay """
+
+    NEP = "nep"
+    """ Nepali """
+
+    NLD = "nld"
     """ Dutch """
 
-    NO = "no"
+    NOR = "nor"
     """ Norwegian """
 
-    PA = "pa"
-    """ Punjabi (not tested) """
+    PAN = "pan"
+    """ Panjabi """
 
-    PL = "pl"
+    POL = "pol"
     """ Polish """
 
-    PT = "pt"
+    POR = "por"
     """ Portuguese """
 
-    PT_BR = "pt-br"
-    """ Portuguese (Brazil) (not tested) """
-
-    PT_PT = "pt-pt"
-    """ Portuguese (Portugal) """
-
-    RO = "ro"
+    RON = "ron"
     """ Romanian """
 
-    RU = "ru"
+    RUS = "rus"
     """ Russian """
 
-    SQ = "sq"
-    """ Albanian (not tested) """
+    SLK = "slk"
+    """ Slovak """
 
-    SK = "sk"
-    """ Slovakian"""
+    SPA = "spa"
+    """ Spanish """
 
-    SR = "sr"
+    SQI = "sqi"
+    """ Albanian """
+
+    SRP = "srp"
     """ Serbian """
 
-    SV = "sv"
-    """ Swedish """
-
-    SW = "sw"
+    SWA = "swa"
     """ Swahili """
 
-    TA = "ta"
-    """ Tamil (not tested) """
+    SWE = "swe"
+    """ Swedish """
 
-    TR = "tr"
+    TAM = "tam"
+    """ Tamil """
+
+    THA = "tha"
+    """ Thai """
+
+    TUR = "tur"
     """ Turkish """
 
-    UK = "uk"
+    UKR = "ukr"
     """ Ukrainian """
 
-    VI = "vi"
-    """ Vietnam (not tested) """
+    VIE = "vie"
+    """ Vietnamese """
 
-    VI_HUE = "vi-hue"
-    """ Vietnam (hue) (not tested) """
+    YUE = "yue"
+    """ Yue Chinese """
 
-    VI_SGN = "vi-sgn"
-    """ Vietnam (sgn) (not tested) """
-
-    ZH = "zh"
-    """ Mandarin (not tested) """
-
-    ZH_YUE = "zh-yue"
-    """ Cantonese (not tested) """
+    ZHO = "zho"
+    """ Chinese """
 
     ALLOWED_VALUES = [
-        AF,
-        AN,
-        BG,
-        BS,
-        CA,
-        CS,
-        CY,
-        DA,
-        DE,
-        EL,
-        EN,
-        EN_GB,
-        EN_SC,
-        EN_UK_NORTH,
-        EN_UK_RP,
-        EN_UK_WMIDS,
-        EN_US,
-        EN_WI,
-        EO,
-        ES,
-        ES_LA,
-        ET,
-        FA,
-        FA_PIN,
-        FI,
-        FR,
-        FR_BE,
-        FR_FR,
-        GA,
+        AFR,
+        ARA,
+        ARG,
+        BOS,
+        BUL,
+        CAT,
+        CES,
+        CMN,
+        CYM,
+        DAN,
+        DEU,
+        ELL,
+        ENG,
+        EPO,
+        EST,
+        EUS,
+        FAS,
+        FIN,
+        FRA,
+        GLE,
+        GLG,
         GRC,
-        HI,
-        HR,
-        HU,
-        HY,
-        HY_WEST,
-        ID,
-        IS,
-        IT,
+        HEB,
+        HIN,
+        HRV,
+        HUN,
+        HYE,
+        IND,
+        ISL,
+        ITA,
         JBO,
-        KA,
-        KN,
-        KU,
-        LA,
+        JPN,
+        KAN,
+        KAT,
+        KOR,
+        KUR,
+        LAT,
+        LAV,
         LFN,
-        LT,
-        LV,
-        MK,
-        ML,
-        MS,
-        NE,
-        NL,
-        NO,
-        PA,
-        PL,
-        PT,
-        PT_BR,
-        PT_PT,
-        RO,
-        RU,
-        SK,
-        SQ,
-        SR,
-        SV,
-        SW,
-        TA,
-        TR,
-        UK,
-        VI,
-        VI_HUE,
-        VI_SGN,
-        ZH,
-        ZH_YUE
+        LIT,
+        MAL,
+        MKD,
+        MSA,
+        NEP,
+        NLD,
+        NOR,
+        PAN,
+        POL,
+        POR,
+        RON,
+        RUS,
+        SLK,
+        SPA,
+        SQI,
+        SRP,
+        SWA,
+        SWE,
+        TAM,
+        THA,
+        TUR,
+        UKR,
+        VIE,
+        YUE,
+        ZHO,
     ]
     """ List of all the allowed values """
 

@@ -1,0 +1,14 @@
+$ python -m aeneas.tools.execute_task --example-smil
+
+[INFO] Running example task with arguments:
+  Audio file:    aeneas/tools/res/audio.mp3
+  Text file:     aeneas/tools/res/page.xhtml
+  Config string: task_language=eng|is_text_type=unparsed|is_text_unparsed_id_regex=f[0-9]+|is_text_unparsed_id_sort=numeric|os_task_file_format=smil|os_task_file_smil_audio_ref=p001.mp3|os_task_file_smil_page_ref=p001.xhtml
+  Sync map file: output/sonnet.smil
+[INFO] Creating task...
+[INFO] Creating task... done
+[INFO] Executing task...
+[INFO] Executing task... done
+[INFO] Creating output sync map file...
+[INFO] Creating output sync map file... done
+[INFO] Created file 'output/sonnet.smil'

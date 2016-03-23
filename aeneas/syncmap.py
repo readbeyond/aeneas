@@ -2,20 +2,18 @@
 # coding=utf-8
 
 """
-A SyncMap is an abstraction for a synchronization map,
-that is, a map from text fragments to time intervals.
+A synchronization map, or sync map,
+is a map from text fragments to time intervals.
 
-This module contains three classes:
+This module contains the following classes:
 
-1. :class:`aeneas.syncmap.SyncMap` is the main class,
-   representing a list of sync map fragments,
-   and exposing a function to output it to file in several formats.
-2. :class:`aeneas.syncmap.SyncMapFragment`
-   represents the single sync map fragments,
-   that is, a :class:`aeneas.textfile.TextFragment`
-   and the corrisponding pair of `begin` and `end` times.
-3. :class:`aeneas.syncmap.SyncMapFormat` is an enumeration
-   of the supported output formats.
+* :class:`~aeneas.syncmap.SyncMap`, represents a sync map as a tree of sync map fragments;
+* :class:`~aeneas.syncmap.SyncMapFormat`, an enumeration of the supported output formats;
+* :class:`~aeneas.syncmap.SyncMapFragment`, connects a text fragment with a ``begin`` and ``end`` time values;
+* :class:`~aeneas.syncmap.SyncMapHeadTailFormat`, an enumeration of the supported formats for the sync map head/tail;
+* :class:`~aeneas.syncmap.SyncMapMissingParameterError`, an error raised when reading sync maps from file.
+
+.. warning:: This module is likely to be refactored in a future version
 """
 
 from __future__ import absolute_import
@@ -27,8 +25,10 @@ import io
 import json
 import os
 
-from aeneas.logger import Logger
+from aeneas.logger import Loggable
 from aeneas.textfile import TextFragment
+from aeneas.timevalue import Decimal
+from aeneas.timevalue import TimeValue
 from aeneas.tree import Tree
 import aeneas.globalconstants as gc
 import aeneas.globalfunctions as gf
@@ -55,7 +55,7 @@ class SyncMapMissingParameterError(Exception):
 class SyncMapFormat(object):
     """
     Enumeration of the supported output formats
-    for the synchronization maps.
+    for a synchronization map.
     """
 
     AUD = "aud"
@@ -553,7 +553,7 @@ class SyncMapFormat(object):
         00:00:05.678 --> 00:00:07.890
         Third fragment text
         Second line of third fragment
-    
+
     * Multiple levels: no
     * Multiple lines: yes
     """
@@ -651,10 +651,10 @@ class SyncMapFormat(object):
 
 
 
-class SyncMap(object):
+class SyncMap(Loggable):
     """
-    A synchronization map, that is, a list of
-    :class:`aeneas.syncmap.SyncMapFragment`
+    A synchronization map, that is, a tree of
+    :class:`~aeneas.syncmap.SyncMapFragment`
     objects.
     """
 
@@ -689,13 +689,9 @@ class SyncMap(object):
 
     TAG = u"SyncMap"
 
-    def __init__(self, logger=None):
+    def __init__(self, rconf=None, logger=None):
+        super(SyncMap, self).__init__(rconf=rconf, logger=logger)
         self.fragments_tree = Tree()
-        self.logger = logger if logger is not None else Logger()
-
-    def _log(self, message, severity=Logger.DEBUG):
-        """ Log """
-        self.logger.log(message, severity, self.TAG)
 
     def __len__(self):
         return len(self.fragments)
@@ -711,7 +707,7 @@ class SyncMap(object):
         """
         Return the current tree of fragments.
 
-        :rtype: :class:`aeneas.tree.Tree`
+        :rtype: :class:`~aeneas.tree.Tree`
         """
         return self.__fragments_tree
     @fragments_tree.setter
@@ -722,8 +718,10 @@ class SyncMap(object):
     def is_single_level(self):
         """
         Return ``True`` if the sync map
-        is single level.
-        
+        has only one level, that is,
+        if it is a list of fragments
+        rather than a hierarchical tree.
+
         :rtype: bool
         """
         return self.fragments_tree.height <= 2
@@ -731,9 +729,11 @@ class SyncMap(object):
     @property
     def fragments(self):
         """
-        The current list of text fragments.
+        The current list of sync map fragments
+        which are the children of the root node
+        of the sync map tree.
 
-        :rtype: list of :class:`aeneas.syncmap.SyncMapFragment`
+        :rtype: list of :class:`~aeneas.syncmap.SyncMapFragment`
         """
         return self.fragments_tree.vchildren_not_empty
 
@@ -768,24 +768,25 @@ class SyncMap(object):
 
     def add_fragment(self, fragment, as_last=True):
         """
-        Add the given sync map fragment.
+        Add the given sync map fragment,
+        as the first or last child of the root node
+        of the sync map tree.
 
         :param fragment: the sync map fragment to be added
-        :type  fragment: :class:`aeneas.syncmap.SyncMapFragment`
+        :type  fragment: :class:`~aeneas.syncmap.SyncMapFragment`
         :param bool as_last: if ``True``, append fragment; otherwise prepend it
-
-        :raise TypeError: if ``fragment`` is ``None`` or
-                          it is not an instance of ``SyncMapFragment``
+        :raises: TypeError: if ``fragment`` is ``None`` or
+                            it is not an instance of :class:`~aeneas.syncmap.SyncMapFragment`
         """
         if not isinstance(fragment, SyncMapFragment):
-            raise TypeError("fragment is not an instance of SyncMapFragment")
+            self.log_exc(u"fragment is not an instance of SyncMapFragment", None, True, TypeError)
         self.fragments_tree.add_child(Tree(value=fragment), as_last=as_last)
 
     def clear(self):
         """
-        Clear the sync map.
+        Clear the sync map, removing all the current fragments.
         """
-        self._log(u"Clearing sync map")
+        self.log(u"Clearing sync map")
         self.fragments_tree = Tree()
 
     def output_html_for_tuning(
@@ -804,7 +805,7 @@ class SyncMap(object):
         .. versionadded:: 1.3.1
         """
         if not gf.file_can_be_written(output_file_path):
-            raise OSError("Cannot output HTML file '%s' (wrong permissions?)" % output_file_path)
+            self.log_exc(u"Cannot output HTML file '%s'. Wrong permissions?" % (output_file_path), None, True, OSError)
         if parameters is None:
             parameters = {}
         audio_file_path_absolute = gf.fix_slash(os.path.abspath(audio_file_path))
@@ -852,18 +853,17 @@ class SyncMap(object):
     def read(self, sync_map_format, input_file_path, parameters=None):
         """
         Read sync map fragments from the given file in the specified format,
-        and append them the current (this) sync map.
+        and add them the current (this) sync map.
 
         Return ``True`` if the call succeeded,
         ``False`` if an error occurred.
 
         :param sync_map_format: the format of the sync map
-        :type  sync_map_format: :class:`aeneas.syncmap.SyncMapFormat`
+        :type  sync_map_format: :class:`~aeneas.syncmap.SyncMapFormat`
         :param string input_file_path: the path to the input file to read
-        :param dict parameters: additional parameters (e.g., for SMIL input)
-
-        :raise ValueError: if ``sync_map_format`` is ``None`` or it is not an allowed value
-        :raise OSError: if ``input_file_path`` does not exist
+        :param dict parameters: additional parameters (e.g., for ``SMIL`` input)
+        :raises: ValueError: if ``sync_map_format`` is ``None`` or it is not an allowed value
+        :raises: OSError: if ``input_file_path`` does not exist
         """
         map_read_function = {
             SyncMapFormat.AUD: partial(self._read_aud, parse_time=gf.time_from_ssmmm),
@@ -898,43 +898,42 @@ class SyncMap(object):
             SyncMapFormat.XML_LEGACY: self._read_xml_legacy,
         }
         if sync_map_format is None:
-            raise ValueError("Sync map format is None")
+            self.log_exc(u"Sync map format is None", None, True, ValueError)
         if sync_map_format not in map_read_function:
-            raise ValueError("Sync map format '%s' is not allowed" % sync_map_format)
+            self.log_exc(u"Sync map format '%s' is not allowed" % (sync_map_format), None, True, ValueError)
         if not gf.file_can_be_read(input_file_path):
-            raise OSError("Cannot read sync map file '%s' (wrong permissions?)" % input_file_path)
+            self.log_exc(u"Cannot read sync map file '%s'. Wrong permissions?" % (input_file_path), None, True, OSError)
 
-        self._log([u"Input format:     '%s'", sync_map_format])
-        self._log([u"Input path:       '%s'", input_file_path])
-        self._log([u"Input parameters: '%s'", parameters])
+        self.log([u"Input format:     '%s'", sync_map_format])
+        self.log([u"Input path:       '%s'", input_file_path])
+        self.log([u"Input parameters: '%s'", parameters])
 
         # open file for reading
-        self._log(u"Opening input file")
+        self.log(u"Opening input file")
         with io.open(input_file_path, "r", encoding="utf-8") as input_file:
             map_read_function[sync_map_format](input_file)
 
         # overwrite language if requested
         language = gf.safe_get(parameters, gc.PPN_SYNCMAP_LANGUAGE, None)
         if language is not None:
-            self._log([u"Overwriting language to '%s'", language])
+            self.log([u"Overwriting language to '%s'", language])
             for fragment in self.fragments:
                 fragment.text_fragment.language = language
 
     def write(self, sync_map_format, output_file_path, parameters=None):
         """
-        Write the current sync map to file in the required format.
+        Write the current sync map to file in the requested format.
 
         Return ``True`` if the call succeeded,
         ``False`` if an error occurred.
 
         :param sync_map_format: the format of the sync map
-        :type  sync_map_format: :class:`aeneas.syncmap.SyncMapFormat`
+        :type  sync_map_format: :class:`~aeneas.syncmap.SyncMapFormat`
         :param string output_file_path: the path to the output file to write
-        :param dict parameters: additional parameters (e.g., for SMIL output)
-
-        :raise ValueError: if ``sync_map_format`` is ``None`` or it is not an allowed value
-        :raise TypeError: if a required parameter is missing
-        :raise OSError: if ``output_file_path`` cannot be written
+        :param dict parameters: additional parameters (e.g., for ``SMIL`` output)
+        :raises: ValueError: if ``sync_map_format`` is ``None`` or it is not an allowed value
+        :raises: TypeError: if a required parameter is missing
+        :raises: OSError: if ``output_file_path`` cannot be written
         """
         map_write_function = {
             SyncMapFormat.AUD: partial(self._write_aud, format_time=gf.time_to_ssmmm),
@@ -969,15 +968,15 @@ class SyncMap(object):
             SyncMapFormat.XML_LEGACY: self._write_xml_legacy,
         }
         if sync_map_format is None:
-            raise ValueError("Sync map format is None")
+            self.log_exc(u"Sync map format is None", None, True, ValueError)
         if sync_map_format not in map_write_function:
-            raise ValueError("Sync map format '%s' is not allowed" % sync_map_format)
+            self.log_exc(u"Sync map format '%s' is not allowed" % (sync_map_format), None, True, ValueError)
         if not gf.file_can_be_written(output_file_path):
-            raise OSError("Cannot output sync map file '%s' (wrong permissions?)" % output_file_path)
+            self.log_exc(u"Cannot write sync map file '%s'. Wrong permissions?" % (output_file_path), None, True, OSError)
 
-        self._log([u"Output format:     '%s'", sync_map_format])
-        self._log([u"Output path:       '%s'", output_file_path])
-        self._log([u"Output parameters: '%s'", parameters])
+        self.log([u"Output format:     '%s'", sync_map_format])
+        self.log([u"Output path:       '%s'", output_file_path])
+        self.log([u"Output parameters: '%s'", parameters])
 
         # create dir hierarchy, if needed
         gf.ensure_parent_directory(output_file_path)
@@ -993,12 +992,10 @@ class SyncMap(object):
                     gc.PPN_TASK_OS_FILE_SMIL_AUDIO_REF
             ]:
                 if gf.safe_get(parameters, key, None) is None:
-                    msg = u"Parameter %s must be specified for format %s" % (key, sync_map_format)
-                    self._log(msg, Logger.CRITICAL)
-                    raise SyncMapMissingParameterError(msg)
+                    self.log_exc(u"Parameter %s must be specified for format %s" % (key, sync_map_format), None, True, SyncMapMissingParameterError)
 
         # open file for writing
-        self._log(u"Opening output file")
+        self.log(u"Opening output file")
         with io.open(output_file_path, "w", encoding="utf-8") as output_file:
             map_write_function[sync_map_format](output_file)
 
@@ -1255,7 +1252,7 @@ class SyncMap(object):
         seq_elem = etree.SubElement(body_elem, "{%s}seq" % smil_ns)
         seq_elem.attrib["id"] = "seq" + str(1).zfill(6)
         seq_elem.attrib["{%s}textref" % epub_ns] = text_ref
-        
+
         if self.is_single_level:
             # single level
             i = 1
@@ -1529,7 +1526,7 @@ class SyncMap(object):
         #head_elem = etree.SubElement(tt_elem, "{%s}head" % ttml_ns)
         body_elem = etree.SubElement(tt_elem, "{%s}body" % ttml_ns)
         div_elem = etree.SubElement(body_elem, "{%s}div" % ttml_ns)
-        
+
         if self.is_single_level:
             # single level
             for fragment in self.fragments:
@@ -1736,7 +1733,7 @@ class SyncMap(object):
             xml_declaration=True
         ):
         """
-        Write an lxml tree to the given output file.
+        Write an ``lxml`` tree to the given output file.
         """
         string = etree.tostring(
             root_element,
@@ -1750,8 +1747,8 @@ class SyncMap(object):
     @classmethod
     def _get_lines_from_node_text(cls, node):
         """
-        Given an lxml node, get lines from node.text,
-        where the line separator is "<br xmlns=... />".
+        Given an ``lxml`` node, get lines from ``node.text``,
+        where the line separator is ``<br xmlns=... />``.
         """
         # TODO more robust parsing
         parts = ([node.text] + list(chain(*([etree.tostring(c, with_tail=False), c.tail] for c in node.getchildren()))) + [node.tail])
@@ -1768,12 +1765,14 @@ class SyncMap(object):
 class SyncMapFragment(object):
     """
     A sync map fragment, that is,
-    a text fragment and an associated time interval.
+    a text fragment and an associated time interval ``[begin, end]``.
 
     :param text_fragment: the text fragment
-    :type  text_fragment: :class:`aeneas.textfile.TextFragment`
-    :param float begin: the begin time of the audio interval
-    :param float end: the end time of the audio interval
+    :type  text_fragment: :class:`~aeneas.textfile.TextFragment`
+    :param begin: the begin time of the audio interval
+    :type  begin: :class:`~aeneas.timevalue.TimeValue`
+    :param end: the end time of the audio interval
+    :type  end: :class:`~aeneas.timevalue.TimeValue`
     :param float confidence: the confidence of the audio timing
     """
 
@@ -1792,35 +1791,21 @@ class SyncMapFragment(object):
         self.confidence = confidence
 
     def __unicode__(self):
-        return u"%s %.3f %.3f %.3f" % (
+        return u"%s %.3f %.3f" % (
             self.text_fragment.identifier,
             self.begin,
-            self.end,
-            self.confidence
+            self.end
         )
 
     def __str__(self):
         return gf.safe_str(self.__unicode__())
-
-    def __len__(self):
-        return self.end - self.begin
-
-    @property
-    def audio_duration(self):
-        """
-        The audio duration of this sync map fragment,
-        as end time minus begin time.
-
-        :rtype: float
-        """
-        return len(self)
 
     @property
     def text_fragment(self):
         """
         The text fragment associated with this sync map fragment.
 
-        :rtype: :class:`aeneas.textfile.TextFragment`
+        :rtype: :class:`~aeneas.textfile.TextFragment`
         """
         return self.__text_fragment
     @text_fragment.setter
@@ -1832,7 +1817,7 @@ class SyncMapFragment(object):
         """
         The begin time of this sync map fragment.
 
-        :rtype: float
+        :rtype: :class:`~aeneas.timevalue.TimeValue`
         """
         return self.__begin
     @begin.setter
@@ -1844,7 +1829,7 @@ class SyncMapFragment(object):
         """
         The end time of this sync map fragment.
 
-        :rtype: float
+        :rtype: :class:`~aeneas.timevalue.TimeValue`
         """
         return self.__end
     @end.setter
@@ -1854,9 +1839,9 @@ class SyncMapFragment(object):
     @property
     def confidence(self):
         """
-        The confidence of the audio timing, from 0 to 1.
+        The confidence of the audio timing, from ``0.0`` to ``1.0``.
 
-        NOTE: currently always set to 1.0.
+        Currently this value is not used, and it is always ``1.0``.
 
         :rtype: float
         """
@@ -1864,6 +1849,45 @@ class SyncMapFragment(object):
     @confidence.setter
     def confidence(self, confidence):
         self.__confidence = confidence
+
+    @property
+    def audio_duration(self):
+        """
+        The audio duration of this sync map fragment,
+        as end time minus begin time.
+
+        :rtype: :class:`~aeneas.timevalue.TimeValue`
+        """
+        if (self.begin is None) or (self.end is None):
+            return TimeValue("0.000")
+        return self.end - self.begin
+
+    @property
+    def chars(self):
+        """
+        Return the number of characters of the text fragment,
+        not including the line separators.
+
+        :rtype: int
+
+        .. versionadded:: 1.2.0
+        """
+        if self.text_fragment is None:
+            return 0
+        return self.text_fragment.chars
+
+    @property
+    def rate(self):
+        """
+        The rate, in characters/second, of this fragment.
+
+        :rtype: None or Decimal
+
+        .. versionadded:: 1.2.0
+        """
+        if self.audio_duration == TimeValue("0.000"):
+            return None
+        return Decimal(self.chars / self.audio_duration)
 
 
 

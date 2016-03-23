@@ -2,20 +2,23 @@
 # coding=utf-8
 
 """
-This helper class executes the ``aeneas.cew`` C extension
-in a separate process by running the ``main()`` function
-via ``subprocess``.
+This module contains the following classes:
 
-Doing so works around a problem with the ``eSpeak`` library,
+* :class:`aeneas.cewsubprocess.CEWSubprocess` which is an
+  helper class executes the :mod:`aeneas.cew` C extension
+  in a separate process via ``subprocess``.
+
+This module works around a problem with the ``eSpeak`` library,
 which seems to generate different audio data for the same
-input parameters/text, when run multiple times.
-
-This feature might be removed in future versions.
-
+input parameters/text, when run multiple times in the same process.
 See the following discussions for details:
 
 #. https://groups.google.com/d/msg/aeneas-forced-alignment/NLbtSRf2_vg/mMHuTQiFEgAJ
 #. https://sourceforge.net/p/espeak/mailman/message/34861696/
+
+.. warning:: This module might be removed in a future version
+
+.. versionadded:: 1.5.0
 """
 
 from __future__ import absolute_import
@@ -24,8 +27,9 @@ import io
 import subprocess
 import sys
 
-from aeneas.logger import Logger
+from aeneas.logger import Loggable
 from aeneas.runtimeconfiguration import RuntimeConfiguration
+from aeneas.timevalue import TimeValue
 import aeneas.globalfunctions as gf
 
 __author__ = "Alberto Pettarin"
@@ -39,28 +43,20 @@ __version__ = "1.5.0"
 __email__ = "aeneas@readbeyond.it"
 __status__ = "Production"
 
-class CEWSubprocess(object):
+class CEWSubprocess(Loggable):
     """
     This helper class executes the ``aeneas.cew`` C extension
-    in a separate process by running the ``main()`` function
+    in a separate process by running
+    the :func:`aeneas.cewsubprocess.CEWSubprocess.main` function
     via ``subprocess``.
 
-    :param rconf: a runtime configuration. Default: ``None``, meaning that
-                  default settings will be used.
-    :type  rconf: :class:`aeneas.runtimeconfiguration.RuntimeConfiguration`
+    :param rconf: a runtime configuration
+    :type  rconf: :class:`~aeneas.runtimeconfiguration.RuntimeConfiguration`
     :param logger: the logger object
-    :type  logger: :class:`aeneas.logger.Logger`
+    :type  logger: :class:`~aeneas.logger.Logger`
     """
 
     TAG = u"CEWSubprocess"
-
-    def __init__(self, rconf=None, logger=None):
-        self.logger = logger if logger is not None else Logger()
-        self.rconf = rconf if rconf is not None else RuntimeConfiguration()
-
-    def _log(self, message, severity=Logger.DEBUG):
-        """ Log """
-        self.logger.log(message, severity, self.TAG)
 
     def synthesize_single(self, audio_file_path, voice_code, text):
         """
@@ -74,7 +70,7 @@ class CEWSubprocess(object):
         :param string audio_file_path: the path of the output audio file
         :param string voice_code: the code of the voice to use
         :param string text: the text to synthesize
-        :rtype: float
+        :rtype: :class:`~aeneas.timevalue.TimeValue`
         """
         u_text = [(voice_code, text)]
         sr, sf, intervals = self.synthesize_multiple(audio_file_path, 0, 0, u_text)
@@ -94,20 +90,20 @@ class CEWSubprocess(object):
         :param object u_text: a list of ``(voice_code, text)`` tuples
         :rtype: tuple ``(sample_rate, synthesized, intervals)``
         """
-        self._log([u"Audio file path: '%s'", audio_file_path])
-        self._log([u"c_quit_after: '%.3f'", c_quit_after])
-        self._log([u"c_backwards: '%d'", c_backwards])
+        self.log([u"Audio file path: '%s'", audio_file_path])
+        self.log([u"c_quit_after: '%.3f'", c_quit_after])
+        self.log([u"c_backwards: '%d'", c_backwards])
 
         text_file_handler, text_file_path = gf.tmp_file()
         data_file_handler, data_file_path = gf.tmp_file()
-        self._log([u"Temporary text file path: '%s'", text_file_path])
-        self._log([u"Temporary data file path: '%s'", data_file_path])
+        self.log([u"Temporary text file path: '%s'", text_file_path])
+        self.log([u"Temporary data file path: '%s'", data_file_path])
 
-        self._log(u"Populating the text file...")
+        self.log(u"Populating the text file...")
         with io.open(text_file_path, "w", encoding="utf-8") as tmp_text_file:
             for f_voice_code, f_text in u_text:
                 tmp_text_file.write(u"%s %s\n" % (f_voice_code, f_text))
-        self._log(u"Populating the text file... done")
+        self.log(u"Populating the text file... done")
 
         arguments = [
             self.rconf[RuntimeConfiguration.CEW_SUBPROCESS_PATH],
@@ -119,7 +115,7 @@ class CEWSubprocess(object):
             audio_file_path,
             data_file_path
         ]
-        self._log([u"Calling with arguments '%s'", u" ".join(arguments)])
+        self.log([u"Calling with arguments '%s'", u" ".join(arguments)])
         proc = subprocess.Popen(
             arguments,
             stdout=subprocess.PIPE,
@@ -128,7 +124,7 @@ class CEWSubprocess(object):
             universal_newlines=True)
         proc.communicate()
 
-        self._log(u"Reading output data...")
+        self.log(u"Reading output data...")
         with io.open(data_file_path, "r", encoding="utf-8") as data_file:
             lines = data_file.read().splitlines()
             sr = int(lines[0])
@@ -137,13 +133,13 @@ class CEWSubprocess(object):
             for line in lines[2:]:
                 values = line.split(u" ")
                 if len(values) == 2:
-                    intervals.append((float(values[0]), float(values[1])))
-        self._log(u"Reading output data... done")
+                    intervals.append((TimeValue(values[0]), TimeValue(values[1])))
+        self.log(u"Reading output data... done")
 
-        self._log(u"Deleting text and data files...")
+        self.log(u"Deleting text and data files...")
         gf.delete_file(text_file_handler, text_file_path)
         gf.delete_file(data_file_handler, data_file_path)
-        self._log(u"Deleting text and data files... done")
+        self.log(u"Deleting text and data files... done")
 
         return (sr, sf, intervals)
 
@@ -156,11 +152,11 @@ def main():
 
     # make sure we have enough parameters
     if len(sys.argv) < 6:
-        print("You must pass four arguments: QUIT_AFTER BACKWARDS TEXT_FILE_PATH AUDIO_FILE_PATH DATA_FILE_PATH")
+        print("You must pass five arguments: QUIT_AFTER BACKWARDS TEXT_FILE_PATH AUDIO_FILE_PATH DATA_FILE_PATH")
         return 1
 
     # read parameters
-    c_quit_after = float(sys.argv[1])
+    c_quit_after = float(sys.argv[1]) # NOTE: cew needs float, not TimeValue
     c_backwards = int(sys.argv[2])
     text_file_path = sys.argv[3]
     audio_file_path = sys.argv[4]
@@ -189,7 +185,6 @@ def main():
             c_text.append((gf.safe_unicode(f_voice_code), gf.safe_unicode(f_text)))
 
     try:
-        # synthesize with cew
         import aeneas.cew.cew
         sr, sf, intervals = aeneas.cew.cew.synthesize_multiple(
             audio_file_path,
@@ -197,15 +192,12 @@ def main():
             c_backwards,
             c_text
         )
-
-        # write output file
         with io.open(data_file_path, "w", encoding="utf-8") as data:
             data.write(u"%d\n" % (sr))
             data.write(u"%d\n" % (sf))
-            data.write(u"\n".join([u"%.6f %.6f" % (i[0], i[1]) for i in intervals]))
-
+            data.write(u"\n".join([u"%.3f %.3f" % (i[0], i[1]) for i in intervals]))
     except Exception as exc:
-        print(u"Exception %s" % str(exc))
+        print(u"Unexpected error: %s" % str(exc))
 
 
 

@@ -38,7 +38,7 @@ class FFMPEGWrapperCLI(AbstractCLIProgram):
     HELP = {
         "description": u"Convert audio files to mono WAV using the ffmpeg wrapper.",
         "synopsis": [
-            u"INPUT_FILE OUTPUT_FILE"
+            (u"INPUT_FILE OUTPUT_FILE", True)
         ],
         "examples": [
             u"%s %s" % (INPUT_FILE, OUTPUT_FILE)
@@ -64,7 +64,7 @@ class FFMPEGWrapperCLI(AbstractCLIProgram):
         try:
             converter = FFMPEGWrapper(rconf=self.rconf, logger=self.logger)
             converter.convert(input_file_path, output_file_path)
-            self.print_info(u"Converted '%s' into '%s'" % (input_file_path, output_file_path))
+            self.print_success(u"Converted '%s' into '%s'" % (input_file_path, output_file_path))
             return self.NO_ERROR_EXIT_CODE
         except FFMPEGPathError:
             self.print_error(u"Unable to call the ffmpeg executable '%s'" % (self.rconf[RuntimeConfiguration.FFMPEG_PATH]))

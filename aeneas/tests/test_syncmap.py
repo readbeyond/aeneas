@@ -6,7 +6,11 @@ import unittest
 from aeneas.language import Language
 from aeneas.syncmap import SyncMap
 from aeneas.syncmap import SyncMapFormat
+from aeneas.syncmap import SyncMapFragment
 from aeneas.syncmap import SyncMapMissingParameterError
+from aeneas.textfile import TextFragment
+from aeneas.timevalue import Decimal
+from aeneas.timevalue import TimeValue
 import aeneas.globalconstants as gc
 import aeneas.globalfunctions as gf
 
@@ -19,7 +23,7 @@ class TestSyncMap(unittest.TestCase):
     PARAMETERS = {
         gc.PPN_TASK_OS_FILE_SMIL_PAGE_REF: "sonnet001.xhtml",
         gc.PPN_TASK_OS_FILE_SMIL_AUDIO_REF: "sonnet001.mp3",
-        "language": Language.EN,
+        gc.PPN_SYNCMAP_LANGUAGE: Language.ENG,
     }
 
     def read(self, fmt, multiline=False, utf8=False, parameters=PARAMETERS):
@@ -45,6 +49,34 @@ class TestSyncMap(unittest.TestCase):
     def test_constructor(self):
         syn = SyncMap()
         self.assertEqual(len(syn), 0)
+
+    def test_fragment_constructor(self):
+        frag = SyncMapFragment()
+        self.assertEqual(frag.audio_duration, 0)
+        self.assertEqual(frag.chars, 0)
+        self.assertIsNone(frag.rate)
+
+    def test_fragment_rate_none(self):
+        text = TextFragment(lines=[u"Hello", u"World"])
+        frag = SyncMapFragment(text_fragment=text)
+        self.assertEqual(frag.audio_duration, 0)
+        self.assertEqual(frag.chars, 10)
+        self.assertIsNone(frag.rate)
+
+    def test_fragment_rate_valid(self):
+        text = TextFragment(lines=[u"Hello", u"World"])
+        frag = SyncMapFragment(text_fragment=text, begin=TimeValue("1.234"), end=TimeValue("6.234"))
+        self.assertEqual(frag.audio_duration, 5)
+        self.assertEqual(frag.chars, 10)
+        self.assertEqual(frag.rate, 2.000)
+        self.assertEqual(frag.rate, Decimal("2.000"))
+
+    def test_fragment_rate_zero(self):
+        text = TextFragment(lines=[u"Hello", u"World"])
+        frag = SyncMapFragment(text_fragment=text, begin=TimeValue("1.234"), end=TimeValue("1.234"))
+        self.assertEqual(frag.audio_duration, 0)
+        self.assertEqual(frag.chars, 10)
+        self.assertIsNone(frag.rate, None)
 
     def test_append_none(self):
         syn = SyncMap()
@@ -149,7 +181,7 @@ class TestSyncMap(unittest.TestCase):
 
     def test_write_ttml_language(self):
         fmt = SyncMapFormat.TTML
-        parameters = {"language": Language.EN}
+        parameters = {gc.PPN_SYNCMAP_LANGUAGE: Language.ENG}
         self.write(fmt, parameters=parameters)
 
     def test_output_html_for_tuning(self):

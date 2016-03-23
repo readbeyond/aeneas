@@ -30,7 +30,7 @@ class TestAudioFileMFCC(unittest.TestCase):
     def test_load_on_none(self):
         with self.assertRaises(ValueError):
             audiofile = self.load(None)
-    
+
     def test_load_audio_file(self):
         af = AudioFile(gf.absolute_path(self.AUDIO_FILE_WAVE, __file__))
         af.read_samples_from_file()

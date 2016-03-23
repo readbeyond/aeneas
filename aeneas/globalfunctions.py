@@ -33,13 +33,81 @@ __status__ = "Production"
 
 ### RUNTIME CONSTANTS ###
 
+ANSI_END = u"\033[0m"
+ANSI_ERROR = u"\033[91m"
+ANSI_OK = u"\033[92m"
+ANSI_WARNING = u"\033[93m"
 HHMMSS_MMM_PATTERN = re.compile(r"([0-9]*):([0-9]*):([0-9]*)\.([0-9]*)")
 HHMMSS_MMM_PATTERN_COMMA = re.compile(r"([0-9]*):([0-9]*):([0-9]*),([0-9]*)")
 PY2 = (sys.version_info[0] == 2)
 
-
-
 ### COMMON FUNCTIONS ###
+
+def safe_print(msg):
+    """
+    Safely print a given Unicode string to stdout,
+    possibly replacing characters non-printable
+    in the current stdout encoding.
+
+    :param string msg: the message
+    """
+    try:
+        print(msg)
+    except UnicodeEncodeError:
+        try:
+            # NOTE encoding and decoding so that in Python 3 no b"..." is printed
+            encoded = msg.encode(sys.stdout.encoding, "replace")
+            decoded = encoded.decode(sys.stdout.encoding, "replace")
+            print(decoded)
+        except (UnicodeDecodeError, UnicodeEncodeError):
+            print(u"[ERRO] An unexpected error happened while printing to stdout.")
+            print(u"[ERRO] Please check that your file/string encoding matches the shell encoding.")
+            print(u"[ERRO] If possible, set your shell encoding to UTF-8 and convert any files with legacy encodings.")
+
+def print_error(msg, color=True):
+    """
+    Print an error message.
+
+    :param string msg: the message
+    :param bool color: if ``True``, print with POSIX color
+    """
+    if color and is_posix():
+        safe_print(u"%s[ERRO] %s%s" % (ANSI_ERROR, msg, ANSI_END))
+    else:
+        safe_print(u"[ERRO] %s" % (msg))
+
+def print_info(msg, color=True):
+    """
+    Print an info message.
+
+    :param string msg: the message
+    :param bool color: if ``True``, print with POSIX color
+    """
+    safe_print(u"[INFO] %s" % (msg))
+
+def print_success(msg, color=True):
+    """
+    Print a success message.
+
+    :param string msg: the message
+    :param bool color: if ``True``, print with POSIX color
+    """
+    if color and is_posix():
+        safe_print(u"%s[INFO] %s%s" % (ANSI_OK, msg, ANSI_END))
+    else:
+        safe_print(u"[INFO] %s" % (msg))
+
+def print_warning(msg, color=True):
+    """
+    Print a warning message.
+
+    :param string msg: the message
+    :param bool color: if ``True``, print with POSIX color
+    """
+    if color and is_posix():
+        safe_print(u"%s[WARN] %s%s" % (ANSI_WARNING, msg, ANSI_END))
+    else:
+        safe_print(u"[WARN] %s" % (msg))
 
 def uuid_string():
     """
@@ -54,14 +122,14 @@ def custom_tmp_dir():
     Return the path of the temporary directory to use.
 
     On POSIX OSes (Linux and OS X), return the value of
-    :class:`aeneas.globalconstants.TMP_PATH_DEFAULT_POSIX`
+    :data:`~aeneas.globalconstants.TMP_PATH_DEFAULT_POSIX`
     (e.g., ``/tmp/``).
 
     On non-POSIX OSes, return the value of
-    :class:`aeneas.globalconstants.TMP_PATH_DEFAULT_NONPOSIX`
+    :data:`~aeneas.globalconstants.TMP_PATH_DEFAULT_NONPOSIX`
     (i.e., ``None``), so that ``tempfile``
     will use the directory specified by the
-    environment/user TMP/TEMP variable.
+    environment/user ``TMP`` or ``TEMP`` variable.
 
     :rtype: string
     """
@@ -261,6 +329,8 @@ def config_string_to_dict(string, result=None):
     pairs = string.split(gc.CONFIG_STRING_SEPARATOR_SYMBOL)
     return pairs_to_dict(pairs, result)
 
+# TODO this is the only function using lxml, shall we move it somewhere else?
+#      the two places it is used are analyzecontainer.py and validator.py
 def config_xml_to_dict(contents, result, parse_job=True):
     """
     Convert the contents of a XML config file
@@ -372,13 +442,13 @@ def copytree(source_directory, destination_directory, ignore=None):
     into a destination directory.
     Both directories must exist.
 
-    NOTE: this function does not copy the root directory ``source_directory``
+    This function does not copy the root directory ``source_directory``
     into ``destination_directory``.
 
-    NOTE: ``shutil.copytree(src, dst)`` requires ``dst`` not to exist,
-    so we cannot use for our purposes.
+    Since ``shutil.copytree(src, dst)`` requires ``dst`` not to exist,
+    we cannot use for our purposes.
 
-    NOTE: code adapted from http://stackoverflow.com/a/12686557
+    Code adapted from http://stackoverflow.com/a/12686557
 
     :param string source_directory: the source directory, already existing
     :param string destination_directory: the destination directory, already existing
@@ -406,9 +476,9 @@ def ensure_parent_directory(path, ensure_parent=True):
     Ensures the parent directory exists.
 
     :param string path: the path of the file
-    :param bool ensure_parent: if True, ensure the parent directory of ``path`` exists;
-                               if False, ensure ``path`` exists
-    :raise OSError: if the path cannot be created
+    :param bool ensure_parent: if ``True``, ensure the parent directory of ``path`` exists;
+                               if ``False``, ensure ``path`` exists
+    :raises: OSError: if the path cannot be created
     """
     parent_directory = os.path.abspath(path)
     if ensure_parent:
@@ -417,7 +487,7 @@ def ensure_parent_directory(path, ensure_parent=True):
         try:
             os.makedirs(parent_directory)
         except (IOError, OSError):
-            raise OSError("Directory '%s' cannot be created" % parent_directory)
+            raise OSError(u"Directory '%s' cannot be created" % parent_directory)
 
 def time_from_ttml(string):
     """
@@ -426,7 +496,7 @@ def time_from_ttml(string):
     and return a time value.
 
     :param string string: the string to be parsed
-    :rtype: :class:`aeneas.timevalue.TimeValue` 
+    :rtype: :class:`~aeneas.timevalue.TimeValue`
     """
     if (string is None) or (len(string) < 2):
         return 0
@@ -458,7 +528,7 @@ def time_from_ssmmm(string):
     Parse the given ``SS.mmm`` string and return a time value.
 
     :param string string: the string to be parsed
-    :rtype: :class:`aeneas.timevalue.TimeValue`
+    :rtype: :class:`~aeneas.timevalue.TimeValue`
     """
     if (string is None) or (len(string) < 1):
         return TimeValue("0.000")
@@ -488,7 +558,7 @@ def time_from_hhmmssmmm(string, decimal_separator="."):
 
     :param string string: the string to be parsed
     :param string decimal_separator: the decimal separator to be used
-    :rtype: :class:`aeneas.timevalue.TimeValue`
+    :rtype: :class:`~aeneas.timevalue.TimeValue`
     """
     if decimal_separator == ",":
         pattern = HHMMSS_MMM_PATTERN_COMMA
@@ -569,8 +639,8 @@ def time_to_srt(time_value):
 
 def split_url(url):
     """
-    Split the given URL base#anchor into (base, anchor),
-    or (base, None) if no anchor is present.
+    Split the given URL ``base#anchor`` into ``(base, anchor)``,
+    or ``(base, None)`` if no anchor is present.
 
     :param string url: the url
     :rtype: list of str
@@ -581,7 +651,7 @@ def split_url(url):
     if len(array) == 1:
         array.append(None)
     elif len(array) > 2:
-        # TODO raise an exception?
+        # TODO throw exception instead?
         array = array[0:2]
     return tuple(array)
 
@@ -695,16 +765,15 @@ def run_c_extension_with_fallback(
     Run a function calling a C extension, falling back
     to a pure Python function if the former does not succeed.
 
-    :param function log_function: a logger function (see ``_log()`` in many classes)
+    :param function log_function: a logger function
     :param string extension: the name of the extension
     :param function c_function: the (Python) function calling the C extension
     :param function py_function: the (Python) function providing the fallback
     :param bool c_extension: if ``True``, try running the C extension first;
                              if ``False``, directly run the pure Python fallback
     :rtype: depends on the extension being called
-
-    :raise RuntimeError: if both the C extension and
-                         the pure Python code did not succeed.
+    :raises: RuntimeError: if both the C extension and
+                           the pure Python code did not succeed.
 
     .. versionadded:: 1.4.0
     """
@@ -723,7 +792,7 @@ def run_c_extension_with_fallback(
         computed, result = py_function(*args)
     if not computed:
         # TODO create a more meaningful message
-        raise RuntimeError("Both the C extension and the pure Python code failed. (Wrong arguments? Input too big?)")
+        raise RuntimeError(u"Both the C extension and the pure Python code failed. (Wrong arguments? Input too big?)")
     return result
 
 def file_can_be_read(path):
@@ -738,7 +807,7 @@ def file_can_be_read(path):
     if path is None:
         return False
     try:
-        # TODO is doing this with os attributes preferable?
+        # TODO is testing with os attributes better than this?
         test_file = io.open(path, "rb")
         test_file.close()
         return True
@@ -750,18 +819,18 @@ def file_can_be_written(path):
     """
     Return ``True`` if a file can be written at the given ``path``.
 
-    IMPORTANT: this function will attempt to open the given ``path``
-    in write mode, possibly destroying the file previously existing there.
-
     :param string path: the file path
     :rtype: bool
+
+    .. warning:: This function will attempt to open the given ``path``
+                 in write mode, possibly destroying the file previously existing there.
 
     .. versionadded:: 1.4.0
     """
     if path is None:
         return False
     try:
-        # TODO think if it is better doing this with os attributes
+        # TODO is testing with os attributes better than this?
         test_file = io.open(path, "wb")
         test_file.close()
         delete_file(None, path)
@@ -906,10 +975,11 @@ def human_readable_number(number, suffix=""):
     """
     Format the given number into a human-readable string.
 
+    Code adapted from http://stackoverflow.com/a/1094933
+
     :param variant number: the number (int or float)
     :param string suffix: the unit of the number
-
-    Code adapted from http://stackoverflow.com/a/1094933
+    :rtype: string
     """
     for unit in ["", "K", "M", "G", "T", "P", "E", "Z"]:
         if abs(number) < 1024.0:
@@ -919,7 +989,7 @@ def human_readable_number(number, suffix=""):
 
 def is_unicode(string):
     """
-    Return True if the given string is a sequence of Unicode code points.
+    Return ``True`` if the given string is a sequence of Unicode code points.
 
     :param variant string: the string to test
     :rtype: bool
@@ -930,7 +1000,7 @@ def is_unicode(string):
 
 def is_bytes(string):
     """
-    Return True if the given string is a sequence of bytes.
+    Return ``True`` if the given string is a sequence of bytes.
 
     :param variant string: the string to test
     :rtype: bool
@@ -941,7 +1011,7 @@ def is_bytes(string):
 
 def is_utf8_encoded(bstring):
     """
-    Return True if the given byte string can be decoded
+    Return ``True`` if the given byte string can be decoded
     into a Unicode string using the UTF-8 decoder.
 
     :param bytes bstring: the string to test
@@ -957,7 +1027,7 @@ def is_utf8_encoded(bstring):
 def safe_str(string):
     """
     Safely return the given Unicode string
-    from a __str__ function: as a byte string
+    from a ``__str__`` function: as a byte string
     in Python 2, or as a Unicode string in Python 3.
 
     :param string string: the string to return
@@ -1023,27 +1093,6 @@ def safe_unicode_stdin(string):
         except UnicodeDecodeError:
             return string.decode(sys.stdin.encoding, "replace")
     return string
-
-def safe_print(string):
-    """
-    Safely print a given Unicode string to stdout,
-    possibly replacing characters non-printable
-    in the current stdout encoding.
-
-    :param string string: the message string
-    """
-    try:
-        print(string)
-    except UnicodeEncodeError:
-        try:
-            # NOTE encoding and decoding so that in Python 3 no b"..." is printed
-            encoded = string.encode(sys.stdout.encoding, "replace")
-            decoded = encoded.decode(sys.stdout.encoding, "replace")
-            print(decoded)
-        except (UnicodeDecodeError, UnicodeEncodeError):
-            print(u"[ERRO] An unexpected error happened while printing to stdout.")
-            print(u"[ERRO] Please check that your file/string encoding matches the shell encoding.")
-            print(u"[ERRO] If possible, set your shell encoding to UTF-8 and convert any files with legacy encodings.")
 
 def object_to_unicode(obj):
     """

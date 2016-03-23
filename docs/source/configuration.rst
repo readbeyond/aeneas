@@ -1,4 +1,4 @@
-Configuration
+configuration
 =============
 
 .. automodule:: aeneas.configuration

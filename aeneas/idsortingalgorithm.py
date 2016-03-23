@@ -2,15 +2,20 @@
 # coding=utf-8
 
 """
-Enumeration of the available algorithms to sort IDs.
+This module contains the following classes:
+
+* :class:`~aeneas.idsortingalgorithm.IDSortingAlgorithm`,
+  enumerating and implementing the available algorithms to sort
+  a list of XML ``id`` attributes.
+
+.. warning:: This module is likely to be refactored in a future version
 """
 
 from __future__ import absolute_import
 from __future__ import print_function
 import re
 
-from aeneas.logger import Logger
-from aeneas.runtimeconfiguration import RuntimeConfiguration
+from aeneas.logger import Loggable
 
 __author__ = "Alberto Pettarin"
 __copyright__ = """
@@ -23,20 +28,18 @@ __version__ = "1.5.0"
 __email__ = "aeneas@readbeyond.it"
 __status__ = "Production"
 
-class IDSortingAlgorithm(object):
+class IDSortingAlgorithm(Loggable):
     """
     Enumeration of the available algorithms to sort
     a list of XML ``id`` attributes.
 
     :param algorithm: the id sorting algorithm to be used
-    :type  algorithm: :class:`aeneas.idsortingalgorithm.IDSortingAlgorithm`
-    :param rconf: a runtime configuration. Default: ``None``, meaning that
-                  default settings will be used.
-    :type  rconf: :class:`aeneas.runtimeconfiguration.RuntimeConfiguration`
+    :type  algorithm: :class:`~aeneas.idsortingalgorithm.IDSortingAlgorithm`
+    :param rconf: a runtime configuration
+    :type  rconf: :class:`~aeneas.runtimeconfiguration.RuntimeConfiguration`
     :param logger: the logger object
-    :type  logger: :class:`aeneas.logger.Logger`
-
-    :raise ValueError: if the value of ``algorithm`` is not allowed
+    :type  logger: :class:`~aeneas.logger.Logger`
+    :raises: ValueError: if the value of ``algorithm`` is not allowed
     """
 
     LEXICOGRAPHIC = "lexicographic"
@@ -59,14 +62,9 @@ class IDSortingAlgorithm(object):
 
     def __init__(self, algorithm, rconf=None, logger=None):
         if algorithm not in self.ALLOWED_VALUES:
-            raise ValueError("Algorithm value not allowed")
+            raise ValueError(u"Algorithm value not allowed")
+        super(IDSortingAlgorithm, self).__init__(rconf=rconf, logger=logger)
         self.algorithm = algorithm
-        self.logger = logger if logger is not None else Logger()
-        self.rconf = rconf if rconf is not None else RuntimeConfiguration()
-
-    def _log(self, message, severity=Logger.DEBUG):
-        """ Log """
-        self.logger.log(message, severity, self.TAG)
 
     def sort(self, ids):
         """
@@ -87,19 +85,17 @@ class IDSortingAlgorithm(object):
 
         tmp = list(ids)
         if self.algorithm == IDSortingAlgorithm.UNSORTED:
-            self._log(u"Sorting using UNSORTED")
+            self.log(u"Sorting using UNSORTED")
         elif self.algorithm == IDSortingAlgorithm.LEXICOGRAPHIC:
-            self._log(u"Sorting using LEXICOGRAPHIC")
+            self.log(u"Sorting using LEXICOGRAPHIC")
             tmp = sorted(ids)
         elif self.algorithm == IDSortingAlgorithm.NUMERIC:
-            self._log(u"Sorting using NUMERIC")
+            self.log(u"Sorting using NUMERIC")
             tmp = ids
             try:
                 tmp = sorted(tmp, key=extract_int)
             except (ValueError, TypeError) as exc:
-                self._log(u"Not all id values contain a numeric part:", Logger.WARNING)
-                self._log([u"%s", exc], Logger.WARNING)
-                self._log(u"Returning the id list unchanged (unsorted)", Logger.WARNING)
+                self.log_exc(u"Not all id values contain a numeric part. Returning the id list unchanged.", exc, False, None)
         return tmp
 
 

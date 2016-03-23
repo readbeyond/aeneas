@@ -37,20 +37,20 @@ class TestTree(unittest.TestCase):
         c2 = Tree(value="c2")
         c3 = Tree(value="c3")
         c4 = Tree(value="c4")
-        
+
         c11 = Tree(value="c11")
         c12 = Tree(value="c12")
         c13 = Tree(value="c13")
-        
+
         c21 = Tree(value="c21")
         c22 = Tree(value="c22")
         c23 = Tree(value="c23")
         c24 = Tree(value="c24")
         c25 = Tree(value="c25")
-        
+
         c231 = Tree(value="c231")
         c232 = Tree(value="c232")
-        
+
         root.add_child(c1)
         root.add_child(c2)
         root.add_child(c3)
@@ -69,7 +69,7 @@ class TestTree(unittest.TestCase):
         c23.add_child(c231)
         c23.add_child(c232)
         return (root, c1, c11, c12, c13, c2, c21, c22, c23, c231, c232, c24, c25, c3, c4)
- 
+
     def test_empty(self):
         root = Tree()
         self.assertEqual(len(root), 0)

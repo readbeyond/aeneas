@@ -2,7 +2,10 @@
 # coding=utf-8
 
 """
-A numeric, arbitrary precision type to represent time values.
+This module contains the following classes:
+
+* :class:`~aeneas.timevalue.TimeValue`,
+  a numeric type to represent time values with arbitrary precision.
 
 .. versionadded:: 1.5.0
 """
@@ -28,7 +31,7 @@ PY2 = (sys.version_info[0] == 2)
 
 class TimeValue(Decimal):
     """
-    A numeric, arbitrary precision type to represent time values.
+    A numeric type to represent time values with arbitrary precision.
     """
 
     def __repr__(self):

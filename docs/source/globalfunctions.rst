@@ -1,5 +1,5 @@
-Global functions (globalfunctions)
-==================================
+globalfunctions
+===============
 
 .. automodule:: aeneas.globalfunctions
     :members:

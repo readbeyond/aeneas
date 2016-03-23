@@ -2,22 +2,26 @@
 # coding=utf-8
 
 """
-This module contains the implementation
-of a simple Voice Activity Detector (VAD),
-based on the energy of the 0-th MFCC component.
+This module contains the following classes:
+
+* :class:`~aeneas.vad.VAD`,
+  a simple voice activity detector
+  based on the energy of the 0-th MFCC.
 
 Given an energy vector representing an audio file,
-it will return a boolean mask with elements set to ``True`` where speech is,
+it will return a boolean mask
+with elements set to ``True`` where speech is,
 and ``False`` where nonspeech occurs.
 
 .. versionadded:: 1.0.4
 """
 
 from __future__ import absolute_import
+from __future__ import division
 from __future__ import print_function
 import numpy
 
-from aeneas.logger import Logger
+from aeneas.logger import Loggable
 from aeneas.runtimeconfiguration import RuntimeConfiguration
 
 __author__ = "Alberto Pettarin"
@@ -31,26 +35,17 @@ __version__ = "1.5.0"
 __email__ = "aeneas@readbeyond.it"
 __status__ = "Production"
 
-class VAD(object):
+class VAD(Loggable):
     """
-    The VAD extractor.
+    The voice activity detector (VAD).
 
-    :param rconf: a runtime configuration. Default: ``None``, meaning that
-                  default settings will be used.
-    :type  rconf: :class:`aeneas.runtimeconfiguration.RuntimeConfiguration`
+    :param rconf: a runtime configuration
+    :type  rconf: :class:`~aeneas.runtimeconfiguration.RuntimeConfiguration`
     :param logger: the logger object
-    :type  logger: :class:`aeneas.logger.Logger`
+    :type  logger: :class:`~aeneas.logger.Logger`
     """
 
     TAG = u"VAD"
-
-    def __init__(self, rconf=None, logger=None):
-        self.logger = logger if logger is not None else Logger()
-        self.rconf = rconf if rconf is not None else RuntimeConfiguration()
-
-    def _log(self, message, severity=Logger.DEBUG):
-        """ Log """
-        self.logger.log(message, severity, self.TAG)
 
     def run_vad(self, wave_energy):
         """
@@ -59,9 +54,10 @@ class VAD(object):
         and nonspeech frames set to ``False``.
 
         :param wave_energy: the energy vector of the audio file (0-th MFCC)
-        :type  wave_energy: numpy 1D array
+        :type  wave_energy: :class:`numpy.ndarray` (1D)
+        :rtype: :class:`numpy.ndarray` (1D)
         """
-        self._log(u"Computing VAD for wave")
+        self.log(u"Computing VAD for wave")
         mfcc_window_shift = self.rconf.mws
         log_energy_threshold = self.rconf[RuntimeConfiguration.VAD_LOG_ENERGY_THRESHOLD]
         min_nonspeech_length = int(self.rconf[RuntimeConfiguration.VAD_MIN_NONSPEECH_LENGTH] / mfcc_window_shift)
@@ -69,30 +65,30 @@ class VAD(object):
         extend_after = int(self.rconf[RuntimeConfiguration.VAD_EXTEND_SPEECH_INTERVAL_AFTER] / mfcc_window_shift)
         energy_length = len(wave_energy)
         energy_threshold = numpy.min(wave_energy) + log_energy_threshold
-        self._log([u"MFCC window shift (s):         %.3f", mfcc_window_shift])
-        self._log([u"Log energy threshold:          %.3f", log_energy_threshold])
-        self._log([u"Min nonspeech length (s):      %.3f", self.rconf[RuntimeConfiguration.VAD_MIN_NONSPEECH_LENGTH]])
-        self._log([u"Min nonspeech length (frames): %d", min_nonspeech_length])
-        self._log([u"Extend speech before (s):      %.3f", self.rconf[RuntimeConfiguration.VAD_EXTEND_SPEECH_INTERVAL_BEFORE]])
-        self._log([u"Extend speech before (frames): %d", extend_before])
-        self._log([u"Extend speech after (s):       %.3f", self.rconf[RuntimeConfiguration.VAD_EXTEND_SPEECH_INTERVAL_AFTER]])
-        self._log([u"Extend speech after (frames):  %d", extend_after])
-        self._log([u"Energy vector length (frames): %d", energy_length])
-        self._log([u"Energy threshold (log):        %.3f", energy_threshold])
+        self.log([u"MFCC window shift (s):         %.3f", mfcc_window_shift])
+        self.log([u"Log energy threshold:          %.3f", log_energy_threshold])
+        self.log([u"Min nonspeech length (s):      %.3f", self.rconf[RuntimeConfiguration.VAD_MIN_NONSPEECH_LENGTH]])
+        self.log([u"Min nonspeech length (frames): %d", min_nonspeech_length])
+        self.log([u"Extend speech before (s):      %.3f", self.rconf[RuntimeConfiguration.VAD_EXTEND_SPEECH_INTERVAL_BEFORE]])
+        self.log([u"Extend speech before (frames): %d", extend_before])
+        self.log([u"Extend speech after (s):       %.3f", self.rconf[RuntimeConfiguration.VAD_EXTEND_SPEECH_INTERVAL_AFTER]])
+        self.log([u"Extend speech after (frames):  %d", extend_after])
+        self.log([u"Energy vector length (frames): %d", energy_length])
+        self.log([u"Energy threshold (log):        %.3f", energy_threshold])
 
         # using windows to be sure we have at least
         # min_nonspeech_length consecutive frames with nonspeech
-        self._log(u"Determining initial labels...")
+        self.log(u"Determining initial labels...")
         mask = wave_energy >= energy_threshold
         windows = self._rolling_window(mask, min_nonspeech_length)
         nonspeech_runs = self._compute_runs((numpy.where(numpy.sum(windows, axis=1) == 0))[0])
-        self._log(u"Determining initial labels... done")
+        self.log(u"Determining initial labels... done")
 
         # initially, everything is marked as speech
         # we remove the nonspeech intervals as needed,
         # possibly extending the adjacent speech interval
         # if requested by the user
-        self._log(u"Determining final labels...")
+        self.log(u"Determining final labels...")
         mask = numpy.ones(energy_length, dtype="bool")
         for ns in nonspeech_runs:
             start = ns[0]
@@ -102,7 +98,7 @@ class VAD(object):
             if (extend_before > 0) and (stop < energy_length - 1):
                 stop -= extend_before
             mask[start:stop] = 0
-        self._log(u"Determining final labels... done")
+        self.log(u"Determining final labels... done")
         return mask
 
     @classmethod

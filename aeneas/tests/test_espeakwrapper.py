@@ -4,7 +4,6 @@
 import unittest
 
 from aeneas.espeakwrapper import ESPEAKWrapper
-from aeneas.language import Language
 from aeneas.textfile import TextFile
 from aeneas.textfile import TextFragment
 from aeneas.runtimeconfiguration import RuntimeConfiguration
@@ -78,69 +77,69 @@ class TestESPEAKWrapper(unittest.TestCase):
             self.synthesize_multiple(None, zero_length=True)
 
     def test_multiple_invalid_output_path(self):
-        tfl = self.tfl([(Language.EN, [u"word"])])
+        tfl = self.tfl([(ESPEAKWrapper.ENG, [u"word"])])
         with self.assertRaises(OSError):
             self.synthesize_multiple(tfl, ofp="x/y/z/not_existing.wav")
 
     def test_multiple_no_fragments(self):
         tfl = TextFile()
-        tfl.set_language(Language.EN)
+        tfl.set_language(ESPEAKWrapper.ENG)
         with self.assertRaises(ValueError):
             self.synthesize_multiple(tfl)
 
     def test_multiple_unicode_ascii(self):
-        tfl = self.tfl([(Language.EN, [u"word"])])
+        tfl = self.tfl([(ESPEAKWrapper.ENG, [u"word"])])
         self.synthesize_multiple(tfl)
 
     def test_multiple_unicode_unicode(self):
-        tfl = self.tfl([(Language.DE, [u"Ausführliche"])])
+        tfl = self.tfl([(ESPEAKWrapper.DEU, [u"Ausführliche"])])
         self.synthesize_multiple(tfl)
 
     def test_multiple_empty(self):
-        tfl = self.tfl([(Language.EN, [u""])])
+        tfl = self.tfl([(ESPEAKWrapper.ENG, [u""])])
         self.synthesize_multiple(tfl)
 
     def test_multiple_empty_multiline(self):
-        tfl = self.tfl([(Language.EN, [u"", u"", u""])])
+        tfl = self.tfl([(ESPEAKWrapper.ENG, [u"", u"", u""])])
         self.synthesize_multiple(tfl)
 
     def test_multiple_empty_fragments(self):
         tfl = self.tfl([
-            (Language.EN, [u""]),
-            (Language.EN, [u""]),
-            (Language.EN, [u""]),
+            (ESPEAKWrapper.ENG, [u""]),
+            (ESPEAKWrapper.ENG, [u""]),
+            (ESPEAKWrapper.ENG, [u""]),
         ])
         self.synthesize_multiple(tfl)
 
     def test_multiple_empty_mixed(self):
-        tfl = self.tfl([(Language.EN, [u"Word", u"", u"Word"])])
+        tfl = self.tfl([(ESPEAKWrapper.ENG, [u"Word", u"", u"Word"])])
         self.synthesize_multiple(tfl)
 
     def test_multiple_empty_mixed_fragments(self):
         tfl = self.tfl([
-            (Language.EN, [u"Word"]),
-            (Language.EN, [u""]),
-            (Language.EN, [u"Word"]),
+            (ESPEAKWrapper.ENG, [u"Word"]),
+            (ESPEAKWrapper.ENG, [u""]),
+            (ESPEAKWrapper.ENG, [u"Word"]),
         ])
         self.synthesize_multiple(tfl)
 
     def test_multiple_replace_language(self):
-        tfl = self.tfl([(Language.UK, [u"Временами Сашке хотелось перестать делать то"])])
+        tfl = self.tfl([(ESPEAKWrapper.UKR, [u"Временами Сашке хотелось перестать делать то"])])
         self.synthesize_multiple(tfl)
 
     def test_multiple_replace_language_mixed(self):
         tfl = self.tfl([
-            (Language.UK, [u"Word"]),
-            (Language.UK, [u"Временами Сашке хотелось перестать делать то"]),
-            (Language.UK, [u"Word"])
+            (ESPEAKWrapper.UKR, [u"Word"]),
+            (ESPEAKWrapper.UKR, [u"Временами Сашке хотелось перестать делать то"]),
+            (ESPEAKWrapper.UKR, [u"Word"])
         ])
         self.synthesize_multiple(tfl)
 
     def test_multiple_replace_language_mixed_fragments(self):
         tfl = self.tfl([
-            (Language.EN, [u"Word"]),
-            (Language.UK, [u"Временами Сашке хотелось перестать делать то"]),
-            (Language.EN, [u"Word"])
+            (ESPEAKWrapper.ENG, [u"Word"]),
+            (ESPEAKWrapper.UKR, [u"Временами Сашке хотелось перестать делать то"]),
+            (ESPEAKWrapper.ENG, [u"Word"])
         ])
         self.synthesize_multiple(tfl)
 
@@ -150,39 +149,39 @@ class TestESPEAKWrapper(unittest.TestCase):
             self.synthesize_multiple(tfl)
 
     def test_multiple_variation_language(self):
-        tfl = self.tfl([(Language.EN_GB, [u"Word"])])
+        tfl = self.tfl([(ESPEAKWrapper.ENG_GBR, [u"Word"])])
         self.synthesize_multiple(tfl)
 
     def test_single_none(self):
         with self.assertRaises(TypeError):
-            self.synthesize_single(None, Language.EN)
+            self.synthesize_single(None, ESPEAKWrapper.ENG)
 
     def test_single_invalid_output_path(self):
         with self.assertRaises(OSError):
-            self.synthesize_single(u"word", Language.EN, ofp="x/y/z/not_existing.wav")
+            self.synthesize_single(u"word", ESPEAKWrapper.ENG, ofp="x/y/z/not_existing.wav")
 
     def test_single_empty_string(self):
-        self.synthesize_single(u"", Language.EN, zero_length=True)
+        self.synthesize_single(u"", ESPEAKWrapper.ENG, zero_length=True)
 
     def test_single_text_str_ascii(self):
         with self.assertRaises(TypeError):
-            self.synthesize_single(b"Word", Language.EN)
+            self.synthesize_single(b"Word", ESPEAKWrapper.ENG)
 
     def test_single_text_str_unicode(self):
         with self.assertRaises(TypeError):
-            self.synthesize_single(b"Ausf\xc3\xbchrliche", Language.DE)
+            self.synthesize_single(b"Ausf\xc3\xbchrliche", ESPEAKWrapper.DEU)
 
     def test_single_text_unicode_ascii(self):
-        self.synthesize_single(u"Word", Language.EN)
+        self.synthesize_single(u"Word", ESPEAKWrapper.ENG)
 
     def test_single_text_unicode_unicode(self):
-        self.synthesize_single(u"Ausführliche", Language.DE)
+        self.synthesize_single(u"Ausführliche", ESPEAKWrapper.DEU)
 
     def test_single_variation_language(self):
-        self.synthesize_single(u"Word", Language.EN_GB)
+        self.synthesize_single(u"Word", ESPEAKWrapper.ENG_GBR)
 
     def test_single_replace_language(self):
-        self.synthesize_single(u"Временами Сашке хотелось перестать делать то", Language.UK)
+        self.synthesize_single(u"Временами Сашке хотелось перестать делать то", ESPEAKWrapper.UKR)
 
     def test_single_invalid_language(self):
         with self.assertRaises(ValueError):

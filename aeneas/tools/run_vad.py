@@ -12,7 +12,7 @@ import io
 import sys
 
 from aeneas.audiofile import AudioFileConverterError
-from aeneas.audiofile import AudioFileNotInitialized
+from aeneas.audiofile import AudioFileNotInitializedError
 from aeneas.audiofile import AudioFileUnsupportedFormatError
 from aeneas.audiofilemfcc import AudioFileMFCC
 from aeneas.runtimeconfiguration import RuntimeConfiguration
@@ -46,7 +46,7 @@ class RunVADCLI(AbstractCLIProgram):
     HELP = {
         "description": u"Extract a list of speech intervals using the MFCC energy-based VAD.",
         "synopsis": [
-            u"AUDIO_FILE [%s] [OUTPUT_FILE]" % (u"|".join(MODES))
+            (u"AUDIO_FILE [%s] [OUTPUT_FILE]" % (u"|".join(MODES)), True)
         ],
         "examples": [
             u"%s both %s" % (INPUT_FILE, OUTPUT_BOTH),
@@ -88,12 +88,12 @@ class RunVADCLI(AbstractCLIProgram):
             self.print_error(u"Unable to call the ffmpeg executable '%s'" % (self.rconf[RuntimeConfiguration.FFMPEG_PATH]))
             self.print_error(u"Make sure the path to ffmpeg is correct")
             return self.ERROR_EXIT_CODE
-        except (AudioFileUnsupportedFormatError, AudioFileNotInitialized):
+        except (AudioFileUnsupportedFormatError, AudioFileNotInitializedError):
             self.print_error(u"Cannot read file '%s'" % (audio_file_path))
             self.print_error(u"Check that its format is supported by ffmpeg")
             return self.ERROR_EXIT_CODE
         except Exception as exc:
-            self.print_error(u"An unexpected Exception occurred while reading the audio file:")
+            self.print_error(u"An unexpected error occurred while reading the audio file:")
             self.print_error(u"%s" % exc)
             return self.ERROR_EXIT_CODE
         self.print_info(u"Reading audio... done")
@@ -105,7 +105,7 @@ class RunVADCLI(AbstractCLIProgram):
         speech = audio_file_mfcc.intervals(speech=True, time=output_time)
         nonspeech = audio_file_mfcc.intervals(speech=False, time=output_time)
         if mode == u"speech":
-            intervals = speech 
+            intervals = speech
         elif mode == u"nonspeech":
             intervals = nonspeech
         elif mode == u"both":
@@ -141,7 +141,7 @@ class RunVADCLI(AbstractCLIProgram):
         else:
             with io.open(output_file_path, "w", encoding="utf-8") as output_file:
                 output_file.write(u"\n".join(msg))
-                self.print_info(u"Created file %s" % output_file_path)
+                self.print_success(u"Created file '%s'" % output_file_path)
 
 
 

@@ -1,4 +1,4 @@
-FFPROBEWrapper
+ffprobewrapper
 ==============
 
 .. automodule:: aeneas.ffprobewrapper

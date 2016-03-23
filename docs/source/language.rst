@@ -1,4 +1,4 @@
-Language
+language
 ========
 
 .. automodule:: aeneas.language

@@ -2,8 +2,11 @@
 # coding=utf-8
 
 """
-Basically a dictionary with a fixed set of keys,
-with default values and aliases.
+This module contains the following classes:
+
+* :class:`~aeneas.configuration.Configuration`
+  which is a dictionary with a fixed set of keys,
+  possibly with default values and key aliases.
 
 .. versionadded:: 1.4.1
 """
@@ -27,21 +30,29 @@ __status__ = "Production"
 
 class Configuration(object):
     """
-    A structure representing a generic configuration object, that is,
+    A generic configuration object, that is,
     a dictionary with a fixed set of keys,
-    each with a default value, type, and possibly aliases.
+    each with a type, a default value, and possibly aliases.
 
-    Values are stored as Unicode strings, and casted to int or float
+    Keys are (unique) Unicode strings.
+
+    Values are stored as Unicode strings (or ``None``), and casted
+    to the type of the field (``int``, ``float``,
+    ``bool``, :class:`~aeneas.timevalue.TimeValue`, etc.)
     when accessed.
 
-    :param string config_string: the job configuration string
+    For ``bool`` keys, values listed in
+    :data:`~aeneas.configuration.Configuration.TRUE_ALIASES`
+    are considered equivalent to a ``True`` value.
 
-    :raises TypeError: if ``config_string`` is not ``None`` and
-                       it is not a Unicode string
-    :raises KeyError: if trying to access a key not listed above
+    If ``config_string`` is not ``None``, the given string will be parsed
+    and ``key=value`` pairs will be stored in the object,
+    provided that ``key`` is listed in :data:`~aeneas.configuration.Configuration.FIELDS`.
+
+    :param string config_string: the configuration string to be parsed
+    :raises: TypeError: if ``config_string`` is not ``None`` and it is not a Unicode string
+    :raises: KeyError: if trying to access a key not listed above
     """
-
-    TAG = u"Configuration"
 
     FIELDS = [
         #
@@ -50,13 +61,26 @@ class Configuration(object):
         #
         # examples:
         # (gc.FOO, (None, None, ["foo"]))
-        # (gc.BAR, (0.0, float, ["bar", "baz"]))
+        # (gc.BAR, (0.0, float, ["bar", "barrr"]))
+        # (gc.BAZ, (None, TimeValue, ["baz"]))
         #
     ]
+    """
+    The fields, that is, key names each with associated
+    default value, type, and possibly aliases,
+    of this object.
+    """
+
+    TRUE_ALIASES = [True, u"TRUE", u"True", u"true", u"YES", u"Yes", u"yes", u"1", 1]
+    """
+    Aliases for a ``True`` value for ``bool`` fields
+    """
+
+    TAG = u"Configuration"
 
     def __init__(self, config_string=None):
         if (config_string is not None) and (not gf.is_unicode(config_string)):
-            raise TypeError("config_string is not a Unicode string")
+            raise TypeError(u"config_string is not a Unicode string")
 
         # set dictionaries up to keep the config data
         self.data = {}
@@ -107,7 +131,7 @@ class Configuration(object):
     def _cast(self, key, value):
         if (value is not None) and (self.types[key] is not None):
             if self.types[key] is bool:
-                return value in [True, u"True", u"true", u"Yes", u"yes", u"1", 1]
+                return value in self.TRUE_ALIASES
             else:
                 return self.types[key](value)
         return value

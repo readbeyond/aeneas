@@ -3,7 +3,9 @@
 
 import unittest
 
+from aeneas.logger import Loggable
 from aeneas.logger import Logger
+from aeneas.runtimeconfiguration import RuntimeConfiguration
 
 class TestLogger(unittest.TestCase):
 
@@ -102,6 +104,74 @@ class TestLogger(unittest.TestCase):
 
     def test_multi_15(self):
         self.run_test_multi([u"Message %.3f %s %.3f", 1.234, u"-à->", 2.345])
+
+    def test_loggable(self):
+        loggable = Loggable()
+        self.assertIsNotNone(loggable.rconf)
+        self.assertIsNotNone(loggable.logger)
+
+    def test_loggable_logger(self):
+        logger = Logger()
+        loggable = Loggable(logger=logger)
+        self.assertIsNotNone(loggable.rconf)
+        self.assertEqual(logger, loggable.logger)
+
+    def test_loggable_rconf(self):
+        rconf = RuntimeConfiguration()
+        loggable = Loggable(rconf=rconf)
+        self.assertEqual(rconf, loggable.rconf)
+        self.assertIsNotNone(loggable.logger)
+
+    def test_loggable_rconf_logger(self):
+        logger = Logger()
+        rconf = RuntimeConfiguration()
+        loggable = Loggable(rconf=rconf, logger=logger)
+        self.assertEqual(rconf, loggable.rconf)
+        self.assertEqual(logger, loggable.logger)
+
+    def test_loggable_log(self):
+        loggable = Loggable()
+        loggable.log(u"Message")
+        self.assertEqual(len(loggable.logger), 1)
+
+    def test_loggable_log_crit(self):
+        loggable = Loggable()
+        loggable.log_crit(u"Message")
+        self.assertEqual(len(loggable.logger), 1)
+
+    def test_loggable_log_warn(self):
+        loggable = Loggable()
+        loggable.log_warn(u"Message")
+        self.assertEqual(len(loggable.logger), 1)
+
+    def test_loggable_log_info(self):
+        loggable = Loggable()
+        loggable.log_info(u"Message")
+        self.assertEqual(len(loggable.logger), 1)
+
+    def test_loggable_log_exc_warn(self):
+        loggable = Loggable()
+        loggable.log_exc(u"Message", None, False, None)
+        self.assertEqual(len(loggable.logger), 1)
+
+    def test_loggable_log_exc_crit_no_raise(self):
+        loggable = Loggable()
+        loggable.log_exc(u"Message", None, True, None)
+        self.assertEqual(len(loggable.logger), 1)
+
+    def test_loggable_log_exc_crit_raise(self):
+        loggable = Loggable()
+        with self.assertRaises(TypeError):
+            loggable.log_exc(u"Message", None, True, TypeError)
+            self.assertEqual(len(loggable.logger), 1)
+
+    def test_loggable_log_exc_obj(self):
+        loggable = Loggable()
+        exc = TypeError(u"Message")
+        with self.assertRaises(TypeError):
+            loggable.log_exc(u"Message", exc, True, TypeError)
+            self.assertEqual(len(loggable.logger), 1)
+
 
 
 if __name__ == '__main__':

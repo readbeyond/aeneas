@@ -74,15 +74,17 @@ setup(
         "aeneas.cew",
         "aeneas.cmfcc",
         "aeneas.cwave",
+        "aeneas.extra",
         "aeneas.tools"
     ],
     package_data={
-        "aeneas": ["res/*"],
-        "aeneas.cdtw": ["*.c", "*.h"],
-        "aeneas.cew": ["*.c", "*.h"],
-        "aeneas.cmfcc": ["*.c", "*.h"],
-        "aeneas.cwave": ["*.c", "*.h"],
-        "aeneas.tools": ["res/*"]
+        "aeneas": ["res/*", "*.md"],
+        "aeneas.cdtw": ["*.c", "*.h", "*.md"],
+        "aeneas.cew": ["*.c", "*.h", "*.md"],
+        "aeneas.cmfcc": ["*.c", "*.h", "*.md"],
+        "aeneas.cwave": ["*.c", "*.h", "*.md"],
+        "aeneas.extra": ["*.md"],
+        "aeneas.tools": ["res/*", "*.md"]
     },
     version="1.5.0.0",
     description=SHORT_DESCRIPTION,
@@ -97,12 +99,14 @@ setup(
         "numpy>=1.9"
     ],
     extras_require={
-        "full": ["pafy>=0.3.74", "Pillow>=3.1.1", "poio-api>=0.3.6"],
-        "pafy": ["pafy>=0.3.74"],
+        "full": ["pafy>=0.3.74", "Pillow>=3.1.1", "requests>=2.9.1", "youtube-dl>=2015.7.21"],
+        "nopillow" : ["pafy>=0.3.74", "requests>=2.9.1", "youtube-dl>=2015.7.21"],
+        "pafy": ["pafy>=0.3.74", "youtube-dl>=2015.7.21"],
         "pillow": ["Pillow>=3.1.1"],
-        "poio": ["poio-api>=0.3.6"]
+        "requests": ["requests>=2.9.1"],
     },
     scripts=[
+        "bin/aeneas_check_setup",
         "bin/aeneas_convert_syncmap",
         "bin/aeneas_download",
         "bin/aeneas_execute_job",
@@ -112,8 +116,11 @@ setup(
         "bin/aeneas_validate",
     ],
     keywords=[
+        "AUD",
         "CSV",
         "DTW",
+        "EAF",
+        "ELAN",
         "EPUB 3 Media Overlay",
         "EPUB 3",
         "EPUB",

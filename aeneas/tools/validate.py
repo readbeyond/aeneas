@@ -45,22 +45,22 @@ class ValidateCLI(AbstractCLIProgram):
     CONFIG_FILE_TXT = gf.relative_path("res/config.txt", __file__)
     CONFIG_FILE_XML = gf.relative_path("res/config.xml", __file__)
     CONTAINER_FILE = gf.relative_path("res/job.zip", __file__)
-    JOB_CONFIG_STRING = u"job_language=it|os_job_file_name=output.zip|os_job_file_container=zip|is_hierarchy_type=flat"
-    TASK_CONFIG_STRING = u"task_language=it|is_text_type=plain|os_task_file_name=output.txt|os_task_file_format=txt"
-    WRONG_CONFIG_STRING = u"job_language=it|invalid=string"
-    GOOD_CONFIG_STRING = u"is_hierarchy_type=flat|is_hierarchy_prefix=assets/|is_text_file_relative_path=.|is_text_file_name_regex=.*\.xhtml|is_text_type=unparsed|is_audio_file_relative_path=.|is_audio_file_name_regex=.*\.mp3|is_text_unparsed_id_regex=f[0-9]+|is_text_unparsed_id_sort=numeric|os_job_file_name=demo_sync_job_output|os_job_file_container=zip|os_job_file_hierarchy_type=flat|os_job_file_hierarchy_prefix=assets/|os_task_file_name=\\$PREFIX.xhtml.smil|os_task_file_format=smil|os_task_file_smil_page_ref=\\$PREFIX.xhtml|os_task_file_smil_audio_ref=../Audio/\\$PREFIX.mp3|job_language=en|job_description=Demo Sync Job"
+    JOB_CONFIG_STRING = u"job_language=ita|os_job_file_name=output.zip|os_job_file_container=zip|is_hierarchy_type=flat"
+    TASK_CONFIG_STRING = u"task_language=ita|is_text_type=plain|os_task_file_name=output.txt|os_task_file_format=txt"
+    WRONG_CONFIG_STRING = u"job_language=ita|invalid=string"
+    GOOD_CONFIG_STRING = u"is_hierarchy_type=flat|is_hierarchy_prefix=assets/|is_text_file_relative_path=.|is_text_file_name_regex=.*\.xhtml|is_text_type=unparsed|is_audio_file_relative_path=.|is_audio_file_name_regex=.*\.mp3|is_text_unparsed_id_regex=f[0-9]+|is_text_unparsed_id_sort=numeric|os_job_file_name=demo_sync_job_output|os_job_file_container=zip|os_job_file_hierarchy_type=flat|os_job_file_hierarchy_prefix=assets/|os_task_file_name=\\$PREFIX.xhtml.smil|os_task_file_format=smil|os_task_file_smil_page_ref=\\$PREFIX.xhtml|os_task_file_smil_audio_ref=../Audio/\\$PREFIX.mp3|job_language=eng|job_description=Demo Sync Job"
 
     NAME = gf.file_name_without_extension(__file__)
 
     HELP = {
         "description": u"Perform validation of a config string or a container",
         "synopsis": [
-            u"config CONFIG.TXT",
-            u"config CONFIG.XML",
-            u"container CONTAINER",
-            u"job CONFIG_STRING",
-            u"task CONFIG_STRING",
-            u"wizard CONFIG_STRING CONTAINER"
+            (u"config CONFIG.TXT", True),
+            (u"config CONFIG.XML", True),
+            (u"container CONTAINER", True),
+            (u"job CONFIG_STRING", True),
+            (u"task CONFIG_STRING", True),
+            (u"wizard CONFIG_STRING CONTAINER", True)
         ],
         "examples": [
             u"config %s" % (CONFIG_FILE_TXT),
@@ -128,7 +128,7 @@ class ValidateCLI(AbstractCLIProgram):
             return self.print_help()
 
         if result.passed:
-            self.print_info(u"Valid %s" % msg)
+            self.print_success(u"Valid %s" % msg)
             for warning in result.warnings:
                 self.print_warning(u"%s" % warning)
             return self.NO_ERROR_EXIT_CODE

@@ -2,13 +2,17 @@
 # coding=utf-8
 
 """
-Download files from various Web sources.
+This module contains the following classes:
+
+* :class:`~aeneas.downloader.Downloader`, which download files from various Web sources.
+
+.. note:: This module requires Python modules ``youtube-dl`` and ``pafy`` (``pip install youtube-dl pafy``).
 """
 
 from __future__ import absolute_import
 from __future__ import print_function
 
-from aeneas.logger import Logger
+from aeneas.logger import Loggable
 from aeneas.runtimeconfiguration import RuntimeConfiguration
 import aeneas.globalfunctions as gf
 
@@ -23,26 +27,17 @@ __version__ = "1.5.0"
 __email__ = "aeneas@readbeyond.it"
 __status__ = "Production"
 
-class Downloader(object):
+class Downloader(Loggable):
     """
     Download files from various Web sources.
 
-    :param rconf: a runtime configuration. Default: ``None``, meaning that
-                  default settings will be used.
-    :type  rconf: :class:`aeneas.runtimeconfiguration.RuntimeConfiguration`
+    :param rconf: a runtime configuration
+    :type  rconf: :class:`~aeneas.runtimeconfiguration.RuntimeConfiguration`
     :param logger: the logger object
-    :type  logger: :class:`aeneas.logger.Logger`
+    :type  logger: :class:`~aeneas.logger.Logger`
     """
 
     TAG = u"Downloader"
-
-    def __init__(self, rconf=None, logger=None):
-        self.logger = logger if logger is not None else Logger()
-        self.rconf = rconf if rconf is not None else RuntimeConfiguration()
-
-    def _log(self, message, severity=Logger.DEBUG):
-        """ Log """
-        self.logger.log(message, severity, self.TAG)
 
     def audio_from_youtube(
             self,
@@ -84,74 +79,69 @@ class Downloader(object):
         :param bool largest_audio: if ``True``, download the largest audio stream available;
                                    if ``False``, download the smallest one.
         :param string preferred_format: preferably download this audio format
-
         :rtype: string or list of pafy audio streams
-
-        :raise ImportError: if ``pafy`` is not installed
-        :raise OSError: if ``output_file_path`` cannot be written
-        :raise ValueError: if ``source_url`` is not a valid YouTube URL
+        :raises: ImportError: if ``pafy`` is not installed
+        :raises: OSError: if ``output_file_path`` cannot be written
+        :raises: ValueError: if ``source_url`` is not a valid YouTube URL
         """
         def select_audiostream(audiostreams):
             """ Select the audiostream best matching the given parameters. """
             if preferred_index is not None:
                 if preferred_index in range(len(audiostreams)):
-                    self._log([u"Selecting audiostream with index %d", preferred_index])
+                    self.log([u"Selecting audiostream with index %d", preferred_index])
                     return audiostreams[preferred_index]
                 else:
-                    self._log([u"Audio stream index %d not allowed", preferred_index], Logger.WARNING)
-                    self._log(u"Ignoring the requested audio stream index", Logger.WARNING)
+                    self.log_warn([u"Audio stream index '%d' not allowed", preferred_index])
+                    self.log_warn(u"Ignoring the requested audio stream index")
             # selecting by preferred format
             streams = audiostreams
             if preferred_format is not None:
-                self._log([u"Selecting audiostreams by preferred format %s", preferred_format])
+                self.log([u"Selecting audiostreams by preferred format %s", preferred_format])
                 streams = [audiostream for audiostream in streams if audiostream.extension == preferred_format]
                 if len(streams) < 1:
-                    self._log([u"No audiostream with preferred format %s", preferred_format])
+                    self.log([u"No audiostream with preferred format %s", preferred_format])
                     streams = audiostreams
             # sort by size
             streams = sorted([(audio.get_filesize(), audio) for audio in streams])
             if largest_audio:
-                self._log(u"Selecting largest audiostream")
+                self.log(u"Selecting largest audiostream")
                 selected = streams[-1][1]
             else:
-                self._log(u"Selecting smallest audiostream")
+                self.log(u"Selecting smallest audiostream")
                 selected = streams[0][1]
             return selected
 
         try:
             import pafy
         except ImportError as exc:
-            self._log(u"pafy is not installed", Logger.CRITICAL)
-            raise exc
+            self.log_exc(u"Python module pafy is not installed", exc, True, ImportError)
 
         try:
             video = pafy.new(source_url)
         except (IOError, OSError, ValueError) as exc:
-            self._log([u"The specified source URL '%s' is not a valid YouTube URL", source_url], Logger.CRITICAL)
-            raise ValueError("The specified source URL is not a valid YouTube URL")
+            self.log_exc(u"The specified source URL '%s' is not a valid YouTube URL or you are offline" % (source_url), exc, True, ValueError)
 
         if not download:
-            self._log(u"Returning the list of audio streams")
+            self.log(u"Returning the list of audio streams")
             return video.audiostreams
 
         output_path = output_file_path
         if output_file_path is None:
-            self._log(u"output_path is None: creating temp file")
+            self.log(u"output_path is None: creating temp file")
             handler, output_path = gf.tmp_file(root=self.rconf[RuntimeConfiguration.TMP_PATH])
         else:
             if not gf.file_can_be_written(output_path):
-                self._log([u"Path '%s' cannot be written (wrong permissions?)", output_path], Logger.CRITICAL)
-                raise OSError("Path '%s' cannot be written (wrong permissions?)" % output_path)
+                self.log_exc(u"Path '%s' cannot be written. Wrong permissions?" % (output_path), None, True, OSError)
 
         audiostream = select_audiostream(video.audiostreams)
         if output_file_path is None:
             gf.delete_file(handler, output_path)
             output_path += "." + audiostream.extension
 
-        self._log([u"output_path is '%s'", output_path])
-        self._log(u"Downloading...")
+        self.log([u"output_path is '%s'", output_path])
+        self.log(u"Downloading...")
         audiostream.download(filepath=output_path, quiet=True)
-        self._log(u"Downloading... done")
+        self.log(u"Downloading... done")
         return output_path
 
 

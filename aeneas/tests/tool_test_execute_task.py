@@ -33,6 +33,10 @@ class TestExecuteTaskCLI(unittest.TestCase):
         self.execute([("", "-e")], 2)
         self.execute([("", "--examples")], 2)
 
+    def test_examples_all(self):
+        self.execute([("", "-e")], 2)
+        self.execute([("", "--examples-all")], 2)
+
     def test_list_parameters(self):
         self.execute([("", "--list-parameters")], 2)
 
@@ -46,7 +50,7 @@ class TestExecuteTaskCLI(unittest.TestCase):
         self.execute([
             ("in", "../tools/res/audio.mp3"),
             ("in", "../tools/res/plain.txt"),
-            ("", "task_language=en|is_text_type=plain|os_task_file_format=json"),
+            ("", "task_language=eng|is_text_type=plain|os_task_file_format=json"),
             ("out", "sonnet.json")
         ], 0)
 
@@ -54,7 +58,7 @@ class TestExecuteTaskCLI(unittest.TestCase):
         self.execute([
             ("in", "../tools/res/audio.mp3"),
             ("in", "../tools/res/page.xhtml"),
-            ("", "task_language=en|is_text_type=unparsed|is_text_unparsed_id_regex=f[0-9]+|is_text_unparsed_id_sort=numeric|os_task_file_format=smil|os_task_file_smil_audio_ref=p001.mp3|os_task_file_smil_page_ref=p001.xhtml"),
+            ("", "task_language=eng|is_text_type=unparsed|is_text_unparsed_id_regex=f[0-9]+|is_text_unparsed_id_sort=numeric|os_task_file_format=smil|os_task_file_smil_audio_ref=p001.mp3|os_task_file_smil_page_ref=p001.xhtml"),
             ("out", "sonnet.smil")
         ], 0)
 
@@ -62,7 +66,7 @@ class TestExecuteTaskCLI(unittest.TestCase):
         self.execute([
             ("in", "../tools/res/audio.mp3"),
             ("in", "../tools/res/subtitles.txt"),
-            ("", "task_language=en|is_text_type=subtitles|os_task_file_format=srt"),
+            ("", "task_language=eng|is_text_type=subtitles|os_task_file_format=srt"),
             ("out", "sonnet.srt")
         ], 0)
 
@@ -70,7 +74,7 @@ class TestExecuteTaskCLI(unittest.TestCase):
         self.execute([
             ("in", "../tools/res/audio.mp3"),
             ("in", "../tools/res/subtitles.txt"),
-            ("", "task_language=en|is_text_type=subtitles|os_task_file_format=srt"),
+            ("", "task_language=eng|is_text_type=subtitles|os_task_file_format=srt"),
             ("out", "sonnet.srt"),
             ("", "--output-html")
         ], 0)
@@ -79,7 +83,7 @@ class TestExecuteTaskCLI(unittest.TestCase):
         self.execute([
             ("in", "../tools/res/audio.mp3"),
             ("in", "../tools/res/subtitles.txt"),
-            ("", "task_language=en|is_text_type=subtitles|os_task_file_format=srt"),
+            ("", "task_language=eng|is_text_type=subtitles|os_task_file_format=srt"),
             ("out", "sonnet.srt"),
             ("", "--skip-validator")
         ], 0)
@@ -98,7 +102,7 @@ class TestExecuteTaskCLI(unittest.TestCase):
         self.execute([
             ("in", "../tools/res/audio.mp3"),
             ("in", "../tools/res/subtitles.txt"),
-            ("", "task_language=en|is_text_type=subtitles|os_task_file_format=srt"),
+            ("", "task_language=eng|is_text_type=subtitles|os_task_file_format=srt"),
             ("out", "sonnet.srt"),
             ("", "-r=\"c_extensions=False\"")
         ], 0)
@@ -107,7 +111,7 @@ class TestExecuteTaskCLI(unittest.TestCase):
         self.execute([
             ("in", "../tools/res/audio.mp3"),
             ("in", "../tools/res/subtitles.txt"),
-            ("", "task_language=en|is_text_type=subtitles|os_task_file_format=srt"),
+            ("", "task_language=eng|is_text_type=subtitles|os_task_file_format=srt"),
             ("out", "sonnet.srt"),
             ("", "-r=\"cew_subprocess_enabled=True\"")
         ], 0)
@@ -116,7 +120,7 @@ class TestExecuteTaskCLI(unittest.TestCase):
         self.execute([
             ("in", "../tools/res/audio.mp3"),
             ("in", "../tools/res/subtitles.txt"),
-            ("", "task_language=en|is_text_type=subtitles|os_task_file_format=srt|is_audio_file_head_length=5.000"),
+            ("", "task_language=eng|is_text_type=subtitles|os_task_file_format=srt|is_audio_file_head_length=5.000"),
             ("out", "sonnet.srt")
         ], 0)
 
@@ -124,7 +128,7 @@ class TestExecuteTaskCLI(unittest.TestCase):
         self.execute([
             ("in", "../tools/res/audio.mp3"),
             ("in", "../tools/res/subtitles.txt"),
-            ("", "task_language=en|is_text_type=subtitles|os_task_file_format=srt|is_audio_file_tail_length=5.000"),
+            ("", "task_language=eng|is_text_type=subtitles|os_task_file_format=srt|is_audio_file_tail_length=5.000"),
             ("out", "sonnet.srt")
         ], 0)
 
@@ -132,7 +136,7 @@ class TestExecuteTaskCLI(unittest.TestCase):
         self.execute([
             ("in", "../tools/res/audio.mp3"),
             ("in", "../tools/res/subtitles.txt"),
-            ("", "task_language=en|is_text_type=subtitles|os_task_file_format=srt|is_audio_file_process_length=40.000"),
+            ("", "task_language=eng|is_text_type=subtitles|os_task_file_format=srt|is_audio_file_process_length=40.000"),
             ("out", "sonnet.srt")
         ], 0)
 
@@ -140,7 +144,7 @@ class TestExecuteTaskCLI(unittest.TestCase):
         self.execute([
             ("in", "../tools/res/audio.mp3"),
             ("in", "../tools/res/subtitles.txt"),
-            ("", "task_language=en|is_text_type=subtitles|os_task_file_format=srt|is_audio_file_process_length=40.000|is_audio_file_head_length=5.000"),
+            ("", "task_language=eng|is_text_type=subtitles|os_task_file_format=srt|is_audio_file_process_length=40.000|is_audio_file_head_length=5.000"),
             ("out", "sonnet.srt")
         ], 0)
 
@@ -148,7 +152,7 @@ class TestExecuteTaskCLI(unittest.TestCase):
         self.execute([
             ("in", "../tools/res/audio.mp3"),
             ("in", "../tools/res/subtitles.txt"),
-            ("", "task_language=en|is_text_type=subtitles|os_task_file_format=srt|is_audio_file_detect_head_min=0|is_audio_file_detect_head_max=10.000"),
+            ("", "task_language=eng|is_text_type=subtitles|os_task_file_format=srt|is_audio_file_detect_head_min=0|is_audio_file_detect_head_max=10.000"),
             ("out", "sonnet.srt")
         ], 0)
 
@@ -156,7 +160,7 @@ class TestExecuteTaskCLI(unittest.TestCase):
         self.execute([
             ("in", "../tools/res/audio.mp3"),
             ("in", "../tools/res/subtitles.txt"),
-            ("", "task_language=en|is_text_type=subtitles|os_task_file_format=srt|is_audio_file_detect_tail_min=0|is_audio_file_detect_tail_max=10.000"),
+            ("", "task_language=eng|is_text_type=subtitles|os_task_file_format=srt|is_audio_file_detect_tail_min=0|is_audio_file_detect_tail_max=10.000"),
             ("out", "sonnet.srt")
         ], 0)
 
@@ -164,7 +168,7 @@ class TestExecuteTaskCLI(unittest.TestCase):
         self.execute([
             ("in", "../tools/res/audio.mp3"),
             ("in", "../tools/res/subtitles.txt"),
-            ("", "task_language=en|is_text_type=subtitles|os_task_file_format=srt|is_audio_file_detect_head_min=0|is_audio_file_detect_head_max=10.000|is_audio_file_detect_tail_min=0|is_audio_file_detect_tail_max=10.000"),
+            ("", "task_language=eng|is_text_type=subtitles|os_task_file_format=srt|is_audio_file_detect_head_min=0|is_audio_file_detect_head_max=10.000|is_audio_file_detect_tail_min=0|is_audio_file_detect_tail_max=10.000"),
             ("out", "sonnet.srt")
         ], 0)
 
@@ -172,7 +176,7 @@ class TestExecuteTaskCLI(unittest.TestCase):
         self.execute([
             ("in", "../tools/res/audio.mp3"),
             ("in", "../tools/res/subtitles.txt"),
-            ("", "task_language=en|is_text_type=subtitles|os_task_file_format=srt|task_adjust_boundary_algorithm=aftercurrent|task_adjust_boundary_aftercurrent_value=0.200"),
+            ("", "task_language=eng|is_text_type=subtitles|os_task_file_format=srt|task_adjust_boundary_algorithm=aftercurrent|task_adjust_boundary_aftercurrent_value=0.200"),
             ("out", "sonnet.srt")
         ], 0)
 
@@ -180,7 +184,7 @@ class TestExecuteTaskCLI(unittest.TestCase):
         self.execute([
             ("in", "../tools/res/audio.mp3"),
             ("in", "../tools/res/subtitles.txt"),
-            ("", "task_language=en|is_text_type=subtitles|os_task_file_format=srt|task_adjust_boundary_algorithm=beforenext|task_adjust_boundary_beforenext_value=0.200"),
+            ("", "task_language=eng|is_text_type=subtitles|os_task_file_format=srt|task_adjust_boundary_algorithm=beforenext|task_adjust_boundary_beforenext_value=0.200"),
             ("out", "sonnet.srt")
         ], 0)
 
@@ -188,7 +192,7 @@ class TestExecuteTaskCLI(unittest.TestCase):
         self.execute([
             ("in", "../tools/res/audio.mp3"),
             ("in", "../tools/res/subtitles.txt"),
-            ("", "task_language=en|is_text_type=subtitles|os_task_file_format=srt|task_adjust_boundary_algorithm=offset|task_adjust_boundary_offset_value=0.200"),
+            ("", "task_language=eng|is_text_type=subtitles|os_task_file_format=srt|task_adjust_boundary_algorithm=offset|task_adjust_boundary_offset_value=0.200"),
             ("out", "sonnet.srt")
         ], 0)
 
@@ -196,7 +200,7 @@ class TestExecuteTaskCLI(unittest.TestCase):
         self.execute([
             ("in", "../tools/res/audio.mp3"),
             ("in", "../tools/res/subtitles.txt"),
-            ("", "task_language=en|is_text_type=subtitles|os_task_file_format=srt|task_adjust_boundary_algorithm=percent|task_adjust_boundary_percent_value=50"),
+            ("", "task_language=eng|is_text_type=subtitles|os_task_file_format=srt|task_adjust_boundary_algorithm=percent|task_adjust_boundary_percent_value=50"),
             ("out", "sonnet.srt")
         ], 0)
 
@@ -204,7 +208,7 @@ class TestExecuteTaskCLI(unittest.TestCase):
         self.execute([
             ("in", "../tools/res/audio.mp3"),
             ("in", "../tools/res/subtitles.txt"),
-            ("", "task_language=en|is_text_type=subtitles|os_task_file_format=srt|task_adjust_boundary_algorithm=rate|task_adjust_boundary_rate_value=21.0"),
+            ("", "task_language=eng|is_text_type=subtitles|os_task_file_format=srt|task_adjust_boundary_algorithm=rate|task_adjust_boundary_rate_value=21.0"),
             ("out", "sonnet.srt")
         ], 0)
 
@@ -212,7 +216,7 @@ class TestExecuteTaskCLI(unittest.TestCase):
         self.execute([
             ("in", "../tools/res/audio.mp3"),
             ("in", "../tools/res/subtitles.txt"),
-            ("", "task_language=en|is_text_type=subtitles|os_task_file_format=srt|task_adjust_boundary_algorithm=rateaggressive|task_adjust_boundary_rate_value=21.0"),
+            ("", "task_language=eng|is_text_type=subtitles|os_task_file_format=srt|task_adjust_boundary_algorithm=rateaggressive|task_adjust_boundary_rate_value=21.0"),
             ("out", "sonnet.srt")
         ], 0)
 
@@ -220,7 +224,7 @@ class TestExecuteTaskCLI(unittest.TestCase):
         self.execute([
             ("in", "../tools/res/audio.mp3"),
             ("in", "../tools/res/subtitles.txt"),
-            ("", "task_language=en|is_text_type=subtitles|os_task_file_format=srt|is_text_file_ignore_regex=\\[.*?\\]"),
+            ("", "task_language=eng|is_text_type=subtitles|os_task_file_format=srt|is_text_file_ignore_regex=\\[.*?\\]"),
             ("out", "sonnet.srt")
         ], 0)
 
@@ -228,7 +232,7 @@ class TestExecuteTaskCLI(unittest.TestCase):
         self.execute([
             ("in", "../tools/res/audio.mp3"),
             ("in", "../tools/res/subtitles.txt"),
-            ("", "task_language=en|is_text_type=subtitles|os_task_file_format=json|os_task_file_id_regex=Word%03d"),
+            ("", "task_language=eng|is_text_type=subtitles|os_task_file_format=json|os_task_file_id_regex=Word%03d"),
             ("out", "sonnet.json")
         ], 0)
 
@@ -237,7 +241,7 @@ class TestExecuteTaskCLI(unittest.TestCase):
         self.execute([
             ("in", "../tools/res/audio.mp3"),
             ("in", "../tools/res/subtitles.txt"),
-            ("", "task_language=en|is_text_type=subtitles|os_task_file_format=srt|is_text_file_transliterate_map=%s" % path),
+            ("", "task_language=eng|is_text_type=subtitles|os_task_file_format=srt|is_text_file_transliterate_map=%s" % path),
             ("out", "sonnet.srt")
         ], 0)
 
@@ -245,7 +249,7 @@ class TestExecuteTaskCLI(unittest.TestCase):
         self.execute([
             ("in", "../tools/res/audio.mp3"),
             ("in", "../tools/res/subtitles.txt"),
-            ("", "task_language=en|is_text_type=subtitles|os_task_file_format=srt"),
+            ("", "task_language=eng|is_text_type=subtitles|os_task_file_format=srt"),
             ("out", "sonnet.srt"),
             ("", "-r=\"dtw_margin=30\"")
         ], 0)
@@ -254,7 +258,7 @@ class TestExecuteTaskCLI(unittest.TestCase):
         self.execute([
             ("in", "../tools/res/audio.mp3"),
             ("in", "../tools/res/subtitles.txt"),
-            ("", "task_language=en|is_text_type=subtitles|os_task_file_format=srt"),
+            ("", "task_language=eng|is_text_type=subtitles|os_task_file_format=srt"),
             ("out", "sonnet.srt"),
             ("", "-r=\"c_extensions=False|dtw_algorithm=exact\"")
         ], 0)
@@ -263,7 +267,7 @@ class TestExecuteTaskCLI(unittest.TestCase):
         self.execute([
             ("in", "../tools/res/audio.mp3"),
             ("in", "../tools/res/subtitles.txt"),
-            ("", "task_language=en|is_text_type=subtitles|os_task_file_format=srt"),
+            ("", "task_language=eng|is_text_type=subtitles|os_task_file_format=srt"),
             ("out", "sonnet.srt"),
             ("", "-r=\"mfcc_window_length=0.250|mfcc_window_shift=0.100\"")
         ], 0)
@@ -277,7 +281,7 @@ class TestExecuteTaskCLI(unittest.TestCase):
             self.execute([
                 ("in", "../tools/res/audio.mp3"),
                 ("in", "../tools/res/subtitles.txt"),
-                ("", "task_language=en|is_text_type=subtitles|os_task_file_format=srt"),
+                ("", "task_language=eng|is_text_type=subtitles|os_task_file_format=srt"),
                 ("out", "sonnet.srt"),
                 ("", "-r=\"tts_path=%s|ffmpeg_path=%s|ffprobe_path=%s\"" % (tts_path, ffmpeg_path, ffprobe_path))
             ], 0)
@@ -287,100 +291,155 @@ class TestExecuteTaskCLI(unittest.TestCase):
         self.execute([
             ("in", "../tools/res/audio.mp3"),
             ("in", "../tools/res/subtitles.txt"),
-            ("", "task_language=en|is_text_type=subtitles|os_task_file_format=srt"),
+            ("", "task_language=eng|is_text_type=subtitles|os_task_file_format=srt"),
             ("out", "sonnet.srt"),
             ("", "-r=\"tmp_path=%s\"" % (tmp_path))
         ], 0)
         gf.delete_directory(tmp_path)
 
-    def test_visible_example_eaf(self):
+    def test_example_aftercurrent(self):
         self.execute([
-            ("", "--example-eaf")
+            ("", "--example-aftercurrent")
         ], 0)
 
-    def test_visible_example_json(self):
+    def test_example_beforenext(self):
         self.execute([
-            ("", "--example-json")
+            ("", "--example-beforenext")
         ], 0)
 
-    def test_visible_example_mplain_smil(self):
-        self.execute([
-            ("", "--example-mplain-smil")
-        ], 0)
-
-    def test_visible_example_smil(self):
-        self.execute([
-            ("", "--example-smil")
-        ], 0)
-
-    def test_visible_example_srt(self):
-        self.execute([
-            ("", "--example-srt")
-        ], 0)
-
-    def test_hidden_example_cewsubprocess(self):
+    def test_example_cewsubprocess(self):
         self.execute([
             ("", "--example-cewsubprocess")
         ], 0)
 
-    def test_hidden_example_festival(self):
+    def test_example_ctw_espeak(self):
         self.execute([
-            ("", "--example-festival")
+            ("", "--example-ctw-espeak")
         ], 0)
 
-    def test_hidden_example_flatten_12(self):
-        self.execute([
-            ("", "--example-flatten-12")
-        ], 0)
-
-    def test_hidden_example_flatten_2(self):
-        self.execute([
-            ("", "--example-flatten-2")
-        ], 0)
-
-    def test_hidden_example_flatten_3(self):
-        self.execute([
-            ("", "--example-flatten-3")
-        ], 0)
-
-    def test_hidden_example_head_tail(self):
-        self.execute([
-            ("", "--example-head-tail")
-        ], 0)
-
-    def test_hidden_example_mplain_json(self):
-        self.execute([
-            ("", "--example-mplain-json")
-        ], 0)
-
-    def test_hidden_example_mws(self):
-        self.execute([
-            ("", "--example-mws")
-        ], 0)
-
-    def test_hidden_example_py(self):
-        self.execute([
-            ("", "--example-py")
-        ], 0)
-
-    def test_hidden_example_sd(self):
-        self.execute([
-            ("", "--example-sd")
-        ], 0)
-
-    def test_hidden_example_speect(self):
+    def test_example_ctw_speect(self):
         # unable to run speect with Python 3,
         # perform the test only on Python 2
         if gf.PY2:
             self.execute([
-                ("", "--example-speect")
+                ("", "--example-ctw-speect")
             ], 0)
+
+    def test_example_eaf(self):
+        self.execute([
+            ("", "--example-eaf")
+        ], 0)
+
+    def test_example_faster_rate(self):
+        self.execute([
+            ("", "--example-faster-rate")
+        ], 0)
+
+    def test_example_festival(self):
+        self.execute([
+            ("", "--example-festival")
+        ], 0)
+
+    def test_example_flatten_12(self):
+        self.execute([
+            ("", "--example-flatten-12")
+        ], 0)
+
+    def test_example_flatten_2(self):
+        self.execute([
+            ("", "--example-flatten-2")
+        ], 0)
+
+    def test_example_flatten_3(self):
+        self.execute([
+            ("", "--example-flatten-3")
+        ], 0)
+
+    def test_example_head_tail(self):
+        self.execute([
+            ("", "--example-head-tail")
+        ], 0)
+
+    def test_example_json(self):
+        self.execute([
+            ("", "--example-json")
+        ], 0)
+
+    def test_example_mplain_json(self):
+        self.execute([
+            ("", "--example-mplain-json")
+        ], 0)
+
+    def test_example_mplain_smil(self):
+        self.execute([
+            ("", "--example-mplain-smil")
+        ], 0)
+
+    def test_example_munparsed_json(self):
+        self.execute([
+            ("", "--example-munparsed-json")
+        ], 0)
+
+    def test_example_munparsed_smil(self):
+        self.execute([
+            ("", "--example-munparsed-smil")
+        ], 0)
+
+    def test_example_mws(self):
+        self.execute([
+            ("", "--example-mws")
+        ], 0)
+
+    def test_example_no_zero(self):
+        self.execute([
+            ("", "--example-no-zero")
+        ], 0)
+
+    def test_example_offset(self):
+        self.execute([
+            ("", "--example-offset")
+        ], 0)
+
+    def test_example_percent(self):
+        self.execute([
+            ("", "--example-percent")
+        ], 0)
+
+    def test_example_py(self):
+        self.execute([
+            ("", "--example-py")
+        ], 0)
+
+    def test_example_rates(self):
+        self.execute([
+            ("", "--example-rates")
+        ], 0)
+
+    def test_example_sd(self):
+        self.execute([
+            ("", "--example-sd")
+        ], 0)
+
+    def test_example_smil(self):
+        self.execute([
+            ("", "--example-smil")
+        ], 0)
+
+    def test_example_srt(self):
+        self.execute([
+            ("", "--example-srt")
+        ], 0)
+
+    def test_example_tsv(self):
+        self.execute([
+            ("", "--example-tsv")
+        ], 0)
 
     def test_exec_srt_max_audio_length(self):
         self.execute([
             ("in", "../tools/res/audio.mp3"),
             ("in", "../tools/res/subtitles.txt"),
-            ("", "task_language=en|is_text_type=subtitles|os_task_file_format=srt"),
+            ("", "task_language=eng|is_text_type=subtitles|os_task_file_format=srt"),
             ("out", "sonnet.srt"),
             ("", "-r=\"task_max_audio_length=5.0\"")
         ], 1)
@@ -389,7 +448,7 @@ class TestExecuteTaskCLI(unittest.TestCase):
         self.execute([
             ("in", "../tools/res/audio.mp3"),
             ("in", "../tools/res/subtitles.txt"),
-            ("", "task_language=en|is_text_type=subtitles|os_task_file_format=srt"),
+            ("", "task_language=eng|is_text_type=subtitles|os_task_file_format=srt"),
             ("out", "sonnet.srt"),
             ("", "-r=\"task_max_text_length=5\"")
         ], 1)
@@ -398,7 +457,7 @@ class TestExecuteTaskCLI(unittest.TestCase):
         self.execute([
             ("", "/foo/bar/baz.mp3"),
             ("in", "../tools/res/subtitles.txt"),
-            ("", "task_language=en|is_text_type=subtitles|os_task_file_format=srt"),
+            ("", "task_language=eng|is_text_type=subtitles|os_task_file_format=srt"),
             ("out", "sonnet.srt")
         ], 1)
 
@@ -406,7 +465,7 @@ class TestExecuteTaskCLI(unittest.TestCase):
         self.execute([
             ("in", "../tools/res/audio.mp3"),
             ("", "/foo/bar/baz.txt"),
-            ("", "task_language=en|is_text_type=subtitles|os_task_file_format=srt"),
+            ("", "task_language=eng|is_text_type=subtitles|os_task_file_format=srt"),
             ("out", "sonnet.srt")
         ], 1)
 
@@ -414,21 +473,21 @@ class TestExecuteTaskCLI(unittest.TestCase):
         self.execute([
             ("in", "../tools/res/audio.mp3"),
             ("in", "../tools/res/subtitles.txt"),
-            ("", "task_language=en|is_text_type=subtitles|os_task_file_format=srt"),
+            ("", "task_language=eng|is_text_type=subtitles|os_task_file_format=srt"),
             ("", "/foo/bar/baz.srt")
         ], 1)
 
     def test_exec_missing_1(self):
         self.execute([
             ("in", "../tools/res/subtitles.txt"),
-            ("", "task_language=en|is_text_type=subtitles|os_task_file_format=srt"),
+            ("", "task_language=eng|is_text_type=subtitles|os_task_file_format=srt"),
             ("out", "sonnet.srt")
         ], 2)
 
     def test_exec_missing_2(self):
         self.execute([
             ("in", "../tools/res/audio.mp3"),
-            ("", "task_language=en|is_text_type=subtitles|os_task_file_format=srt"),
+            ("", "task_language=eng|is_text_type=subtitles|os_task_file_format=srt"),
             ("out", "sonnet.srt")
         ], 2)
 
@@ -443,7 +502,7 @@ class TestExecuteTaskCLI(unittest.TestCase):
         self.execute([
             ("in", "../tools/res/audio.mp3"),
             ("in", "../tools/res/subtitles.txt"),
-            ("", "task_language=en|is_text_type=subtitles|os_task_file_format=srt")
+            ("", "task_language=eng|is_text_type=subtitles|os_task_file_format=srt")
         ], 2)
 
     # NOTE disabling these ones as they require a network connection
@@ -451,7 +510,7 @@ class TestExecuteTaskCLI(unittest.TestCase):
         self.execute([
             ("", "https://www.youtube.com/watch?v=rU4a7AA8wM0"),
             ("in", "../tools/res/plain.txt"),
-            ("", "task_language=en|is_text_type=plain|os_task_file_format=txt"),
+            ("", "task_language=eng|is_text_type=plain|os_task_file_format=txt"),
             ("out", "sonnet.txt"),
             ("", "-y")
         ], 0)
@@ -460,13 +519,13 @@ class TestExecuteTaskCLI(unittest.TestCase):
         self.execute([
             ("", "https://www.youtube.com/watch?v=rU4a7AA8wM0"),
             ("in", "../tools/res/plain.txt"),
-            ("", "task_language=en|is_text_type=plain|os_task_file_format=txt"),
+            ("", "task_language=eng|is_text_type=plain|os_task_file_format=txt"),
             ("out", "sonnet.txt"),
             ("", "-y"),
             ("", "--largest-audio")
         ], 0)
 
-    def zzz_test_visible_example_youtube(self):
+    def zzz_test_example_youtube(self):
         self.execute([
             ("", "--example-youtube")
         ], 0)

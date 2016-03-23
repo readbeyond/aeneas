@@ -123,8 +123,9 @@ class TestValidator(unittest.TestCase):
     def test_check_jc_missing_required_os_job_file_name(self):
         self.jc(u"job_language=it|os_job_file_container=zip", False)
 
-    def test_check_jc_invalid_value_job_language(self):
-        self.jc(u"job_language=zzzz|os_job_file_name=output.zip|os_job_file_container=zip", False)
+    # language is no longer checked
+    #def test_check_jc_invalid_value_job_language(self):
+    #    self.jc(u"job_language=zzzz|os_job_file_name=output.zip|os_job_file_container=zip", False)
 
     def test_check_jc_invalid_value_os_job_file_container(self):
         self.jc(u"job_language=it|os_job_file_name=output.zip|os_job_file_container=zzzzzz", False)
@@ -183,8 +184,9 @@ class TestValidator(unittest.TestCase):
     def test_check_tc_missing_required_os_task_file_format(self):
         self.tc(u"task_language=it|is_text_type=plain|os_task_file_name=output.txt", False)
 
-    def test_check_tc_invalid_value_task_language(self):
-        self.tc(u"task_language=zzzz|is_text_type=plain|os_task_file_name=output.txt|os_task_file_format=txt", False)
+    # language is no longer checked
+    #def test_check_tc_invalid_value_task_language(self):
+    #    self.tc(u"task_language=zzzz|is_text_type=plain|os_task_file_name=output.txt|os_task_file_format=txt", False)
 
     def test_check_tc_invalid_value_is_text_type(self):
         self.tc(u"task_language=it|is_text_type=zzzzzz|os_task_file_name=output.txt|os_task_file_format=txt", False)

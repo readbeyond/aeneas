@@ -39,7 +39,7 @@ class PlotWaveformCLI(AbstractCLIProgram):
     HELP = {
         "description": u"Plot a waveform and labels to file.",
         "synopsis": [
-            u"AUDIO_FILE OUTPUT_FILE [-i LABEL_FILE [-i LABEL_FILE [...]]]"
+            (u"AUDIO_FILE OUTPUT_FILE [-i LABEL_FILE [-i LABEL_FILE [...]]]", True)
         ],
         "examples": [
             u"%s %s -i %s" % (AUDIO_FILE, OUTPUT_FILE, VAD_FILE)
@@ -76,7 +76,7 @@ class PlotWaveformCLI(AbstractCLIProgram):
         label = self.has_option_with_value("--label")
         time_step = gf.safe_int(self.has_option_with_value("--time-step"), 0)
         v_zoom = gf.safe_int(self.has_option_with_value("--vzoom"), 30)
-        
+
         labels = not self.has_option("--no-labels")
         begin_times = not self.has_option("--no-begin-times")
         end_times = not self.has_option("--no-end-times")
@@ -89,7 +89,7 @@ class PlotWaveformCLI(AbstractCLIProgram):
             from aeneas.plotter import PlotTimeScale
             from aeneas.plotter import PlotWaveform
             from aeneas.plotter import Plotter
-            
+
             # create plotter object
             self.print_info(u"Plotting to file...")
             plotter = Plotter(rconf=self.rconf, logger=self.logger)
@@ -130,7 +130,7 @@ class PlotWaveformCLI(AbstractCLIProgram):
             # output to file
             plotter.draw_png(output_file_path, h_zoom=h_zoom, v_zoom=v_zoom)
             self.print_info(u"Plotting to file... done")
-            self.print_info(u"Created file '%s'" % output_file_path)
+            self.print_success(u"Created file '%s'" % output_file_path)
             return self.NO_ERROR_EXIT_CODE
         except ImportError:
             self.print_error(u"You need to install Python module Pillow to output image to file. Run:")
@@ -138,9 +138,9 @@ class PlotWaveformCLI(AbstractCLIProgram):
             self.print_error(u"or, to install for all users:")
             self.print_error(u"$ sudo pip install Pillow")
         except Exception as exc:
-            self.print_error(u"An unexpected Exception occurred while generating the image file:")
+            self.print_error(u"An unexpected error occurred while generating the image file:")
             self.print_error(u"%s" % exc)
-    
+
         return self.ERROR_EXIT_CODE
 
     def _read_syncmap_file(self, path, extension, text=False):

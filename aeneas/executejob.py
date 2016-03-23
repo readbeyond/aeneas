@@ -2,9 +2,13 @@
 # coding=utf-8
 
 """
-Execute a job, that is, execute all of its tasks
-and generate the output container
-holding the generated sync maps.
+This module contains the following classes:
+
+* :class:`~aeneas.executejob.ExecuteJob`, a class to process a job;
+* :class:`~aeneas.executejob.ExecuteJobExecutionError`,
+* :class:`~aeneas.executejob.ExecuteJobInputError`, and
+* :class:`~aeneas.executejob.ExecuteJobOutputError`,
+  representing errors generated while processing jobs.
 """
 
 from __future__ import absolute_import
@@ -15,7 +19,7 @@ from aeneas.container import Container
 from aeneas.container import ContainerFormat
 from aeneas.executetask import ExecuteTask
 from aeneas.job import Job
-from aeneas.logger import Logger
+from aeneas.logger import Loggable
 from aeneas.runtimeconfiguration import RuntimeConfiguration
 import aeneas.globalfunctions as gf
 
@@ -30,17 +34,17 @@ __version__ = "1.5.0"
 __email__ = "aeneas@readbeyond.it"
 __status__ = "Production"
 
-class ExecuteJobInputError(Exception):
+class ExecuteJobExecutionError(Exception):
     """
-    Error raised when the input parameters of the job are invalid or missing.
+    Error raised when the execution of the job fails for internal reasons.
     """
     pass
 
 
 
-class ExecuteJobExecutionError(Exception):
+class ExecuteJobInputError(Exception):
     """
-    Error raised when the execution of the job fails for internal reasons.
+    Error raised when the input parameters of the job are invalid or missing.
     """
     pass
 
@@ -54,7 +58,7 @@ class ExecuteJobOutputError(Exception):
 
 
 
-class ExecuteJob(object):
+class ExecuteJob(Loggable):
     """
     Execute a job, that is, execute all of its tasks
     and generate the output container
@@ -62,7 +66,7 @@ class ExecuteJob(object):
 
     If you do not provide a job object in the constructor,
     you must manually set it later, or load it from a container
-    with ``load_job_from_container``.
+    with :func:`~aeneas.executejob.ExecuteJob.load_job_from_container`.
 
     In the first case, you are responsible for setting
     the absolute audio/text/sync map paths of each task of the job,
@@ -71,53 +75,46 @@ class ExecuteJob(object):
     any temporary files you might have generated around.
 
     In the second case, you are responsible for
-    calling ``clean`` at the end of the job execution,
+    calling :func:`~aeneas.executejob.ExecuteJob.clean`
+    at the end of the job execution,
     to delete the working directory
-    created by ``load_job_from_container``
+    created by :func:`~aeneas.executejob.ExecuteJob.load_job_from_container`
     when creating the job object.
 
     :param job: the job to be executed
-    :type  job: :class:`aeneas.job.Job`
-    :param rconf: a runtime configuration. Default: ``None``, meaning that
-                  default settings will be used.
-    :type  rconf: :class:`aeneas.runtimeconfiguration.RuntimeConfiguration`
+    :type  job: :class:`~aeneas.job.Job`
+    :param rconf: a runtime configuration
+    :type  rconf: :class:`~aeneas.runtimeconfiguration.RuntimeConfiguration`
     :param logger: the logger object
-    :type  logger: :class:`aeneas.logger.Logger`
-
-    :raise ExecuteJobInputError: if ``job`` is not an instance of ``Job``
+    :type  logger: :class:`~aeneas.logger.Logger`
+    :raises: :class:`~aeneas.executejob.ExecuteJobInputError`: if ``job`` is not an instance of ``Job``
     """
 
     TAG = u"ExecuteJob"
 
     def __init__(self, job=None, rconf=None, logger=None):
+        super(ExecuteJob, self).__init__(rconf=rconf, logger=logger)
         self.job = job
         self.working_directory = None
         self.tmp_directory = None
-        self.logger = logger if logger is not None else Logger()
-        self.rconf = rconf if rconf is not None else RuntimeConfiguration()
         if job is not None:
             self.load_job(self.job)
-
-    def _log(self, message, severity=Logger.DEBUG):
-        """ Log """
-        self.logger.log(message, severity, self.TAG)
 
     def load_job(self, job):
         """
         Load the job from the given ``Job`` object.
 
         :param job: the job to load
-        :type  job: :class:`aeneas.job.Job`
-
-        :raise ExecuteJobInputError: if ``job`` is not an instance of ``Job``
+        :type  job: :class:`~aeneas.job.Job`
+        :raises: :class:`~aeneas.executejob.ExecuteJobInputError`: if ``job`` is not an instance of :class:`~aeneas.job.Job`
         """
         if not isinstance(job, Job):
-            self._failed(u"job is not an instance of Job", "input")
+            self.log_exc(u"job is not an instance of Job", None, True, ExecuteJobInputError)
         self.job = job
 
     def load_job_from_container(self, container_path, config_string=None):
         """
-        Load the job from the given ``Container`` object.
+        Load the job from the given :class:`aeneas.container.Container` object.
 
         If ``config_string`` is ``None``,
         the container must contain a configuration file;
@@ -126,45 +123,44 @@ class ExecuteJob(object):
 
         :param string container_path: the path to the input container
         :param string config_string: the configuration string (from wizard)
-
-        :raise ExecuteJobInputError: if the given container does not contain a valid ``Job``
+        :raises: :class:`~aeneas.executejob.ExecuteJobInputError`: if the given container does not contain a valid :class:`~aeneas.job.Job`
         """
-        self._log(u"Loading job from container...")
+        self.log(u"Loading job from container...")
 
         # create working directory where the input container
         # will be decompressed
         self.working_directory = gf.tmp_directory(root=self.rconf[RuntimeConfiguration.TMP_PATH])
-        self._log([u"Created working directory '%s'", self.working_directory])
+        self.log([u"Created working directory '%s'", self.working_directory])
 
         try:
-            self._log(u"Decompressing input container...")
+            self.log(u"Decompressing input container...")
             input_container = Container(container_path, logger=self.logger)
             input_container.decompress(self.working_directory)
-            self._log(u"Decompressing input container... done")
+            self.log(u"Decompressing input container... done")
         except Exception as exc:
             self.clean()
-            self._failed(u"Unable to decompress container '%s': %s" % (container_path, exc), "input")
+            self.log_exc(u"Unable to decompress container '%s': %s" % (container_path, exc), None, True, ExecuteJobInputError)
 
         try:
-            self._log(u"Creating job from working directory...")
+            self.log(u"Creating job from working directory...")
             working_container = Container(
                 self.working_directory,
                 logger=self.logger
             )
             analyzer = AnalyzeContainer(working_container, logger=self.logger)
             self.job = analyzer.analyze(config_string=config_string)
-            self._log(u"Creating job from working directory... done")
+            self.log(u"Creating job from working directory... done")
         except Exception as exc:
             self.clean()
-            self._failed(u"Unable to analyze container '%s': %s" % (container_path, exc), "input")
+            self.log_exc(u"Unable to analyze container '%s': %s" % (container_path, exc), None, True, ExecuteJobInputError)
 
         if self.job is None:
-            self._failed(u"The container '%s' does not contain a valid Job" % container_path, "input")
+            self.log_exc(u"The container '%s' does not contain a valid Job" % (container_path), None, True, ExecuteJobInputError)
 
         try:
             # set absolute path for text file and audio file
             # for each task in the job
-            self._log(u"Setting absolute paths for tasks...")
+            self.log(u"Setting absolute paths for tasks...")
             for task in self.job.tasks:
                 task.text_file_path_absolute = gf.norm_join(
                     self.working_directory,
@@ -174,12 +170,12 @@ class ExecuteJob(object):
                     self.working_directory,
                     task.audio_file_path
                 )
-            self._log(u"Setting absolute paths for tasks... done")
+            self.log(u"Setting absolute paths for tasks... done")
 
-            self._log(u"Loading job from container: succeeded")
+            self.log(u"Loading job from container: succeeded")
         except Exception as exc:
             self.clean()
-            self._failed(u"Error while setting absolute paths for tasks: %s" % exc, "input")
+            self.log_exc(u"Error while setting absolute paths for tasks", exc, True, ExecuteJobInputError)
 
     def execute(self):
         """
@@ -188,113 +184,114 @@ class ExecuteJob(object):
         Each produced sync map will be stored
         inside the corresponding task object.
 
-        :raise ExecuteJobExecutionError: if there is a problem during the job execution
+        :raises: :class:`~aeneas.executejob.ExecuteJobExecutionError`: if there is a problem during the job execution
         """
-        self._log(u"Executing job")
+        self.log(u"Executing job")
 
         if self.job is None:
-            self._failed(u"The job object is None", "execution")
+            self.log_exc(u"The job object is None", None, True, ExecuteJobExecutionError)
         if len(self.job) == 0:
-            self._failed(u"The job has no tasks", "execution")
-        if (self.rconf[RuntimeConfiguration.JOB_MAX_TASKS] > 0) and (len(self.job) > self.rconf[RuntimeConfiguration.JOB_MAX_TASKS]):
-            self._failed(u"The Job has %d Tasks, more than the maximum allowed (%d)." % (
-                len(self.job),
-                self.rconf[RuntimeConfiguration.JOB_MAX_TASKS]
-            ), "execution")
-        self._log([u"Number of tasks: '%d'", len(self.job)])
+            self.log_exc(u"The job has no tasks", None, True, ExecuteJobExecutionError)
+        job_max_tasks = self.rconf[RuntimeConfiguration.JOB_MAX_TASKS]
+        if (job_max_tasks > 0) and (len(self.job) > job_max_tasks):
+            self.log_exc(u"The Job has %d Tasks, more than the maximum allowed (%d)." % (len(self.job), job_max_tasks), None, True, ExecuteJobExecutionError)
+        self.log([u"Number of tasks: '%d'", len(self.job)])
 
         for task in self.job.tasks:
             try:
                 custom_id = task.configuration["custom_id"]
-                self._log([u"Executing task '%s'...", custom_id])
+                self.log([u"Executing task '%s'...", custom_id])
                 executor = ExecuteTask(task, rconf=self.rconf, logger=self.logger)
                 executor.execute()
-                self._log([u"Executing task '%s'... done", custom_id])
+                self.log([u"Executing task '%s'... done", custom_id])
             except Exception as exc:
-                self._failed(u"Error while executing task '%s': %s" % (custom_id, exc), "execution")
-            self._log(u"Executing task: succeeded")
+                self.log_exc(u"Error while executing task '%s'" % (custom_id), exc, True, ExecuteJobExecutionError)
+            self.log(u"Executing task: succeeded")
 
-        self._log(u"Executing job: succeeded")
+        self.log(u"Executing job: succeeded")
 
     def write_output_container(self, output_directory_path):
         """
         Write the output container for this job.
 
-        Return the path to output container.
+        Return the path to output container,
+        which is the concatenation of ``output_directory_path``
+        and of the output container file or directory name.
 
         :param string output_directory_path: the path to a directory where
                                              the output container must be created
         :rtype: string
+        :raises: :class:`~aeneas.executejob.ExecuteJobOutputError`: if there is a problem while writing the output container
         """
-        self._log(u"Writing output container for this job")
+        self.log(u"Writing output container for this job")
 
         if self.job is None:
-            self._failed(u"The job object is None", "output")
+            self.log_exc(u"The job object is None", None, True, ExecuteJobOutputError)
         if len(self.job) == 0:
-            self._failed(u"The job has no tasks", "output")
-        self._log([u"Number of tasks: '%d'", len(self.job)])
+            self.log_exc(u"The job has no tasks", None, True, ExecuteJobOutputError)
+        self.log([u"Number of tasks: '%d'", len(self.job)])
 
         # create temporary directory where the sync map files
         # will be created
         # this temporary directory will be compressed into
         # the output container
         self.tmp_directory = gf.tmp_directory(root=self.rconf[RuntimeConfiguration.TMP_PATH])
-        self._log([u"Created temporary directory '%s'", self.tmp_directory])
+        self.log([u"Created temporary directory '%s'", self.tmp_directory])
 
         for task in self.job.tasks:
             custom_id = task.configuration["custom_id"]
 
             # check if the task has sync map and sync map file path
             if task.sync_map_file_path is None:
-                self._failed(u"Task '%s' has sync_map_file_path not set" % custom_id, "output")
+                self.log_exc(u"Task '%s' has sync_map_file_path not set" % (custom_id), None, True, ExecuteJobOutputError)
             if task.sync_map is None:
-                self._failed(u"Task '%s' has sync_map not set" % custom_id, "output")
+                self.log_exc(u"Task '%s' has sync_map not set" % (custom_id), None, True, ExecuteJobOutputError)
 
             try:
                 # output sync map
-                self._log([u"Outputting sync map for task '%s'...", custom_id])
+                self.log([u"Outputting sync map for task '%s'...", custom_id])
                 task.output_sync_map_file(self.tmp_directory)
-                self._log([u"Outputting sync map for task '%s'... done", custom_id])
+                self.log([u"Outputting sync map for task '%s'... done", custom_id])
             except Exception as exc:
-                self._failed(u"Error while outputting sync map for task '%s': %s" % (custom_id, exc), "output")
+                self.log_exc(u"Error while outputting sync map for task '%s'" % (custom_id), None, True, ExecuteJobOutputError)
 
         # get output container info
         output_container_format = self.job.configuration["o_container_format"]
-        self._log([u"Output container format: '%s'", output_container_format])
+        self.log([u"Output container format: '%s'", output_container_format])
         output_file_name = self.job.configuration["o_name"]
         if ((output_container_format != ContainerFormat.UNPACKED) and
                 (not output_file_name.endswith(output_container_format))):
-            self._log(u"Adding extension to output_file_name")
+            self.log(u"Adding extension to output_file_name")
             output_file_name += "." + output_container_format
-        self._log([u"Output file name: '%s'", output_file_name])
+        self.log([u"Output file name: '%s'", output_file_name])
         output_file_path = gf.norm_join(
             output_directory_path,
             output_file_name
         )
-        self._log([u"Output file path: '%s'", output_file_path])
+        self.log([u"Output file path: '%s'", output_file_path])
 
         try:
-            self._log(u"Compressing...")
+            self.log(u"Compressing...")
             container = Container(
                 output_file_path,
                 output_container_format,
                 logger=self.logger
             )
             container.compress(self.tmp_directory)
-            self._log(u"Compressing... done")
-            self._log([u"Created output file: '%s'", output_file_path])
-            self._log(u"Writing output container for this job: succeeded")
+            self.log(u"Compressing... done")
+            self.log([u"Created output file: '%s'", output_file_path])
+            self.log(u"Writing output container for this job: succeeded")
             self.clean(False)
             return output_file_path
         except Exception as exc:
             self.clean(False)
-            self._failed("%s" % (exc), "output")
+            self.log_exc(u"Error while compressing", exc, True, ExecuteJobOutputError)
             return None
 
     def clean(self, remove_working_directory=True):
         """
         Remove the temporary directory.
-        If ``remove_working_directory`` is True
+        If ``remove_working_directory`` is ``True``
         remove the working directory as well,
         otherwise just remove the temporary directory.
 
@@ -302,26 +299,14 @@ class ExecuteJob(object):
                                               the working directory as well
         """
         if remove_working_directory is not None:
-            self._log(u"Removing working directory... ")
+            self.log(u"Removing working directory... ")
             gf.delete_directory(self.working_directory)
             self.working_directory = None
-            self._log(u"Removing working directory... done")
-        self._log(u"Removing temporary directory... ")
+            self.log(u"Removing working directory... done")
+        self.log(u"Removing temporary directory... ")
         gf.delete_directory(self.tmp_directory)
         self.tmp_directory = None
-        self._log(u"Removing temporary directory... done")
-
-    def _failed(self, msg, during="execution"):
-        """ Bubble exception up """
-        if during == "input":
-            self._log(msg, Logger.CRITICAL)
-            raise ExecuteJobInputError(msg)
-        elif during == "output":
-            self._log(msg, Logger.CRITICAL)
-            raise ExecuteJobOutputError(msg)
-        else:
-            self._log(msg, Logger.CRITICAL)
-            raise ExecuteJobExecutionError(msg)
+        self.log(u"Removing temporary directory... done")
 
 
 

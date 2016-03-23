@@ -1,4 +1,4 @@
-CEWSubprocess
+cewsubprocess
 =============
 
 .. automodule:: aeneas.cewsubprocess

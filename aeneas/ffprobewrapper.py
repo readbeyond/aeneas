@@ -2,7 +2,13 @@
 # coding=utf-8
 
 """
-Wrapper around ``ffprobe`` to read the properties of an audio file.
+This module contains the following classes:
+
+* :class:`~aeneas.ffprobewrapper.FFPROBEWrapper`, a wrapper around ``ffprobe`` to read the properties of an audio file;
+* :class:`~aeneas.ffprobewrapper.FFPROBEParsingError`,
+* :class:`~aeneas.ffprobewrapper.FFPROBEPathError`, and
+* :class:`~aeneas.ffprobewrapper.FFPROBEUnsupportedFormatError`,
+  representing errors while reading the properties of audio files.
 """
 
 from __future__ import absolute_import
@@ -10,7 +16,7 @@ from __future__ import print_function
 import re
 import subprocess
 
-from aeneas.logger import Logger
+from aeneas.logger import Loggable
 from aeneas.runtimeconfiguration import RuntimeConfiguration
 from aeneas.timevalue import TimeValue
 import aeneas.globalfunctions as gf
@@ -51,7 +57,7 @@ class FFPROBEUnsupportedFormatError(Exception):
 
 
 
-class FFPROBEWrapper(object):
+class FFPROBEWrapper(Loggable):
     """
     Wrapper around ``ffprobe`` to read the properties of an audio file.
 
@@ -102,11 +108,10 @@ class FFPROBEWrapper(object):
             DISPOSITION:attached_pic=0
             [/STREAM]
 
-    :param rconf: a runtime configuration. Default: ``None``, meaning that
-                  default settings will be used.
-    :type  rconf: :class:`aeneas.runtimeconfiguration.RuntimeConfiguration`
+    :param rconf: a runtime configuration
+    :type  rconf: :class:`~aeneas.runtimeconfiguration.RuntimeConfiguration`
     :param logger: the logger object
-    :type  logger: :class:`aeneas.logger.Logger`
+    :type  logger: :class:`~aeneas.logger.Logger`
     """
 
     FFPROBE_PARAMETERS = [
@@ -138,14 +143,6 @@ class FFPROBEWrapper(object):
     """ ``ffprobe`` stdout sample rate keyword """
 
     TAG = u"FFPROBEWrapper"
-
-    def __init__(self, rconf=None, logger=None):
-        self.logger = logger if logger is not None else Logger()
-        self.rconf = rconf if rconf is not None else RuntimeConfiguration()
-
-    def _log(self, message, severity=Logger.DEBUG):
-        """ Log """
-        self.logger.log(message, severity, self.TAG)
 
     def read_properties(self, audio_file_path):
         """
@@ -195,26 +192,24 @@ class FFPROBEWrapper(object):
 
         :param string audio_file_path: the path of the audio file to analyze
         :rtype: dict
-
-        :raises TypeError: if ``audio_file_path`` is None
-        :raises OSError: if the file at ``audio_file_path`` cannot be read
-        :raises FFPROBEParsingError: if the call to ``ffprobe`` does not produce any output
-        :raises FFPROBEPathError: if the path to the ``ffprobe`` executable cannot be called
-        :raises FFPROBEUnsupportedFormatError: if the file has a format not supported by ``ffprobe``
+        :raises: TypeError: if ``audio_file_path`` is None
+        :raises: OSError: if the file at ``audio_file_path`` cannot be read
+        :raises: FFPROBEParsingError: if the call to ``ffprobe`` does not produce any output
+        :raises: FFPROBEPathError: if the path to the ``ffprobe`` executable cannot be called
+        :raises: FFPROBEUnsupportedFormatError: if the file has a format not supported by ``ffprobe``
         """
 
         # test if we can read the file at audio_file_path
         if audio_file_path is None:
-            raise TypeError("The audio file path is None")
+            self.log_exc(u"The audio file path is None", None, True, TypeError)
         if not gf.file_can_be_read(audio_file_path):
-            self._log([u"Input file '%s' cannot be read", audio_file_path], Logger.CRITICAL)
-            raise OSError("Input file cannot be read")
+            self.log_exc(u"Input file '%s' cannot be read" % (audio_file_path), None, True, OSError)
 
         # call ffprobe
         arguments = [self.rconf[RuntimeConfiguration.FFPROBE_PATH]]
         arguments.extend(self.FFPROBE_PARAMETERS)
         arguments.append(audio_file_path)
-        self._log([u"Calling with arguments '%s'", arguments])
+        self.log([u"Calling with arguments '%s'", arguments])
         try:
             proc = subprocess.Popen(
                 arguments,
@@ -226,23 +221,20 @@ class FFPROBEWrapper(object):
             proc.stdout.close()
             proc.stdin.close()
             proc.stderr.close()
-        except OSError:
-            self._log([u"Unable to call the '%s' ffprobe executable", self.rconf[RuntimeConfiguration.FFPROBE_PATH]], Logger.CRITICAL)
-            raise FFPROBEPathError("Unable to call the specified ffprobe executable")
-        self._log(u"Call completed")
+        except OSError as exc:
+            self.log_exc(u"Unable to call the '%s' ffprobe executable" % (self.rconf[RuntimeConfiguration.FFPROBE_PATH]), exc, True, FFPROBEPathError)
+        self.log(u"Call completed")
 
-        # if no output, raise error
+        # check there is some output
         if (stdoutdata is None) or (len(stderrdata) == 0):
-            self._log(u"No output produced by ffprobe", Logger.CRITICAL)
-            raise FFPROBEParsingError("No output produced by ffprobe")
+            self.log_exc(u"ffprobe produced no output", None, True, FFPROBEParsingError)
 
         # decode stdoutdata and stderrdata to Unicode string
         try:
             stdoutdata = gf.safe_unicode(stdoutdata)
             stderrdata = gf.safe_unicode(stderrdata)
-        except UnicodeDecodeError:
-            self._log(u"Error decoding stdout/stderr.")
-            raise FFPROBEParsingError("Unable to decode ffprobe out/err")
+        except UnicodeDecodeError as exc:
+            self.log_exc(u"Unable to decode ffprobe out/err", exc, True, FFPROBEParsingError)
 
         # dictionary for the results
         results = {
@@ -257,35 +249,34 @@ class FFPROBEWrapper(object):
         # TODO deal with multiple audio streams
         for line in stdoutdata.splitlines():
             if line == self.STDOUT_END_STREAM:
-                self._log(u"Reached end of the stream")
+                self.log(u"Reached end of the stream")
                 break
             elif len(line.split("=")) == 2:
                 key, value = line.split("=")
                 results[key] = value
-                self._log([u"Found property '%s'='%s'", key, value])
+                self.log([u"Found property '%s'='%s'", key, value])
 
         try:
-            self._log([u"Duration found in stdout: '%s'", results[self.STDOUT_DURATION]])
+            self.log([u"Duration found in stdout: '%s'", results[self.STDOUT_DURATION]])
             results[self.STDOUT_DURATION] = TimeValue(results[self.STDOUT_DURATION])
-            self._log(u"Valid duration")
+            self.log(u"Valid duration")
         except:
-            self._log(u"Invalid duration", Logger.WARNING)
+            self.log_warn(u"Invalid duration")
             results[self.STDOUT_DURATION] = None
             # try scanning ffprobe stderr output
             for line in stderrdata.splitlines():
                 match = self.STDERR_DURATION_REGEX.search(line)
                 if match is not None:
-                    self._log([u"Found matching line '%s'", line])
+                    self.log([u"Found matching line '%s'", line])
                     results[self.STDOUT_DURATION] = gf.time_from_hhmmssmmm(line)
-                    self._log([u"Extracted duration '%.3f'", results[self.STDOUT_DURATION]])
+                    self.log([u"Extracted duration '%.3f'", results[self.STDOUT_DURATION]])
                     break
 
         if results[self.STDOUT_DURATION] is None:
-            self._log(u"No duration found in stdout or stderr (unsupported audio file format?)", Logger.CRITICAL)
-            raise FFPROBEUnsupportedFormatError("Unsupported audio file format")
+            self.log_exc(u"No duration found in stdout or stderr. Unsupported audio file format?", None, True, FFPROBEUnsupportedFormatError)
 
         # return dictionary
-        self._log(u"Returning dict")
+        self.log(u"Returning dict")
         return results
 
 

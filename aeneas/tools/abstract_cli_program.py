@@ -11,6 +11,7 @@ from __future__ import print_function
 import os
 import sys
 
+from aeneas.logger import Loggable
 from aeneas.logger import Logger
 from aeneas.runtimeconfiguration import RuntimeConfiguration
 from aeneas.textfile import TextFile
@@ -28,7 +29,7 @@ __version__ = "1.5.0"
 __email__ = "aeneas@readbeyond.it"
 __status__ = "Production"
 
-class AbstractCLIProgram(object):
+class AbstractCLIProgram(Loggable):
     """
     This class is an "abstract" CLI program.
 
@@ -71,20 +72,24 @@ class AbstractCLIProgram(object):
 
     TAG = u"CLI"
 
-    def __init__(self, use_sys=True, rconf=None):
+    def __init__(self, use_sys=True, rconf=None, logger=None):
+        super(AbstractCLIProgram, self).__init__(rconf=rconf, logger=logger)
         self.use_sys = use_sys
         self.formal_arguments_raw = []
         self.formal_arguments = []
         self.actual_arguments = []
-        self.logger = Logger()
         self.log_file_path = None
         self.verbose = False
         self.very_verbose = False
-        self.rconf = rconf or RuntimeConfiguration()
 
-    def _log(self, message, severity=Logger.DEBUG):
-        """ Log """
-        self.logger.log(message, severity, self.TAG)
+    PREFIX_TO_PRINT_FUNCTION = {
+        Logger.CRITICAL : gf.print_error,
+        Logger.DEBUG : gf.print_info,
+        Logger.ERROR : gf.print_error,
+        Logger.INFO : gf.print_info,
+        Logger.SUCCESS : gf.print_success,
+        Logger.WARNING : gf.print_warning
+    }
 
     def print_generic(self, msg, prefix=None):
         """
@@ -97,40 +102,45 @@ class AbstractCLIProgram(object):
         """
         if prefix is None:
             self._log(msg, Logger.INFO)
+        else:
+            self._log(msg, prefix)
         if self.use_sys:
-            if prefix is not None:
-                msg = u"%s %s" % (prefix, msg)
-            gf.safe_print(msg)
+            if (prefix is not None) and (prefix in self.PREFIX_TO_PRINT_FUNCTION):
+                self.PREFIX_TO_PRINT_FUNCTION[prefix](msg)
+            else:
+                gf.safe_print(msg)
 
     def print_error(self, msg):
         """
         Print an error message and log it.
 
-        :param msg: the message
-        :type  msg: Unicode string
+        :param string msg: the message
         """
-        self._log(msg, Logger.CRITICAL)
-        self.print_generic(msg, u"[ERRO]")
+        self.print_generic(msg, Logger.ERROR)
 
     def print_info(self, msg):
         """
         Print an info message and log it.
 
-        :param msg: the message
-        :type  msg: Unicode string
+        :param string msg: the message
         """
-        self._log(msg, Logger.INFO)
-        self.print_generic(msg, u"[INFO]")
+        self.print_generic(msg, Logger.INFO)
+
+    def print_success(self, msg):
+        """
+        Print a success message and log it.
+
+        :param string msg: the message
+        """
+        self.print_generic(msg, Logger.SUCCESS)
 
     def print_warning(self, msg):
         """
         Print a warning message and log it.
 
-        :param msg: the message
-        :type  msg: Unicode string
+        :param string msg: the message
         """
-        self._log(msg, Logger.WARNING)
-        self.print_generic(msg, u"[WARN]")
+        self.print_generic(msg, Logger.WARNING)
 
     def exit(self, code):
         """
@@ -164,8 +174,13 @@ class AbstractCLIProgram(object):
             u"  python -m aeneas.tools.%s [-h|--help|--version]" % (self.NAME)
         ]
         if "synopsis" in self.HELP:
-            for syn in self.HELP["synopsis"]:
-                synopsis.append(u"  python -m aeneas.tools.%s %s [OPTIONS]" % (self.NAME, syn))
+            for syn, opt in self.HELP["synopsis"]:
+                if opt:
+                    opt = u" [OPTIONS]"
+                else:
+                    opt = u""
+                synopsis.append(u"  python -m aeneas.tools.%s %s%s" % (self.NAME, syn, opt))
+
         synopsis.append(u"")
 
         options = [
@@ -319,17 +334,17 @@ class AbstractCLIProgram(object):
 
         # create logger
         self.logger = Logger(tee=self.verbose, tee_show_datetime=self.very_verbose)
-        self._log([u"Formal arguments: %s", self.formal_arguments])
-        self._log([u"Actual arguments: %s", self.actual_arguments])
-        self._log([u"Runtime configuration: '%s'", self.rconf.config_string()])
+        self.log([u"Formal arguments: %s", self.formal_arguments])
+        self.log([u"Actual arguments: %s", self.actual_arguments])
+        self.log([u"Runtime configuration: '%s'", self.rconf.config_string()])
 
         # perform command
         exit_code = self.perform_command()
-        self._log([u"Execution completed with code %d", exit_code])
+        self.log([u"Execution completed with code %d", exit_code])
 
         # output log if requested
         if self.log_file_path is not None:
-            self._log([u"User requested saving log to file '%s'", self.log_file_path])
+            self.log([u"User requested saving log to file '%s'", self.log_file_path])
             self.logger.write(self.log_file_path)
             if self.use_sys:
                 self.print_info(u"Log written to file '%s'" % self.log_file_path)
@@ -370,7 +385,7 @@ class AbstractCLIProgram(object):
             args = self.actual_arguments
         else:
             args = self.formal_arguments
-        for arg in [arg for arg in args if arg.startswith(prefix + u"=")]:
+        for arg in [arg for arg in args if (arg is not None) and (arg.startswith(prefix + u"="))]:
             lis = arg.split(u"=")
             if len(lis) >= 2:
                 return u"=".join(lis[1:])
@@ -382,8 +397,8 @@ class AbstractCLIProgram(object):
 
         :rtype: int
         """
-        self._log(u"This function should be overloaded in derived classes")
-        self._log([u"Invoked with %s", self.actual_arguments])
+        self.log(u"This function should be overloaded in derived classes")
+        self.log([u"Invoked with %s", self.actual_arguments])
         return self.NO_ERROR_EXIT_CODE
 
     def check_c_extensions(self, name=None):
@@ -404,6 +419,21 @@ class AbstractCLIProgram(object):
                 self.print_warning(u"Unable to load Python C Extension %s" % (name))
             self.print_warning(u"Running the slower pure Python code")
             self.print_warning(u"See the documentation for directions to compile the Python C Extensions")
+            return False
+        return True
+
+    def check_input_file_or_directory(self, path):
+        """
+        If the given path does not exist, emit an error
+        and return ``False``. Otherwise return ``True``.
+
+        :param path: the path of the input file or directory
+        :type  path: string (path)
+        :rtype: bool
+        """
+        if (not gf.file_can_be_read(path)) and (not os.path.isdir(path)):
+            self.print_error(u"Unable to read file or directory '%s'" % (path))
+            self.print_error(u"Make sure the path is written/escaped correctly and that you have read permission on it")
             return False
         return True
 
@@ -471,6 +501,12 @@ class AbstractCLIProgram(object):
             except OSError:
                 self.print_error(u"Cannot read file '%s'" % (text))
             return None
+
+    def print_no_pafy_error(self):
+        self.print_error(u"You need to install Python modules youtube-dl and pafy to download audio from YouTube. Run:")
+        self.print_error(u"$ pip install youtube-dl pafy")
+        self.print_error(u"or, to install for all users:")
+        self.print_error(u"$ sudo pip install youtube-dl pafy")
 
 
 

@@ -15,8 +15,7 @@ defined in ``abstract_cli_program.py``.
 In the overridden ``perform_command()`` function you might want to use the following utility functions,
 all defined in ``AbstractCLIProgram``:
 
-* ``_log()`` to log your tool events;
-* ``print_generic()``, ``print_error()``, ``print_info()``, and ``print_warning()`` to print messages to stdout;
+* ``print_generic()``, ``print_error()``, ``print_info()``, ``print_success()``, and ``print_warning()`` to print messages to stdout;
 * ``exit()`` to terminate the execution of your tool, e.g. on critical errors, returning a suitable exit code;
 * ``has_option()`` and ``has_option_with_value()`` to check for options in the arguments passed by the caller;
 * ``check_c_extensions()`` to check for the availability of Python C extensions;
@@ -28,7 +27,7 @@ In particular, be sure to use the ``print_*`` functions listed above,
 instead of calling the default Python ``print()`` function,
 for two reasons:
 
-* the above calls implicitly call ``_log()``, logging all messages;
+* the above calls implicitly call ``log()``, logging all messages;
 * the above calls do not output to sys.stdout if ``use_sys = False`` (see below).
 
 

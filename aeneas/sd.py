@@ -2,14 +2,11 @@
 # coding=utf-8
 
 """
-This module contains the implementation
-of a simple Start Detector (SD),
-based on VAD and iterated DTW.
+This module contains the following classes:
 
-Given a (full) audio file and the corresponding (full) text,
-it will compute the time interval
-containing the given text,
-that is, detect the audio head and the audio length.
+* :class:`~aeneas.sd.SD`, for detecting the audio head and tail of a given audio file.
+
+.. warning:: This module is likely to be refactored in a future version
 
 .. versionadded:: 1.2.0
 """
@@ -22,7 +19,7 @@ import numpy
 
 from aeneas.audiofilemfcc import AudioFileMFCC
 from aeneas.dtw import DTWAligner
-from aeneas.logger import Logger
+from aeneas.logger import Loggable
 from aeneas.runtimeconfiguration import RuntimeConfiguration
 from aeneas.synthesizer import Synthesizer
 from aeneas.timevalue import Decimal
@@ -41,22 +38,37 @@ __version__ = "1.5.0"
 __email__ = "aeneas@readbeyond.it"
 __status__ = "Production"
 
-class SD(object):
+class SD(Loggable):
     """
-    The SD extractor.
+    The SD ("start detector").
+
+    Given an audio file and a text, detects the audio head and/or tail,
+    using a voice activity detector (via :class:`~aeneas.vad.VAD`) and
+    performing an alignment with a partial portion of the text
+    (via :class:`~aeneas.dtw.DTWAligner`).
+
+    This implementation relies on the following heuristic:
+
+    1. synthesize text until
+       ``max_head_length`` times :data:`aeneas.sd.SD.QUERY_FACTOR`
+       seconds are reached;
+    2. consider only the first
+       ``max_head_length`` times :data:`aeneas.sd.SD.AUDIO_FACTOR`
+       seconds of the audio file;
+    3. compute the best partial alignment of 1. with 2., and return
+       the corresponding time value.
+
+    (Similarly for the audio tail.)
 
     :param real_wave_mfcc: the audio file
-    :type  real_wave_mfcc: :class:`aeneas.audiofile.AudioFileMFCC`
+    :type  real_wave_mfcc: :class:`~aeneas.audiofile.AudioFileMFCC`
     :param text_file: the text file
-    :type  text_file: :class:`aeneas.textfile.TextFile`
-    :param rconf: a runtime configuration. Default: ``None``, meaning that
-                  default settings will be used.
-    :type  rconf: :class:`aeneas.runtimeconfiguration.RuntimeConfiguration`
+    :type  text_file: :class:`~aeneas.textfile.TextFile`
+    :param rconf: a runtime configuration
+    :type  rconf: :class:`~aeneas.runtimeconfiguration.RuntimeConfiguration`
     :param logger: the logger object
-    :type  logger: :class:`aeneas.logger.Logger`
+    :type  logger: :class:`~aeneas.logger.Logger`
     """
-
-    TAG = u"SD"
 
     QUERY_FACTOR = Decimal("1.0")
     """
@@ -94,15 +106,12 @@ class SD(object):
     .. versionadded:: 1.2.0
     """
 
+    TAG = u"SD"
+
     def __init__(self, real_wave_mfcc, text_file, rconf=None, logger=None):
-        self.logger = logger if logger is not None else Logger()
-        self.rconf = rconf if rconf is not None else RuntimeConfiguration()
+        super(SD, self).__init__(rconf=rconf, logger=logger)
         self.real_wave_mfcc = real_wave_mfcc
         self.text_file = text_file
-
-    def _log(self, message, severity=Logger.DEBUG):
-        """ Log """
-        self.logger.log(message, severity, self.TAG)
 
     def detect_interval(
             self,
@@ -115,59 +124,68 @@ class SD(object):
         Detect the interval of the audio file
         containing the fragments in the text file.
 
-        Return the audio interval as a tuple of two float values,
+        Return the audio interval as a tuple of two
+        :class:`~aeneas.timevalue.TimeValue` objects,
         representing the begin and end time, in seconds,
         with respect to the full wave duration.
 
         If one of the parameters is ``None``, the default value
         (``0.0`` for min, ``10.0`` for max) will be used.
 
-        :param float min_head_length: estimated minimum head length
-        :param float max_head_length: estimated maximum head length
-        :param float min_tail_length: estimated minimum tail length
-        :param float max_tail_length: estimated maximum tail length
-        :rtype: (float, float)
-        :raises TypeError: if one of the parameters is not ``None`` or a number
-        :raises ValueError: if one of the parameters is negative
+        :param min_head_length: estimated minimum head length
+        :type  min_head_length: :class:`~aeneas.timevalue.TimeValue`
+        :param max_head_length: estimated maximum head length
+        :type  max_head_length: :class:`~aeneas.timevalue.TimeValue`
+        :param min_tail_length: estimated minimum tail length
+        :type  min_tail_length: :class:`~aeneas.timevalue.TimeValue`
+        :param max_tail_length: estimated maximum tail length
+        :type  max_tail_length: :class:`~aeneas.timevalue.TimeValue`
+        :rtype: (:class:`~aeneas.timevalue.TimeValue`, :class:`~aeneas.timevalue.TimeValue`)
+        :raises: TypeError: if one of the parameters is not ``None`` or a number
+        :raises: ValueError: if one of the parameters is negative
         """
         head = self.detect_head(min_head_length, max_head_length)
         tail = self.detect_tail(min_tail_length, max_tail_length)
         begin = head
         end = self.real_wave_mfcc.audio_length - tail
-        self._log([u"Audio length: %.3f", self.real_wave_mfcc.audio_length])
-        self._log([u"Head length:  %.3f", head])
-        self._log([u"Tail length:  %.3f", tail])
-        self._log([u"Begin:        %.3f", begin])
-        self._log([u"End:          %.3f", end])
-        if (begin >= TimeValue("0.0")) and (end > begin):
-            self._log([u"Returning %.3f %.3f", begin, end])
+        self.log([u"Audio length: %.3f", self.real_wave_mfcc.audio_length])
+        self.log([u"Head length:  %.3f", head])
+        self.log([u"Tail length:  %.3f", tail])
+        self.log([u"Begin:        %.3f", begin])
+        self.log([u"End:          %.3f", end])
+        if (begin >= TimeValue("0.000")) and (end > begin):
+            self.log([u"Returning %.3f %.3f", begin, end])
             return (begin, end)
-        self._log(u"Returning (0.0, 0.0)")
-        return (TimeValue("0.0"), TimeValue("0.0"))
+        self.log(u"Returning (0.000, 0.000)")
+        return (TimeValue("0.000"), TimeValue("0.000"))
 
     def detect_head(self, min_head_length=None, max_head_length=None):
         """
-        Detect the audio head.
+        Detect the audio head, returning its duration, in seconds.
 
-        :param float min_head_length: estimated minimum head length
-        :param float max_head_length: estimated maximum head length
-        :rtype: float
-        :raises TypeError: if one of the parameters is not ``None`` or a number
-        :raises ValueError: if one of the parameters is negative
+        :param min_head_length: estimated minimum head length
+        :type  min_head_length: :class:`~aeneas.timevalue.TimeValue`
+        :param max_head_length: estimated maximum head length
+        :type  max_head_length: :class:`~aeneas.timevalue.TimeValue`
+        :rtype: :class:`~aeneas.timevalue.TimeValue`
+        :raises: TypeError: if one of the parameters is not ``None`` or a number
+        :raises: ValueError: if one of the parameters is negative
         """
-        return self._detect(min_head_length, max_head_length, False)
+        return self._detect(min_head_length, max_head_length, tail=False)
 
     def detect_tail(self, min_tail_length=None, max_tail_length=None):
         """
-        Detect the audio tail.
+        Detect the audio tail, returning its duration, in seconds.
 
-        :param float min_tail_length: estimated minimum tail length
-        :param float max_tail_length: estimated maximum tail length
-        :rtype: float
-        :raises TypeError: if one of the parameters is not ``None`` or a number
-        :raises ValueError: if one of the parameters is negative
+        :param min_tail_length: estimated minimum tail length
+        :type  min_tail_length: :class:`~aeneas.timevalue.TimeValue`
+        :param max_tail_length: estimated maximum tail length
+        :type  max_tail_length: :class:`~aeneas.timevalue.TimeValue`
+        :rtype: :class:`~aeneas.timevalue.TimeValue`
+        :raises: TypeError: if one of the parameters is not ``None`` or a number
+        :raises: ValueError: if one of the parameters is negative
         """
-        return self._detect(min_tail_length, max_tail_length, True)
+        return self._detect(min_tail_length, max_tail_length, tail=True)
 
     def _detect(self, min_length, max_length, tail=False):
         """
@@ -178,36 +196,40 @@ class SD(object):
 
         Return the duration of the head or tail, in seconds.
 
-        :rtype: float
-        :raises TypeError: if one of the parameters is not ``None`` or a number
-        :raises ValueError: if one of the parameters is negative
+        :param min_length: estimated minimum length
+        :type  min_length: :class:`~aeneas.timevalue.TimeValue`
+        :param max_length: estimated maximum length
+        :type  max_length: :class:`~aeneas.timevalue.TimeValue`
+        :rtype: :class:`~aeneas.timevalue.TimeValue`
+        :raises: TypeError: if one of the parameters is not ``None`` or a number
+        :raises: ValueError: if one of the parameters is negative
         """
         def _sanitize(value, default, name):
             if value is None:
                 value = default
             try:
                 value = TimeValue(value)
-            except (TypeError, ValueError, InvalidOperation):
-                raise TypeError(u"The value of %s is not a number" % name)
+            except (TypeError, ValueError, InvalidOperation) as exc:
+                self.log_exc(u"The value of %s is not a number" % (name), exc, True, TypeError)
             if value < 0:
-                raise ValueError(u"The value of %s is negative" % name)
+                self.log_exc(u"The value of %s is negative" % (name), None, True, ValueError)
             return value
-        
+
         min_length = _sanitize(min_length, self.MIN_LENGTH, "min_length")
         max_length = _sanitize(max_length, self.MAX_LENGTH, "max_length")
         mws = self.rconf.mws
         min_length_frames = int(min_length / mws)
         max_length_frames = int(max_length / mws)
-        self._log([u"MFCC window shift s:     %.3f", mws])
-        self._log([u"Min start length s:      %.3f", min_length])
-        self._log([u"Min start length frames: %d", min_length_frames])
-        self._log([u"Max start length s:      %.3f", max_length])
-        self._log([u"Max start length frames: %d", max_length_frames])
-        self._log([u"Tail?:                   %s", str(tail)])
+        self.log([u"MFCC window shift s:     %.3f", mws])
+        self.log([u"Min start length s:      %.3f", min_length])
+        self.log([u"Min start length frames: %d", min_length_frames])
+        self.log([u"Max start length s:      %.3f", max_length])
+        self.log([u"Max start length frames: %d", max_length_frames])
+        self.log([u"Tail?:                   %s", str(tail)])
 
-        self._log(u"Synthesizing query...")
+        self.log(u"Synthesizing query...")
         synt_duration = max_length * self.QUERY_FACTOR
-        self._log([u"Synthesizing at least %.3f seconds", synt_duration])
+        self.log([u"Synthesizing at least %.3f seconds", synt_duration])
         tmp_handler, tmp_file_path = gf.tmp_file(suffix=u".wav", root=self.rconf[RuntimeConfiguration.TMP_PATH])
         synt = Synthesizer(rconf=self.rconf, logger=self.logger)
         anchors, total_time, synthesized_chars = synt.synthesize(
@@ -216,32 +238,32 @@ class SD(object):
             quit_after=synt_duration,
             backwards=tail
         )
-        self._log(u"Synthesizing query... done")
+        self.log(u"Synthesizing query... done")
 
-        self._log(u"Extracting MFCCs for query...")
+        self.log(u"Extracting MFCCs for query...")
         query_mfcc = AudioFileMFCC(tmp_file_path, rconf=self.rconf, logger=self.logger)
-        self._log(u"Extracting MFCCs for query... done")
-        
-        self._log(u"Cleaning up...")
+        self.log(u"Extracting MFCCs for query... done")
+
+        self.log(u"Cleaning up...")
         gf.delete_file(tmp_handler, tmp_file_path)
-        self._log(u"Cleaning up... done")
+        self.log(u"Cleaning up... done")
 
         search_window = max_length * self.AUDIO_FACTOR
         search_window_end = min(int(search_window / mws), self.real_wave_mfcc.all_length)
-        self._log([u"Query MFCC length (frames): %d", query_mfcc.all_length])
-        self._log([u"Real MFCC length (frames):  %d", self.real_wave_mfcc.all_length])
-        self._log([u"Search window end (s):      %.3f", search_window])
-        self._log([u"Search window end (frames): %d", search_window_end])
+        self.log([u"Query MFCC length (frames): %d", query_mfcc.all_length])
+        self.log([u"Real MFCC length (frames):  %d", self.real_wave_mfcc.all_length])
+        self.log([u"Search window end (s):      %.3f", search_window])
+        self.log([u"Search window end (frames): %d", search_window_end])
 
         if tail:
-            self._log(u"Tail => reversing real_wave_mfcc and query_mfcc")
+            self.log(u"Tail => reversing real_wave_mfcc and query_mfcc")
             self.real_wave_mfcc.reverse()
             query_mfcc.reverse()
 
         # NOTE: VAD will be run here, if not done before
         speech_intervals = self.real_wave_mfcc.intervals(speech=True, time=False)
         if len(speech_intervals) < 1:
-            self._log(u"No speech intervals, hence no start found")
+            self.log(u"No speech intervals, hence no start found")
             if tail:
                 self.real_wave_mfcc.reverse()
             return 0.0
@@ -263,7 +285,7 @@ class SD(object):
         # against a portion of the real wave
         candidates = []
         for candidate_begin in candidates_begin:
-            self._log([u"Candidate interval starting at %d == %.3f", candidate_begin, candidate_begin * mws])
+            self.log([u"Candidate interval starting at %d == %.3f", candidate_begin, candidate_begin * mws])
             try:
                 rwm = AudioFileMFCC(
                     mfcc_matrix=self.real_wave_mfcc.all_mfcc[:, candidate_begin:search_end],
@@ -280,27 +302,27 @@ class SD(object):
                 last_column = acm[:, -1]
                 min_value = numpy.min(last_column)
                 min_index = numpy.argmin(last_column)
-                self._log([u"Candidate interval: %d %d == %.3f %.3f", candidate_begin, search_end, candidate_begin * mws, search_end * mws])
-                self._log([u"  Min value: %.6f", min_value])
-                self._log([u"  Min index: %d == %.3f", min_index, min_index * mws])
+                self.log([u"Candidate interval: %d %d == %.3f %.3f", candidate_begin, search_end, candidate_begin * mws, search_end * mws])
+                self.log([u"  Min value: %.6f", min_value])
+                self.log([u"  Min index: %d == %.3f", min_index, min_index * mws])
                 candidates.append((min_value, candidate_begin, min_index))
             except Exception as exc:
-                self._log([u"Exception %s", str(exc)], Logger.WARNING)
+                self.log_exc(u"An unexpected error occurred while running _detect", exc, False, None)
 
         # reverse again the real wave
         if tail:
-            self._log(u"Tail => reversing real_wave_mfcc again")
+            self.log(u"Tail => reversing real_wave_mfcc again")
             self.real_wave_mfcc.reverse()
-        
+
         # return
         if len(candidates) < 1:
-            self._log(u"No candidates found")
+            self.log(u"No candidates found")
             return 0.0
-        self._log(u"Candidates:")
+        self.log(u"Candidates:")
         for candidate in candidates:
-            self._log([u"  Value: %.6f Begin Time: %.3f Min Index: %d", candidate[0], candidate[1] * mws, candidate[2]]) 
+            self.log([u"  Value: %.6f Begin Time: %.3f Min Index: %d", candidate[0], candidate[1] * mws, candidate[2]])
         best = sorted(candidates)[0][1]
-        self._log([u"Best candidate: %d == %.3f", best, best * mws])
+        self.log([u"Best candidate: %d == %.3f", best, best * mws])
         return best * mws
 
 

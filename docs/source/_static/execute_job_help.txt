@@ -1,0 +1,25 @@
+$ python -m aeneas.tools.execute_job
+
+NAME
+  execute_job - Execute a Job, passed as a container.
+
+SYNOPSIS
+  python -m aeneas.tools.execute_job [-h|--help|--version]
+  python -m aeneas.tools.execute_job CONTAINER OUTPUT_DIR [CONFIG_STRING] [OPTIONS]
+
+OPTIONS
+  --cewsubprocess : run cew in separate process (see docs)
+  --help : print full help and exit
+  --skip-validator : do not validate the given container and/or config string
+  --version : print the program name and version and exit
+  -h : print short help and exit
+  -l[=FILE], --log[=FILE] : log verbose output to tmp file or FILE if specified
+  -r=CONF, --runtime-configuration=CONF : apply runtime configuration CONF
+  -v, --verbose : verbose output
+  -vv, --very-verbose : verbose output, print date/time values
+
+EXAMPLES
+  python -m aeneas.tools.execute_job aeneas/tools/res/job.zip output/
+  python -m aeneas.tools.execute_job aeneas/tools/res/job.zip output/ --cewsubprocess
+  python -m aeneas.tools.execute_job aeneas/tools/res/job_no_config.zip output/ "is_hierarchy_type=flat|is_hierarchy_prefix=assets/|is_text_file_relative_path=.|is_text_file_name_regex=.*\.xhtml|is_text_type=unparsed|is_audio_file_relative_path=.|is_audio_file_name_regex=.*\.mp3|is_text_unparsed_id_regex=f[0-9]+|is_text_unparsed_id_sort=numeric|os_job_file_name=demo_sync_job_output|os_job_file_container=zip|os_job_file_hierarchy_type=flat|os_job_file_hierarchy_prefix=assets/|os_task_file_name=\$PREFIX.xhtml.smil|os_task_file_format=smil|os_task_file_smil_page_ref=\$PREFIX.xhtml|os_task_file_smil_audio_ref=../Audio/\$PREFIX.mp3|job_language=eng|job_description=Demo Sync Job"
+

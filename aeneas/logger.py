@@ -2,7 +2,11 @@
 # coding=utf-8
 
 """
-A logger class to help with debugging and performance tests.
+This module contains the following classes:
+
+* :class:`~aeneas.logger.Loggable`, a base class supporting logging and runtime configuration;
+* :class:`~aeneas.logger.Logger`, a logger class for debugging and performance profiling.
+
 """
 
 from __future__ import absolute_import
@@ -24,16 +28,15 @@ __version__ = "1.5.0"
 __email__ = "aeneas@readbeyond.it"
 __status__ = "Production"
 
+
+
 class Logger(object):
     """
-    A logger class to help with debugging and performance tests.
+    A logger class for debugging and performance profiling.
 
     :param bool tee: if ``True``, tee (i.e., log and print to stdout)
     :param int indentation: the initial indentation of the log
     :param bool tee_show_datetime: if ``True``, print date and time when teeing
-    :param rconf: a runtime configuration. Default: ``None``, meaning that
-                  default settings will be used.
-    :type  rconf: :class:`aeneas.runtimeconfiguration.RuntimeConfiguration`
     """
 
     DEBUG = "DEBU"
@@ -48,12 +51,17 @@ class Logger(object):
     CRITICAL = "CRIT"
     """ ``CRITICAL`` severity """
 
-    def __init__(self, tee=False, indentation=0, tee_show_datetime=True, rconf=None):
+    ERROR = "ERRO"
+    """ ``ERROR`` message """
+
+    SUCCESS = "SUCC"
+    """ ``SUCCESS`` message """
+
+    def __init__(self, tee=False, indentation=0, tee_show_datetime=True):
         self.entries = []
         self.tee = tee
         self.indentation = indentation
         self.tee_show_datetime = tee_show_datetime
-        self.rconf = rconf if rconf is not None else RuntimeConfiguration()
 
     def __len__(self):
         return len(self.entries)
@@ -128,7 +136,7 @@ class Logger(object):
 
         :param string message: the message to be added
         :param severity: the severity of the message
-        :type  severity: :class:`aeneas.logger.Logger`
+        :type  severity: :class:`~aeneas.logger.Logger`
         :param string tag: the tag associated with the message;
                            usually, the name of the class generating the entry
         :rtype: datetime
@@ -238,7 +246,7 @@ class _LogEntry(object):
         """
         The severity of this log entry.
 
-        :rtype: :class:`aeneas.logger.Logger`
+        :rtype: :class:`~aeneas.logger.Logger`
         """
         return self.__severity
     @severity.setter
@@ -280,6 +288,89 @@ class _LogEntry(object):
     @time.setter
     def time(self, time):
         self.__time = time
+
+
+
+class Loggable(object):
+    """
+    A base class supporting logging and runtime configuration.
+
+    :param logger: the logger object
+    :type  logger: :class:`~aeneas.logger.Logger`
+    :param rconf: the runtime configuration object
+    :type  rconf: :class:`~aeneas.runtimeconfiguration.RuntimeConfiguration`
+    """
+    TAG = u"Loggable"
+
+    def __init__(self, logger=None, rconf=None):
+        self.logger = logger if logger is not None else Logger()
+        self.rconf = rconf if rconf is not None else RuntimeConfiguration()
+
+    def _log(self, message, severity=Logger.DEBUG):
+        """
+        Log generic message
+
+        :param string message: the message to log
+        :param string severity: the message severity
+        :rtype: datetime
+        """
+        return self.logger.log(message, severity, self.TAG)
+
+    def log_exc(self, message, exc=None, critical=True, raise_type=None):
+        """
+        Log exception, and possibly raise exception.
+
+        :param string message: the message to log
+        :param Exception exc: the original exception
+        :param bool critical: if ``True``, log as :data:`aeneas.logger.Logger.CRITICAL`;
+                              otherwise as :data:`aeneas.logger.Logger.WARNING`
+        :param Exception raise_type: if not ``None``, raise this Exception type
+        """
+        log_function = self.log_crit if critical else self.log_warn
+        log_function(message)
+        if exc is not None:
+            log_function([u"%s", exc])
+        if raise_type is not None:
+            raise_message = message
+            if exc is not None:
+                raise_message = u"%s : %s" % (message, exc)
+            raise raise_type(raise_message)
+
+    def log(self, message):
+        """
+        Log DEBUG message, and return its time.
+
+        :param string message: the message to log
+        :rtype: datetime
+        """
+        return self._log(message)
+
+    def log_info(self, message):
+        """
+        Log INFO message, and return its time.
+
+        :param string message: the message to log
+        :rtype: datetime
+        """
+        return self._log(message, Logger.INFO)
+
+    def log_warn(self, message):
+        """
+        Log WARNING message, and return its time.
+
+        :param string message: the message to log
+        :rtype: datetime
+        """
+        return self._log(message, Logger.WARNING)
+
+    def log_crit(self, message):
+        """
+        Log CRITICAL message, and return its time.
+
+        :param string message: the message to log
+        :rtype: datetime
+        """
+        return self._log(message, Logger.CRITICAL)
 
 
 

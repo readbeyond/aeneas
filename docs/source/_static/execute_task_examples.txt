@@ -1,0 +1,27 @@
+$ python -m aeneas.tools.execute_task --examples
+
+Example 1 (input: plain text, output: EAF)
+  $ python -m aeneas.tools.execute_task --example-eaf
+
+Example 2 (input: plain text, output: JSON)
+  $ python -m aeneas.tools.execute_task --example-json
+
+Example 3 (input: multilevel plain text (mplain), output: SMIL)
+  $ python -m aeneas.tools.execute_task --example-mplain-smil
+
+Example 4 (input: multilevel unparsed text (munparsed), output: SMIL)
+  $ python -m aeneas.tools.execute_task --example-munparsed-smil
+
+Example 5 (input: unparsed text, output: SMIL)
+  $ python -m aeneas.tools.execute_task --example-smil
+
+Example 6 (input: subtitles text, output: SRT)
+  $ python -m aeneas.tools.execute_task --example-srt
+
+Example 7 (input: parsed text, output: TSV)
+  $ python -m aeneas.tools.execute_task --example-tsv
+
+Example 8 (input: audio from YouTube, output: TXT)
+  $ python -m aeneas.tools.execute_task --example-youtube
+
+

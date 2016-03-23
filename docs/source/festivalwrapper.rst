@@ -1,4 +1,4 @@
-FESTIVALWrapper
+festivalwrapper
 ===============
 
 .. automodule:: aeneas.festivalwrapper

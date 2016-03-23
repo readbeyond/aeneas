@@ -4,15 +4,13 @@
 """
 aeneas.cmfcc is a Python C Extension for computing the MFCCs from a WAVE mono file.
 
-The functions provided by this module are:
-
 .. function:: cmfcc.compute_from_data(data, sample_rate, filter_bank_size, mfcc_size, fft_order, lower_frequency, upper_frequency, emphasis_factor, window_length, window_shift)
 
     Compute MFCCs for a given WAVE mono file,
-    passed as a numpy 1D array of ``float64`` values in ``[-1.0, 1.0]``.
+    passed as a NumPy 1D array of ``float64`` values in ``[-1.0, 1.0]``.
 
     The returned tuple ``(mfcc, length, sr)`` contains
-    the MFCCs as a numpy 2D matrix of shape ``(n, mfcc_size)``,
+    the MFCCs as a NumPy 2D matrix of shape ``(n, mfcc_size)``,
     and the number of samples and sample rate of the WAVE file.
 
     The last two elements ``length`` and ``sr``
@@ -20,7 +18,7 @@ The functions provided by this module are:
     consistent with that of function :func:`cmfcc.compute_from_file`.
 
     :param data: the audio data
-    :type  data: numpy 1D array
+    :type  data: :class:`numpy.ndarray` (1D)
     :param int sample_rate: the audio sample rate
     :param int filter_bank_size: the number of Mel filters
     :param int mfcc_size: the number of MFCC coefficients
@@ -38,7 +36,7 @@ The functions provided by this module are:
     passed as a file path on disk.
 
     The returned tuple ``(mfcc, length, sr)`` contains
-    the MFCCs as a numpy 2D matrix of shape ``(n, mfcc_size)``,
+    the MFCCs as a NumPy 2D matrix of shape ``(n, mfcc_size)``,
     and the number of samples and sample rate of the WAVE file.
 
     :param string audio_file_path: the path of the WAVE file to be created, UTF-8 encoded

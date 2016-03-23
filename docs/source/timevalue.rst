@@ -1,4 +1,4 @@
-TimeValue
+timevalue
 =========
 
 .. automodule:: aeneas.timevalue
