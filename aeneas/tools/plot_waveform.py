@@ -39,7 +39,7 @@ class PlotWaveformCLI(AbstractCLIProgram):
     HELP = {
         "description": u"Plot a waveform and labels to file.",
         "synopsis": [
-            u"AUDIO_FILE OUTPUT_FILE [-i LABEL_FILE [-i LABEL_FILE [...]]]"
+            (u"AUDIO_FILE OUTPUT_FILE [-i LABEL_FILE [-i LABEL_FILE [...]]]", True)
         ],
         "examples": [
             u"%s %s -i %s" % (AUDIO_FILE, OUTPUT_FILE, VAD_FILE)
@@ -130,7 +130,7 @@ class PlotWaveformCLI(AbstractCLIProgram):
             # output to file
             plotter.draw_png(output_file_path, h_zoom=h_zoom, v_zoom=v_zoom)
             self.print_info(u"Plotting to file... done")
-            self.print_info(u"Created file '%s'" % output_file_path)
+            self.print_success(u"Created file '%s'" % output_file_path)
             return self.NO_ERROR_EXIT_CODE
         except ImportError:
             self.print_error(u"You need to install Python module Pillow to output image to file. Run:")

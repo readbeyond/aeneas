@@ -112,16 +112,19 @@ class JobConfiguration(Configuration):
     * ``PPN_JOB_IS_HIERARCHY_PREFIX``           or ``i_hierarchy_prefix``
     * ``PPN_JOB_IS_HIERARCHY_TYPE``             or ``i_hierarchy_type``
     * ``PPN_JOB_IS_TASK_DIRECTORY_NAME_REGEX``  or ``i_task_directory_name_regex``
-    * ``PPN_JOB_IS_TEXT_FILE_FORMAT``           or ``i_t_format``
     * ``PPN_JOB_IS_TEXT_FILE_NAME_REGEX``       or ``i_t_name_regex``
     * ``PPN_JOB_IS_TEXT_FILE_RELATIVE_PATH``    or ``i_t_relative_path``
-    * ``PPN_JOB_IS_TEXT_UNPARSED_CLASS_REGEX``  or ``i_t_unparsed_class_regex``
-    * ``PPN_JOB_IS_TEXT_UNPARSED_ID_REGEX``     or ``i_t_unparsed_id_regex``
-    * ``PPN_JOB_IS_TEXT_UNPARSED_ID_SORT``      or ``i_t_unparsed_id_sort``
     * ``PPN_JOB_OS_CONTAINER_FORMAT``           or ``o_container_format``
     * ``PPN_JOB_OS_FILE_NAME``                  or ``o_name``
     * ``PPN_JOB_OS_HIERARCHY_PREFIX``           or ``o_hierarchy_prefix``
     * ``PPN_JOB_OS_HIERARCHY_TYPE``             or ``o_hierarchy_type``
+    * ``PPN_JOB_IS_TEXT_FILE_FORMAT``           or ``i_t_format``
+    * ``PPN_JOB_IS_TEXT_MUNPARSED_L1_ID_REGEX`` or ``i_t_munparsed_l1_id_regex``
+    * ``PPN_JOB_IS_TEXT_MUNPARSED_L2_ID_REGEX`` or ``i_t_munparsed_l2_id_regex``
+    * ``PPN_JOB_IS_TEXT_MUNPARSED_L3_ID_REGEX`` or ``i_t_munparsed_l3_id_regex``
+    * ``PPN_JOB_IS_TEXT_UNPARSED_CLASS_REGEX``  or ``i_t_unparsed_class_regex``
+    * ``PPN_JOB_IS_TEXT_UNPARSED_ID_REGEX``     or ``i_t_unparsed_id_regex``
+    * ``PPN_JOB_IS_TEXT_UNPARSED_ID_SORT``      or ``i_t_unparsed_id_sort``
 
     :param string config_string: the job configuration string
 
@@ -140,16 +143,20 @@ class JobConfiguration(Configuration):
         (gc.PPN_JOB_IS_HIERARCHY_PREFIX, (None, None, ["i_hierarchy_prefix"])),
         (gc.PPN_JOB_IS_HIERARCHY_TYPE, (None, None, ["i_hierarchy_type"])),
         (gc.PPN_JOB_IS_TASK_DIRECTORY_NAME_REGEX, (None, None, ["i_task_directory_name_regex"])),
-        (gc.PPN_JOB_IS_TEXT_FILE_FORMAT, (None, None, ["i_t_format"])),
         (gc.PPN_JOB_IS_TEXT_FILE_NAME_REGEX, (None, None, ["i_t_name_regex"])),
         (gc.PPN_JOB_IS_TEXT_FILE_RELATIVE_PATH, (None, None, ["i_t_relative_path"])),
-        (gc.PPN_JOB_IS_TEXT_UNPARSED_CLASS_REGEX, (None, None, ["i_t_unparsed_class_regex"])),
-        (gc.PPN_JOB_IS_TEXT_UNPARSED_ID_REGEX, (None, None, ["i_t_unparsed_id_regex"])),
-        (gc.PPN_JOB_IS_TEXT_UNPARSED_ID_SORT, (None, None, ["i_t_unparsed_id_sort"])),
         (gc.PPN_JOB_OS_CONTAINER_FORMAT, (None, None, ["o_container_format"])),
         (gc.PPN_JOB_OS_FILE_NAME, (None, None, ["o_name"])),
         (gc.PPN_JOB_OS_HIERARCHY_PREFIX, (None, None, ["o_hierarchy_prefix"])),
         (gc.PPN_JOB_OS_HIERARCHY_TYPE, (None, None, ["o_hierarchy_type"])),
+        # TODO
+        (gc.PPN_JOB_IS_TEXT_FILE_FORMAT, (None, None, ["i_t_format"])),
+        (gc.PPN_JOB_IS_TEXT_MUNPARSED_L1_ID_REGEX, (None, None, ["i_t_munparsed_l1_id_regex"])),
+        (gc.PPN_JOB_IS_TEXT_MUNPARSED_L2_ID_REGEX, (None, None, ["i_t_munparsed_l2_id_regex"])),
+        (gc.PPN_JOB_IS_TEXT_MUNPARSED_L3_ID_REGEX, (None, None, ["i_t_munparsed_l3_id_regex"])),
+        (gc.PPN_JOB_IS_TEXT_UNPARSED_CLASS_REGEX, (None, None, ["i_t_unparsed_class_regex"])),
+        (gc.PPN_JOB_IS_TEXT_UNPARSED_ID_REGEX, (None, None, ["i_t_unparsed_id_regex"])),
+        (gc.PPN_JOB_IS_TEXT_UNPARSED_ID_SORT, (None, None, ["i_t_unparsed_id_sort"])),
     ]
 
     def __init__(self, config_string=None):

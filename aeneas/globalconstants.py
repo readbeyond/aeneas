@@ -116,7 +116,9 @@ Values: listed in :class:`aeneas.language.Language`
 
 Example::
 
-    job_language=en
+    job_language=eng-GBR
+    job_language=eng-USA
+    job_language=ita-ITA
 
 """
 
@@ -202,18 +204,7 @@ Example::
 
 PPN_JOB_IS_TEXT_FILE_FORMAT = "is_text_type"
 """
-The text file format of text files in input containers.
-
-Usage: config string, TXT config file, XML config file
-
-Values: listed in :class:`aeneas.textfile.TextFileFormat`
-
-Example::
-
-    is_text_type=plain
-    is_text_type=parsed
-    is_text_type=unparsed
-
+See PPN_TASK_IS_TEXT_FILE_FORMAT
 """
 
 PPN_JOB_IS_TEXT_FILE_NAME_REGEX = "is_text_file_name_regex"
@@ -249,56 +240,34 @@ Example::
 
 """
 
+PPN_JOB_IS_TEXT_MUNPARSED_L1_ID_REGEX = "is_text_munparsed_l1_id_regex"
+"""
+See PPN_TASK_IS_TEXT_MUNPARSED_L1_ID_REGEX
+"""
+
+PPN_JOB_IS_TEXT_MUNPARSED_L2_ID_REGEX = "is_text_munparsed_l2_id_regex"
+"""
+See PPN_TASK_IS_TEXT_MUNPARSED_L2_ID_REGEX
+"""
+
+PPN_JOB_IS_TEXT_MUNPARSED_L3_ID_REGEX = "is_text_munparsed_l3_id_regex"
+"""
+See PPN_TASK_IS_TEXT_MUNPARSED_L3_ID_REGEX
+"""
+
 PPN_JOB_IS_TEXT_UNPARSED_CLASS_REGEX = "is_text_unparsed_class_regex"
 """
-The regex for matching the ``class`` attribute
-of XML elements containing text fragments to be extracted
-from ``unparsed`` text files.
-
-Usage: config string, TXT config file, XML config file
-
-Values: regex
-
-Example::
-
-    is_text_unparsed_class_regex=ra
-    is_text_unparsed_class_regex=readaloud
-    is_text_unparsed_class_regex=ra[0-9]+
-
+See PPN_TASK_IS_TEXT_UNPARSED_CLASS_REGEX
 """
 
 PPN_JOB_IS_TEXT_UNPARSED_ID_REGEX = "is_text_unparsed_id_regex"
 """
-The regex for matching the ``id`` attribute
-of XML elements containing text fragments to be extracted
-from ``unparsed`` text files.
-
-Usage: config string, TXT config file, XML config file
-
-Values: regex
-
-Example::
-
-    is_text_unparsed_id_regex=f[0-9]+
-    is_text_unparsed_id_regex=ra.*
-
+See PPN_TASK_IS_TEXT_UNPARSED_ID_REGEX
 """
 
 PPN_JOB_IS_TEXT_UNPARSED_ID_SORT = "is_text_unparsed_id_sort"
 """
-The sorting algorithm to be used to sort the text fragments
-extracted from ``unparsed`` text files, based on their ``id`` attributes.
-
-Usage: config string, TXT config file, XML config file
-
-Values: listed in :class:`aeneas.idsortingalgorithm.IDSortingAlgorithm`
-
-Example::
-
-    is_text_unparsed_id_sort=lexicographic
-    is_text_unparsed_id_sort=numeric
-    is_text_unparsed_id_sort=unsorted
-
+See PPN_TASK_IS_TEXT_UNPARSED_ID_SORT
 """
 
 PPN_JOB_OS_CONTAINER_FORMAT = "os_job_file_container"
@@ -367,8 +336,9 @@ Values: listed in :class:`aeneas.language.Language`
 
 Example::
 
-    language=en
-    language=it
+    language=eng-GBR
+    language=eng-USA
+    language=ita-ITA
 
 .. versionadded:: 1.2.0
 """
@@ -411,7 +381,9 @@ Values: listed in :class:`aeneas.language.Language`
 
 Example::
 
-    task_language=en
+    task_language=eng-GBR
+    task_language=eng-USA
+    task_language=ita-ITA
 
 """
 
@@ -729,6 +701,85 @@ Example::
 
 """
 
+PPN_TASK_IS_TEXT_MPLAIN_WORD_SEPARATOR = "is_text_mplain_word_separator"
+"""
+The word separator to be used when splitting words
+in ``mplain`` input text files.
+
+You can use the following special strings:
+
+* ``equal`` for a ``=`` character (ASCII ``0x20``),
+* ``pipe`` for a ``|`` character (ASCII ``0x7C``),
+* ``space`` for a space character (ASCII ``0x20``),
+* ``tab`` for a tab character (ASCII ``0x09``).
+
+Any other string will be used as the word separator.
+If not specified, the ``space`` will be used.
+
+Usage: config string, TXT config file, XML config file
+
+Values: string
+
+Example::
+
+    is_text_mplain_word_separator=space
+    is_text_mplain_word_separator=tab
+    is_text_mplain_word_separator=,
+
+"""
+
+PPN_TASK_IS_TEXT_MUNPARSED_L1_ID_REGEX = "is_text_munparsed_l1_id_regex"
+"""
+The regex to match ``id`` attributes for level 1 (paragraph) text fragments.
+It applies to ``munparsed`` text files only.
+
+Usage: config string, TXT config file, XML config file
+
+Values: regex
+
+Example::
+
+    is_text_munparsed_l1_id_regex=p[0-9]+
+
+.. versionadded:: 1.5.0
+"""
+
+PPN_TASK_IS_TEXT_MUNPARSED_L2_ID_REGEX = "is_text_munparsed_l2_id_regex"
+"""
+The regex to match ``id`` attributes for level 2 (sentence) text fragments.
+It applies to ``munparsed`` text files only.
+
+Usage: config string, TXT config file, XML config file
+
+Values: regex
+
+Example::
+
+    is_text_munparsed_l2_id_regex=s[0-9]+
+    is_text_munparsed_l2_id_regex=p[0-9]+s[0-9]+
+
+.. versionadded:: 1.5.0
+
+"""
+
+PPN_TASK_IS_TEXT_MUNPARSED_L3_ID_REGEX = "is_text_munparsed_l3_id_regex"
+"""
+The regex to match ``id`` attributes for level 3 (word) text fragments.
+It applies to ``munparsed`` text files only.
+
+Usage: config string, TXT config file, XML config file
+
+Values: regex
+
+Example::
+
+    is_text_munparsed_l3_id_regex=w[0-9]+
+    is_text_munparsed_l3_id_regex=p[0-9]+s[0-9]+w[0-9]+
+
+.. versionadded:: 1.5.0
+
+"""
+
 PPN_TASK_IS_TEXT_UNPARSED_CLASS_REGEX = "is_text_unparsed_class_regex"
 """
 The regex to match ``class`` attributes for text fragments.
@@ -765,7 +816,7 @@ Example::
 PPN_TASK_IS_TEXT_UNPARSED_ID_SORT = "is_text_unparsed_id_sort"
 """
 The algorithm to sort text fragments by their ``id`` attributes.
-It applies to unparsed text files only.
+It applies to ``unparsed`` text files only.
 
 Usage: config string, TXT config file, XML config file
 
@@ -856,6 +907,21 @@ Example::
 
     os_task_file_name=map.smil
 
+"""
+
+PPN_TASK_OS_FILE_NO_ZERO = "os_task_file_no_zero"
+"""
+If specified, do not allow fragments with zero duration.
+
+Usage: config string, TXT config file, XML config file
+
+Values: string
+
+Example::
+
+    os_task_file_no_zero=True
+
+.. versionadded:: 1.5.0
 """
 
 PPN_TASK_OS_FILE_SMIL_AUDIO_REF = "os_task_file_smil_audio_ref"

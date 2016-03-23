@@ -48,6 +48,12 @@ class Logger(object):
     CRITICAL = "CRIT"
     """ ``CRITICAL`` severity """
 
+    ERROR = "ERRO"
+    """ ``ERRO`` (error) message """
+
+    SUCCESS = "SUCC"
+    """ ``SUCC`` (success) message """
+
     def __init__(self, tee=False, indentation=0, tee_show_datetime=True, rconf=None):
         self.entries = []
         self.tee = tee

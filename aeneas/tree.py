@@ -350,6 +350,19 @@ class Tree(object):
         yield self
 
     @property
+    def pre(self):
+        """
+        Pre-order search of the tree rooted at this node.
+        (First visit current node, then visit children.)
+
+        :rtype: generator of :class:`aeneas.tree.Tree`
+        """
+        yield self
+        for node in self.children:
+            for v in node.pre:
+                yield v
+
+    @property
     def levels(self):
         """
         Return a list of lists of nodes.

@@ -29,6 +29,8 @@ class ReadTextCLI(AbstractCLIProgram):
     """
     Read text fragments from file.
     """
+    TEXT_FILE_MPLAIN = gf.relative_path("res/mplain.txt", __file__)
+    TEXT_FILE_MUNPARSED = gf.relative_path("res/munparsed.xhtml", __file__)
     TEXT_FILE_PARSED = gf.relative_path("res/parsed.txt", __file__)
     TEXT_FILE_PLAIN = gf.relative_path("res/plain.txt", __file__)
     TEXT_FILE_SUBTITLES = gf.relative_path("res/subtitles.txt", __file__)
@@ -39,8 +41,8 @@ class ReadTextCLI(AbstractCLIProgram):
     HELP = {
         "description": u"Read text fragments from file.",
         "synopsis": [
-            u"list 'fragment 1|fragment 2|...|fragment N'",
-            u"[parsed|plain|subtitles|unparsed] TEXT_FILE"
+            (u"list 'fragment 1|fragment 2|...|fragment N'", True),
+            (u"[mplain|munparsed|parsed|plain|subtitles|unparsed] TEXT_FILE", True)
         ],
         "options": [
             u"--class-regex=REGEX : extract text from elements with class attribute matching REGEX (unparsed)",
@@ -73,7 +75,6 @@ class ReadTextCLI(AbstractCLIProgram):
         text_format = gf.safe_unicode(self.actual_arguments[0])
         if text_format == u"list":
             text = gf.safe_unicode(self.actual_arguments[1])
-        #elif text_format in [u"mplain", u"parsed", u"plain", u"subtitles", u"unparsed"]:
         elif text_format in TextFileFormat.ALLOWED_VALUES:
             text = self.actual_arguments[1]
             if not self.check_input_file(text):
@@ -81,16 +82,25 @@ class ReadTextCLI(AbstractCLIProgram):
         else:
             return self.print_help()
 
+        l1_id_regex = self.has_option_with_value(u"--l1-id-regex")
+        l2_id_regex = self.has_option_with_value(u"--l2-id-regex")
+        l3_id_regex = self.has_option_with_value(u"--l3-id-regex")
         id_regex = self.has_option_with_value(u"--id-regex")
         id_format = self.has_option_with_value(u"--id-format")
         class_regex = self.has_option_with_value(u"--class-regex")
         sort = self.has_option_with_value(u"--sort")
         parameters = {
-            gc.PPN_JOB_IS_TEXT_UNPARSED_ID_REGEX : id_regex,
-            gc.PPN_TASK_OS_FILE_ID_REGEX : id_format,
-            gc.PPN_JOB_IS_TEXT_UNPARSED_CLASS_REGEX : class_regex,
-            gc.PPN_JOB_IS_TEXT_UNPARSED_ID_SORT : sort
+            gc.PPN_TASK_IS_TEXT_MUNPARSED_L1_ID_REGEX : l1_id_regex,
+            gc.PPN_TASK_IS_TEXT_MUNPARSED_L2_ID_REGEX : l2_id_regex,
+            gc.PPN_TASK_IS_TEXT_MUNPARSED_L3_ID_REGEX : l3_id_regex,
+            gc.PPN_TASK_IS_TEXT_UNPARSED_ID_REGEX : id_regex,
+            gc.PPN_TASK_IS_TEXT_UNPARSED_CLASS_REGEX : class_regex,
+            gc.PPN_TASK_IS_TEXT_UNPARSED_ID_SORT : sort,
+            gc.PPN_TASK_OS_FILE_ID_REGEX : id_format
         }
+        if (text_format == u"munparsed") and ((l1_id_regex is None) or (l2_id_regex is None) or (l3_id_regex is None)):
+            self.print_error(u"You must specify --l1-id-regex and --l2-id-regex and --l3-id-regex for munparsed format")
+            return self.ERROR_EXIT_CODE
         if (text_format == u"unparsed") and (id_regex is None) and (class_regex is None):
             self.print_error(u"You must specify --id-regex and/or --class-regex for unparsed format")
             return self.ERROR_EXIT_CODE

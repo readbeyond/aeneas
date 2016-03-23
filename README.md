@@ -42,9 +42,11 @@ To eat the world's due, by the grave and thee.        => [00:00:48.000, 00:00:53
 ```
 
 This synchronization map can be output to file in several formats:
-SMIL for EPUB 3, SBV/SRT/SUB/TTML/VTT for closed captioning,
-JSON/RBSE for Web usage,
-or raw CSV/SSV/TSV/TXT/XML for further processing.
+EAF for research purposes,
+SMIL for EPUB 3,
+SBV/SRT/SUB/TTML/VTT for closed captioning,
+JSON for Web usage,
+or raw AUD/CSV/SSV/TSV/TXT/XML for further processing.
 
 
 ## System Requirements, Supported Platforms and Installation
@@ -58,7 +60,6 @@ or raw CSV/SSV/TSV/TXT/XML for further processing.
 5. Python modules `BeautifulSoup4`, `lxml`, and `numpy`
 6. Python C headers to compile the Python C extensions (Optional but strongly recommended)
 7. A shell supporting UTF-8 (Optional but strongly recommended)
-8. Python module `pafy` (Optional, only required if you want to download audio from YouTube)
 
 ### Supported Platforms
 
@@ -124,7 +125,7 @@ for detailed, step-by-step procedures for Linux, OS X, and Windows.
     python -m aeneas.tools.execute_task \
         audio.mp3 \
         text.txt \
-        "task_language=en|os_task_file_format=json|is_text_type=plain" \
+        "task_language=eng|os_task_file_format=json|is_text_type=plain" \
         map.json
     ```
 
@@ -136,7 +137,7 @@ for detailed, step-by-step procedures for Linux, OS X, and Windows.
     python -m aeneas.tools.execute_task \
         audio.mp3 \
         page.xhtml \
-        "task_language=en|os_task_file_format=smil|os_task_file_smil_audio_ref=audio.mp3|os_task_file_smil_page_ref=page.xhtml|is_text_type=unparsed|is_text_unparsed_id_regex=f[0-9]+|is_text_unparsed_id_sort=numeric" \
+        "task_language=eng|os_task_file_format=smil|os_task_file_smil_audio_ref=audio.mp3|os_task_file_smil_page_ref=page.xhtml|is_text_type=unparsed|is_text_unparsed_id_regex=f[0-9]+|is_text_unparsed_id_sort=numeric" \
         map.smil
     ```
 
@@ -181,22 +182,26 @@ Development history: [HISTORY](https://github.com/readbeyond/aeneas/blob/master/
 
 ## Supported Features
 
-* Input text files in plain, parsed, subtitles, or unparsed format
+* Input text files in `parsed`, `plain`, `subtitles`, or `unparsed` (XML) format
+* Multilevel input text files in `mplain` and `munparsed` (XML) format
 * Text extraction from XML (e.g., XHTML) files using `id` and `class` attributes
 * Arbitrary text fragment granularity (single word, subphrase, phrase, paragraph, etc.)
-* Input audio file formats: all those supported by `ffmpeg`
-* Possibility of downloading the audio file from a YouTube video
-* Batch processing
-* Output sync map formats: CSV, JSON, RBSE, SMIL, SSV, TSV, TTML, TXT, VTT, XML
+* Input audio file formats: all those readable by `ffmpeg`
+* Output sync map formats: AUD, CSV, EAF, JSON, SMIL, SSV, TSV, TTML, TXT, VTT, XML
 * Tested languages: BG, CA, CY, CS, DA, DE, EL, EN, EO, ES, ET, FA, FI, FR, GA, GRC, HR, HU, IS, IT, LA, LT, LV, NL, NO, RO, RU, PL, PT, SK, SR, SV, SW, TR, UK
-* Robust against misspelled/mispronounced words, local rearrangements of words, background noise/sporadic spikes
-* Code suitable for a Web app deployment (e.g., on-demand AWS instances)
-* Adjustable splitting times, including a max character/second constraint for CC applications
-* Automated detection of audio head/tail
 * MFCC and DTW computed via Python C extensions to reduce the processing time
 * On Linux, `espeak` called via a Python C extension for faster audio synthesis
-* Output an HTML file (from `finetuneas` project) for fine tuning the sync map manually
+* Batch processing of multiple tasks (pairs of text/audio files)
+* Ability to use different built-in TTS engine wrappers: eSpeak (default, free), Festival (free), Nuance TTS API (paid)
+* Ability to use custom TTS engine wrapper besides the built-in ones
+* Ability to download the audio from a YouTube video
+* In multilevel mode, recursive alignment from paragraph to sentence to word level
+* Robust against misspelled/mispronounced words, local rearrangements of words, background noise/sporadic spikes
+* Adjustable splitting times, including a max character/second constraint for CC applications
+* Automated detection of audio head/tail
+* Output an HTML file for fine tuning the sync map manually (`finetuneas` project)
 * Execution parameters tunable at runtime
+* Code suitable for a Web app deployment (e.g., on-demand AWS instances)
 
 
 ## Limitations and Missing Features 

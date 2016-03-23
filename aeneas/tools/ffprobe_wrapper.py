@@ -39,7 +39,7 @@ class FFPROBEWrapperCLI(AbstractCLIProgram):
     HELP = {
         "description": u"Read audio file properties using the ffprobe wrapper.",
         "synopsis": [
-            u"AUDIO_FILE"
+            (u"AUDIO_FILE", True)
         ],
         "examples": [
             u"%s" % (AUDIO_FILE)

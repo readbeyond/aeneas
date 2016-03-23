@@ -35,10 +35,11 @@ The above map is just an abstract representation of a sync map.
 In practice, the sync map will be output to a file with a precise syntax.
 Currently, the following formats are supported:
 
+#. ELAN annotation format (EAF) for research purposes,
 #. SMIL for EPUB 3 ebooks with Media Overlays,
 #. SBV/SRT/SUB/TTML/VTT for closed captioning,
 #. JSON for consumption on the Web, and
-#. "raw" CSV/SSV/TSV/TXT/XML for further processing.
+#. "raw" AUD/CSV/SSV/TSV/TXT/XML for further processing.
 
 
 Quick Start
@@ -199,11 +200,11 @@ The most important are:
 To do so, the user provides a configuration string, which
 is a ``|``-separated list of ``key=value`` pairs that looks like::
 
-    task_language=en|os_task_file_format=smil|os_task_file_smil_audio_ref=p001.mp3|os_task_file_smil_page_ref=p001.xhtml|is_text_type=unparsed|is_text_unparsed_id_regex=f[0-9]+|is_text_unparsed_id_sort=numeric
+    task_language=eng|os_task_file_format=smil|os_task_file_smil_audio_ref=p001.mp3|os_task_file_smil_page_ref=p001.xhtml|is_text_type=unparsed|is_text_unparsed_id_regex=f[0-9]+|is_text_unparsed_id_sort=numeric
 
 Breaking it down into pairs::
 
-    task_language=en
+    task_language=eng
     os_task_file_format=smil
     os_task_file_smil_audio_ref=p001.mp3
     os_task_file_smil_page_ref=p001.xhtml
@@ -291,7 +292,7 @@ The resulting sync map will be::
 
 For simpler I/O files, configuration strings might be as short as::
 
-    task_language=en|os_task_file_format=srt|is_text_type=parsed
+    task_language=eng|os_task_file_format=srt|is_text_type=parsed
 
 which yields::
 
@@ -444,7 +445,7 @@ where the ``config.txt`` config file reads::
     os_task_file_smil_page_ref=$PREFIX.xhtml
     os_task_file_smil_audio_ref=$PREFIX.mp3
 
-    job_language=en
+    job_language=eng
     job_description=Example 1 (flat hierarchy, parsed text files)
 
 will generate three tasks (``sonnet001``, ``sonnet002`` and ``sonnet003``),
@@ -476,11 +477,11 @@ The following ``config.xml`` is equivalent to the example above::
 
     <?xml version = "1.0" encoding="UTF-8" standalone="no"?>
     <job>
-        <job_language>en</job_language>
+        <job_language>eng</job_language>
         <job_description>Example 4 (XML, flat hierarchy, parsed text files)</job_description>
         <tasks>
             <task>
-                <task_language>en</task_language>
+                <task_language>eng</task_language>
                 <task_description>Sonnet 1</task_description>
                 <task_custom_id>sonnet001</task_custom_id>
                 <is_text_file>OEBPS/Resources/sonnet001.txt</is_text_file>
@@ -492,7 +493,7 @@ The following ``config.xml`` is equivalent to the example above::
                 <os_task_file_smil_audio_ref>sonnet001.mp3</os_task_file_smil_audio_ref>
             </task>
             <task>
-                <task_language>en</task_language>
+                <task_language>eng</task_language>
                 <task_description>Sonnet 2</task_description>
                 <task_custom_id>sonnet002</task_custom_id>
                 <is_text_file>OEBPS/Resources/sonnet002.txt</is_text_file>
@@ -504,7 +505,7 @@ The following ``config.xml`` is equivalent to the example above::
                 <os_task_file_smil_audio_ref>sonnet002.mp3</os_task_file_smil_audio_ref>
             </task>
             <task>
-                <task_language>en</task_language>
+                <task_language>eng</task_language>
                 <task_description>Sonnet 3</task_description>
                 <task_custom_id>sonnet003</task_custom_id>
                 <is_text_file>OEBPS/Resources/sonnet003.txt</is_text_file>
@@ -566,12 +567,12 @@ with working examples::
 
     Example 1 (input: parsed text, output: SRT)
       $ DIR="aeneas/tests/res/example_jobs/example1/OEBPS/Resources"
-      $ CONFIG_STRING="task_language=en|os_task_file_format=srt|is_text_type=parsed"
+      $ CONFIG_STRING="task_language=eng|os_task_file_format=srt|is_text_type=parsed"
       $ python -m aeneas.tools.execute_task $DIR/sonnet001.mp3 $DIR/sonnet001.txt "$CONFIG_STRING" /tmp/sonnet001.srt
 
     Example 2 (input: unparsed text, output: SMIL)
       $ DIR="aeneas/tests/res/container/job/assets"
-      $ CONFIG_STRING="task_language=en|os_task_file_format=smil|os_task_file_smil_audio_ref=p001.mp3|os_task_file_smil_page_ref=p001.xhtml|is_text_type=unparsed|is_text_unparsed_id_regex=f[0-9]+|is_text_unparsed_id_sort=numeric"
+      $ CONFIG_STRING="task_language=eng|os_task_file_format=smil|os_task_file_smil_audio_ref=p001.mp3|os_task_file_smil_page_ref=p001.xhtml|is_text_type=unparsed|is_text_unparsed_id_regex=f[0-9]+|is_text_unparsed_id_sort=numeric"
       $ python -m aeneas.tools.execute_task $DIR/p001.mp3 $DIR/p001.xhtml "$CONFIG_STRING" /tmp/p001.smil
 
 
@@ -643,6 +644,7 @@ The ``aeneas`` package contains the following modules:
     language
     logger
     mfcc
+    nuancettsapiwrapper
     plotter
     runtimeconfiguration
     sd

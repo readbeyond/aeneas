@@ -45,14 +45,14 @@ class RunSDCLI(AbstractCLIProgram):
     HELP = {
         "description": u"Detect the audio head and/or tail of the given audio file.",
         "synopsis": [
-            u"list 'fragment 1|fragment 2|...|fragment N' LANGUAGE AUDIO_FILE",
-            u"[parsed|plain|subtitles|unparsed] TEXT_FILE LANGUAGE AUDIO_FILE"
+            (u"list 'fragment 1|fragment 2|...|fragment N' LANGUAGE AUDIO_FILE", True),
+            (u"[parsed|plain|subtitles|unparsed] TEXT_FILE LANGUAGE AUDIO_FILE", True)
         ],
         "examples": [
-            u"parsed %s en %s" % (TEXT_FILE, AUDIO_FILE),
-            u"parsed %s en %s %s" % (TEXT_FILE, AUDIO_FILE, PARAMETERS_HEAD),
-            u"parsed %s en %s %s" % (TEXT_FILE, AUDIO_FILE, PARAMETERS_TAIL),
-            u"parsed %s en %s %s %s" % (TEXT_FILE, AUDIO_FILE, PARAMETERS_HEAD, PARAMETERS_TAIL),
+            u"parsed %s eng %s" % (TEXT_FILE, AUDIO_FILE),
+            u"parsed %s eng %s %s" % (TEXT_FILE, AUDIO_FILE, PARAMETERS_HEAD),
+            u"parsed %s eng %s %s" % (TEXT_FILE, AUDIO_FILE, PARAMETERS_TAIL),
+            u"parsed %s eng %s %s %s" % (TEXT_FILE, AUDIO_FILE, PARAMETERS_HEAD, PARAMETERS_TAIL),
         ],
         "options": [
             u"--class-regex=REGEX : extract text from elements with class attribute matching REGEX (unparsed)",
@@ -96,9 +96,10 @@ class RunSDCLI(AbstractCLIProgram):
             return self.ERROR_EXIT_CODE
 
         language = gf.safe_unicode(self.actual_arguments[2])
-        if (not language in Language.ALLOWED_VALUES) and (not self.rconf[RuntimeConfiguration.ALLOW_UNLISTED_LANGUAGES]):
-            self.print_error(u"Language '%s' is not supported" % (language))
-            return self.ERROR_EXIT_CODE
+        # TODO check against the list of supported languages of the actual TTS engine
+        #if (not language in Language.ALLOWED_VALUES) and (not self.rconf[RuntimeConfiguration.ALLOW_UNLISTED_LANGUAGES]):
+        #    self.print_error(u"Language '%s' is not supported" % (language))
+        #    return self.ERROR_EXIT_CODE
 
         audio_file_path = self.actual_arguments[3]
         if not self.check_input_file(audio_file_path):

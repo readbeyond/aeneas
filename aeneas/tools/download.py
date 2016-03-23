@@ -41,7 +41,7 @@ class DownloadCLI(AbstractCLIProgram):
     HELP = {
         "description": u"Download an audio file from a YouTube video.",
         "synopsis": [
-            u"YOUTUBE_URL [OUTPUT_FILE]"
+            (u"YOUTUBE_URL [OUTPUT_FILE]", True)
         ],
         "examples": [
             u"%s --list" % (URL_YOUTUBE),
@@ -92,7 +92,7 @@ class DownloadCLI(AbstractCLIProgram):
                     preferred_format=preferred_format
                 )
                 self.print_info(u"Downloading audio stream from '%s' ... done" % source_url)
-                self.print_info(u"Downloaded file '%s'" % result)
+                self.print_success(u"Downloaded file '%s'" % result)
             else:
                 self.print_info(u"Downloading stream info from '%s' ..." % source_url)
                 downloader = Downloader(logger=self.logger)

@@ -44,22 +44,22 @@ class SynthesizeTextCLI(AbstractCLIProgram):
     HELP = {
         "description": u"Synthesize several text fragments.",
         "synopsis": [
-            u"list 'fragment 1|fragment 2|...|fragment N' LANGUAGE OUTPUT_FILE",
-            u"[parsed|plain|subtitles|unparsed] TEXT_FILE LANGUAGE OUTPUT_FILE"
+            (u"list 'fragment 1|fragment 2|...|fragment N' LANGUAGE OUTPUT_FILE", True),
+            (u"[parsed|plain|subtitles|unparsed] TEXT_FILE LANGUAGE OUTPUT_FILE", True)
         ],
         "examples": [
-            u"list 'From|fairest|creatures|we|desire|increase' en %s" % (OUTPUT_FILE),
-            u"parsed %s en %s" % (TEXT_FILE_PARSED, OUTPUT_FILE),
-            u"plain %s en %s" % (TEXT_FILE_PLAIN, OUTPUT_FILE),
-            u"subtitles %s en %s" % (TEXT_FILE_SUBTITLES, OUTPUT_FILE),
-            u"unparsed %s en %s --id-regex=f[0-9]*" % (TEXT_FILE_UNPARSED, OUTPUT_FILE),
-            u"unparsed %s en %s --class-regex=ra" % (TEXT_FILE_UNPARSED, OUTPUT_FILE),
-            u"unparsed %s en %s --id-regex=f[0-9]* --sort=numeric" % (TEXT_FILE_UNPARSED, OUTPUT_FILE),
-            u"plain %s en %s --start=5" % (TEXT_FILE_PLAIN, OUTPUT_FILE),
-            u"plain %s en %s --end=10" % (TEXT_FILE_PLAIN, OUTPUT_FILE),
-            u"plain %s en %s --start=5 --end=10" % (TEXT_FILE_PLAIN, OUTPUT_FILE),
-            u"plain %s en %s --backwards" % (TEXT_FILE_PLAIN, OUTPUT_FILE),
-            u"plain %s en %s --quit-after=10.0" % (TEXT_FILE_PLAIN, OUTPUT_FILE),
+            u"list 'From|fairest|creatures|we|desire|increase' eng %s" % (OUTPUT_FILE),
+            u"parsed %s eng %s" % (TEXT_FILE_PARSED, OUTPUT_FILE),
+            u"plain %s eng %s" % (TEXT_FILE_PLAIN, OUTPUT_FILE),
+            u"subtitles %s eng %s" % (TEXT_FILE_SUBTITLES, OUTPUT_FILE),
+            u"unparsed %s eng %s --id-regex=f[0-9]*" % (TEXT_FILE_UNPARSED, OUTPUT_FILE),
+            u"unparsed %s eng %s --class-regex=ra" % (TEXT_FILE_UNPARSED, OUTPUT_FILE),
+            u"unparsed %s eng %s --id-regex=f[0-9]* --sort=numeric" % (TEXT_FILE_UNPARSED, OUTPUT_FILE),
+            u"plain %s eng %s --start=5" % (TEXT_FILE_PLAIN, OUTPUT_FILE),
+            u"plain %s eng %s --end=10" % (TEXT_FILE_PLAIN, OUTPUT_FILE),
+            u"plain %s eng %s --start=5 --end=10" % (TEXT_FILE_PLAIN, OUTPUT_FILE),
+            u"plain %s eng %s --backwards" % (TEXT_FILE_PLAIN, OUTPUT_FILE),
+            u"plain %s eng %s --quit-after=10.0" % (TEXT_FILE_PLAIN, OUTPUT_FILE),
         ],
         "options": [
             u"--class-regex=REGEX : extract text from elements with class attribute matching REGEX (unparsed)",
@@ -108,9 +108,10 @@ class SynthesizeTextCLI(AbstractCLIProgram):
             return self.ERROR_EXIT_CODE
 
         language = gf.safe_unicode(self.actual_arguments[2])
-        if (not language in Language.ALLOWED_VALUES) and (not self.rconf[RuntimeConfiguration.ALLOW_UNLISTED_LANGUAGES]):
-            self.print_error(u"Language '%s' is not supported" % (language))
-            return self.ERROR_EXIT_CODE
+        # TODO check against the list of supported languages of the actual TTS engine
+        #if (not language in Language.ALLOWED_VALUES) and (not self.rconf[RuntimeConfiguration.ALLOW_UNLISTED_LANGUAGES]):
+        #    self.print_error(u"Language '%s' is not supported" % (language))
+        #    return self.ERROR_EXIT_CODE
 
         output_file_path = self.actual_arguments[3]
         if not self.check_output_file(output_file_path):
@@ -140,8 +141,13 @@ class SynthesizeTextCLI(AbstractCLIProgram):
                 quit_after=quit_after,
                 backwards=backwards
             )
-            self.print_info(u"Created file '%s'" % output_file_path)
+            self.print_success(u"Created file '%s'" % output_file_path)
             return self.NO_ERROR_EXIT_CODE
+        except ImportError as exc:
+            self.print_error(u"You need to install Python module requests to use the Nuance TTS API wrapper. Run:")
+            self.print_error(u"$ pip install requests")
+            self.print_error(u"or, to install for all users:")
+            self.print_error(u"$ sudo pip install requests")
         except Exception as exc:
             self.print_error(u"An unexpected Exception occurred while synthesizing text:")
             self.print_error(u"%s" % exc)

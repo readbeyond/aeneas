@@ -74,6 +74,58 @@ class TextFileFormat(object):
 
     """
 
+    MUNPARSED = "munparsed"
+    """
+    Multilevel version of the ``UNPARSED`` format.
+    
+    The text file contains fragments on three levels:
+    level 1 (paragraph), level 2 (sentence), level 3 (word)::
+
+        <?xml version="1.0" encoding="UTF-8"?>
+        <html xmlns="http://www.w3.org/1999/xhtml" xmlns:epub="http://www.idpf.org/2007/ops" lang="en" xml:lang="en">
+         <head>
+          <meta charset="utf-8"/>
+          <link rel="stylesheet" href="../Styles/style.css" type="text/css"/>
+          <title>Sonnet I</title>
+         </head>
+         <body>
+          <div id="divTitle">
+           <h1>
+            <span id="p000001">
+             <span id="p000001s000001">
+              <span id="p000001s000001w000001">I</span>
+             </span>
+            </span>
+           </h1>
+          </div>
+          <div id="divSonnet"> 
+           <p class="stanza" id="p000002">
+            <span id="p000002s000001">
+             <span id="p000002s000001w000001">From</span>
+             <span id="p000002s000001w000002">fairest</span>
+             <span id="p000002s000001w000003">creatures</span>
+             <span id="p000002s000001w000004">we</span>
+             <span id="p000002s000001w000005">desire</span>
+             <span id="p000002s000001w000006">increase,</span>
+            </span><br/>
+            <span id="p000002s000002">
+             <span id="p000002s000002w000001">That</span>
+             <span id="p000002s000002w000002">thereby</span>
+             <span id="p000002s000002w000003">beauty’s</span>
+             <span id="p000002s000002w000004">rose</span>
+             <span id="p000002s000002w000005">might</span>
+             <span id="p000002s000002w000006">never</span>
+             <span id="p000002s000002w000007">die,</span>
+            </span><br/>
+            ...
+           </p>
+           ...
+          </div>
+         </body>
+        </html>
+
+    """
+
     PARSED = "parsed"
     """
     The text file contains the fragments,
@@ -132,7 +184,6 @@ class TextFileFormat(object):
         <html xmlns="http://www.w3.org/1999/xhtml" xmlns:epub="http://www.idpf.org/2007/ops" lang="en" xml:lang="en">
          <head>
           <meta charset="utf-8"/>
-          <meta name="viewport" content="width=768,height=1024"/>
           <link rel="stylesheet" href="../Styles/style.css" type="text/css"/>
           <title>Sonnet I</title>
          </head>
@@ -163,7 +214,7 @@ class TextFileFormat(object):
 
     """
 
-    ALLOWED_VALUES = [MPLAIN, PARSED, PLAIN, SUBTITLES, UNPARSED]
+    ALLOWED_VALUES = [MPLAIN, MUNPARSED, PARSED, PLAIN, SUBTITLES, UNPARSED]
     """ List of all the allowed values """
 
 
@@ -219,6 +270,8 @@ class TextFragment(object):
 
         :rtype: int
         """
+        if self.lines is None:
+            return 0
         return sum([len(line) for line in self.lines])
 
     @property
@@ -349,7 +402,13 @@ class TextFile(object):
         return len(self.fragments)
 
     def __unicode__(self):
-        return u"\n".join([f.__unicode__() for f in self.fragments])
+        msg = []
+        if self.fragments_tree is not None:
+            for node in self.fragments_tree.pre:
+                if not node.is_empty:
+                    indent = u" " * 2 * (node.level - 1)
+                    msg.append(u"%s%s" % (indent, node.value.__unicode__()))
+        return u"\n".join(msg)
 
     def __str__(self):
         return gf.safe_str(self.__unicode__())
@@ -572,6 +631,7 @@ class TextFile(object):
         # parse the contents
         map_read_function = {
             TextFileFormat.MPLAIN: self._read_mplain,
+            TextFileFormat.MUNPARSED: self._read_munparsed,
             TextFileFormat.PARSED: self._read_parsed,
             TextFileFormat.PLAIN: self._read_plain,
             TextFileFormat.SUBTITLES: self._read_subtitles,
@@ -582,6 +642,23 @@ class TextFile(object):
         # log the number of fragments
         self._log([u"Parsed %d fragments", len(self.fragments)])
 
+    def _mplain_word_separator(self):
+        """
+        Get the word separator to split words in mplain format.
+
+        :rtype: string
+        """
+        word_separator = gf.safe_get(self.parameters, gc.PPN_TASK_IS_TEXT_MPLAIN_WORD_SEPARATOR, u" ")
+        if (word_separator is None) or (word_separator == "space"):
+            return u" "
+        elif word_separator == "equal":
+            return u"="
+        elif word_separator == "pipe":
+            return u"|"
+        elif word_separator == "tab":
+            return u"\u0009"
+        return word_separator
+
     def _read_mplain(self, lines):
         """
         Read text fragments from a multilevel format text file.
@@ -589,6 +666,8 @@ class TextFile(object):
         :param list lines: the lines of the subtitles text file
         """
         self._log(u"Parsing fragments from subtitles text format")
+        word_separator = self._mplain_word_separator()
+        self._log([u"Word separator is: '%s'", word_separator])
         lines = [line.strip() for line in lines]
         pairs = []
         i = 1
@@ -611,7 +690,7 @@ class TextFile(object):
                 paragraph_fragment = TextFragment(
                     identifier=paragraph_identifier,
                     lines=paragraph_lines,
-                    filtered_lines=paragraph_lines # TODO maybe?
+                    filtered_lines=paragraph_lines
                 )
                 paragraph_node = Tree(value=paragraph_fragment)
                 tree.add_child(paragraph_node)
@@ -625,7 +704,7 @@ class TextFile(object):
                     sentence_fragment = TextFragment(
                         identifier=sentence_identifier,
                         lines=sentence_lines,
-                        filtered_lines=sentence_lines # TODO maybe?
+                        filtered_lines=sentence_lines
                     )
                     sentence_node = Tree(value=sentence_fragment)
                     paragraph_node.add_child(sentence_node)
@@ -634,13 +713,13 @@ class TextFile(object):
 
                     # create words nodes
                     k = 1
-                    for w in [w for w in s.split() if len(w) > 0]:
+                    for w in [w for w in s.split(word_separator) if len(w) > 0]:
                         word_identifier = sentence_identifier + u"w%06d" % k
                         word_lines = [w]
                         word_fragment = TextFragment(
                             identifier=word_identifier,
                             lines=word_lines,
-                            filtered_lines=word_lines # TODO maybe?
+                            filtered_lines=word_lines
                         )
                         word_node = Tree(value=word_fragment)
                         sentence_node.add_child(word_node)
@@ -651,6 +730,89 @@ class TextFile(object):
                 current = following
                 i += 1
             current += 1
+        self._log(u"Storing tree")
+        self.fragments_tree = tree
+
+    def _read_munparsed(self, lines):
+        """
+        Read text fragments from an munparsed format text file.
+
+        :param list lines: the lines of the unparsed text file
+        """
+        def nodes_at_level(root, level):
+            """ Return a dict with the bs4 filter parameters """
+            LEVEL_TO_REGEX_MAP = [
+                None,
+                gc.PPN_TASK_IS_TEXT_MUNPARSED_L1_ID_REGEX,
+                gc.PPN_TASK_IS_TEXT_MUNPARSED_L2_ID_REGEX,
+                gc.PPN_TASK_IS_TEXT_MUNPARSED_L3_ID_REGEX,
+            ]
+            attribute_name = "id"
+            regex_string = self.parameters[LEVEL_TO_REGEX_MAP[level]]
+            indent = u" " * 2 * (level - 1)
+            self._log([u"%sRegex for %s: '%s'", indent, attribute_name, regex_string])
+            regex = re.compile(r".*\b" + regex_string + r"\b.*")
+            return root.findAll(attrs={ attribute_name: regex })
+        #
+        # TODO better and/or parametric parsing,
+        #      for example, removing tags but keeping text, etc.
+        #
+        self._log(u"Parsing fragments from munparsed text format")
+        # transform text in a soup object
+        self._log(u"Creating soup")
+        soup = BeautifulSoup("\n".join(lines), "lxml")
+        # extract according to class_regex and id_regex
+        text_from_id = {}
+        ids = []
+        self._log(u"Finding l1 elements")
+        tree = Tree()
+        for l1_node in nodes_at_level(soup, 1):
+            try:
+                l1_id = gf.safe_unicode(l1_node["id"])
+                self._log([u"Found l1 node with id:   '%s'", l1_id])
+                l1_text = []
+                paragraph_node = Tree()
+                tree.add_child(paragraph_node)
+                paragraph_text = []
+                for l2_node in nodes_at_level(l1_node, 2):
+                    l2_id = gf.safe_unicode(l2_node["id"])
+                    self._log([u"  Found l2 node with id:   '%s'", l2_id])
+                    l2_text = []
+                    sentence_node = Tree()
+                    paragraph_node.add_child(sentence_node)
+                    sentence_text = []
+                    for l3_node in nodes_at_level(l2_node, 3):
+                        l3_id = gf.safe_unicode(l3_node["id"])
+                        l3_text = gf.safe_unicode(l3_node.text)
+                        self._log([u"    Found l3 node with id:   '%s'", l3_id])
+                        self._log([u"    Found l3 node with text: '%s'", l3_text])
+                        word_fragment = TextFragment(
+                            identifier=l3_id,
+                            lines=[l3_text],
+                            filtered_lines=[l3_text]
+                        )
+                        word_node = Tree(value=word_fragment)
+                        sentence_node.add_child(word_node)
+                        sentence_text.append(l3_text)
+                    sentence_text = u" ".join(sentence_text)
+                    paragraph_text.append(sentence_text)
+                    sentence_node.value = TextFragment(
+                        identifier=l2_id,
+                        lines=[sentence_text],
+                        filtered_lines=[sentence_text]
+                    )
+                    self._log([u"  Found l2 node with text: '%s'" % sentence_text])
+                paragraph_text = u" ".join(paragraph_text)
+                paragraph_node.value = TextFragment(
+                    identifier=l1_id,
+                    lines=[paragraph_text],
+                    filtered_lines=[paragraph_text]
+                )
+                self._log([u"Found l1 node with text: '%s'" % paragraph_text])
+            except KeyError:
+                self._log(u"KeyError while parsing a l1 node", Logger.WARNING)
+        # append to fragments
+        self._log(u"Storing tree")
         self.fragments_tree = tree
 
     def _read_subtitles(self, lines):

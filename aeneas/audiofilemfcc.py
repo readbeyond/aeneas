@@ -425,6 +425,15 @@ class AudioFileMFCC(object):
         self.__middle_begin = index
 
     @property
+    def middle_begin_seconds(self):
+        """
+        Return the time instant, in seconds, where MIDDLE starts.
+
+        :rtype: :class:`aeneas.timevalue.TimeValue`
+        """
+        return TimeValue(self.__middle_begin) * self.rconf.mws
+
+    @property
     def middle_end(self):
         """
         Return the index (+1) where MIDDLE ends.
@@ -443,6 +452,15 @@ class AudioFileMFCC(object):
         if (index < 0) or (index > self.all_length):
             raise ValueError("The given index is not valid")
         self.__middle_end = index
+
+    @property
+    def middle_end_seconds(self):
+        """
+        Return the time instant, in seconds, where MIDDLE ends.
+
+        :rtype: :class:`aeneas.timevalue.TimeValue`
+        """
+        return TimeValue(self.__middle_end) * self.rconf.mws
 
     def _ensure_mfcc_mask(self):
         """

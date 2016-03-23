@@ -115,18 +115,22 @@ class SD(object):
         Detect the interval of the audio file
         containing the fragments in the text file.
 
-        Return the audio interval as a tuple of two float values,
+        Return the audio interval as a tuple of two TimeValue objects,
         representing the begin and end time, in seconds,
         with respect to the full wave duration.
 
         If one of the parameters is ``None``, the default value
         (``0.0`` for min, ``10.0`` for max) will be used.
 
-        :param float min_head_length: estimated minimum head length
-        :param float max_head_length: estimated maximum head length
-        :param float min_tail_length: estimated minimum tail length
-        :param float max_tail_length: estimated maximum tail length
-        :rtype: (float, float)
+        :param min_head_length: estimated minimum head length
+        :type  min_head_length: :class:`aeneas.timevalue.TimeValue`
+        :param max_head_length: estimated maximum head length
+        :type  max_head_length: :class:`aeneas.timevalue.TimeValue`
+        :param min_tail_length: estimated minimum tail length
+        :type  min_tail_length: :class:`aeneas.timevalue.TimeValue`
+        :param max_tail_length: estimated maximum tail length
+        :type  max_tail_length: :class:`aeneas.timevalue.TimeValue`
+        :rtype: (:class:`aeneas.timevalue.TimeValue`, :class:`aeneas.timevalue.TimeValue`)
         :raises TypeError: if one of the parameters is not ``None`` or a number
         :raises ValueError: if one of the parameters is negative
         """
@@ -139,35 +143,39 @@ class SD(object):
         self._log([u"Tail length:  %.3f", tail])
         self._log([u"Begin:        %.3f", begin])
         self._log([u"End:          %.3f", end])
-        if (begin >= TimeValue("0.0")) and (end > begin):
+        if (begin >= TimeValue("0.000")) and (end > begin):
             self._log([u"Returning %.3f %.3f", begin, end])
             return (begin, end)
-        self._log(u"Returning (0.0, 0.0)")
-        return (TimeValue("0.0"), TimeValue("0.0"))
+        self._log(u"Returning (0.000, 0.000)")
+        return (TimeValue("0.000"), TimeValue("0.000"))
 
     def detect_head(self, min_head_length=None, max_head_length=None):
         """
         Detect the audio head.
 
-        :param float min_head_length: estimated minimum head length
-        :param float max_head_length: estimated maximum head length
-        :rtype: float
+        :param min_head_length: estimated minimum head length
+        :type  min_head_length: :class:`aeneas.timevalue.TimeValue`
+        :param max_head_length: estimated maximum head length
+        :type  max_head_length: :class:`aeneas.timevalue.TimeValue`
+        :rtype: :class:`aeneas.timevalue.TimeValue`
         :raises TypeError: if one of the parameters is not ``None`` or a number
         :raises ValueError: if one of the parameters is negative
         """
-        return self._detect(min_head_length, max_head_length, False)
+        return self._detect(min_head_length, max_head_length, tail=False)
 
     def detect_tail(self, min_tail_length=None, max_tail_length=None):
         """
         Detect the audio tail.
 
-        :param float min_tail_length: estimated minimum tail length
-        :param float max_tail_length: estimated maximum tail length
-        :rtype: float
+        :param min_tail_length: estimated minimum tail length
+        :type  min_tail_length: :class:`aeneas.timevalue.TimeValue`
+        :param max_tail_length: estimated maximum tail length
+        :type  max_tail_length: :class:`aeneas.timevalue.TimeValue`
+        :rtype: :class:`aeneas.timevalue.TimeValue`
         :raises TypeError: if one of the parameters is not ``None`` or a number
         :raises ValueError: if one of the parameters is negative
         """
-        return self._detect(min_tail_length, max_tail_length, True)
+        return self._detect(min_tail_length, max_tail_length, tail=True)
 
     def _detect(self, min_length, max_length, tail=False):
         """
@@ -178,7 +186,11 @@ class SD(object):
 
         Return the duration of the head or tail, in seconds.
 
-        :rtype: float
+        :param min_length: estimated minimum length
+        :type  min_length: :class:`aeneas.timevalue.TimeValue`
+        :param max_length: estimated maximum length
+        :type  max_length: :class:`aeneas.timevalue.TimeValue`
+        :rtype: :class:`aeneas.timevalue.TimeValue`
         :raises TypeError: if one of the parameters is not ``None`` or a number
         :raises ValueError: if one of the parameters is negative
         """
@@ -192,7 +204,7 @@ class SD(object):
             if value < 0:
                 raise ValueError(u"The value of %s is negative" % name)
             return value
-        
+
         min_length = _sanitize(min_length, self.MIN_LENGTH, "min_length")
         max_length = _sanitize(max_length, self.MAX_LENGTH, "max_length")
         mws = self.rconf.mws
@@ -221,7 +233,7 @@ class SD(object):
         self._log(u"Extracting MFCCs for query...")
         query_mfcc = AudioFileMFCC(tmp_file_path, rconf=self.rconf, logger=self.logger)
         self._log(u"Extracting MFCCs for query... done")
-        
+
         self._log(u"Cleaning up...")
         gf.delete_file(tmp_handler, tmp_file_path)
         self._log(u"Cleaning up... done")
@@ -291,14 +303,14 @@ class SD(object):
         if tail:
             self._log(u"Tail => reversing real_wave_mfcc again")
             self.real_wave_mfcc.reverse()
-        
+
         # return
         if len(candidates) < 1:
             self._log(u"No candidates found")
             return 0.0
         self._log(u"Candidates:")
         for candidate in candidates:
-            self._log([u"  Value: %.6f Begin Time: %.3f Min Index: %d", candidate[0], candidate[1] * mws, candidate[2]]) 
+            self._log([u"  Value: %.6f Begin Time: %.3f Min Index: %d", candidate[0], candidate[1] * mws, candidate[2]])
         best = sorted(candidates)[0][1]
         self._log([u"Best candidate: %d == %.3f", best, best * mws])
         return best * mws

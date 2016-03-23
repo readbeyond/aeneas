@@ -46,7 +46,7 @@ class RunVADCLI(AbstractCLIProgram):
     HELP = {
         "description": u"Extract a list of speech intervals using the MFCC energy-based VAD.",
         "synopsis": [
-            u"AUDIO_FILE [%s] [OUTPUT_FILE]" % (u"|".join(MODES))
+            (u"AUDIO_FILE [%s] [OUTPUT_FILE]" % (u"|".join(MODES)), True)
         ],
         "examples": [
             u"%s both %s" % (INPUT_FILE, OUTPUT_BOTH),
@@ -141,7 +141,7 @@ class RunVADCLI(AbstractCLIProgram):
         else:
             with io.open(output_file_path, "w", encoding="utf-8") as output_file:
                 output_file.write(u"\n".join(msg))
-                self.print_info(u"Created file %s" % output_file_path)
+                self.print_success(u"Created file '%s'" % output_file_path)
 
 
 

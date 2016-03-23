@@ -17,5 +17,5 @@ os_task_file_format=smil
 os_task_file_smil_page_ref=$PREFIX.xhtml
 os_task_file_smil_audio_ref=../Audio/$PREFIX.mp3
 
-job_language=en
+job_language=eng
 job_description=Demo Sync Job

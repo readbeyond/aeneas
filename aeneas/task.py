@@ -16,6 +16,7 @@ from aeneas.audiofile import AudioFile
 from aeneas.configuration import Configuration
 from aeneas.logger import Logger
 from aeneas.textfile import TextFile
+from aeneas.timevalue import Decimal 
 from aeneas.timevalue import TimeValue
 import aeneas.globalconstants as gc
 import aeneas.globalfunctions as gf
@@ -224,7 +225,11 @@ class Task(object):
             parameters = {
                 gc.PPN_TASK_IS_TEXT_FILE_IGNORE_REGEX : self.configuration["i_t_ignore_regex"],
                 gc.PPN_TASK_IS_TEXT_FILE_TRANSLITERATE_MAP : self.configuration["i_t_transliterate_map"],
-                gc.PPN_TASK_IS_TEXT_UNPARSED_CLASS_REGEX :self.configuration["i_t_unparsed_class_regex"],
+                gc.PPN_TASK_IS_TEXT_MPLAIN_WORD_SEPARATOR : self.configuration["i_t_mplain_word_separator"],
+                gc.PPN_TASK_IS_TEXT_MUNPARSED_L1_ID_REGEX : self.configuration["i_t_munparsed_l1_id_regex"],
+                gc.PPN_TASK_IS_TEXT_MUNPARSED_L2_ID_REGEX : self.configuration["i_t_munparsed_l2_id_regex"],
+                gc.PPN_TASK_IS_TEXT_MUNPARSED_L3_ID_REGEX : self.configuration["i_t_munparsed_l3_id_regex"],
+                gc.PPN_TASK_IS_TEXT_UNPARSED_CLASS_REGEX : self.configuration["i_t_unparsed_class_regex"],
                 gc.PPN_TASK_IS_TEXT_UNPARSED_ID_REGEX : self.configuration["i_t_unparsed_id_regex"],
                 gc.PPN_TASK_IS_TEXT_UNPARSED_ID_SORT : self.configuration["i_t_unparsed_id_sort"],
                 gc.PPN_TASK_OS_FILE_ID_REGEX : self.configuration["o_id_regex"]
@@ -268,12 +273,17 @@ class TaskConfiguration(Configuration):
     * ``PPN_TASK_IS_TEXT_FILE_FORMAT``                or ``i_t_format``
     * ``PPN_TASK_IS_TEXT_FILE_IGNORE_REGEX``          or ``i_t_ignore_regex``
     * ``PPN_TASK_IS_TEXT_FILE_TRANSLITERATE_MAP``     or ``i_t_transliterate_map``
+    * ``PPN_TASK_IS_TEXT_MPLAIN_WORD_SEPARATOR``      or ``i_t_mplain_word_separator``
+    * ``PPN_TASK_IS_TEXT_MUNPARSED_L1_ID_REGEX``      or ``i_t_munparsed_l1_id_regex``
+    * ``PPN_TASK_IS_TEXT_MUNPARSED_L2_ID_REGEX``      or ``i_t_munparsed_l2_id_regex``
+    * ``PPN_TASK_IS_TEXT_MUNPARSED_L3_ID_REGEX``      or ``i_t_munparsed_l3_id_regex``
     * ``PPN_TASK_IS_TEXT_UNPARSED_CLASS_REGEX``       or ``i_t_unparsed_class_regex``
     * ``PPN_TASK_IS_TEXT_UNPARSED_ID_REGEX``          or ``i_t_unparsed_id_regex``
     * ``PPN_TASK_IS_TEXT_UNPARSED_ID_SORT``           or ``i_t_unparsed_id_sort``
     * ``PPN_TASK_OS_FILE_FORMAT``                     or ``o_format``
     * ``PPN_TASK_OS_FILE_HEAD_TAIL_FORMAT``           or ``o_h_t_format``
     * ``PPN_TASK_OS_FILE_ID_REGEX``                   or ``o_id_regex``
+    * ``PPN_TASK_OS_FILE_LEVELS``                     or ``o_levels``
     * ``PPN_TASK_OS_FILE_NAME``                       or ``o_name``
     * ``PPN_TASK_OS_FILE_SMIL_AUDIO_REF``             or ``o_smil_audio_ref``
     * ``PPN_TASK_OS_FILE_SMIL_PAGE_REF``              or ``o_smil_page_ref``
@@ -296,7 +306,7 @@ class TaskConfiguration(Configuration):
         (gc.PPN_TASK_ADJUST_BOUNDARY_BEFORENEXT_VALUE, (None, TimeValue, ["aba_beforenext_value"])),
         (gc.PPN_TASK_ADJUST_BOUNDARY_OFFSET_VALUE, (None, TimeValue, ["aba_offset_value"])),
         (gc.PPN_TASK_ADJUST_BOUNDARY_PERCENT_VALUE, (None, int, ["aba_percent_value"])),
-        (gc.PPN_TASK_ADJUST_BOUNDARY_RATE_VALUE, (None, float, ["aba_rate_value"])),
+        (gc.PPN_TASK_ADJUST_BOUNDARY_RATE_VALUE, (None, Decimal, ["aba_rate_value"])),
         (gc.PPN_TASK_IS_AUDIO_FILE_DETECT_HEAD_MAX, (None, TimeValue, ["i_a_head_max"])),
         (gc.PPN_TASK_IS_AUDIO_FILE_DETECT_HEAD_MIN, (None, TimeValue, ["i_a_head_min"])),
         (gc.PPN_TASK_IS_AUDIO_FILE_DETECT_TAIL_MAX, (None, TimeValue, ["i_a_tail_max"])),
@@ -307,6 +317,10 @@ class TaskConfiguration(Configuration):
         (gc.PPN_TASK_IS_TEXT_FILE_FORMAT, (None, None, ["i_t_format"])),
         (gc.PPN_TASK_IS_TEXT_FILE_IGNORE_REGEX, (None, None, ["i_t_ignore_regex"])),
         (gc.PPN_TASK_IS_TEXT_FILE_TRANSLITERATE_MAP, (None, None, ["i_t_transliterate_map"])),
+        (gc.PPN_TASK_IS_TEXT_MPLAIN_WORD_SEPARATOR, (None, None, ["i_t_mplain_word_separator"])),
+        (gc.PPN_TASK_IS_TEXT_MUNPARSED_L1_ID_REGEX, (None, None, ["i_t_munparsed_l1_id_regex"])),
+        (gc.PPN_TASK_IS_TEXT_MUNPARSED_L2_ID_REGEX, (None, None, ["i_t_munparsed_l2_id_regex"])),
+        (gc.PPN_TASK_IS_TEXT_MUNPARSED_L3_ID_REGEX, (None, None, ["i_t_munparsed_l3_id_regex"])),
         (gc.PPN_TASK_IS_TEXT_UNPARSED_CLASS_REGEX, (None, None, ["i_t_unparsed_class_regex"])),
         (gc.PPN_TASK_IS_TEXT_UNPARSED_ID_REGEX, (None, None, ["i_t_unparsed_id_regex"])),
         (gc.PPN_TASK_IS_TEXT_UNPARSED_ID_SORT, (None, None, ["i_t_unparsed_id_sort"])),
@@ -315,6 +329,7 @@ class TaskConfiguration(Configuration):
         (gc.PPN_TASK_OS_FILE_ID_REGEX, (None, None, ["o_id_regex"])),
         (gc.PPN_TASK_OS_FILE_LEVELS, (None, None, ["o_levels"])),
         (gc.PPN_TASK_OS_FILE_NAME, (None, None, ["o_name"])),
+        (gc.PPN_TASK_OS_FILE_NO_ZERO, (None, bool, ["o_no_zero"])),
         (gc.PPN_TASK_OS_FILE_SMIL_AUDIO_REF, (None, None, ["o_smil_audio_ref"])),
         (gc.PPN_TASK_OS_FILE_SMIL_PAGE_REF, (None, None, ["o_smil_page_ref"])),
     ]

@@ -121,7 +121,7 @@ class Downloader(object):
         try:
             import pafy
         except ImportError as exc:
-            self._log(u"pafy is not installed", Logger.CRITICAL)
+            self._log(u"Python module pafy is not installed", Logger.CRITICAL)
             raise exc
 
         try:

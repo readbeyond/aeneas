@@ -37,21 +37,22 @@ class ExecuteJobCLI(AbstractCLIProgram):
     CONTAINER_FILE = gf.relative_path("res/job.zip", __file__)
     CONTAINER_FILE_NO_CONFIG = gf.relative_path("res/job_no_config.zip", __file__)
     OUTPUT_DIRECTORY = "output/"
-    CONFIG_STRING = u"is_hierarchy_type=flat|is_hierarchy_prefix=assets/|is_text_file_relative_path=.|is_text_file_name_regex=.*\.xhtml|is_text_type=unparsed|is_audio_file_relative_path=.|is_audio_file_name_regex=.*\.mp3|is_text_unparsed_id_regex=f[0-9]+|is_text_unparsed_id_sort=numeric|os_job_file_name=demo_sync_job_output|os_job_file_container=zip|os_job_file_hierarchy_type=flat|os_job_file_hierarchy_prefix=assets/|os_task_file_name=\\$PREFIX.xhtml.smil|os_task_file_format=smil|os_task_file_smil_page_ref=\\$PREFIX.xhtml|os_task_file_smil_audio_ref=../Audio/\\$PREFIX.mp3|job_language=en|job_description=Demo Sync Job"
+    CONFIG_STRING = u"is_hierarchy_type=flat|is_hierarchy_prefix=assets/|is_text_file_relative_path=.|is_text_file_name_regex=.*\.xhtml|is_text_type=unparsed|is_audio_file_relative_path=.|is_audio_file_name_regex=.*\.mp3|is_text_unparsed_id_regex=f[0-9]+|is_text_unparsed_id_sort=numeric|os_job_file_name=demo_sync_job_output|os_job_file_container=zip|os_job_file_hierarchy_type=flat|os_job_file_hierarchy_prefix=assets/|os_task_file_name=\\$PREFIX.xhtml.smil|os_task_file_format=smil|os_task_file_smil_page_ref=\\$PREFIX.xhtml|os_task_file_smil_audio_ref=../Audio/\\$PREFIX.mp3|job_language=eng|job_description=Demo Sync Job"
 
     NAME = gf.file_name_without_extension(__file__)
 
     HELP = {
         "description": u"Execute a Job, passed as a container.",
         "synopsis": [
-            u"CONTAINER OUTPUT_DIR [CONFIG_STRING]"
+            (u"CONTAINER OUTPUT_DIR [CONFIG_STRING]", True)
         ],
         "examples": [
             u"%s %s" % (CONTAINER_FILE, OUTPUT_DIRECTORY),
+            u"%s %s --cewsubprocess" % (CONTAINER_FILE, OUTPUT_DIRECTORY),
             u"%s %s \"%s\"" % (CONTAINER_FILE_NO_CONFIG, OUTPUT_DIRECTORY, CONFIG_STRING)
         ],
         "options": [
-            u"--cewsubprocess : run cewsubprocess"
+            u"--cewsubprocess : run cewsubprocess",
             u"--skip-validator : do not validate the given container and/or config string"
         ]
     }
@@ -73,7 +74,7 @@ class ExecuteJobCLI(AbstractCLIProgram):
         if self.has_option(u"--cewsubprocess"):
             self.rconf[RuntimeConfiguration.CEW_SUBPROCESS_ENABLED] = True
 
-        if not self.check_input_file(container_path):
+        if (not self.check_input_file(container_path)) and (not self.check_input_directory(container_path)):
             return self.ERROR_EXIT_CODE
 
         if not self.check_output_directory(output_directory_path):
@@ -117,7 +118,7 @@ class ExecuteJobCLI(AbstractCLIProgram):
             self.print_info(u"Creating output container...")
             path = executor.write_output_container(output_directory_path)
             self.print_info(u"Creating output container... done")
-            self.print_info(u"Created output file %s" % path)
+            self.print_success(u"Created output file '%s'" % path)
             executor.clean(True)
             return self.NO_ERROR_EXIT_CODE
         except Exception as exc:

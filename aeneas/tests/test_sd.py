@@ -19,7 +19,7 @@ class TestSD(unittest.TestCase):
     def load(self):
         audio_file_mfcc = AudioFileMFCC(self.AUDIO_FILE)
         text_file = TextFile(self.TEXT_FILE, file_format=TextFileFormat.PLAIN)
-        text_file.set_language(Language.EN)
+        text_file.set_language(Language.ENG)
         return SD(audio_file_mfcc, text_file)
 
     def test_create_sd(self):

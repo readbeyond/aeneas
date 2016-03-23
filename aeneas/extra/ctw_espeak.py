@@ -50,23 +50,41 @@ class CustomTTSWrapper(TTSWrapper):
 
     TAG = u"CustomTTSWrapper"
 
-    # eSpeak always outputs to PCM16 mono WAVE (RIFF)
-    OUTPUT_MONO_WAVE = True
+    #
+    # NOTE create aliases for the language codes
+    #      supported by this TTS: in this example,
+    #      English, Italian, Russian and Ukrainian
+    #
+    ENG = Language.ENG
+    """ English """
+
+    ITA = Language.ITA
+    """ Italian """
+
+    RUS = Language.RUS
+    """ Russian """
+
+    UKR = Language.UKR
+    """ Ukrainian """
 
     #
-    # NOTE SUPPORTED_LANGUAGES is a list of languages
-    #      supported by this custom TTS wrapper
+    # NOTE LANGUAGE_TO_VOICE_CODE maps a language code
+    #      to the corresponding voice code
+    #      supported by this custom TTS wrapper;
+    #      mock support for Ukrainian with Russian voice
     #
-    #SUPPORTED_LANGUAGES = Language.ALLOWED_VALUES
-    SUPPORTED_LANGUAGES = [
-        Language.DE,
-        Language.EN,
-        Language.ES,
-        Language.FR,
-        Language.IT,
-        Language.RU,
-        Language.UK
-    ]
+    LANGUAGE_TO_VOICE_CODE = {
+        ENG : "en",
+        ITA : "it",
+        RUS : "ru",
+        UKR : "ru",
+    }
+    DEFAULT_LANGUAGE = ENG
+
+    #
+    # NOTE eSpeak always outputs to PCM16 mono WAVE (RIFF)
+    #
+    OUTPUT_MONO_WAVE = True
 
     def __init__(self, rconf=None, logger=None):
         #
@@ -111,7 +129,7 @@ class CustomTTSWrapper(TTSWrapper):
         self.set_subprocess_arguments([
             u"/usr/bin/espeak",                         # path of espeak executable; you can use just "espeak" if it is in your PATH
             u"-v",                                      # append "-v"
-            TTSWrapper.CLI_PARAMETER_VOICE_CODE_STRING, # it will be replaced by the actual voice code (language)
+            TTSWrapper.CLI_PARAMETER_VOICE_CODE_STRING, # it will be replaced by the actual voice code
             u"-w",                                      # append "-w"
             TTSWrapper.CLI_PARAMETER_WAVE_PATH,         # it will be replaced by the actual output file path
             TTSWrapper.CLI_PARAMETER_TEXT_STDIN         # text is read from stdin
@@ -128,21 +146,8 @@ class CustomTTSWrapper(TTSWrapper):
         #      you can implement a _voice_code_to_subprocess() function
         #      and use the TTSWrapper.CLI_PARAMETER_VOICE_CODE_FUNCTION placeholder
         #      instead of the TTSWrapper.CLI_PARAMETER_VOICE_CODE_STRING placeholder.
-        #      See the festivalwrapper.py file for an example.
+        #      See the aeneas/festivalwrapper.py file for an example.
         #
-
-    def _language_to_voice_code(self, language):
-        #
-        # NOTE this function translates from language to voice code.
-        #      In this example, we specify to use the Russian voice (Language.RU)
-        #      when synthesizing text in Ukrainian (Language.UK).
-        #      For all the other languages, the voice code is equal to the language code.
-        #
-        voice_code = language
-        if language == Language.UK:
-            voice_code = Language.RU
-        self._log([u"Language to voice code: '%s' => '%s'", language, voice_code])
-        return voice_code
 
 
 

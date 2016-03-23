@@ -41,6 +41,77 @@ PY2 = (sys.version_info[0] == 2)
 
 ### COMMON FUNCTIONS ###
 
+ANSI_ERROR = u"\033[91m"
+ANSI_OK = u"\033[92m"
+ANSI_WARNING = u"\033[93m"
+ANSI_END = u"\033[0m"
+
+def safe_print(msg):
+    """
+    Safely print a given Unicode string to stdout,
+    possibly replacing characters non-printable
+    in the current stdout encoding.
+
+    :param string msg: the message
+    """
+    try:
+        print(msg)
+    except UnicodeEncodeError:
+        try:
+            # NOTE encoding and decoding so that in Python 3 no b"..." is printed
+            encoded = msg.encode(sys.stdout.encoding, "replace")
+            decoded = encoded.decode(sys.stdout.encoding, "replace")
+            print(decoded)
+        except (UnicodeDecodeError, UnicodeEncodeError):
+            print(u"[ERRO] An unexpected error happened while printing to stdout.")
+            print(u"[ERRO] Please check that your file/string encoding matches the shell encoding.")
+            print(u"[ERRO] If possible, set your shell encoding to UTF-8 and convert any files with legacy encodings.")
+
+def print_error(msg, color=True):
+    """
+    Print an error message.
+
+    :param string msg: the message
+    :param bool color: if ``True``, print with POSIX color
+    """
+    if color and is_posix():
+        safe_print(u"%s[ERRO] %s%s" % (ANSI_ERROR, msg, ANSI_END))
+    else:
+        safe_print(u"[ERRO] %s" % (msg))
+
+def print_info(msg, color=True):
+    """
+    Print an info message.
+
+    :param string msg: the message
+    :param bool color: if ``True``, print with POSIX color
+    """
+    safe_print(u"[INFO] %s" % (msg))
+
+def print_success(msg, color=True):
+    """
+    Print a success message.
+
+    :param string msg: the message
+    :param bool color: if ``True``, print with POSIX color
+    """
+    if color and is_posix():
+        safe_print(u"%s[INFO] %s%s" % (ANSI_OK, msg, ANSI_END))
+    else:
+        safe_print(u"[INFO] %s" % (msg))
+
+def print_warning(msg, color=True):
+    """
+    Print a warning message.
+
+    :param string msg: the message
+    :param bool color: if ``True``, print with POSIX color
+    """
+    if color and is_posix():
+        safe_print(u"%s[WARN] %s%s" % (ANSI_WARNING, msg, ANSI_END))
+    else:
+        safe_print(u"[WARN] %s" % (msg))
+
 def uuid_string():
     """
     Return a uuid4 as a Unicode string.
@@ -1023,27 +1094,6 @@ def safe_unicode_stdin(string):
         except UnicodeDecodeError:
             return string.decode(sys.stdin.encoding, "replace")
     return string
-
-def safe_print(string):
-    """
-    Safely print a given Unicode string to stdout,
-    possibly replacing characters non-printable
-    in the current stdout encoding.
-
-    :param string string: the message string
-    """
-    try:
-        print(string)
-    except UnicodeEncodeError:
-        try:
-            # NOTE encoding and decoding so that in Python 3 no b"..." is printed
-            encoded = string.encode(sys.stdout.encoding, "replace")
-            decoded = encoded.decode(sys.stdout.encoding, "replace")
-            print(decoded)
-        except (UnicodeDecodeError, UnicodeEncodeError):
-            print(u"[ERRO] An unexpected error happened while printing to stdout.")
-            print(u"[ERRO] Please check that your file/string encoding matches the shell encoding.")
-            print(u"[ERRO] If possible, set your shell encoding to UTF-8 and convert any files with legacy encodings.")
 
 def object_to_unicode(obj):
     """

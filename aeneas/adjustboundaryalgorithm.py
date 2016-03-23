@@ -302,7 +302,7 @@ class AdjustBoundaryAlgorithm(object):
 
         # compute fragments too fast
         mws = self.rconf.mws
-        # NOTE self.parameters[0] is float 
+        # NOTE self.parameters[0] is Decimal
         max_rate = self.parameters[0]
         times = self.boundary_indices * mws
         durations = numpy.diff(times)

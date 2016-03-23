@@ -42,8 +42,11 @@ class RuntimeConfiguration(Configuration):
 
     ALLOW_UNLISTED_LANGUAGES = "allow_unlisted_languages"
     """
-    If ``True``, allow using a language code not listed in ``languages.py``;
-    otherwise, raise an error if the user attempts to use a language not listed.
+    If ``True``, allow using a language code
+    not listed in the TTS supported languages list;
+    otherwise, raise an error if the user attempts
+    to use a language not listed.
+
     Default: ``True``.
 
     .. versionadded:: 1.4.1
@@ -53,6 +56,7 @@ class RuntimeConfiguration(Configuration):
     """
     If ``True`` and Python C extensions are available, use them.
     Otherwise, use pure Python code.
+
     Default: ``True``.
 
     .. versionadded:: 1.4.1
@@ -61,6 +65,7 @@ class RuntimeConfiguration(Configuration):
     CEW_SUBPROCESS_ENABLED = "cew_subprocess_enabled"
     """
     If ``True``, calls to ``aeneas.cew`` will be done via ``subprocess``.
+
     Default: ``False``.
 
     Note this is a temporary workaround and it might be removed
@@ -73,6 +78,9 @@ class RuntimeConfiguration(Configuration):
     """
     Use the given path to the python executable
     when calling ``aeneas.cew`` via ``subprocess``.
+
+    You might need to use a full path, like ``/path/to/your/python``.
+
     Default: ``python``.
 
     .. versionadded:: 1.5.0
@@ -81,6 +89,7 @@ class RuntimeConfiguration(Configuration):
     DTW_ALGORITHM = "dtw_algorithm"
     """
     DTW aligner algorithm.
+
     Default: ``stripe``.
 
     .. versionadded:: 1.4.1
@@ -89,6 +98,7 @@ class RuntimeConfiguration(Configuration):
     DTW_MARGIN = "dtw_margin"
     """
     DTW aligner margin, in seconds, for the ``stripe`` algorithm.
+
     Default: ``60``, corresponding to ``60s`` ahead and behind
     (i.e., ``120s`` total margin).
 
@@ -98,6 +108,9 @@ class RuntimeConfiguration(Configuration):
     FFMPEG_PATH = "ffmpeg_path"
     """
     Path to the ``ffmpeg`` executable.
+
+    You might need to use a full path, like ``/path/to/your/ffmpeg``.
+
     Default: ``ffmpeg``.
 
     .. versionadded:: 1.4.1
@@ -106,6 +119,7 @@ class RuntimeConfiguration(Configuration):
     FFMPEG_SAMPLE_RATE = "ffmpeg_sample_rate"
     """
     Sample rate for ``ffmpeg``, in Hertz.
+
     Default: ``16000``.
 
     .. versionadded:: 1.4.1
@@ -114,6 +128,9 @@ class RuntimeConfiguration(Configuration):
     FFPROBE_PATH = "ffprobe_path"
     """
     Path to the ``ffprobe`` executable.
+
+    You might use a full path, like ``/path/to/your/ffprobe``.
+
     Default: ``ffprobe``.
 
     .. versionadded:: 1.4.1
@@ -125,6 +142,7 @@ class RuntimeConfiguration(Configuration):
     If a Job has more Tasks than this value,
     it will not be executed and an error will be raised.
     Use ``0`` for disabling this check.
+
     Default: ``0`` (disabled).
 
     .. versionadded:: 1.4.1
@@ -133,6 +151,7 @@ class RuntimeConfiguration(Configuration):
     MFCC_FILTERS = "mfcc_filters"
     """
     Number of filters for extracting MFCCs.
+
     Default: ``40``.
 
     .. versionadded:: 1.4.1
@@ -141,6 +160,7 @@ class RuntimeConfiguration(Configuration):
     MFCC_SIZE = "mfcc_size"
     """
     Number of MFCCs to extract, including the 0th.
+
     Default: ``13``.
 
     .. versionadded:: 1.4.1
@@ -150,6 +170,7 @@ class RuntimeConfiguration(Configuration):
     """
     Order of the RFFT for extracting MFCCs.
     It must be a power of two.
+
     Default: ``512``.
 
     .. versionadded:: 1.4.1
@@ -158,6 +179,7 @@ class RuntimeConfiguration(Configuration):
     MFCC_LOWER_FREQUENCY = "mfcc_lower_frequency"
     """
     Lower frequency to be used for extracting MFCCs, in Hertz.
+
     Default: ``133.3333``.
 
     .. versionadded:: 1.4.1
@@ -166,6 +188,7 @@ class RuntimeConfiguration(Configuration):
     MFCC_UPPER_FREQUENCY = "mfcc_upper_frequency"
     """
     Upper frequency to be used for extracting MFCCs, in Hertz.
+
     Default: ``6855.4976``.
 
     .. versionadded:: 1.4.1
@@ -174,6 +197,7 @@ class RuntimeConfiguration(Configuration):
     MFCC_EMPHASIS_FACTOR = "mfcc_emphasis_factor"
     """
     Emphasis factor to be applied to MFCCs.
+
     Default: ``0.970``.
 
     .. versionadded:: 1.4.1
@@ -184,6 +208,7 @@ class RuntimeConfiguration(Configuration):
     Length of the window for extracting MFCCs, in seconds.
     It is usual to set it between 1.5 and 4 times
     the value of ``MFCC_WINDOW_SHIFT``.
+
     Default: ``0.100``.
 
     .. versionadded:: 1.4.1
@@ -194,6 +219,7 @@ class RuntimeConfiguration(Configuration):
     Shift of the window for extracting MFCCs, in seconds.
     This parameter is basically the time step
     of the synchronization maps output.
+
     Default: ``0.040``.
 
     .. versionadded:: 1.4.1
@@ -205,6 +231,7 @@ class RuntimeConfiguration(Configuration):
     for extracting MFCCs at level 1 (paragraph).
     It is usual to set it between 1.5 and 4 times
     the value of ``MFCC_WINDOW_SHIFT_L1``.
+
     Default: ``0.500``.
 
     .. versionadded:: 1.5.0
@@ -216,6 +243,7 @@ class RuntimeConfiguration(Configuration):
     for extracting MFCCs at level 1 (paragraph).
     This parameter is basically the time step
     of the synchronization map output at level 1.
+
     Default: ``0.200``.
 
     .. versionadded:: 1.5.0
@@ -227,6 +255,7 @@ class RuntimeConfiguration(Configuration):
     for extracting MFCCs at level 2 (sentence).
     It is usual to set it between 1.5 and 4 times
     the value of ``MFCC_WINDOW_SHIFT_L2``.
+
     Default: ``0.100``.
 
     .. versionadded:: 1.5.0
@@ -238,6 +267,7 @@ class RuntimeConfiguration(Configuration):
     for extracting MFCCs at level 2 (sentence).
     This parameter is basically the time step
     of the synchronization map output at level 2.
+
     Default: ``0.040``.
 
     .. versionadded:: 1.5.0
@@ -249,6 +279,7 @@ class RuntimeConfiguration(Configuration):
     for extracting MFCCs at level 3 (word).
     It is usual to set it between 1.5 and 4 times
     the value of ``MFCC_WINDOW_SHIFT_L3``.
+
     Default: ``0.020``.
 
     .. versionadded:: 1.5.0
@@ -260,6 +291,7 @@ class RuntimeConfiguration(Configuration):
     for extracting MFCCs at level 3 (word).
     This parameter is basically the time step
     of the synchronization map output at level 3.
+
     Default: ``0.005``.
 
     .. versionadded:: 1.5.0
@@ -273,6 +305,34 @@ class RuntimeConfiguration(Configuration):
     """
     Map level numbers to ``MFCC_WINDOW_LENGTH_*``
     and ``MFCC_WINDOW_SHIFT_*`` keys.
+
+    .. versionadded:: 1.5.0
+    """
+
+    NUANCE_TTS_API_ID = "nuance_tts_api_id"
+    """
+    Your ID value to use the Nuance TTS API.
+
+    You will be billed according to your Nuance Developers account plan.
+
+    Important: this feature is experimental, use at your own risk.
+    It is recommended not to use this TTS at word-level granularity,
+    as it will create many requests, hence it will be expensive.
+
+    .. versionadded:: 1.5.0
+    """
+
+    NUANCE_TTS_API_KEY = "nuance_tts_api_key"
+    """
+    Your KEY value to use the Nuance TTS API.
+
+    You will be billed according to your Nuance Developers account plan.
+
+    Important: this feature is experimental, use at your own risk.
+    It is recommended not to use this TTS at word-level granularity,
+    as it will create many requests, hence it will be expensive.
+
+    .. versionadded:: 1.5.0
     """
 
     TASK_MAX_AUDIO_LENGTH = "task_max_audio_length"
@@ -281,6 +341,7 @@ class RuntimeConfiguration(Configuration):
     If a Task has an audio file longer than this value,
     it will not be executed and an error will be raised.
     Use ``0`` for disabling this check.
+
     Default: ``7200`` seconds.
 
     .. versionadded:: 1.4.1
@@ -291,7 +352,9 @@ class RuntimeConfiguration(Configuration):
     Maximum number of text fragments in the text file of a Task.
     If a Task has more text fragments than this value,
     it will not be executed and an error will be raised.
+
     Use ``0`` for disabling this check.
+
     Default: ``0`` (disabled).
 
     .. versionadded:: 1.4.1
@@ -302,7 +365,8 @@ class RuntimeConfiguration(Configuration):
     Path to the temporary directory to be used.
     Default: ``None``, meaning that the default temporary directory
     will be set by ``TMP_PATH_DEFAULT_POSIX``
-    or ``TMP_PATH_DEFAULT_NONPOSIX``.
+    or ``TMP_PATH_DEFAULT_NONPOSIX``,
+    depending on your OS.
 
     .. versionadded:: 1.4.1
     """
@@ -310,17 +374,50 @@ class RuntimeConfiguration(Configuration):
     TTS = "tts"
     """
     The TTS engine to use for synthesizing text.
-    Use value ``custom`` to specify a custom TTS via
-    a Python source file ``.py``.
-    Default: ``espeak``.
+
+    Valid values:
+
+    * ``custom``
+    * ``espeak`` (default)
+    * ``festival``
+    * ``nuancettsapi``
+
+    Use the value ``festival`` to use the built-in Festival TTS wrapper;
+    you might need to provide the ``tts_path=text2wave`` or
+    ``tts_path=/full/path/to/your/text2wave`` parameter.
+
+    Use the value ``nuancettsapi`` to use the built-in Nuance TTS API wrapper;
+    you will need to provide your Nuance Developer API ID and API Key using
+    the ``nuance_tts_api_id`` and ``nuance_tts_api_key`` parameters.
+    Please note that you will be billed according to your Nuance Developers account plan.
+
+    Use the value ``custom`` to specify a custom TTS;
+    you will need to provide the path to the Python source file
+    containing your TTS wrapper using the ``tts_path`` parameters.
 
     .. versionadded:: 1.5.0
     """
 
     TTS_PATH = "tts_path"
     """
-    Path to the TTS engine executable.
+    Path to the TTS engine executable
+    or the Python CustomTTSWrapper ``.py`` source file
+    (see the ``aeneas/extra`` directory for examples).
+
+    You might need to use a full path,
+    like ``/path/to/your/tts`` or
+    ``/path/to/your/ttswrapper.py``.
+
     Default: ``espeak``.
+
+    .. versionadded:: 1.5.0
+    """
+
+    TTS_VOICE_CODE = "tts_voice_code"
+    """
+    The code of the TTS voice to use.
+    If you specify this value, it will override the default voice code
+    associated with the language of your text.
 
     .. versionadded:: 1.5.0
     """
@@ -330,6 +427,7 @@ class RuntimeConfiguration(Configuration):
     Extend to the right (after/future)
     a speech interval found by the VAD algorithm,
     by this many seconds.
+
     Default: ``0`` seconds.
 
     .. versionadded:: 1.4.1
@@ -340,6 +438,7 @@ class RuntimeConfiguration(Configuration):
     Extend to the left (before/past)
     a speech interval found by the VAD algorithm,
     by this many seconds.
+
     Default: ``0`` seconds.
 
     .. versionadded:: 1.4.1
@@ -350,6 +449,7 @@ class RuntimeConfiguration(Configuration):
     Threshold for the VAD algorithm to decide
     that a given frame contains speech.
     Note that this is the log10 of the energy coefficient.
+
     Default: ``0.699`` = ``log10(5)``, that is, a frame must have
     an energy at least 5 times higher than the minimum
     to be considered a speech frame.
@@ -360,6 +460,7 @@ class RuntimeConfiguration(Configuration):
     VAD_MIN_NONSPEECH_LENGTH = "vad_min_nonspeech_length"
     """
     Minimum length, in seconds, of a nonspeech interval.
+
     Default: ``0.200`` seconds.
 
     .. versionadded:: 1.4.1
@@ -374,7 +475,7 @@ class RuntimeConfiguration(Configuration):
 
         (CEW_SUBPROCESS_ENABLED, (False, bool, [])),
         (CEW_SUBPROCESS_PATH, ("python", None, [])), # or a full path like "/usr/bin/python"
-        
+
         (DTW_ALGORITHM, ("stripe", None, [])),
         (DTW_MARGIN, ("60.000", TimeValue, [])),
 
@@ -401,6 +502,9 @@ class RuntimeConfiguration(Configuration):
         (MFCC_WINDOW_LENGTH_L3, ("0.020", TimeValue, [])),
         (MFCC_WINDOW_SHIFT_L3, ("0.005", TimeValue, [])),
 
+        (NUANCE_TTS_API_ID, (None, None, [])),
+        (NUANCE_TTS_API_KEY, (None, None, [])),
+
         (TASK_MAX_AUDIO_LENGTH, ("7200.0", TimeValue, [])),
         (TASK_MAX_TEXT_LENGTH, (0, int, [])),
 
@@ -408,6 +512,7 @@ class RuntimeConfiguration(Configuration):
 
         (TTS, ("espeak", None, [])),
         (TTS_PATH, ("espeak", None, [])), # or a full path like "/usr/bin/espeak"
+        (TTS_VOICE_CODE, (None, None, [])),
 
         (VAD_EXTEND_SPEECH_INTERVAL_AFTER, ("0.000", TimeValue, [])),
         (VAD_EXTEND_SPEECH_INTERVAL_BEFORE, ("0.000", TimeValue, [])),
@@ -456,7 +561,7 @@ class RuntimeConfiguration(Configuration):
         Set the ``MFCC_WINDOW_LENGTH`` and ``MFCC_WINDOW_SHIFT``
         matching the given granularity level.
 
-        Currently supported levels: `1`, `2`, `3`. 
+        Currently supported levels: `1`, `2`, `3`.
 
         :param int level: the desired granularity level
         """

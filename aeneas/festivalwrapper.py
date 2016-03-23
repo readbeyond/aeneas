@@ -49,33 +49,64 @@ class FESTIVALWrapper(TTSWrapper):
 
     TAG = u"FESTIVALWrapper"
 
-    LANGUAGE_TO_VOICE = {
-        Language.CS    : u"(language_czech)",
-        Language.CY    : u"(language_welsh)",
-        Language.EN    : u"(language_english)",
-        Language.EN_GB : u"(language_british_english)",
-        Language.EN_SC : u"(language_scots_gaelic)",
-        Language.EN_US : u"(language_american_english)",
-        Language.ES    : u"(language_castillian_spanish)",
-        Language.FI    : u"(language_finnish)",
-        Language.IT    : u"(language_italian)",
-        Language.RU    : u"(language_russian)",
+    CES = Language.CES
+    """ Czech """
+
+    CYM = Language.CYM
+    """ Welsh """
+
+    ENG = Language.ENG
+    """ English """
+
+    FIN = Language.FIN
+    """ Finnish """
+
+    ITA = Language.ITA
+    """ Italian """
+
+    RUS = Language.RUS
+    """ Russian """
+
+    SPA = Language.SPA
+    """ Spanish """
+
+    ENG_GBR = "eng-GBR"
+    """ English (GB) """
+
+    ENG_SCT = "eng-SCT"
+    """ English (Scotland) """
+
+    ENG_USA = "eng-USA"
+    """ English (USA) """
+
+    LANGUAGE_TO_VOICE_CODE = {
+        CES : CES,
+        CYM : CYM,
+        ENG : ENG,
+        ENG_GBR : ENG_GBR,
+        ENG_SCT : ENG_SCT,
+        ENG_USA : ENG_USA,
+        SPA : SPA,
+        FIN : FIN,
+        ITA : ITA,
+        RUS : RUS
+    }
+    DEFAULT_LANGUAGE = ENG
+
+    VOICE_CODE_TO_SUBPROCESS = {
+        CES : u"(language_czech)",
+        CYM : u"(language_welsh)",
+        ENG : u"(language_english)",
+        ENG_GBR : u"(language_british_english)",
+        ENG_SCT : u"(language_scots_gaelic)",
+        ENG_USA : u"(language_american_english)",
+        SPA : u"(language_castillian_spanish)",
+        FIN : u"(language_finnish)",
+        ITA : u"(language_italian)",
+        RUS : u"(language_russian)",
     }
 
     OUTPUT_MONO_WAVE = True
-
-    SUPPORTED_LANGUAGES = [
-        Language.CS,
-        Language.CY,
-        Language.EN,
-        Language.EN_GB,
-        Language.EN_SC,
-        Language.EN_US,
-        Language.ES,
-        Language.FI,
-        Language.IT,
-        Language.RU
-    ]
 
     def __init__(self, rconf=None, logger=None):
         super(FESTIVALWrapper, self).__init__(
@@ -93,17 +124,8 @@ class FESTIVALWrapper(TTSWrapper):
             TTSWrapper.CLI_PARAMETER_TEXT_STDIN
         ])
 
-    def _language_to_voice_code(self, language):
-        voice_code = language
-        if language == Language.UK:
-            voice_code = Language.RU
-        self._log([u"Language to voice code: '%s' => '%s'", language, voice_code])
-        return voice_code
-
     def _voice_code_to_subprocess(self, voice_code):
-        if voice_code in self.LANGUAGE_TO_VOICE:
-            return [u"-eval", self.LANGUAGE_TO_VOICE[voice_code]]
-        return []
+        return [u"-eval", self.VOICE_CODE_TO_SUBPROCESS[voice_code]]
 
 
 

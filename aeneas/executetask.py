@@ -153,9 +153,10 @@ class ExecuteTask(object):
 
         self._log(u"Both audio and text input file are present")
 
+        # execute
         self.step_index = 1
         self.step_total = 0.000
-        if self.task.text_file.file_format == TextFileFormat.MPLAIN:
+        if self.task.text_file.file_format in [TextFileFormat.MPLAIN, TextFileFormat.MUNPARSED]:
             self._execute_multi_level_task()
         else:
             self._execute_single_level_task()
@@ -183,6 +184,11 @@ class ExecuteTask(object):
             self._step_begin(u"create sync map")
             tree = self._level_time_map_to_tree(self.task.text_file, time_map)
             self.task.sync_map = self._create_syncmap(tree)
+            self._step_end()
+
+            # check for fragments with zero duration
+            self._step_begin(u"check zero duration")
+            self._check_no_zero(self.rconf.mws)
             self._step_end()
 
             # log total
@@ -255,6 +261,10 @@ class ExecuteTask(object):
             self.task.sync_map = self._create_syncmap(tree)
             self._step_end()
 
+            self._step_begin(u"check zero duration")
+            self._check_no_zero(level_rconfs[-1].mws)
+            self._step_end()
+
             self._step_total()
             self._log(u"Executing multi level task... done")
         except Exception as exc:
@@ -292,16 +302,24 @@ class ExecuteTask(object):
             self._log([u"Text level %d, fragment %d", level, i])
             self._log([u"  Len:   %d", len(text_file)])
             sync_root = sync_roots[i]
-            if not sync_root.is_empty:
-                begin = sync_root.value.begin
-                end = sync_root.value.end
-                self._log([u"  Begin: %.3f", begin])
-                self._log([u"  End:   %.3f", end])
-                audio_file_mfcc.set_head_middle_tail(head_length=begin, middle_length=(end - begin))
+            if (level > 1) and (len(text_file) == 1):
+                self._log(u"  Level > 1 and only one child => returning trivial timemap")
+                time_map = [
+                    (TimeValue("0.000"), sync_root.value.begin),
+                    (sync_root.value.begin, sync_root.value.end),
+                    (sync_root.value.end, audio_file_mfcc.audio_length)
+                ] 
             else:
-                self._log(u"  No begin or end to set")
-            # compute time map
-            time_map = self._execute_inner(audio_file_mfcc, text_file, adjust_boundaries=adjust_boundaries, log=False)
+                self._log(u"  Level 1 or more than one child => computing timemap")
+                if not sync_root.is_empty:
+                    begin = sync_root.value.begin
+                    end = sync_root.value.end
+                    self._log([u"  Begin: %.3f", begin])
+                    self._log([u"  End:   %.3f", end])
+                    audio_file_mfcc.set_head_middle_tail(head_length=begin, middle_length=(end - begin))
+                else:
+                    self._log(u"  No begin or end to set")
+                time_map = self._execute_inner(audio_file_mfcc, text_file, adjust_boundaries=adjust_boundaries, log=False)
             self._log([u"  Map:   %s", str(time_map)])
             self._level_time_map_to_tree(text_file, time_map, sync_root, add_head_tail=add_head_tail)
             # store next level roots 
@@ -661,6 +679,43 @@ class ExecuteTask(object):
         sync_map = SyncMap()
         sync_map.fragments_tree = tree
         return sync_map
+
+    # TODO can this be done during the alignment?
+    def _check_no_zero(self, min_mws):
+        """ Check for fragments with zero duration """
+        if self.task.configuration["o_no_zero"]:
+            self._log(u"Checking for fragments with zero duration...")
+            # TODO use min_mws when doable, e.g. only one fragment?
+            delta = TimeValue("0.001")
+            leaves = self.task.sync_map.fragments_tree.vleaves_not_empty
+            # first and last leaves are HEAD and TAIL, skipping them
+            max_index = len(leaves) - 1
+            self._log([u"Fragment min index: %d", 1])
+            self._log([u"Fragment max index: %d", max_index - 1])
+            for i in range(1, max_index):
+                self._log([u"Checking index:     %d", i])
+                j = i
+                while (j < max_index) and (leaves[j].end == leaves[i].begin):
+                    j += 1
+                if j != i:
+                    self._log(u"Fragment(s) with zero duration:")
+                    for k in range(i, j):
+                        self._log([u"  %d : %s", k, leaves[k]])
+                    
+                    if leaves[j].end - leaves[j].begin > (j - i) * delta:
+                        # there is room after 
+                        # to move each zero fragment forward by 0.001
+                        for k in range(j - i):
+                            shift = (k + 1) * delta
+                            leaves[i + k].end += shift
+                            leaves[i + k + 1].begin += shift
+                            self._log([u"  Moved fragment %d forward by %.3f", i + k, shift])
+                    else:
+                        self._log(u"  Unable to fix", Logger.WARNING)
+                    i = j - 1
+            self._log(u"Checking for fragments with zero duration... done")
+        else:
+            self._log(u"Not checking for fragments with zero duration")
 
 
 

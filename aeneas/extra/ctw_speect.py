@@ -54,16 +54,22 @@ class CustomTTSWrapper(TTSWrapper):
     TAG = u"CustomTTSWrapper"
 
     #
+    # NOTE in this example we load an English voice,
+    #      hence we support only English language,
+    #      and we map it to a dummy voice code
+    #
+    ENG = Language.ENG
+    """ English """
+    LANGUAGE_TO_VOICE_CODE = {
+        ENG : ENG
+    }
+    DEFAULT_LANGUAGE = ENG
+
+    #
     # NOTE in this example we load a voice producing
     #      audio data in PCM16 mono WAVE (RIFF) format
     #
     OUTPUT_MONO_WAVE = True
-
-    #
-    # NOTE in this example we load an English voice,
-    #      hence we support only English language
-    #
-    SUPPORTED_LANGUAGES = [Language.EN]
 
     def __init__(self, rconf=None, logger=None):
         super(CustomTTSWrapper, self).__init__(
@@ -72,7 +78,6 @@ class CustomTTSWrapper(TTSWrapper):
             has_python_call=True,
             rconf=rconf,
             logger=logger)
-        self.default_language = Language.EN
 
     def _synthesize_multiple_python(self, text_file, output_file_path, quit_after=None, backwards=False):
         """
@@ -94,7 +99,7 @@ class CustomTTSWrapper(TTSWrapper):
             # get sample rate and encoding
             du_nu, sample_rate, encoding, da_nu = self._synthesize_single_helper(
                 text=u"Dummy text to get sample_rate",
-                voice_code=self.default_language
+                voice_code=self.DEFAULT_LANGUAGE
             )
 
             # open output file
@@ -113,6 +118,18 @@ class CustomTTSWrapper(TTSWrapper):
                 fragments = fragments[::-1]
             for fragment in fragments:
                 # language to voice code
+                #
+                # NOTE since voice_code is actually ignored
+                # in _synthesize_single_helper(),
+                # the value of voice_code is irrelevant
+                #
+                # however, in general you need to apply
+                # the _language_to_voice_code() function that maps
+                # the text language to a voice code
+                #
+                # here we apply the _language_to_voice_code() defined in super()
+                # that sets voice_code = fragment.language
+                #
                 voice_code = self._language_to_voice_code(fragment.language)
                 # synthesize and get the duration of the output file
                 self._log([u"Synthesizing fragment %d", num])
@@ -183,6 +200,10 @@ class CustomTTSWrapper(TTSWrapper):
         # NOTE in this example, we assume that the Speect voice data files
         #      are located in the same directory of this .py source file
         #      and that the voice JSON file is called "voice.json"
+        #
+        # NOTE the voice_code value is ignored in this example,
+        #      but in general one might select a voice file to load,
+        #      depending on voice_code
         #
         voice_json_path = gf.safe_str(gf.absolute_path("voice.json", __file__))
         voice = speect.SVoice(voice_json_path)

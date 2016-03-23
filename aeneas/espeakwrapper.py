@@ -60,11 +60,562 @@ class ESPEAKWrapper(TTSWrapper):
 
     TAG = u"ESPEAKWrapper"
 
-    OUTPUT_MONO_WAVE = True
+    AFR = Language.AFR
+    """ Afrikaans (not tested) """
 
-    # all the languages listed in Language are supported by eSpeak
-    # in the future this might change
-    SUPPORTED_LANGUAGES = Language.ALLOWED_VALUES
+    ARG = Language.ARG
+    """ Aragonese (not tested) """
+
+    BOS = Language.BOS
+    """ Bosnian (not tested) """
+
+    BUL = Language.BUL
+    """ Bulgarian """
+
+    CAT = Language.CAT
+    """ Catalan """
+
+    CES = Language.CES
+    """ Czech """
+
+    CMN = Language.CMN
+    """ Mandarin Chinese (not tested) """
+
+    CYM = Language.CYM
+    """ Welsh """
+
+    DAN = Language.DAN
+    """ Danish """
+
+    DEU = Language.DEU
+    """ German """
+
+    ELL = Language.ELL
+    """ Greek (Modern) """
+
+    ENG = Language.ENG
+    """ English """
+
+    EPO = Language.EPO
+    """ Esperanto (not tested) """
+
+    EST = Language.EST
+    """ Estonian """
+
+    FAS = Language.FAS
+    """ Persian """
+
+    FIN = Language.FIN
+    """ Finnish """
+
+    FRA = Language.FRA
+    """ French """
+
+    GLE = Language.GLE
+    """ Irish """
+
+    GRC = Language.GRC
+    """ Greek (Ancient) """
+
+    HIN = Language.HIN
+    """ Hindi (not tested) """
+
+    HRV = Language.HRV
+    """ Croatian """
+
+    HUN = Language.HUN
+    """ Hungarian """
+
+    HYE = Language.HYE
+    """ Armenian (not tested) """
+
+    IND = Language.IND
+    """ Indonesian (not tested) """
+
+    ISL = Language.ISL
+    """ Icelandic """
+
+    ITA = Language.ITA
+    """ Italian """
+
+    JBO = Language.JBO
+    """ Lojban (not tested) """
+
+    KAN = Language.KAN
+    """ Kannada (not tested) """
+
+    KAT = Language.KAT
+    """ Georgian (not tested) """
+
+    KUR = Language.KUR
+    """ Kurdish (not tested) """
+
+    LAT = Language.LAT
+    """ Latin """
+
+    LAV = Language.LAV
+    """ Latvian """
+
+    LFN = Language.LFN
+    """ Lingua Franca Nova (not tested) """
+
+    LIT = Language.LIT
+    """ Lithuanian """
+
+    MAL = Language.MAL
+    """ Malayalam (not tested) """
+
+    MKD = Language.MKD
+    """ Macedonian (not tested) """
+
+    MSA = Language.MSA
+    """ Malay (not tested) """
+
+    NEP = Language.NEP
+    """ Nepali (not tested) """
+
+    NLD = Language.NLD
+    """ Dutch """
+
+    NOR = Language.NOR
+    """ Norwegian """
+
+    PAN = Language.PAN
+    """ Panjabi (not tested) """
+
+    POL = Language.POL
+    """ Polish """
+
+    POR = Language.POR
+    """ Portuguese """
+
+    RON = Language.RON
+    """ Romanian """
+
+    RUS = Language.RUS
+    """ Russian """
+
+    SLK = Language.SLK
+    """ Slovak """
+
+    SPA = Language.SPA
+    """ Spanish """
+
+    SQI = Language.SQI
+    """ Albanian (not tested) """
+
+    SRP = Language.SRP
+    """ Serbian """
+
+    SWA = Language.SWA
+    """ Swahili """
+
+    SWE = Language.SWE
+    """ Swedish """
+
+    TAM = Language.TAM
+    """ Tamil (not tested) """
+
+    TUR = Language.TUR
+    """ Turkish """
+
+    UKR = Language.UKR
+    """ Ukrainian """
+
+    VIE = Language.VIE
+    """ Vietnamese (not tested) """
+
+    YUE = Language.YUE
+    """ Yue Chinese (not tested) """
+
+    ZHO = Language.ZHO
+    """ Chinese (not tested) """
+
+    ENG_GBR = "eng-GBR"
+    """ English (GB) """
+
+    ENG_SCT = "eng-SCT"
+    """ English (Scotland) (not tested) """
+
+    ENG_USA = "eng-USA"
+    """ English (USA) """
+
+    SPA_ESP = "spa-ESP"
+    """ Spanish (Castillan) """
+
+    FRA_BEL = "fra-BEL"
+    """ French (Belgium) (not tested) """
+
+    FRA_FRA = "fra-FRA"
+    """ French (France) """
+
+    POR_BRA = "por-bra"
+    """ Portuguese (Brazil) (not tested) """
+
+    POR_PRT = "por-prt"
+    """ Portuguese (Portugal) """
+
+    AF = "af"
+    """ Afrikaans (not tested) """
+
+    AN = "an"
+    """ Aragonese (not tested) """
+
+    BG = "bg"
+    """ Bulgarian """
+
+    BS = "bs"
+    """ Bosnian (not tested) """
+
+    CA = "ca"
+    """ Catalan """
+
+    CS = "cs"
+    """ Czech """
+
+    CY = "cy"
+    """ Welsh """
+
+    DA = "da"
+    """ Danish """
+
+    DE = "de"
+    """ German """
+
+    EL = "el"
+    """ Greek (Modern) """
+
+    EN = "en"
+    """ English """
+
+    EN_GB = "en-gb"
+    """ English (GB) """
+
+    EN_SC = "en-sc"
+    """ English (Scotland) (not tested) """
+
+    EN_UK_NORTH = "en-uk-north"
+    """ English (Northern) (not tested) """
+
+    EN_UK_RP = "en-uk-rp"
+    """ English (Received Pronunciation) (not tested) """
+
+    EN_UK_WMIDS = "en-uk-wmids"
+    """ English (Midlands) (not tested) """
+
+    EN_US = "en-us"
+    """ English (USA) """
+
+    EN_WI = "en-wi"
+    """ English (West Indies) (not tested) """
+
+    EO = "eo"
+    """ Esperanto (not tested) """
+
+    ES = "es"
+    """ Spanish (Castillan) """
+
+    ES_LA = "es-la"
+    """ Spanish (Latin America) (not tested) """
+
+    ET = "et"
+    """ Estonian """
+
+    FA = "fa"
+    """ Persian """
+
+    FA_PIN = "fa-pin"
+    """ Persian (Pinglish) """
+
+    FI = "fi"
+    """ Finnish """
+
+    FR = "fr"
+    """ French """
+
+    FR_BE = "fr-be"
+    """ French (Belgium) (not tested) """
+
+    FR_FR = "fr-fr"
+    """ French (France) """
+
+    GA = "ga"
+    """ Irish """
+
+    # NOTE already defined
+    #GRC = "grc"
+    #""" Greek (Ancient) """
+
+    HI = "hi"
+    """ Hindi (not tested) """
+
+    HR = "hr"
+    """ Croatian """
+
+    HU = "hu"
+    """ Hungarian """
+
+    HY = "hy"
+    """ Armenian (not tested) """
+
+    HY_WEST = "hy-west"
+    """ Armenian (West) (not tested) """
+
+    ID = "id"
+    """ Indonesian (not tested) """
+
+    IS = "is"
+    """ Icelandic """
+
+    IT = "it"
+    """ Italian """
+
+    # NOTE already defined
+    #JBO = "jbo"
+    #""" Lojban (not tested) """
+
+    KA = "ka"
+    """ Georgian (not tested) """
+
+    KN = "kn"
+    """ Kannada (not tested) """
+
+    KU = "ku"
+    """ Kurdish (not tested) """
+
+    LA = "la"
+    """ Latin """
+
+    # NOTE already defined
+    #LFN = "lfn"
+    #""" Lingua Franca Nova (not tested) """
+
+    LT = "lt"
+    """ Lithuanian """
+
+    LV = "lv"
+    """ Latvian """
+
+    MK = "mk"
+    """ Macedonian (not tested) """
+
+    ML = "ml"
+    """ Malayalam (not tested) """
+
+    MS = "ms"
+    """ Malay (not tested) """
+
+    NE = "ne"
+    """ Nepali (not tested) """
+
+    NL = "nl"
+    """ Dutch """
+
+    NO = "no"
+    """ Norwegian """
+
+    PA = "pa"
+    """ Panjabi (not tested) """
+
+    PL = "pl"
+    """ Polish """
+
+    PT = "pt"
+    """ Portuguese """
+
+    PT_BR = "pt-br"
+    """ Portuguese (Brazil) (not tested) """
+
+    PT_PT = "pt-pt"
+    """ Portuguese (Portugal) """
+
+    RO = "ro"
+    """ Romanian """
+
+    RU = "ru"
+    """ Russian """
+
+    SQ = "sq"
+    """ Albanian (not tested) """
+
+    SK = "sk"
+    """ Slovak """
+
+    SR = "sr"
+    """ Serbian """
+
+    SV = "sv"
+    """ Swedish """
+
+    SW = "sw"
+    """ Swahili """
+
+    TA = "ta"
+    """ Tamil (not tested) """
+
+    TR = "tr"
+    """ Turkish """
+
+    UK = "uk"
+    """ Ukrainian """
+
+    VI = "vi"
+    """ Vietnamese (not tested) """
+
+    VI_HUE = "vi-hue"
+    """ Vietnamese (hue) (not tested) """
+
+    VI_SGN = "vi-sgn"
+    """ Vietnamese (sgn) (not tested) """
+
+    ZH = "zh"
+    """ Mandarin Chinese (not tested) """
+
+    ZH_YUE = "zh-yue"
+    """ Yue Chinese (not tested) """
+
+    LANGUAGE_TO_VOICE_CODE = {
+        AF : "af",
+        AN : "an",
+        BG : "bg",
+        BS : "bs",
+        CA : "ca",
+        CS : "cs",
+        CY : "cy",
+        DA : "da",
+        DE : "de",
+        EL : "el",
+        EN : "en",
+        EN_GB : "en-gb",
+        EN_SC : "en-sc",
+        EN_UK_NORTH : "en-uk-north",
+        EN_UK_RP : "en-uk-rp",
+        EN_UK_WMIDS : "en-uk-wmids",
+        EN_US : "en-us",
+        EN_WI : "en-wi",
+        EO : "eo",
+        ES : "es",
+        ES_LA : "es-la",
+        ET : "et",
+        FA : "fa",
+        FA_PIN : "fa-pin",
+        FI : "fi",
+        FR : "fr",
+        FR_BE : "fr-be",
+        FR_FR : "fr-fr",
+        GA : "ga",
+        #GRC : "grc",
+        HI : "hi",
+        HR : "hr",
+        HU : "hu",
+        HY : "hy",
+        HY_WEST : "hy-west",
+        ID : "id",
+        IS : "is",
+        IT : "it",
+        #JBO : "jbo",
+        KA : "ka",
+        KN : "kn",
+        KU : "ku",
+        LA : "la",
+        #LFN : "lfn",
+        LT : "lt",
+        LV : "lv",
+        MK : "mk",
+        ML : "ml",
+        MS : "ms",
+        NE : "ne",
+        NL : "nl",
+        NO : "no",
+        PA : "pa",
+        PL : "pl",
+        PT : "pt",
+        PT_BR : "pt-br",
+        PT_PT : "pt-pt",
+        RO : "ro",
+        RU : "ru",
+        SQ : "sq",
+        SK : "sk",
+        SR : "sr",
+        SV : "sv",
+        SW : "sw",
+        TA : "ta",
+        TR : "tr",
+        UK : "ru", # NOTE mocking support for Ukrainian with Russian voice
+        VI : "vi",
+        VI_HUE : "vi-hue",
+        VI_SGN : "vi-sgn",
+        ZH : "zh",
+        ZH_YUE : "zh-yue",
+        AFR : "af",
+        ARG : "an",
+        BOS : "bs",
+        BUL : "bg",
+        CAT : "ca",
+        CES : "cs",
+        CMN : "zh",
+        CYM : "cy",
+        DAN : "da",
+        DEU : "de",
+        ELL : "el",
+        ENG : "en",
+        EPO : "eo",
+        EST : "et",
+        FAS : "fa",
+        FIN : "fi",
+        FRA : "fr",
+        GLE : "ga",
+        GRC : "grc",
+        HIN : "hi",
+        HRV : "hr",
+        HUN : "hu",
+        HYE : "hy",
+        IND : "id",
+        ISL : "is",
+        ITA : "it",
+        JBO : "jbo",
+        KAN : "kn",
+        KAT : "ka",
+        KUR : "ku",
+        LAT : "la",
+        LAV : "lv",
+        LFN : "lfn",
+        LIT : "lt",
+        MAL : "ml",
+        MKD : "mk",
+        MSA : "ms",
+        NEP : "ne",
+        NLD : "nl",
+        NOR : "no",
+        PAN : "pa",
+        POL : "pl",
+        POR : "pt",
+        RON : "ro",
+        RUS : "ru",
+        SLK : "sk",
+        SPA : "es",
+        SQI : "sq",
+        SRP : "sr",
+        SWA : "sw",
+        SWE : "sv",
+        TAM : "ta",
+        TUR : "tr",
+        UKR : "ru", # NOTE mocking support for Ukrainian with Russian voice
+        VIE : "vi",
+        YUE : "zh-yue",
+        ZHO : "zh",
+        ENG_GBR : "en-gb",
+        ENG_SCT : "en-sc",
+        ENG_USA : "en-us",
+        SPA_ESP : "es-es",
+        FRA_BEL : "fr-be",
+        FRA_FRA : "fr-fr",
+        POR_BRA : "pt-br",
+        POR_PRT : "pt-pt"
+    }
+    DEFAULT_LANGUAGE = ENG
+
+    OUTPUT_MONO_WAVE = True
 
     def __init__(self, rconf=None, logger=None):
         super(ESPEAKWrapper, self).__init__(
@@ -85,13 +636,6 @@ class ESPEAKWrapper(TTSWrapper):
     def _log(self, message, severity=Logger.DEBUG):
         """ Log """
         self.logger.log(message, severity, self.TAG)
-
-    def _language_to_voice_code(self, language):
-        voice_code = language
-        if language == Language.UK:
-            voice_code = Language.RU
-        self._log([u"Language to voice code: '%s' => '%s'", language, voice_code])
-        return voice_code
 
     def _synthesize_multiple_c_extension(self, text_file, output_file_path, quit_after=None, backwards=False):
         """
@@ -121,7 +665,7 @@ class ESPEAKWrapper(TTSWrapper):
             f_lang = fragment.language
             f_text = fragment.filtered_text
             if f_lang is None:
-                f_lang = self.default_language
+                f_lang = self.DEFAULT_LANGUAGE
             f_voice_code = self._language_to_voice_code(f_lang)
             if f_text is None:
                 f_text = u""
@@ -158,8 +702,8 @@ class ESPEAKWrapper(TTSWrapper):
                 # Python 3 => pass Unicode strings
                 c_text = [(gf.safe_unicode(t[0]), gf.safe_unicode(t[1])) for t in u_text]
             self._log(u"Preparing c_text... done")
-            
-            self._log(u"Calling aeneas.cew directly") 
+
+            self._log(u"Calling aeneas.cew directly")
             try:
                 self._log(u"Importing aeneas.cew...")
                 import aeneas.cew.cew
@@ -177,7 +721,7 @@ class ESPEAKWrapper(TTSWrapper):
                 self._log(u"An unexpected exception occurred while running cew:", Logger.WARNING)
                 self._log([u"%s", exc], Logger.WARNING)
                 return (False, None)
-        
+
         self._log([u"sr: %d", sr])
         self._log([u"sf: %d", sf])
 
@@ -246,8 +790,8 @@ class ESPEAKWrapper(TTSWrapper):
                 # Python 3 => pass Unicode strings
                 c_text = gf.safe_unicode(text)
             self._log(u"Preparing c_text... done")
-            
-            self._log(u"Calling aeneas.cew directly") 
+
+            self._log(u"Calling aeneas.cew directly")
             try:
                 self._log(u"Importing aeneas.cew...")
                 import aeneas.cew.cew

@@ -15,7 +15,6 @@ from aeneas.container import ContainerFormat
 from aeneas.executetask import AdjustBoundaryAlgorithm
 from aeneas.hierarchytype import HierarchyType
 from aeneas.idsortingalgorithm import IDSortingAlgorithm
-from aeneas.language import Language
 from aeneas.logger import Logger
 from aeneas.runtimeconfiguration import RuntimeConfiguration
 from aeneas.syncmap import SyncMapFormat
@@ -39,8 +38,6 @@ class Validator(object):
     """
     A validator to assess whether user input is well-formed.
 
-    Note that all strings are ``str`` objects.
-    
     :param rconf: a runtime configuration. Default: ``None``, meaning that
                   default settings will be used.
     :type  rconf: :class:`aeneas.runtimeconfiguration.RuntimeConfiguration`
@@ -51,14 +48,17 @@ class Validator(object):
     TAG = u"Validator"
 
     ALLOWED_VALUES = [
-        (
-            gc.PPN_JOB_LANGUAGE,
-            Language.ALLOWED_VALUES
-        ),
-        (
-            gc.PPN_TASK_LANGUAGE,
-            Language.ALLOWED_VALUES
-        ),
+        #
+        # NOTE disabling the check on language since now we support multiple TTS
+        #(
+        #    gc.PPN_JOB_LANGUAGE,
+        #    Language.ALLOWED_VALUES
+        #),
+        #(
+        #    gc.PPN_TASK_LANGUAGE,
+        #    Language.ALLOWED_VALUES
+        #),
+        #
         (
             gc.PPN_JOB_OS_CONTAINER_FORMAT,
             ContainerFormat.ALLOWED_VALUES
@@ -105,6 +105,24 @@ class Validator(object):
             gc.PPN_JOB_IS_TEXT_FILE_FORMAT,
             [TextFileFormat.UNPARSED],
             [gc.PPN_JOB_IS_TEXT_UNPARSED_ID_SORT]
+        ),
+        (
+            # is_text_type=munparsed => is_text_munparsed_l1_id_regex
+            gc.PPN_JOB_IS_TEXT_FILE_FORMAT,
+            [TextFileFormat.MUNPARSED],
+            [gc.PPN_JOB_IS_TEXT_MUNPARSED_L1_ID_REGEX]
+        ),
+        (
+            # is_text_type=munparsed => is_text_munparsed_l2_id_regex
+            gc.PPN_JOB_IS_TEXT_FILE_FORMAT,
+            [TextFileFormat.MUNPARSED],
+            [gc.PPN_JOB_IS_TEXT_MUNPARSED_L2_ID_REGEX]
+        ),
+        (
+            # is_text_type=munparsed => is_text_munparsed_l3_id_regex
+            gc.PPN_JOB_IS_TEXT_FILE_FORMAT,
+            [TextFileFormat.MUNPARSED],
+            [gc.PPN_JOB_IS_TEXT_MUNPARSED_L3_ID_REGEX]
         ),
         (
             # is_text_type=unparsed => is_text_unparsed_class_regex or

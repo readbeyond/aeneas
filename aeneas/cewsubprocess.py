@@ -26,6 +26,7 @@ import sys
 
 from aeneas.logger import Logger
 from aeneas.runtimeconfiguration import RuntimeConfiguration
+from aeneas.timevalue import TimeValue
 import aeneas.globalfunctions as gf
 
 __author__ = "Alberto Pettarin"
@@ -74,7 +75,7 @@ class CEWSubprocess(object):
         :param string audio_file_path: the path of the output audio file
         :param string voice_code: the code of the voice to use
         :param string text: the text to synthesize
-        :rtype: float
+        :rtype: :class:`aeneas.timevalue.TimeValue`
         """
         u_text = [(voice_code, text)]
         sr, sf, intervals = self.synthesize_multiple(audio_file_path, 0, 0, u_text)
@@ -137,7 +138,7 @@ class CEWSubprocess(object):
             for line in lines[2:]:
                 values = line.split(u" ")
                 if len(values) == 2:
-                    intervals.append((float(values[0]), float(values[1])))
+                    intervals.append((TimeValue(values[0]), TimeValue(values[1])))
         self._log(u"Reading output data... done")
 
         self._log(u"Deleting text and data files...")
@@ -160,7 +161,7 @@ def main():
         return 1
 
     # read parameters
-    c_quit_after = float(sys.argv[1])
+    c_quit_after = float(sys.argv[1]) # NOTE: cew needs float, not TimeValue
     c_backwards = int(sys.argv[2])
     text_file_path = sys.argv[3]
     audio_file_path = sys.argv[4]
@@ -202,7 +203,7 @@ def main():
         with io.open(data_file_path, "w", encoding="utf-8") as data:
             data.write(u"%d\n" % (sr))
             data.write(u"%d\n" % (sf))
-            data.write(u"\n".join([u"%.6f %.6f" % (i[0], i[1]) for i in intervals]))
+            data.write(u"\n".join([u"%.3f %.3f" % (i[0], i[1]) for i in intervals]))
 
     except Exception as exc:
         print(u"Exception %s" % str(exc))

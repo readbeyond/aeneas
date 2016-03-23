@@ -12,7 +12,6 @@ import subprocess
 
 from aeneas.audiofile import AudioFile
 from aeneas.audiofile import AudioFileUnsupportedFormatError
-from aeneas.language import Language
 from aeneas.logger import Logger
 from aeneas.runtimeconfiguration import RuntimeConfiguration
 from aeneas.timevalue import TimeValue
@@ -108,6 +107,14 @@ class TTSWrapper(object):
     outputs the audio data to stdout.
     """
 
+    LANGUAGE_TO_VOICE_CODE = {}
+    """
+    Map a language code to a voice code.
+    Concrete subclasses must populate this class field,
+    according to the language and voice codes
+    supported by the TTS engine they wrap.
+    """
+
     OUTPUT_MONO_WAVE = False
     """
     Set to ``True`` if the TTS outputs audio data
@@ -115,12 +122,12 @@ class TTSWrapper(object):
     which can be read without converting.
     """
 
-    SUPPORTED_LANGUAGES = []
+    DEFAULT_LANGUAGE = None
     """
-    List of supported languages.
+    The default language for this TTS engine.
     Concrete subclasses must populate this class field,
-    according to the languages supported by the TTS engine
-    they wrap.
+    according to the languages supported
+    by the TTS engine they wrap.
     """
 
     def __init__(
@@ -136,7 +143,6 @@ class TTSWrapper(object):
         self.has_subprocess_call = has_subprocess_call
         self.has_c_extension_call = has_c_extension_call
         self.has_python_call = has_python_call
-        self.default_language = Language.EN
         self.subprocess_arguments = []
         self.logger = logger if logger is not None else Logger()
         self.rconf = rconf if rconf is not None else RuntimeConfiguration()
@@ -152,18 +158,24 @@ class TTSWrapper(object):
         """
         Translate a language value to a voice code.
 
-        This function can be used to mock support for a language
-        by using a voice code for a similar language.
-
-        This function should might be overridden
-        by concrete subclasses, depending on the
-        list of languages and voices they support.
+        If you want to mock support for a language
+        by using a voice for a similar language,
+        please add it to the ``LANGUAGE_TO_VOICE_CODE`` dictionary.
 
         :param language: the requested language
         :type  language: :class:`aeneas.language.Language`
         :rtype: string
         """
-        voice_code = language
+        voice_code = self.rconf[RuntimeConfiguration.TTS_VOICE_CODE]
+        if voice_code is None:
+            try:
+                voice_code = self.LANGUAGE_TO_VOICE_CODE[language]
+            except KeyError:
+                self._log([u"Language code '%s' not found in LANGUAGE_TO_VOICE_CODE", language], Logger.WARNING)
+                self._log(u"Using the language code as the voice code", Logger.WARNING)
+                voice_code = language
+        else:
+            self._log(u"TTS voice override in rconf")
         self._log([u"Language to voice code: '%s' => '%s'", language, voice_code])
         return voice_code
 
@@ -240,9 +252,9 @@ class TTSWrapper(object):
         # a supported language code and unicode type
         if not self.rconf[RuntimeConfiguration.ALLOW_UNLISTED_LANGUAGES]:
             for fragment in text_file.fragments:
-                if fragment.language not in self.SUPPORTED_LANGUAGES:
-                    self._log([u"Language '%s' is not supported", fragment.language], Logger.CRITICAL)
-                    raise ValueError("Language not supported")
+                if fragment.language not in self.LANGUAGE_TO_VOICE_CODE:
+                    self._log([u"Language '%s' is not supported by the selected TTS engine", fragment.language], Logger.CRITICAL)
+                    raise ValueError("Language not supported by the selected TTS engine")
         for fragment in text_file.fragments:
             for line in fragment.lines:
                 if not gf.is_unicode(line):
@@ -334,7 +346,7 @@ class TTSWrapper(object):
             # get sample rate and encoding
             du_nu, sample_rate, encoding, da_nu = synthesize_and_clean(
                 text=u"Dummy text to get sample_rate",
-                voice_code=self._language_to_voice_code(self.default_language)
+                voice_code=self._language_to_voice_code(self.DEFAULT_LANGUAGE)
             )
 
             # open output file
@@ -452,9 +464,9 @@ class TTSWrapper(object):
             raise OSError("Cannot write output file")
 
         # check that the requested language is listed in language.py
-        if (language not in self.SUPPORTED_LANGUAGES) and (not self.rconf[RuntimeConfiguration.ALLOW_UNLISTED_LANGUAGES]):
-            self._log([u"Language '%s' is not supported", language], Logger.CRITICAL)
-            raise ValueError("Language not supported")
+        if (language not in self.LANGUAGE_TO_VOICE_CODE) and (not self.rconf[RuntimeConfiguration.ALLOW_UNLISTED_LANGUAGES]):
+            self._log([u"Language '%s' is not supported by the selected TTS engine", language], Logger.CRITICAL)
+            raise ValueError("Language not supported by the selected TTS engine")
 
         self._log([u"Synthesizing text: '%s'", text])
         self._log([u"Synthesizing language: '%s'", language])

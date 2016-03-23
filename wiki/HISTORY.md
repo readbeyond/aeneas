@@ -45,3 +45,8 @@ also on [PyPI](https://pypi.python.org/pypi/aeneas/)
 
 **January 2016**: release of v1.4.0,
 supporting both Python 2.7 and 3.4 or later
+
+**March 2016**: release of v1.5.0,
+with faster C extension, multilevel alignment,
+custom TTS support, and more
+
