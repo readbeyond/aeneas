@@ -12,6 +12,7 @@ import sys
 from aeneas.audiofile import AudioFile
 from aeneas.audiofile import AudioFileProbeError
 from aeneas.audiofile import AudioFileUnsupportedFormatError
+from aeneas.runtimeconfiguration import RuntimeConfiguration
 from aeneas.tools.abstract_cli_program import AbstractCLIProgram
 import aeneas.globalfunctions as gf
 
@@ -22,7 +23,7 @@ __copyright__ = """
     Copyright 2015-2016, Alberto Pettarin (www.albertopettarin.it)
     """
 __license__ = "GNU AGPL 3"
-__version__ = "1.4.1"
+__version__ = "1.5.0"
 __email__ = "aeneas@readbeyond.it"
 __status__ = "Production"
 
@@ -37,7 +38,7 @@ class ReadAudioCLI(AbstractCLIProgram):
     HELP = {
         "description": u"Read audio file properties.",
         "synopsis": [
-            u"AUDIO_FILE"
+            (u"AUDIO_FILE", True)
         ],
         "options": [
         ],
@@ -67,7 +68,7 @@ class ReadAudioCLI(AbstractCLIProgram):
             self.print_error(u"Cannot read file '%s'" % (audio_file_path))
             self.print_error(u"Make sure the input file path is written/escaped correctly")
         except AudioFileProbeError:
-            self.print_error(u"Unable to call the ffprobe executable '%s'" % (self.rconf["ffprobe_path"]))
+            self.print_error(u"Unable to call the ffprobe executable '%s'" % (self.rconf[RuntimeConfiguration.FFPROBE_PATH]))
             self.print_error(u"Make sure the path to ffprobe is correct")
         except AudioFileUnsupportedFormatError:
             self.print_error(u"Cannot read properties of file '%s'" % (audio_file_path))

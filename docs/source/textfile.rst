@@ -1,4 +1,4 @@
-TextFile
+textfile
 ========
 
 .. automodule:: aeneas.textfile

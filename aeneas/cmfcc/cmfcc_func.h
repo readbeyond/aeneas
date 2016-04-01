@@ -1,6 +1,6 @@
 /*
 
-Python C Extension for computing the MFCC
+Python C Extension for computing the MFCCs from a WAVE mono file.
 
 __author__ = "Alberto Pettarin"
 __copyright__ = """
@@ -9,47 +9,48 @@ __copyright__ = """
     Copyright 2015-2016, Alberto Pettarin (www.albertopettarin.it)
     """
 __license__ = "GNU AGPL v3"
-__version__ = "1.4.1"
+__version__ = "1.5.0"
 __email__ = "aeneas@readbeyond.it"
 __status__ = "Production"
 
 */
 
-// NOTE: using unsigned int as it is 32-bit wide on all modern architectures
-//       not using uint32_t because the MS C compiler does not have <stdint.h>
-//       or, at least, it is not easy to use it
+#include "cint.h"
+
+#define CMFCC_SUCCESS 0
+#define CMFCC_FAILURE 1
 
 // compute MFCC from data loaded in RAM
 int compute_mfcc_from_data(
     double *data_ptr,
-    const unsigned int data_length,
-    const unsigned int sample_rate,
-    const unsigned int filter_bank_size,
-    const unsigned int mfcc_size,
-    const unsigned int fft_order,
+    const uint32_t data_length,
+    const uint32_t sample_rate,
+    const uint32_t filter_bank_size,
+    const uint32_t mfcc_size,
+    const uint32_t fft_order,
     const double lower_frequency,
     const double upper_frequency,
     const double emphasis_factor,
     const double window_length,
     const double window_shift,
     double **mfcc_ptr,
-    unsigned int *mfcc_length
+    uint32_t *mfcc_length
 );
 
 // compute MFCC from file on disk
 int compute_mfcc_from_file(
     char *audio_file_path,
-    const unsigned int filter_bank_size,
-    const unsigned int mfcc_size,
-    const unsigned int fft_order,
+    const uint32_t filter_bank_size,
+    const uint32_t mfcc_size,
+    const uint32_t fft_order,
     const double lower_frequency,
     const double upper_frequency,
     const double emphasis_factor,
     const double window_length,
     const double window_shift,
-    unsigned int *data_length_ret,
-    unsigned int *sample_rate_ret,
+    uint32_t *data_length,
+    uint32_t *sample_rate,
     double **mfcc_ptr,
-    unsigned int *mfcc_length
+    uint32_t *mfcc_length
 );
 

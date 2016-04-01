@@ -108,35 +108,35 @@ class TestContainer(unittest.TestCase):
     def test_entries_file_not_existing(self):
         cont = Container(self.NOT_EXISTING)
         with self.assertRaises(TypeError):
-            entries = cont.entries()
+            entries = cont.entries
 
     def test_entries_empty_file(self):
         for f in self.EMPTY_FILES:
             cont = Container(f)
             with self.assertRaises(OSError):
-                self.assertEqual(len(cont.entries()), 0)
+                self.assertEqual(len(cont.entries), 0)
 
     def test_entries_empty_directory(self):
         output_path = gf.tmp_directory()
         cont = Container(output_path)
-        self.assertEqual(len(cont.entries()), 0)
+        self.assertEqual(len(cont.entries), 0)
         gf.delete_directory(output_path)
 
     def test_entries(self):
         for key in self.FILES:
             f = self.FILES[key]
             cont = Container(f["path"])
-            self.assertEqual(cont.entries(), self.EXPECTED_ENTRIES)
+            self.assertEqual(cont.entries, self.EXPECTED_ENTRIES)
 
     def test_entries_unpacked_relative(self):
         f = self.FILES["unpacked"]
         cont = Container(f["path"])
-        self.assertEqual(cont.entries(), self.EXPECTED_ENTRIES)
+        self.assertEqual(cont.entries, self.EXPECTED_ENTRIES)
 
     def test_entries_unpacked_absolute(self):
         f = self.FILES["unpacked"]
         cont = Container(os.path.abspath(f["path"]))
-        self.assertEqual(cont.entries(), self.EXPECTED_ENTRIES)
+        self.assertEqual(cont.entries, self.EXPECTED_ENTRIES)
 
     def test_is_safe_not_existing(self):
         cont = Container(self.NOT_EXISTING)
@@ -267,7 +267,7 @@ class TestContainer(unittest.TestCase):
             cont = Container(f["path"])
             cont.decompress(output_path)
             copy = Container(output_path, ContainerFormat.UNPACKED)
-            self.assertEqual(copy.entries(), self.EXPECTED_ENTRIES)
+            self.assertEqual(copy.entries, self.EXPECTED_ENTRIES)
             gf.delete_directory(output_path)
 
     def test_compress_unpacked(self):
@@ -277,7 +277,7 @@ class TestContainer(unittest.TestCase):
         cont.compress(input_path)
         self.assertFalse(os.path.isfile(output_path))
         copy = Container(output_path, ContainerFormat.UNPACKED)
-        self.assertEqual(copy.entries(), self.EXPECTED_ENTRIES)
+        self.assertEqual(copy.entries, self.EXPECTED_ENTRIES)
         gf.delete_directory(output_path)
 
     def test_compress_file(self):
@@ -290,7 +290,7 @@ class TestContainer(unittest.TestCase):
                 cont.compress(input_path)
                 self.assertTrue(os.path.isfile(output_path))
                 copy = Container(output_path, fmt)
-                self.assertEqual(copy.entries(), self.EXPECTED_ENTRIES)
+                self.assertEqual(copy.entries, self.EXPECTED_ENTRIES)
                 gf.delete_file(handler, output_path)
 
 if __name__ == '__main__':

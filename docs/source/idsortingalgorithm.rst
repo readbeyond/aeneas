@@ -1,4 +1,4 @@
-IDSortingAlgorithm
+idsortingalgorithm
 ==================
 
 .. automodule:: aeneas.idsortingalgorithm

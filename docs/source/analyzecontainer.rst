@@ -1,4 +1,4 @@
-AnalyzeContainer
+analyzecontainer
 ================
 
 .. automodule:: aeneas.analyzecontainer

@@ -1,0 +1,39 @@
+$ python -m aeneas.tools.execute_task --example-json -v
+
+[DEBU] CLI: Formal arguments: [u'/home/alberto/ebooks/cloned/rb/aeneas/aeneas/tools/execute_task.py', u'--example-json', u'-v']
+[DEBU] CLI: Actual arguments: [u'--example-json']
+[DEBU] CLI: Runtime configuration: 'allow_unlisted_languages=False|c_extensions=True|cew_subprocess_enabled=False|cew_subprocess_path=python|dtw_algorithm=stripe|dtw_margin=60.000|ffmpeg_path=ffmpeg|ffmpeg_sample_rate=16000|ffprobe_path=ffprobe|job_max_tasks=0|mfcc_emphasis_factor=0.97|mfcc_fft_order=512|mfcc_filters=40|mfcc_lower_frequency=133.3333|mfcc_size=13|mfcc_upper_frequency=6855.4976|mfcc_window_length=0.100|mfcc_window_length_l1=0.500|mfcc_window_length_l2=0.100|mfcc_window_length_l3=0.020|mfcc_window_shift=0.040|mfcc_window_shift_l1=0.200|mfcc_window_shift_l2=0.040|mfcc_window_shift_l3=0.005|nuance_tts_api_retry_attempts=5|nuance_tts_api_sleep=1.000|task_max_audio_length=7200.0|task_max_text_length=0|tts=espeak|tts_path=espeak|vad_extend_speech_after=0.000|vad_extend_speech_before=0.000|vad_log_energy_threshold=0.699|vad_min_nonspeech_length=0.200'
+[INFO] CLI: Running example task with arguments:
+  Audio file:    aeneas/tools/res/audio.mp3
+  Text file:     aeneas/tools/res/plain.txt
+  Config string: task_language=eng|is_text_type=plain|os_task_file_format=json
+  Sync map file: output/sonnet.json
+[INFO] Running example task with arguments:
+  Audio file:    aeneas/tools/res/audio.mp3
+  Text file:     aeneas/tools/res/plain.txt
+  Config string: task_language=eng|is_text_type=plain|os_task_file_format=json
+  Sync map file: output/sonnet.json
+[INFO] CLI: Creating task...
+[INFO] Creating task...
+[DEBU] Task: Populate audio file...
+[DEBU] Task: audio_file_path_absolute is None
+[DEBU] Task: Populate audio file... done
+[DEBU] Task: Populate text file...
+[DEBU] Task: text_file_path_absolute and/or language is None
+[DEBU] Task: Populate text file... done
+[DEBU] Task: Populate audio file...
+[DEBU] Task: audio_file_path_absolute is 'aeneas/tools/res/audio.mp3'
+
+...
+
+[DEBU] Task: Output sync map to output/sonnet.json
+[DEBU] Task: sync_map_format is json
+[DEBU] Task: page_ref is None
+[DEBU] Task: audio_ref is None
+[DEBU] Task: Calling sync_map.write...
+[DEBU] Task: Calling sync_map.write... done
+[INFO] CLI: Creating output sync map file... done
+[INFO] Creating output sync map file... done
+[SUCC] CLI: Created file 'output/sonnet.json'
+[INFO] Created file 'output/sonnet.json'
+[DEBU] CLI: Execution completed with code 0

@@ -33,7 +33,7 @@ class TestRunSDCLI(unittest.TestCase):
         self.execute([
             ("", "list"),
             ("", "From|fairest|creatures|we|desire|increase"),
-            ("", "en"),
+            ("", "eng"),
             ("in", "../tools/res/audio.mp3")
         ], 0)
 
@@ -41,7 +41,7 @@ class TestRunSDCLI(unittest.TestCase):
         self.execute([
             ("", "parsed"),
             ("in", "../tools/res/parsed.txt"),
-            ("", "en"),
+            ("", "eng"),
             ("in", "../tools/res/audio.mp3")
         ], 0)
 
@@ -49,7 +49,7 @@ class TestRunSDCLI(unittest.TestCase):
         self.execute([
             ("", "plain"),
             ("in", "../tools/res/plain.txt"),
-            ("", "en"),
+            ("", "eng"),
             ("in", "../tools/res/audio.mp3")
 
         ], 0)
@@ -58,7 +58,7 @@ class TestRunSDCLI(unittest.TestCase):
         self.execute([
             ("", "subtitles"),
             ("in", "../tools/res/subtitles.txt"),
-            ("", "en"),
+            ("", "eng"),
             ("in", "../tools/res/audio.mp3")
         ], 0)
 
@@ -66,7 +66,7 @@ class TestRunSDCLI(unittest.TestCase):
         self.execute([
             ("", "unparsed"),
             ("in", "../tools/res/unparsed.xhtml"),
-            ("", "en"),
+            ("", "eng"),
             ("in", "../tools/res/audio.mp3"),
             ("", "--id-regex=f[0-9]*")
         ], 0)
@@ -75,7 +75,7 @@ class TestRunSDCLI(unittest.TestCase):
         self.execute([
             ("", "unparsed"),
             ("in", "../tools/res/unparsed.xhtml"),
-            ("", "en"),
+            ("", "eng"),
             ("in", "../tools/res/audio.mp3"),
             ("", "--class-regex=ra"),
             ("", "--sort=unsorted"),
@@ -85,7 +85,7 @@ class TestRunSDCLI(unittest.TestCase):
         self.execute([
             ("", "unparsed"),
             ("in", "../tools/res/unparsed.xhtml"),
-            ("", "en"),
+            ("", "eng"),
             ("in", "../tools/res/audio.mp3"),
             ("", "--id-regex=f[0-9]*"),
             ("", "--sort=numeric")
@@ -95,7 +95,7 @@ class TestRunSDCLI(unittest.TestCase):
         self.execute([
             ("", "unparsed"),
             ("in", "../tools/res/unparsed.xhtml"),
-            ("", "en"),
+            ("", "eng"),
             ("in", "../tools/res/audio.mp3"),
             ("", "--id-regex=f[0-9]*"),
             ("", "--sort=lexicographic")
@@ -104,14 +104,14 @@ class TestRunSDCLI(unittest.TestCase):
     def test_sd_missing_1(self):
         self.execute([
             ("", "list"),
-            ("", "en"),
+            ("", "eng"),
             ("in", "../tools/res/audio.mp3")
         ], 2)
 
     def test_sd_missing_2(self):
         self.execute([
             ("", "From|fairest|creatures|we|desire|increase"),
-            ("", "en"),
+            ("", "eng"),
             ("in", "../tools/res/audio.mp3")
         ], 2)
 
@@ -126,14 +126,14 @@ class TestRunSDCLI(unittest.TestCase):
         self.execute([
             ("", "list"),
             ("", "From|fairest|creatures|we|desire|increase"),
-            ("", "en")
+            ("", "eng")
         ], 2)
 
     def test_sd_cannot_read(self):
         self.execute([
             ("", "plain"),
             ("", "/foo/bar/baz.wav"),
-            ("", "en"),
+            ("", "eng"),
             ("in", "../tools/res/audio.mp3")
         ], 1)
 
@@ -141,7 +141,7 @@ class TestRunSDCLI(unittest.TestCase):
         self.execute([
             ("", "unparsed"),
             ("in", "../tools/res/unparsed.xhtml"),
-            ("", "en"),
+            ("", "eng"),
             ("in", "../tools/res/audio.mp3")
         ], 1)
 
@@ -149,7 +149,7 @@ class TestRunSDCLI(unittest.TestCase):
         self.execute([
             ("", "parsed"),
             ("in", "../tools/res/parsed.txt"),
-            ("", "en"),
+            ("", "eng"),
             ("in", "../tools/res/audio.mp3"),
             ("", "--min-head=0.0"),
             ("", "--max-head=5.0")
@@ -159,7 +159,7 @@ class TestRunSDCLI(unittest.TestCase):
         self.execute([
             ("", "parsed"),
             ("in", "../tools/res/parsed.txt"),
-            ("", "en"),
+            ("", "eng"),
             ("in", "../tools/res/audio.mp3"),
             ("", "--min-tail=1.0"),
             ("", "--max-tail=5.0")
@@ -169,7 +169,7 @@ class TestRunSDCLI(unittest.TestCase):
         self.execute([
             ("", "parsed"),
             ("in", "../tools/res/parsed.txt"),
-            ("", "en"),
+            ("", "eng"),
             ("in", "../tools/res/audio.mp3"),
             ("", "--min-head=0.0"),
             ("", "--max-head=5.0"),
@@ -181,7 +181,7 @@ class TestRunSDCLI(unittest.TestCase):
         self.execute([
             ("", "list"),
             ("", "From|fairest|creatures|we|desire|increase"),
-            ("", "en"),
+            ("", "eng"),
             ("in", "../tools/res/audio.mp3"),
             ("", "-r=\"c_extensions=False\"")
         ], 0)

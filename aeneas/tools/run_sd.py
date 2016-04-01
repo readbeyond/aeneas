@@ -9,10 +9,14 @@ from __future__ import absolute_import
 from __future__ import print_function
 import sys
 
-from aeneas.audiofile import AudioFileMonoWAVE
-from aeneas.ffmpegwrapper import FFMPEGWrapper
+from aeneas.audiofile import AudioFileConverterError
+from aeneas.audiofile import AudioFileNotInitializedError
+from aeneas.audiofile import AudioFileUnsupportedFormatError
+from aeneas.audiofilemfcc import AudioFileMFCC
 from aeneas.language import Language
+from aeneas.runtimeconfiguration import RuntimeConfiguration
 from aeneas.sd import SD
+from aeneas.textfile import TextFileFormat
 from aeneas.tools.abstract_cli_program import AbstractCLIProgram
 import aeneas.globalconstants as gc
 import aeneas.globalfunctions as gf
@@ -24,7 +28,7 @@ __copyright__ = """
     Copyright 2015-2016, Alberto Pettarin (www.albertopettarin.it)
     """
 __license__ = "GNU AGPL 3"
-__version__ = "1.4.1"
+__version__ = "1.5.0"
 __email__ = "aeneas@readbeyond.it"
 __status__ = "Production"
 
@@ -42,18 +46,21 @@ class RunSDCLI(AbstractCLIProgram):
     HELP = {
         "description": u"Detect the audio head and/or tail of the given audio file.",
         "synopsis": [
-            u"list 'fragment 1|fragment 2|...|fragment N' LANGUAGE AUDIO_FILE",
-            u"[parsed|plain|subtitles|unparsed] TEXT_FILE LANGUAGE AUDIO_FILE"
+            (u"list 'fragment 1|fragment 2|...|fragment N' LANGUAGE AUDIO_FILE", True),
+            (u"[mplain|munparsed|parsed|plain|subtitles|unparsed] TEXT_FILE LANGUAGE AUDIO_FILE", True)
         ],
         "examples": [
-            u"parsed %s en %s" % (TEXT_FILE, AUDIO_FILE),
-            u"parsed %s en %s %s" % (TEXT_FILE, AUDIO_FILE, PARAMETERS_HEAD),
-            u"parsed %s en %s %s" % (TEXT_FILE, AUDIO_FILE, PARAMETERS_TAIL),
-            u"parsed %s en %s %s %s" % (TEXT_FILE, AUDIO_FILE, PARAMETERS_HEAD, PARAMETERS_TAIL),
+            u"parsed %s eng %s" % (TEXT_FILE, AUDIO_FILE),
+            u"parsed %s eng %s %s" % (TEXT_FILE, AUDIO_FILE, PARAMETERS_HEAD),
+            u"parsed %s eng %s %s" % (TEXT_FILE, AUDIO_FILE, PARAMETERS_TAIL),
+            u"parsed %s eng %s %s %s" % (TEXT_FILE, AUDIO_FILE, PARAMETERS_HEAD, PARAMETERS_TAIL),
         ],
         "options": [
             u"--class-regex=REGEX : extract text from elements with class attribute matching REGEX (unparsed)",
             u"--id-regex=REGEX : extract text from elements with id attribute matching REGEX (unparsed)",
+            u"--l1-id-regex=REGEX : extract text from level 1 elements with id attribute matching REGEX (munparsed)",
+            u"--l2-id-regex=REGEX : extract text from level 2 elements with id attribute matching REGEX (munparsed)",
+            u"--l3-id-regex=REGEX : extract text from level 3 elements with id attribute matching REGEX (munparsed)",
             u"--max-head=DUR : audio head has at most DUR seconds",
             u"--max-tail=DUR : audio tail has at most DUR seconds",
             u"--min-head=DUR : audio head has at least DUR seconds",
@@ -73,29 +80,35 @@ class RunSDCLI(AbstractCLIProgram):
         text_format = gf.safe_unicode(self.actual_arguments[0])
         if text_format == u"list":
             text = gf.safe_unicode(self.actual_arguments[1])
-        elif text_format in [u"parsed", u"plain", u"subtitles", u"unparsed"]:
+        elif text_format in TextFileFormat.ALLOWED_VALUES:
             text = self.actual_arguments[1]
             if not self.check_input_file(text):
                 return self.ERROR_EXIT_CODE
         else:
             return self.print_help()
 
+        l1_id_regex = self.has_option_with_value(u"--l1-id-regex")
+        l2_id_regex = self.has_option_with_value(u"--l2-id-regex")
+        l3_id_regex = self.has_option_with_value(u"--l3-id-regex")
         id_regex = self.has_option_with_value(u"--id-regex")
         class_regex = self.has_option_with_value(u"--class-regex")
         sort = self.has_option_with_value(u"--sort")
         parameters = {
+            gc.PPN_TASK_IS_TEXT_MUNPARSED_L1_ID_REGEX : l1_id_regex,
+            gc.PPN_TASK_IS_TEXT_MUNPARSED_L2_ID_REGEX : l2_id_regex,
+            gc.PPN_TASK_IS_TEXT_MUNPARSED_L3_ID_REGEX : l3_id_regex,
             gc.PPN_JOB_IS_TEXT_UNPARSED_ID_REGEX : id_regex,
             gc.PPN_JOB_IS_TEXT_UNPARSED_CLASS_REGEX : class_regex,
             gc.PPN_JOB_IS_TEXT_UNPARSED_ID_SORT : sort
         }
-        if (text_format == u"unparsed") and (id_regex is None) and (class_regex is None):
+        if (text_format == TextFileFormat.MUNPARSED) and ((l1_id_regex is None) or (l2_id_regex is None) or (l3_id_regex is None)):
+            self.print_error(u"You must specify --l1-id-regex and --l2-id-regex and --l3-id-regex for munparsed format")
+            return self.ERROR_EXIT_CODE
+        if (text_format == TextFileFormat.UNPARSED) and (id_regex is None) and (class_regex is None):
             self.print_error(u"You must specify --id-regex and/or --class-regex for unparsed format")
             return self.ERROR_EXIT_CODE
 
         language = gf.safe_unicode(self.actual_arguments[2])
-        if (not language in Language.ALLOWED_VALUES) and (not self.rconf["allow_unlisted_languages"]):
-            self.print_error(u"Language '%s' is not supported" % (language))
-            return self.ERROR_EXIT_CODE
 
         audio_file_path = self.actual_arguments[3]
         if not self.check_input_file(audio_file_path):
@@ -105,25 +118,32 @@ class RunSDCLI(AbstractCLIProgram):
         if text_file is None:
             self.print_error(u"Unable to build a TextFile from the given parameters")
             return self.ERROR_EXIT_CODE
+        elif len(text_file) == 0:
+            self.print_error(u"No text fragments found")
+            return self.ERROR_EXIT_CODE
         text_file.set_language(language)
         self.print_info(u"Read input text with %d fragments" % (len(text_file)))
 
         self.print_info(u"Reading audio...")
         try:
-            tmp_handler, tmp_file_path = gf.tmp_file(suffix=u".wav", root=self.rconf["tmp_path"])
-            converter = FFMPEGWrapper(rconf=self.rconf, logger=self.logger)
-            converter.convert(audio_file_path, tmp_file_path)
-        except Exception as exc:
-            self.print_error(u"An unexpected Exception occurred while converting the audio file:")
-            self.print_error(u"%s" % exc)
+            audio_file_mfcc = AudioFileMFCC(audio_file_path, rconf=self.rconf, logger=self.logger)
+        except AudioFileConverterError:
+            self.print_error(u"Unable to call the ffmpeg executable '%s'" % (self.rconf[RuntimeConfiguration.FFMPEG_PATH]))
+            self.print_error(u"Make sure the path to ffmpeg is correct")
             return self.ERROR_EXIT_CODE
-        try:
-            audio_file = AudioFileMonoWAVE(tmp_file_path, rconf=self.rconf, logger=self.logger)
+        except (AudioFileUnsupportedFormatError, AudioFileNotInitializedError):
+            self.print_error(u"Cannot read file '%s'" % (audio_file_path))
+            self.print_error(u"Check that its format is supported by ffmpeg")
+            return self.ERROR_EXIT_CODE
         except Exception as exc:
-            self.print_error(u"An unexpected Exception occurred while reading the converted audio file:")
+            self.print_error(u"An unexpected error occurred while reading the audio file:")
             self.print_error(u"%s" % exc)
             return self.ERROR_EXIT_CODE
         self.print_info(u"Reading audio... done")
+
+        self.print_info(u"Running VAD...")
+        audio_file_mfcc.run_vad()
+        self.print_info(u"Running VAD... done")
 
         min_head = gf.safe_float(self.has_option_with_value(u"--min-head"), None)
         max_head = gf.safe_float(self.has_option_with_value(u"--max-head"), None)
@@ -131,12 +151,11 @@ class RunSDCLI(AbstractCLIProgram):
         max_tail = gf.safe_float(self.has_option_with_value(u"--max-tail"), None)
 
         self.print_info(u"Detecting audio interval...")
-        start_detector = SD(audio_file, text_file, rconf=self.rconf, logger=self.logger)
+        start_detector = SD(audio_file_mfcc, text_file, rconf=self.rconf, logger=self.logger)
         start, end = start_detector.detect_interval(min_head, max_head, min_tail, max_tail)
         self.print_info(u"Detecting audio interval... done")
 
-        self.print_result(audio_file.audio_length, start, end)
-        gf.delete_file(tmp_handler, tmp_file_path)
+        self.print_result(audio_file_mfcc.audio_length, start, end)
         return self.NO_ERROR_EXIT_CODE
 
     def print_result(self, audio_len, start, end):

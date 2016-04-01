@@ -17,7 +17,7 @@ __copyright__ = """
     Copyright 2015-2016, Alberto Pettarin (www.albertopettarin.it)
     """
 __license__ = "GNU AGPL 3"
-__version__ = "1.4.1"
+__version__ = "1.5.0"
 __email__ = "aeneas@readbeyond.it"
 __status__ = "Production"
 
@@ -40,7 +40,7 @@ INCLUDE_DIRS = [misc_util.get_numpy_include_dirs()]
 
 EXTENSION_CDTW = Extension(
     "aeneas.cdtw.cdtw",
-    ["aeneas/cdtw/cdtw_py.c", "aeneas/cdtw/cdtw_func.c"],
+    ["aeneas/cdtw/cdtw_py.c", "aeneas/cdtw/cdtw_func.c", "aeneas/cdtw/cint.c"],
     include_dirs=[get_include()]
 )
 EXTENSION_CEW = Extension(
@@ -50,7 +50,7 @@ EXTENSION_CEW = Extension(
 )
 EXTENSION_CMFCC = Extension(
     "aeneas.cmfcc.cmfcc",
-    ["aeneas/cmfcc/cmfcc_py.c", "aeneas/cmfcc/cmfcc_func.c", "aeneas/cmfcc/cwave_func.c"],
+    ["aeneas/cmfcc/cmfcc_py.c", "aeneas/cmfcc/cmfcc_func.c", "aeneas/cmfcc/cwave_func.c", "aeneas/cmfcc/cint.c"],
     include_dirs=[get_include()]
 )
 # cwave is ready, but currently not used
@@ -74,17 +74,19 @@ setup(
         "aeneas.cew",
         "aeneas.cmfcc",
         "aeneas.cwave",
+        "aeneas.extra",
         "aeneas.tools"
     ],
     package_data={
-        "aeneas": ["res/*"],
-        "aeneas.cdtw": ["*.c", "*.h"],
-        "aeneas.cew": ["*.c", "*.h"],
-        "aeneas.cmfcc": ["*.c", "*.h"],
-        "aeneas.cwave": ["*.c", "*.h"],
-        "aeneas.tools": ["res/*"]
+        "aeneas": ["res/*", "*.md"],
+        "aeneas.cdtw": ["*.c", "*.h", "*.md"],
+        "aeneas.cew": ["*.c", "*.h", "*.md"],
+        "aeneas.cmfcc": ["*.c", "*.h", "*.md"],
+        "aeneas.cwave": ["*.c", "*.h", "*.md"],
+        "aeneas.extra": ["*.md"],
+        "aeneas.tools": ["res/*", "*.md"]
     },
-    version="1.4.1.0",
+    version="1.5.0.0",
     description=SHORT_DESCRIPTION,
     author="Alberto Pettarin",
     author_email="alberto@albertopettarin.it",
@@ -96,18 +98,29 @@ setup(
         "lxml>=3.0",
         "numpy>=1.9"
     ],
-    extras_require={"pafy": ["pafy>=0.3"]},
+    extras_require={
+        "full": ["pafy>=0.3.74", "Pillow>=3.1.1", "requests>=2.9.1", "youtube-dl>=2015.7.21"],
+        "nopillow" : ["pafy>=0.3.74", "requests>=2.9.1", "youtube-dl>=2015.7.21"],
+        "pafy": ["pafy>=0.3.74", "youtube-dl>=2015.7.21"],
+        "pillow": ["Pillow>=3.1.1"],
+        "requests": ["requests>=2.9.1"],
+    },
     scripts=[
+        "bin/aeneas_check_setup",
         "bin/aeneas_convert_syncmap",
         "bin/aeneas_download",
         "bin/aeneas_execute_job",
         "bin/aeneas_execute_task",
+        "bin/aeneas_plot_waveform",
         "bin/aeneas_synthesize_text",
         "bin/aeneas_validate",
     ],
     keywords=[
+        "AUD",
         "CSV",
         "DTW",
+        "EAF",
+        "ELAN",
         "EPUB 3 Media Overlay",
         "EPUB 3",
         "EPUB",

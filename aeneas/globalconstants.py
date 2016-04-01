@@ -13,12 +13,23 @@ __copyright__ = """
     Copyright 2015-2016, Alberto Pettarin (www.albertopettarin.it)
     """
 __license__ = "GNU AGPL v3"
-__version__ = "1.4.1"
+__version__ = "1.5.0"
 __email__ = "aeneas@readbeyond.it"
 __status__ = "Production"
 
-
 ### CONSTANTS ###
+
+CONFIG_RESERVED_CHARACTERS = ["~"]
+""" List of reserved characters which are forbidden in configuration files """
+
+CONFIG_STRING_ASSIGNMENT_SYMBOL = "="
+""" Assignment symbol in config string ``key=value`` pairs """
+
+CONFIG_STRING_SEPARATOR_SYMBOL = "|"
+""" Separator of ``key=value`` pairs in config strings """
+
+PARSED_TEXT_SEPARATOR = "|"
+""" Separator for input text files in parsed format """
 
 CONFIG_TXT_FILE_NAME = "config.txt"
 """ File name for the TXT configuration file in containers """
@@ -26,23 +37,44 @@ CONFIG_TXT_FILE_NAME = "config.txt"
 CONFIG_XML_FILE_NAME = "config.xml"
 """ File name for the XML configuration file in containers """
 
-CONFIG_XML_TASKS_TAG = "tasks"
-""" ``<tasks>`` tag in the XML configuration file """
-
 CONFIG_XML_TASK_TAG = "task"
 """ ``<task>`` tag in the XML configuration file """
 
-CONFIG_RESERVED_CHARACTERS = ["~"]
-""" List of reserved characters which are forbidden in configuration files """
+CONFIG_XML_TASKS_TAG = "tasks"
+""" ``<tasks>`` tag in the XML configuration file """
 
-CONFIG_STRING_SEPARATOR_SYMBOL = "|"
-""" Separator of ``key=value`` pairs in config strings """
+MIMETYPE_MAP = {
+    "aac": "audio/aac",
+    "aiff": "audio/x-aiff",
+    "flac": "audio/flac",
+    "mp3": "audio/mpeg",
+    "mp4": "audio/mp4",
+    "oga": "audio/x-vorbis+ogg",
+    "ogg": "audio/x-vorbis+ogg",
+    "wav": "audio/x-wav",
+    "webm": "video/webm"
+}
+""" Map from audio file extension to mimetype """
 
-CONFIG_STRING_ASSIGNMENT_SYMBOL = "="
-""" Assignment symbol in config string ``key=value`` pairs """
+TMP_PATH_DEFAULT_NONPOSIX = None
+"""
+Default temporary directory path for non-POSIX OSes.
+Set to ``None`` so that ``tempfile`` will select
+the most approriate temporary directory root path.
 
-PARSED_TEXT_SEPARATOR = "|"
-""" Separator for input text files in parsed format """
+.. versionadded:: 1.4.1
+"""
+
+TMP_PATH_DEFAULT_POSIX = "/tmp/"
+"""
+Default temporary directory path for POSIX OSes.
+
+.. versionadded:: 1.4.1
+"""
+
+
+
+### PARAMETER NAMES ###
 
 # reserved parameter names (RPN)
 RPN_JOB_IDENTIFIER = "job_identifier"
@@ -80,11 +112,13 @@ The language of the job.
 
 Usage: config string, TXT config file, XML config file
 
-Values: listed in :class:`aeneas.language.Language`
+Values: listed in :class:`~aeneas.language.Language`
 
 Example::
 
-    job_language=en
+    job_language=eng-GBR
+    job_language=eng-USA
+    job_language=ita-ITA
 
 """
 
@@ -110,7 +144,7 @@ where the audio files should be searched in input containers.
 
 Usage: config string, TXT config file
 
-Values: string (path)
+Values: string
 
 Example::
 
@@ -127,7 +161,7 @@ to be considered the task root directory, in input containers.
 
 Usage: config string, TXT config file
 
-Values: string (path)
+Values: string
 
 Example::
 
@@ -142,7 +176,7 @@ The type of hierarchy of the input job container.
 
 Usage: config string, TXT config file
 
-Values: listed in :class:`aeneas.hierarchytype.HierarchyType`
+Values: listed in :class:`~aeneas.hierarchytype.HierarchyType`
 
 Example::
 
@@ -170,18 +204,7 @@ Example::
 
 PPN_JOB_IS_TEXT_FILE_FORMAT = "is_text_type"
 """
-The text file format of text files in input containers.
-
-Usage: config string, TXT config file, XML config file
-
-Values: listed in :class:`aeneas.textfile.TextFileFormat`
-
-Example::
-
-    is_text_type=plain
-    is_text_type=parsed
-    is_text_type=unparsed
-
+See PPN_TASK_IS_TEXT_FILE_FORMAT
 """
 
 PPN_JOB_IS_TEXT_FILE_NAME_REGEX = "is_text_file_name_regex"
@@ -207,7 +230,7 @@ where the text files should be searched in input containers.
 
 Usage: config string, TXT config file
 
-Values: string (path)
+Values: string
 
 Example::
 
@@ -217,56 +240,34 @@ Example::
 
 """
 
+PPN_JOB_IS_TEXT_MUNPARSED_L1_ID_REGEX = "is_text_munparsed_l1_id_regex"
+"""
+See PPN_TASK_IS_TEXT_MUNPARSED_L1_ID_REGEX
+"""
+
+PPN_JOB_IS_TEXT_MUNPARSED_L2_ID_REGEX = "is_text_munparsed_l2_id_regex"
+"""
+See PPN_TASK_IS_TEXT_MUNPARSED_L2_ID_REGEX
+"""
+
+PPN_JOB_IS_TEXT_MUNPARSED_L3_ID_REGEX = "is_text_munparsed_l3_id_regex"
+"""
+See PPN_TASK_IS_TEXT_MUNPARSED_L3_ID_REGEX
+"""
+
 PPN_JOB_IS_TEXT_UNPARSED_CLASS_REGEX = "is_text_unparsed_class_regex"
 """
-The regex for matching the ``class`` attribute
-of XML elements containing text fragments to be extracted
-from ``unparsed`` text files.
-
-Usage: config string, TXT config file, XML config file
-
-Values: regex
-
-Example::
-
-    is_text_unparsed_class_regex=ra
-    is_text_unparsed_class_regex=readaloud
-    is_text_unparsed_class_regex=ra[0-9]+
-
+See PPN_TASK_IS_TEXT_UNPARSED_CLASS_REGEX
 """
 
 PPN_JOB_IS_TEXT_UNPARSED_ID_REGEX = "is_text_unparsed_id_regex"
 """
-The regex for matching the ``id`` attribute
-of XML elements containing text fragments to be extracted
-from ``unparsed`` text files.
-
-Usage: config string, TXT config file, XML config file
-
-Values: regex
-
-Example::
-
-    is_text_unparsed_id_regex=f[0-9]+
-    is_text_unparsed_id_regex=ra.*
-
+See PPN_TASK_IS_TEXT_UNPARSED_ID_REGEX
 """
 
 PPN_JOB_IS_TEXT_UNPARSED_ID_SORT = "is_text_unparsed_id_sort"
 """
-The sorting algorithm to be used to sort the text fragments
-extracted from ``unparsed`` text files, based on their ``id`` attributes.
-
-Usage: config string, TXT config file, XML config file
-
-Values: listed in :class:`aeneas.idsortingalgorithm.IDSortingAlgorithm`
-
-Example::
-
-    is_text_unparsed_id_sort=lexicographic
-    is_text_unparsed_id_sort=numeric
-    is_text_unparsed_id_sort=unsorted
-
+See PPN_TASK_IS_TEXT_UNPARSED_ID_SORT
 """
 
 PPN_JOB_OS_CONTAINER_FORMAT = "os_job_file_container"
@@ -275,7 +276,7 @@ The format of the output container.
 
 Usage: config string, TXT config file, XML config file
 
-Values: listed in :class:`aeneas.container.ContainerFormat`
+Values: listed in :class:`~aeneas.container.ContainerFormat`
 
 Example::
 
@@ -304,7 +305,7 @@ under which the task directories will be created.
 
 Usage: config string, TXT config file, XML config file
 
-Values: string (path)
+Values: string
 
 Example::
 
@@ -318,7 +319,7 @@ The type of output container structure.
 
 Usage: config string, TXT config file, XML config file
 
-Values: listed in :class:`aeneas.hierarchytype.HierarchyType`
+Values: listed in :class:`~aeneas.hierarchytype.HierarchyType`
 
 Example::
 
@@ -331,12 +332,13 @@ PPN_SYNCMAP_LANGUAGE = "language"
 """
 Key for specifying the syncmap language
 
-Values: listed in :class:`aeneas.language.Language`
+Values: listed in :class:`~aeneas.language.Language`
 
 Example::
 
-    language=en
-    language=it
+    language=eng-GBR
+    language=eng-USA
+    language=ita-ITA
 
 .. versionadded:: 1.2.0
 """
@@ -375,11 +377,13 @@ The language of a task.
 
 Usage: config string, XML config file
 
-Values: listed in :class:`aeneas.language.Language`
+Values: listed in :class:`~aeneas.language.Language`
 
 Example::
 
-    task_language=en
+    task_language=eng-GBR
+    task_language=eng-USA
+    task_language=ita-ITA
 
 """
 
@@ -390,7 +394,7 @@ If ``None`` or ``auto``, keep the current boundaries.
 
 Usage: config string, TXT config file, XML config file
 
-Values: listed in :class:`aeneas.adjustboundaryalgorithm.AdjustBoundaryAlgorithm`
+Values: listed in :class:`~aeneas.adjustboundaryalgorithm.AdjustBoundaryAlgorithm`
 
 Example::
 
@@ -656,7 +660,7 @@ The format of the input text file.
 
 Usage: config string, TXT config file, XML config file
 
-Values: listed in :class:`aeneas.textfile.TextFileFormat`
+Values: listed in :class:`~aeneas.textfile.TextFileFormat`
 
 Example::
 
@@ -689,11 +693,90 @@ The output sync map file will contain the original text.
 
 Usage: config string, TXT config file, XML config file
 
-Values: string (path)
+Values: string
 
 Example::
 
     is_text_file_transliterate_map=trans.map
+
+"""
+
+PPN_TASK_IS_TEXT_MPLAIN_WORD_SEPARATOR = "is_text_mplain_word_separator"
+"""
+The word separator to be used when splitting words
+in ``mplain`` input text files.
+
+You can use the following special strings:
+
+* ``equal`` for a ``=`` character (ASCII ``0x20``),
+* ``pipe`` for a ``|`` character (ASCII ``0x7C``),
+* ``space`` for a space character (ASCII ``0x20``),
+* ``tab`` for a tab character (ASCII ``0x09``).
+
+Any other string will be used as the word separator.
+If not specified, the ``space`` will be used.
+
+Usage: config string, TXT config file, XML config file
+
+Values: string
+
+Example::
+
+    is_text_mplain_word_separator=space
+    is_text_mplain_word_separator=tab
+    is_text_mplain_word_separator=,
+
+"""
+
+PPN_TASK_IS_TEXT_MUNPARSED_L1_ID_REGEX = "is_text_munparsed_l1_id_regex"
+"""
+The regex to match ``id`` attributes for level 1 (paragraph) text fragments.
+It applies to ``munparsed`` text files only.
+
+Usage: config string, TXT config file, XML config file
+
+Values: regex
+
+Example::
+
+    is_text_munparsed_l1_id_regex=p[0-9]+
+
+.. versionadded:: 1.5.0
+"""
+
+PPN_TASK_IS_TEXT_MUNPARSED_L2_ID_REGEX = "is_text_munparsed_l2_id_regex"
+"""
+The regex to match ``id`` attributes for level 2 (sentence) text fragments.
+It applies to ``munparsed`` text files only.
+
+Usage: config string, TXT config file, XML config file
+
+Values: regex
+
+Example::
+
+    is_text_munparsed_l2_id_regex=s[0-9]+
+    is_text_munparsed_l2_id_regex=p[0-9]+s[0-9]+
+
+.. versionadded:: 1.5.0
+
+"""
+
+PPN_TASK_IS_TEXT_MUNPARSED_L3_ID_REGEX = "is_text_munparsed_l3_id_regex"
+"""
+The regex to match ``id`` attributes for level 3 (word) text fragments.
+It applies to ``munparsed`` text files only.
+
+Usage: config string, TXT config file, XML config file
+
+Values: regex
+
+Example::
+
+    is_text_munparsed_l3_id_regex=w[0-9]+
+    is_text_munparsed_l3_id_regex=p[0-9]+s[0-9]+w[0-9]+
+
+.. versionadded:: 1.5.0
 
 """
 
@@ -733,11 +816,11 @@ Example::
 PPN_TASK_IS_TEXT_UNPARSED_ID_SORT = "is_text_unparsed_id_sort"
 """
 The algorithm to sort text fragments by their ``id`` attributes.
-It applies to unparsed text files only.
+It applies to ``unparsed`` text files only.
 
 Usage: config string, TXT config file, XML config file
 
-Values: listed in :class:`aeneas.idsortingalgorithm.IDSortingAlgorithm`
+Values: listed in :class:`~aeneas.idsortingalgorithm.IDSortingAlgorithm`
 
 Example::
 
@@ -753,7 +836,7 @@ The format of the sync map output for the task.
 
 Usage: config string, TXT config file, XML config file
 
-Values: listed in :class:`aeneas.syncmap.SyncMapFormat`
+Values: listed in :class:`~aeneas.syncmap.SyncMapFormat`
 
 Example::
 
@@ -788,6 +871,26 @@ Example::
 .. versionadded:: 1.3.1
 """
 
+PPN_TASK_OS_FILE_LEVELS = "os_task_file_levels"
+"""
+If the input text file is multilevel,
+only outputs the specified levels.
+
+This parameter has no effect for single-level
+input text files or output sync map formats.
+
+Usage: config string, TXT config file, XML config file
+
+Values: string
+
+Example::
+
+    os_task_file_levels=123
+    os_task_file_levels=3
+
+.. versionadded:: 1.5.0
+"""
+
 PPN_TASK_OS_FILE_NAME = "os_task_file_name"
 """
 The name of the sync map file output for the task.
@@ -804,6 +907,21 @@ Example::
 
     os_task_file_name=map.smil
 
+"""
+
+PPN_TASK_OS_FILE_NO_ZERO = "os_task_file_no_zero"
+"""
+If specified, do not allow fragments with zero duration.
+
+Usage: config string, TXT config file, XML config file
+
+Values: string
+
+Example::
+
+    os_task_file_no_zero=True
+
+.. versionadded:: 1.5.0
 """
 
 PPN_TASK_OS_FILE_SMIL_AUDIO_REF = "os_task_file_smil_audio_ref"
@@ -846,7 +964,7 @@ The format of the head and tail of the sync map output for the task.
 
 Usage: config string, TXT config file, XML config file
 
-Values: listed in :class:`aeneas.syncmap.SyncMapHeadTailFormat`
+Values: listed in :class:`~aeneas.syncmap.SyncMapHeadTailFormat`
 
 Example::
 
@@ -864,7 +982,7 @@ of the text file of the current task
 
 Usage: XML config file
 
-Values: string (path)
+Values: string
 
 Example::
 
@@ -879,7 +997,7 @@ of the audio file of the current task
 
 Usage: XML config file
 
-Values: string (path)
+Values: string
 
 Example::
 
@@ -899,161 +1017,6 @@ Example::
     os_task_file_name=$PREFIX.smil
 
 """
-
-
-
-### RUNTIMECONFIGURATION ###
-
-RC_ALLOW_UNLISTED_LANGUAGES = "allow_unlisted_languages"
-""" If ``True``, allow using a language code not listed in ``languages.py``;
-otherwise, raise an error if the user attempts to use a language not listed.
-Default: ``True``. """
-
-RC_C_EXTENSIONS = "c_extensions"
-""" If ``True`` and Python C extensions are available, use them.
-Otherwise, use pure Python code.
-Default: ``True``. """
-
-RC_DTW_ALGORITM = "dtw_algorithm"
-""" DTW aligner algorithm.
-Default: ``stripe``. """
-
-RC_DTW_MARGIN = "dtw_margin"
-""" DTW aligner margin, in seconds, for the ``stripe`` algorithm.
-Default: ``60``, corresponding to ``60s`` ahead and behind
-(i.e., ``120s`` total margin). """
-
-RC_ESPEAK_PATH = "espeak_path"
-""" Path to the ``espeak`` executable.
-Default: ``espeak``. """
-
-RC_FFMPEG_PATH = "ffmpeg_path"
-""" Path to the ``ffmpeg`` executable.
-Default: ``ffmpeg``. """
-
-RC_FFMPEG_SAMPLE_RATE = "ffmpeg_sample_rate"
-""" Sample rate for ``ffmpeg``, in Hertz.
-Default: ``16000``. """
-
-RC_FFPROBE_PATH = "ffprobe_path"
-""" Path to the ``ffprobe`` executable.
-Default: ``ffprobe``. """
-
-RC_JOB_MAX_TASKS = "job_max_tasks"
-""" Maximum number of Tasks of a Job.
-If a Job has more Tasks than this value,
-it will not be executed and an error will be raised.
-Use ``0`` for disabling this check.
-Default: ``0`` (disabled). """
-
-RC_MFCC_FILTERS = "mfcc_filters"
-""" Number of filters for extracting MFCCs.
-Default: ``40``. """
-
-RC_MFCC_SIZE = "mfcc_size"
-""" Number of MFCCs to extract, including the 0th.
-Default: ``13``. """
-
-RC_MFCC_FFT_ORDER = "mfcc_fft_order"
-""" Order of the RFFT for extracting MFCCs.
-It must be a power of two.
-Default: ``512``. """
-
-RC_MFCC_LOWER_FREQUENCY = "mfcc_lower_frequency"
-""" Lower frequency to be used for extracting MFCCs, in Hertz.
-Default: ``133.3333``. """
-
-RC_MFCC_UPPER_FREQUENCY = "mfcc_upper_frequency"
-""" Upper frequency to be used for extracting MFCCs, in Hertz.
-Default: ``6855.4976``. """
-
-RC_MFCC_EMPHASIS_FACTOR = "mfcc_emphasis_factor"
-""" Emphasis factor to be applied to MFCCs.
-Default: ``0.970``. """
-
-RC_MFCC_WINDOW_LENGTH = "mfcc_window_length"
-""" Length of the window for extracting MFCCs, in seconds.
-It is usual to set it between 1.5 and 4 times
-the value of ``RC_MFCC_WINDOW_SHIFT``.
-Default: ``0.100``. """
-
-RC_MFCC_WINDOW_SHIFT = "mfcc_window_shift"
-""" Shift of the window for extracting MFCCs, in seconds.
-This parameter is basically the time step
-of the synchronization maps output.
-Default: ``0.040``. """
-
-RC_TASK_MAX_AUDIO_LENGTH = "task_max_audio_length"
-""" Maximum length of the audio file of a Task, in seconds.
-If a Task has an audio file longer than this value,
-it will not be executed and an error will be raised.
-Use ``0`` for disabling this check.
-Default: ``7200`` seconds. """
-
-RC_TASK_MAX_TEXT_LENGTH = "task_max_text_length"
-""" Maximum number of text fragments in the text file of a Task.
-If a Task has more text fragments than this value,
-it will not be executed and an error will be raised.
-Use ``0`` for disabling this check.
-Default: ``0`` (disabled). """
-
-RC_TMP_PATH = "tmp_path"
-""" Path to the temporary directory to be used.
-Default: ``None``, meaning that the default temporary directory
-will be set by ``RC_TMP_PATH_DEFAULT_POSIX``
-or ``RC_TMP_PATH_DEFAULT_NONPOSIX``. """
-
-RC_VAD_EXTEND_SPEECH_INTERVAL_AFTER = "vad_extend_speech_after"
-"""
-Extend to the right (after/future)
-a speech interval found by the VAD algorithm,
-by this many seconds.
-Default: ``0`` seconds.
-
-.. versionadded:: 1.0.4
-"""
-
-RC_VAD_EXTEND_SPEECH_INTERVAL_BEFORE = "vad_extend_speech_before"
-"""
-Extend to the left (before/past)
-a speech interval found by the VAD algorithm,
-by this many seconds.
-Default: ``0`` seconds.
-
-.. versionadded:: 1.0.4
-"""
-
-RC_VAD_LOG_ENERGY_THRESHOLD = "vad_log_energy_threshold"
-"""
-Threshold for the VAD algorithm to decide
-that a given frame contains speech.
-Note that this is the log10 of the energy coefficient.
-Default: ``0.699`` = ``log10(5)``, that is, a frame must have
-an energy at least 5 times higher than the minimum
-to be considered a speech frame.
-
-.. versionadded:: 1.0.4
-"""
-
-RC_VAD_MIN_NONSPEECH_LENGTH = "vad_min_nonspeech_length"
-"""
-Minimum length, in seconds, of a nonspeech interval.
-Default: ``0.200`` seconds.
-
-.. versionadded:: 1.0.4
-"""
-
-
-
-### DEFAULT VALUES ###
-
-RC_TMP_PATH_DEFAULT_POSIX = "/tmp/"
-""" Default temporary directory path for POSIX OSes. """
-
-RC_TMP_PATH_DEFAULT_NONPOSIX = None
-""" Default temporary directory path for non-POSIX OSes.
-Set to ``None`` so that ``tempfile`` will select
-the most approriate temporary directory root path. """
 
 
 

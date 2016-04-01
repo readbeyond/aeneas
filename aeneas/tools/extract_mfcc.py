@@ -11,9 +11,11 @@ import io
 import sys
 import numpy
 
-from aeneas.audiofile import AudioFileMonoWAVE
+from aeneas.audiofile import AudioFileConverterError
+from aeneas.audiofile import AudioFileNotInitializedError
 from aeneas.audiofile import AudioFileUnsupportedFormatError
-from aeneas.ffmpegwrapper import FFMPEGWrapper
+from aeneas.audiofilemfcc import AudioFileMFCC
+from aeneas.runtimeconfiguration import RuntimeConfiguration
 from aeneas.tools.abstract_cli_program import AbstractCLIProgram
 import aeneas.globalfunctions as gf
 
@@ -24,7 +26,7 @@ __copyright__ = """
     Copyright 2015-2016, Alberto Pettarin (www.albertopettarin.it)
     """
 __license__ = "GNU AGPL 3"
-__version__ = "1.4.1"
+__version__ = "1.5.0"
 __email__ = "aeneas@readbeyond.it"
 __status__ = "Production"
 
@@ -40,7 +42,7 @@ class ExtractMFCCCLI(AbstractCLIProgram):
     HELP = {
         "description": u"Extract MFCCs from a given audio file as a fat matrix.",
         "synopsis": [
-            u"AUDIO_FILE OUTPUT_FILE"
+            (u"AUDIO_FILE OUTPUT_FILE", True)
         ],
         "examples": [
             u"%s %s" % (INPUT_FILE, OUTPUT_FILE)
@@ -81,24 +83,8 @@ class ExtractMFCCCLI(AbstractCLIProgram):
         if not self.check_output_file(output_file_path):
             return self.ERROR_EXIT_CODE
 
-        tmp_handler, tmp_file_path = gf.tmp_file(suffix=u".wav", root=self.rconf["tmp_path"])
         try:
-            self.print_info(u"Converting audio file to mono...")
-            converter = FFMPEGWrapper(rconf=self.rconf, logger=self.logger)
-            converter.convert(input_file_path, tmp_file_path)
-            self.print_info(u"Converting audio file to mono... done")
-        except OSError:
-            self.print_error(u"Cannot convert audio file '%s'" % input_file_path)
-            self.print_error(u"Check that its format is supported by ffmpeg")
-            return self.ERROR_EXIT_CODE
-
-        try:
-            audiofile = AudioFileMonoWAVE(tmp_file_path, rconf=self.rconf, logger=self.logger)
-            audiofile.load_data()
-            audiofile.extract_mfcc()
-            audiofile.clear_data()
-            gf.delete_file(tmp_handler, tmp_file_path)
-            mfccs = audiofile.audio_mfcc 
+            mfccs = AudioFileMFCC(input_file_path, rconf=self.rconf, logger=self.logger).all_mfcc
             if delete_first:
                 mfccs = mfccs[1:, :]
             if transpose:
@@ -123,11 +109,14 @@ class ExtractMFCCCLI(AbstractCLIProgram):
                 #       hence, converting back to bytes, which works in Python 3 too
                 numpy.savetxt(output_file_path, mfccs, fmt=gf.safe_bytes(output_text_format))
             self.print_info(u"MFCCs shape: %d %d" % (mfccs.shape))
-            self.print_info(u"MFCCs saved to %s" % (output_file_path))
+            self.print_success(u"MFCCs saved to '%s'" % (output_file_path))
             return self.NO_ERROR_EXIT_CODE
-        except AudioFileUnsupportedFormatError:
-            self.print_error(u"Cannot read file '%s'" % (tmp_file_path))
-            self.print_error(u"Check that it is a mono WAV file")
+        except AudioFileConverterError:
+            self.print_error(u"Unable to call the ffmpeg executable '%s'" % (self.rconf[RuntimeConfiguration.FFMPEG_PATH]))
+            self.print_error(u"Make sure the path to ffmpeg is correct")
+        except (AudioFileUnsupportedFormatError, AudioFileNotInitializedError):
+            self.print_error(u"Cannot read file '%s'" % (input_file_path))
+            self.print_error(u"Check that its format is supported by ffmpeg")
         except OSError:
             self.print_error(u"Cannot write file '%s'" % (output_file_path))
 

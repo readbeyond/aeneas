@@ -2,7 +2,11 @@
 # coding=utf-8
 
 """
-A logger class to help with debugging and performance tests.
+This module contains the following classes:
+
+* :class:`~aeneas.logger.Loggable`, a base class supporting logging and runtime configuration;
+* :class:`~aeneas.logger.Logger`, a logger class for debugging and performance profiling.
+
 """
 
 from __future__ import absolute_import
@@ -20,23 +24,19 @@ __copyright__ = """
     Copyright 2015-2016, Alberto Pettarin (www.albertopettarin.it)
     """
 __license__ = "GNU AGPL v3"
-__version__ = "1.4.1"
+__version__ = "1.5.0"
 __email__ = "aeneas@readbeyond.it"
 __status__ = "Production"
 
+
+
 class Logger(object):
     """
-    A logger class to help with debugging and performance tests.
+    A logger class for debugging and performance profiling.
 
-    :param tee: if ``True``, tee (i.e., log and print to stdout)
-    :type  tee: bool
-    :param indentation: the initial indentation of the log
-    :type  indentation: int
-    :param tee_show_datetime: if ``True``, print date and time when teeing
-    :type  tee_show_datetime: bool
-    :param rconf: a runtime configuration. Default: ``None``, meaning that
-                  default settings will be used.
-    :type  rconf: :class:`aeneas.runtimeconfiguration.RuntimeConfiguration`
+    :param bool tee: if ``True``, tee (i.e., log and print to stdout)
+    :param int indentation: the initial indentation of the log
+    :param bool tee_show_datetime: if ``True``, print date and time when teeing
     """
 
     DEBUG = "DEBU"
@@ -51,12 +51,17 @@ class Logger(object):
     CRITICAL = "CRIT"
     """ ``CRITICAL`` severity """
 
-    def __init__(self, tee=False, indentation=0, tee_show_datetime=True, rconf=None):
+    ERROR = "ERRO"
+    """ ``ERROR`` message """
+
+    SUCCESS = "SUCC"
+    """ ``SUCCESS`` message """
+
+    def __init__(self, tee=False, indentation=0, tee_show_datetime=True):
         self.entries = []
         self.tee = tee
         self.indentation = indentation
         self.tee_show_datetime = tee_show_datetime
-        self.rconf = rconf or RuntimeConfiguration()
 
     def __len__(self):
         return len(self.entries)
@@ -115,12 +120,10 @@ class Logger(object):
         """
         Return a Unicode string pretty print of the log entries.
 
-        :param as_list: if ``True``, return a list of Unicode strings,
-                        one for each entry, instead of a Unicode string
-        :type  as_list: bool
-        :param show_datetime: if ``True``, show the date and time of the entries
-        :type  show_datetime: bool
-        :rtype: Unicode string or list of Unicode strings
+        :param bool as_list: if ``True``, return a list of Unicode strings,
+                             one for each entry, instead of a Unicode string
+        :param bool show_datetime: if ``True``, show the date and time of the entries
+        :rtype: string or list of strings
         """
         ppl = [entry.pretty_print(show_datetime) for entry in self.entries]
         if as_list:
@@ -129,15 +132,14 @@ class Logger(object):
 
     def log(self, message, severity=INFO, tag=u""):
         """
-        Add a given message to the log.
+        Add a given message to the log, and return its time.
 
-        :param message: the message to be added
-        :type  message: Unicode string
+        :param string message: the message to be added
         :param severity: the severity of the message
-        :type  severity: :class:`aeneas.logger.Logger` enum
-        :param tag: the tag associated with the message;
-                    usually, the name of the class generating the entry
-        :type  tag: Unicode string
+        :type  severity: :class:`~aeneas.logger.Logger`
+        :param string tag: the tag associated with the message;
+                           usually, the name of the class generating the entry
+        :rtype: datetime
         """
         entry = _LogEntry(
             severity=severity,
@@ -149,6 +151,7 @@ class Logger(object):
         self.entries.append(entry)
         if self.tee:
             gf.safe_print(entry.pretty_print(show_datetime=self.tee_show_datetime))
+        return entry.time
 
     def clear(self):
         """
@@ -160,8 +163,7 @@ class Logger(object):
         """
         Output the log to file.
 
-        :param path: the path of the log file to be written
-        :type  path: Unicode string (path)
+        :param string path: the path of the log file to be written
         """
         with io.open(path, "w", encoding="utf-8") as log_file:
             log_file.write(self.pretty_print())
@@ -174,8 +176,8 @@ class Logger(object):
         and/or string formatting.
 
         :param message: the log message to be sanitized
-        :type  message: Unicode string or list of Unicode strings
-        :rtype: Unicode string
+        :type  message: string or list of strings
+        :rtype: string
         """
         if isinstance(message, list):
             if len(message) == 0:
@@ -209,9 +211,8 @@ class _LogEntry(object):
         Returns a Unicode string containing
         the pretty printing of a given log entry.
 
-        :param show_datetime: if ``True``, print the date and time of the entry
-        :type  show_datetime: bool
-        :rtype: Unicode string
+        :param bool show_datetime: if ``True``, print the date and time of the entry
+        :rtype: string
         """
         if show_datetime:
             return u"[%s] %s %s%s: %s" % (
@@ -233,7 +234,7 @@ class _LogEntry(object):
         """
         The message of this log entry.
 
-        :rtype: Unicode string
+        :rtype: string
         """
         return self.__message
     @message.setter
@@ -245,7 +246,7 @@ class _LogEntry(object):
         """
         The severity of this log entry.
 
-        :rtype: :class:`aeneas.logger.Logger` enum
+        :rtype: :class:`~aeneas.logger.Logger`
         """
         return self.__severity
     @severity.setter
@@ -257,7 +258,7 @@ class _LogEntry(object):
         """
         The tag of this log entry.
 
-        :rtype: Unicode string
+        :rtype: string
         """
         return self.__tag
     @tag.setter
@@ -269,7 +270,7 @@ class _LogEntry(object):
         """
         The indentation of this log entry.
 
-        :rtype: Unicode string
+        :rtype: string
         """
         return self.__indentation
     @indentation.setter
@@ -287,6 +288,89 @@ class _LogEntry(object):
     @time.setter
     def time(self, time):
         self.__time = time
+
+
+
+class Loggable(object):
+    """
+    A base class supporting logging and runtime configuration.
+
+    :param logger: the logger object
+    :type  logger: :class:`~aeneas.logger.Logger`
+    :param rconf: the runtime configuration object
+    :type  rconf: :class:`~aeneas.runtimeconfiguration.RuntimeConfiguration`
+    """
+    TAG = u"Loggable"
+
+    def __init__(self, logger=None, rconf=None):
+        self.logger = logger if logger is not None else Logger()
+        self.rconf = rconf if rconf is not None else RuntimeConfiguration()
+
+    def _log(self, message, severity=Logger.DEBUG):
+        """
+        Log generic message
+
+        :param string message: the message to log
+        :param string severity: the message severity
+        :rtype: datetime
+        """
+        return self.logger.log(message, severity, self.TAG)
+
+    def log_exc(self, message, exc=None, critical=True, raise_type=None):
+        """
+        Log exception, and possibly raise exception.
+
+        :param string message: the message to log
+        :param Exception exc: the original exception
+        :param bool critical: if ``True``, log as :data:`aeneas.logger.Logger.CRITICAL`;
+                              otherwise as :data:`aeneas.logger.Logger.WARNING`
+        :param Exception raise_type: if not ``None``, raise this Exception type
+        """
+        log_function = self.log_crit if critical else self.log_warn
+        log_function(message)
+        if exc is not None:
+            log_function([u"%s", exc])
+        if raise_type is not None:
+            raise_message = message
+            if exc is not None:
+                raise_message = u"%s : %s" % (message, exc)
+            raise raise_type(raise_message)
+
+    def log(self, message):
+        """
+        Log DEBUG message, and return its time.
+
+        :param string message: the message to log
+        :rtype: datetime
+        """
+        return self._log(message)
+
+    def log_info(self, message):
+        """
+        Log INFO message, and return its time.
+
+        :param string message: the message to log
+        :rtype: datetime
+        """
+        return self._log(message, Logger.INFO)
+
+    def log_warn(self, message):
+        """
+        Log WARNING message, and return its time.
+
+        :param string message: the message to log
+        :rtype: datetime
+        """
+        return self._log(message, Logger.WARNING)
+
+    def log_crit(self, message):
+        """
+        Log CRITICAL message, and return its time.
+
+        :param string message: the message to log
+        :rtype: datetime
+        """
+        return self._log(message, Logger.CRITICAL)
 
 
 

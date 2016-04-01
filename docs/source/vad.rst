@@ -1,4 +1,4 @@
-VAD
+vad
 ===
 
 .. automodule:: aeneas.vad

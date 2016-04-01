@@ -22,7 +22,7 @@ __copyright__ = """
     Copyright 2015-2016, Alberto Pettarin (www.albertopettarin.it)
     """
 __license__ = "GNU AGPL 3"
-__version__ = "1.4.1"
+__version__ = "1.5.0"
 __email__ = "aeneas@readbeyond.it"
 __status__ = "Production"
 
@@ -47,8 +47,8 @@ class ConvertSyncMapCLI(AbstractCLIProgram):
     HELP = {
         "description": u"Convert a sync map from a format to another.",
         "synopsis": [
-            u"INPUT_SYNCMAP OUTPUT_SYNCMAP",
-            u"INPUT_SYNCMAP OUTPUT_HTML AUDIO_FILE --output-html",
+            (u"INPUT_SYNCMAP OUTPUT_SYNCMAP", True),
+            (u"INPUT_SYNCMAP OUTPUT_HTML AUDIO_FILE --output-html", True),
         ],
         "examples": [
             u"%s %s" % (SYNC_MAP_JSON, OUTPUT_MAP_SRT),
@@ -116,33 +116,36 @@ class ConvertSyncMapCLI(AbstractCLIProgram):
         }
 
         try:
-            self.print_info(u"Reading sync map in %s format from file %s ..." % (input_sm_format, input_file_path))
+            self.print_info(u"Reading sync map in '%s' format from file '%s'" % (input_sm_format, input_file_path))
+            self.print_info(u"Reading sync map...")
             syncmap = SyncMap(logger=self.logger)
             syncmap.read(input_sm_format, input_file_path, parameters)
-            self.print_info(u"Reading sync map in %s format from file %s ... done" % (input_sm_format, input_file_path))
+            self.print_info(u"Reading sync map... done")
             self.print_info(u"Read %d sync map fragments" % (len(syncmap)))
         except Exception as exc:
-            self.print_error(u"An unexpected Exception occurred while reading the input sync map:")
+            self.print_error(u"An unexpected error occurred while reading the input sync map:")
             self.print_error(u"%s" % (exc))
             return self.ERROR_EXIT_CODE
 
         if output_html:
             try:
-                self.print_info(u"Writing HTML file %s ..." % (output_file_path))
+                self.print_info(u"Writing HTML file...")
                 syncmap.output_html_for_tuning(audio_file_path, output_file_path, parameters)
-                self.print_info(u"Writing HTML file %s ... done" % (output_file_path))
+                self.print_info(u"Writing HTML file... done")
+                self.print_success(u"Created HTML file '%s'" % (output_file_path))
                 return self.NO_ERROR_EXIT_CODE
             except Exception as exc:
-                self.print_error(u"An unexpected Exception occurred while writing the output HTML file:")
+                self.print_error(u"An unexpected error occurred while writing the output HTML file:")
                 self.print_error(u"%s" % (exc))
         else:
             try:
-                self.print_info(u"Writing sync map in %s format to file %s ..." % (output_sm_format, output_file_path))
+                self.print_info(u"Writing sync map...")
                 syncmap.write(output_sm_format, output_file_path, parameters)
-                self.print_info(u"Writing sync map in %s format to file %s ... done" % (output_sm_format, output_file_path))
+                self.print_info(u"Writing sync map... done")
+                self.print_success(u"Created '%s' sync map file '%s'" % (output_sm_format, output_file_path))
                 return self.NO_ERROR_EXIT_CODE
             except Exception as exc:
-                self.print_error(u"An unexpected Exception occurred while writing the output sync map:")
+                self.print_error(u"An unexpected error occurred while writing the output sync map:")
                 self.print_error(u"%s" % (exc))
 
         return self.ERROR_EXIT_CODE
@@ -158,7 +161,8 @@ class ConvertSyncMapCLI(AbstractCLIProgram):
         """
         if sm_format not in SyncMapFormat.ALLOWED_VALUES:
             self.print_error(u"Sync map format '%s' is not allowed" % (sm_format))
-            self.print_info(u"Allowed formats: %s" % (" ".join(SyncMapFormat.ALLOWED_VALUES)))
+            self.print_info(u"Allowed formats:")
+            self.print_generic(u" ".join(SyncMapFormat.ALLOWED_VALUES))
             return False
         return True
 

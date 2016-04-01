@@ -1,6 +1,6 @@
 /*
 
-Python C Extension for computing the MFCC
+Python C Extension for computing the MFCCs from a WAVE mono file.
 
 __author__ = "Alberto Pettarin"
 __copyright__ = """
@@ -9,7 +9,7 @@ __copyright__ = """
     Copyright 2015-2016, Alberto Pettarin (www.albertopettarin.it)
     """
 __license__ = "GNU AGPL v3"
-__version__ = "1.4.1"
+__version__ = "1.5.0"
 __email__ = "aeneas@readbeyond.it"
 __status__ = "Production"
 
@@ -34,7 +34,7 @@ __status__ = "Production"
 #endif
 
 // return the min of the given arguments
-unsigned int _min(unsigned int a, unsigned int b) {
+uint32_t _min(uint32_t a, uint32_t b) {
     if (a < b) {
         return a;
     }
@@ -42,7 +42,7 @@ unsigned int _min(unsigned int a, unsigned int b) {
 }
 
 // return the max of the given arguments
-unsigned int _max(unsigned int a, unsigned int b) {
+uint32_t _max(uint32_t a, uint32_t b) {
     if (a > b) {
         return a;
     }
@@ -50,24 +50,26 @@ unsigned int _max(unsigned int a, unsigned int b) {
 }
 
 // round the given number to the nearest integer
-// or return 0 if the argument is negative
+// or return zero if the argument is negative
 // e.g.: 1.1 => 1; 1.6 => 2
-unsigned int _round(double x) {
-    if (x <= 0) {
-        //printf("Error: _round argument is negative!!!\n");
-        return 0;
+uint32_t _round(double x) {
+    if (x < 0.0) {
+        return 0; //printf("Error: _round argument is negative!!!\n");
     }
-    return (unsigned int)floor(x + 0.5);
+    return (uint32_t)floor(x + 0.5);
 }
 
 // precompute the sin table for the FFT/RFFT
-double *_precompute_sin_table(unsigned int m) {
+double *_precompute_sin_table(uint32_t m) {
     const double arg = PI / m * 2;
-    const unsigned int size = m - m / 4 + 1;
+    const uint32_t size = m - m / 4 + 1;
     double *table;
     int k;
 
     table = (double *)calloc(size, sizeof(double));
+    if (table == NULL) {
+        return NULL;
+    }
     table[0] = 0;
     for (k = 1; k < size; ++k) {
         table[k] = sin(arg * k);
@@ -75,7 +77,7 @@ double *_precompute_sin_table(unsigned int m) {
     table[m / 2] = 0;
     return table;
 }
-int fft(double *x, double *y, const unsigned int m, double *sin_table) {
+int fft(double *x, double *y, const uint32_t m, double *sin_table) {
     // code adapted from the fft function of SPTK
     double t1, t2;
     double *cosp, *sinp, *xp, *yp;
@@ -146,12 +148,12 @@ int fft(double *x, double *y, const unsigned int m, double *sin_table) {
         yp = y + j;
     }
 
-    return 0;
+    return CMFCC_SUCCESS;
 }
 int rfft(
         double *x,
         double *y,
-        const unsigned int m,
+        const uint32_t m,
         double *sin_table_full,
         double *sin_table_half
     ) {
@@ -169,7 +171,7 @@ int rfft(
     }
 
     if (fft(x, y, mv2, sin_table_half) == -1) {
-        return -1;
+        return CMFCC_FAILURE;
     }
 
     sinp = sin_table_full;
@@ -202,7 +204,7 @@ int rfft(
         *yp++ = -(*(--yq));
     }
 
-    return 0;
+    return CMFCC_SUCCESS;
 }
 
 // convert Hz frequency to Mel frequency
@@ -217,18 +219,21 @@ double _mel2hz(const double m) {
 
 // pre emphasis of the given frame
 // returns the prior to be used for the next frame
-void _apply_emphasis(
+int _apply_emphasis(
         double *frame,
-        const unsigned int length,
+        const uint32_t length,
         const double emphasis_factor,
         double *prior
     ) {
     double prior_orig;
     double *frame_orig;
-    unsigned int i;
+    uint32_t i;
 
     prior_orig = frame[length - 1];
     frame_orig = (double *)calloc(length, sizeof(double));
+    if (frame_orig == NULL) {
+        return CMFCC_FAILURE;
+    }
     memcpy(frame_orig, frame, length * sizeof(double));
     frame[0] = frame_orig[0] - emphasis_factor * (*prior);
     for (i = 1; i < length; ++i) {
@@ -237,23 +242,27 @@ void _apply_emphasis(
     free((void *)frame_orig);
     frame_orig = NULL;
     *prior = prior_orig;
+    return CMFCC_SUCCESS;
 }
 
 // own code
 // compute the power of the given frame
-void _compute_power(
+int _compute_power(
         double *frame,          // it has length == fft_order
         double *power,          // power has length == (fft_order / 2) + 1
-        const unsigned int fft_order,
+        const uint32_t fft_order,
         double *sin_table_full,
         double *sin_table_half
     ) {
     double *tmp;
-    unsigned int k;
-    const unsigned int n = fft_order;           // length of the I/O vectors
-    const unsigned int m = (fft_order / 2) + 1; // length of power
+    uint32_t k;
+    const uint32_t n = fft_order;           // length of the I/O vectors
+    const uint32_t m = (fft_order / 2) + 1; // length of power
 
     tmp = (double *)calloc(n + m, sizeof(double));
+    if (tmp == NULL) {
+        return CMFCC_FAILURE;
+    }
     rfft(frame, tmp, fft_order, sin_table_full, sin_table_half);
     power[0] = frame[0] * frame[0];
     for (k = 1; k < m; ++k) {
@@ -261,24 +270,28 @@ void _compute_power(
     }
     free((void *)tmp);
     tmp = NULL;
+    return CMFCC_SUCCESS;
 }
 
 #ifdef USE_FFTW
 // fftw code
 // compute the power of the given frame
-void _compute_power_fftw(
+int _compute_power_fftw(
         double *frame,          // it has length == fft_order
         double *power,          // power has length == (fft_order / 2) + 1
-        const unsigned int fft_order,
+        const uint32_t fft_order,
         rfftw_plan plan
     ) {
 
-    unsigned int k;
+    uint32_t k;
     double *out;
-    const unsigned int n = fft_order;             // length of the I/O vectors
-    //const unsigned int m = (fft_order / 2) + 1; // length of power
+    const uint32_t n = fft_order;             // length of the I/O vectors
+    //const uint32_t m = (fft_order / 2) + 1; // length of power
 
     out = (double *)calloc(n, sizeof(double));
+    if (out == NULL) {
+        return CMFCC_FAILURE;
+    }
     rfftw_one(plan, frame, out);
     power[0] = out[0] * out[0];
     for (k = 1; k < (n+1)/2; ++k) {
@@ -289,27 +302,32 @@ void _compute_power_fftw(
     }
     free((void *)out);
     out = NULL;
+    return CMFCC_SUCCESS;
 }
 #endif
 
 // transform the frame using the Hamming window
-void _apply_hamming(
+int _apply_hamming(
         double *frame,
-        const unsigned int frame_length,
+        const uint32_t frame_length,
         double *coefficients
     ) {
-    unsigned int k;
+    uint32_t k;
 
     for (k = 0; k < frame_length; ++k) {
         frame[k] *= coefficients[k];
     }
+    return CMFCC_SUCCESS;
 }
-double *_precompute_hamming(const unsigned int frame_length) {
+double *_precompute_hamming(const uint32_t frame_length) {
     const double arg = PI_2 / (frame_length - 1);
     double *coefficients;
-    unsigned int k;
+    uint32_t k;
 
     coefficients = (double *)calloc(frame_length, sizeof(double));
+    if (coefficients == NULL) {
+        return NULL;
+    }
     for (k = 0; k < frame_length; ++k) {
         coefficients[k] = (0.54 - 0.46 * cos(k * arg));
     }
@@ -319,9 +337,9 @@ double *_precompute_hamming(const unsigned int frame_length) {
 // create Mel filter bank
 // return a pointer to a 2D matrix (filters_n x filter_bank_size)
 double *_create_mel_filter_bank(
-        unsigned int fft_order,
-        unsigned int filter_bank_size,
-        unsigned int sample_rate,
+        uint32_t fft_order,
+        uint32_t filter_bank_size,
+        uint32_t sample_rate,
         double upper_frequency,
         double lower_frequency
     ) {
@@ -329,28 +347,34 @@ double *_create_mel_filter_bank(
     const double melmax = _hz2mel(upper_frequency);
     const double melmin = _hz2mel(lower_frequency);
     const double melstep = (melmax - melmin) / (filter_bank_size + 1);
-    const unsigned int filter_edge_length = filter_bank_size + 2;
-    const unsigned int filters_n = (fft_order / 2) + 1;
+    const uint32_t filter_edge_length = filter_bank_size + 2;
+    const uint32_t filters_n = (fft_order / 2) + 1;
     double *filter_edges, *filters;
-    unsigned int k;
+    uint32_t k;
 
     // filter bank
     filters = (double *)calloc(filters_n * filter_bank_size, sizeof(double));
+    if (filters == NULL) {
+        return NULL;
+    }
 
     // filter edges
     filter_edges = (double *)calloc(filter_edge_length, sizeof(double));
+    if (filter_edges == NULL) {
+        return NULL;
+    }
 
     for (k = 0; k < filter_edge_length; ++k) {
         filter_edges[k] = _mel2hz(melmin + melstep * k);
     }
     for (k = 0; k < filter_bank_size; ++k) {
-        const unsigned int left_frequency = _round(filter_edges[k] / step_frequency);
-        const unsigned int center_frequency = _round(filter_edges[k + 1] / step_frequency);
-        const unsigned int right_frequency = _round(filter_edges[k + 2] / step_frequency);
+        const uint32_t left_frequency = _round(filter_edges[k] / step_frequency);
+        const uint32_t center_frequency = _round(filter_edges[k + 1] / step_frequency);
+        const uint32_t right_frequency = _round(filter_edges[k + 2] / step_frequency);
         const double width_frequency = (right_frequency - left_frequency) * step_frequency;
         const double height_frequency = 2.0 / width_frequency;
         double left_slope, right_slope;
-        unsigned int current_frequency;
+        uint32_t current_frequency;
 
         left_slope = 0.0;
         if (center_frequency != left_frequency) {
@@ -381,11 +405,14 @@ double *_create_mel_filter_bank(
 
 // create the DCT matrix
 // return a pointer to a 2D matrix (mfcc_size x filter_bank_size)
-double *_create_dct_matrix(unsigned int mfcc_size, unsigned int filter_bank_size) {
+double *_create_dct_matrix(uint32_t mfcc_size, uint32_t filter_bank_size) {
     double *s2dct;
-    unsigned int i, j;
+    uint32_t i, j;
 
     s2dct = (double *)calloc(mfcc_size * filter_bank_size, sizeof(double));
+    if (s2dct == NULL) {
+        return NULL;
+    }
     for (i = 0; i < mfcc_size; ++i) {
         const double frequency = PI * i / filter_bank_size;
         for (j = 0; j < filter_bank_size; ++j) {
@@ -404,26 +431,26 @@ int _compute_mfcc(
         double *data_ptr,
         FILE *audio_file_ptr,
         struct WAVE_INFO header,
-        const unsigned int data_length,
-        const unsigned int sample_rate,
-        const unsigned int filter_bank_size,
-        const unsigned int mfcc_size,
-        const unsigned int fft_order,
+        const uint32_t data_length,
+        const uint32_t sample_rate,
+        const uint32_t filter_bank_size,
+        const uint32_t mfcc_size,
+        const uint32_t fft_order,
         const double lower_frequency,
         const double upper_frequency,
         const double emphasis_factor,
         const double window_length,
         const double window_shift,
         double **mfcc_ptr,
-        unsigned int *mfcc_length
+        uint32_t *mfcc_length
     ) {
 
     double *filters, *s2dct, *sin_table_full, *sin_table_half, *hamming_coefficients;
     double *frame, *power, *logsp;
     double prior, acc;
-    unsigned int i, j, filters_n;
-    unsigned int frame_length, frame_shift, frame_length_padded;
-    unsigned int number_of_frames, frame_index, frame_start, frame_end;
+    uint32_t filters_n, frame_length, frame_shift, frame_length_padded;
+    uint32_t number_of_frames, frame_index, frame_start, frame_end;
+    uint32_t i, j;
 
 #if USE_FFTW
     rfftw_plan plan;
@@ -431,7 +458,7 @@ int _compute_mfcc(
 
     if (upper_frequency > (sample_rate / 2.0)) {
         // upper frequency exceeds Nyquist
-        return 0;
+        return CMFCC_FAILURE;
     }
 
 #if USE_FFTW
@@ -447,34 +474,43 @@ int _compute_mfcc(
             sample_rate,
             upper_frequency,
             lower_frequency);
+    if (filters == NULL) {
+        return CMFCC_FAILURE;
+    }
 
     // compute DCT matrix
     s2dct = _create_dct_matrix(mfcc_size, filter_bank_size);
+    if (s2dct == NULL) {
+        return CMFCC_FAILURE;
+    }
 
     // length of a frame, in samples
-    frame_length = (unsigned int)floor(window_length * sample_rate);
+    frame_length = (uint32_t)floor(window_length * sample_rate);
     frame_length_padded = _max(frame_length, fft_order);
 
     // shift of a frame, in samples
-    frame_shift = (unsigned int)floor(window_shift * sample_rate);
+    frame_shift = (uint32_t)floor(window_shift * sample_rate);
 
     // value of the last sample in the previous frame
     prior = 0.0;
 
     // number of frames
-    number_of_frames = (unsigned int)floor(1.0 * data_length / frame_shift);
+    number_of_frames = (uint32_t)floor(1.0 * data_length / frame_shift);
     *mfcc_length = number_of_frames;
 
     // allocate the mfcc matrix
     *mfcc_ptr = (double *)calloc(number_of_frames * mfcc_size, sizeof(double));
+    if ((*mfcc_ptr) == NULL) {
+        return CMFCC_FAILURE;
+    }
 
-    // precompute sin tables
+    // precompute sin tables and hamming coefficients
     sin_table_full = _precompute_sin_table(fft_order);
     sin_table_half = _precompute_sin_table(fft_order / 2);
-
-    // precompute hamming coefficients
     hamming_coefficients = _precompute_hamming(frame_length);
-
+    if ((sin_table_full == NULL) || (sin_table_half == NULL) || (hamming_coefficients == NULL)) {
+        return CMFCC_FAILURE;
+    }
     //printf("Frame length:        %d\n", frame_length);
     //printf("Frame shift:         %d\n", frame_shift);
     //printf("Frame length padded: %d\n", frame_length_padded);
@@ -489,6 +525,9 @@ int _compute_mfcc(
     frame = (double *)calloc(frame_length_padded, sizeof(double));
     power = (double *)calloc(filters_n, sizeof(double));
     logsp = (double *)calloc(filter_bank_size, sizeof(double));
+    if ((frame == NULL) || (power == NULL) || (logsp == NULL)) {
+        return CMFCC_FAILURE;
+    }
 
     // process frames
     for (frame_index = 0; frame_index < number_of_frames; ++frame_index) {
@@ -507,7 +546,9 @@ int _compute_mfcc(
         frame_start = frame_index * frame_shift;
         frame_end = _min(frame_start + frame_length, data_length);
         if (data_ptr == NULL) {
-            wave_read_double(audio_file_ptr, &header, frame, frame_start, (frame_end - frame_start));
+            if (wave_read_double(audio_file_ptr, &header, frame, frame_start, (frame_end - frame_start)) != CWAVE_SUCCESS) {
+                return CMFCC_FAILURE;
+            }
         } else {
             memcpy(frame, data_ptr + frame_start, (frame_end - frame_start) * sizeof(double));
         }
@@ -515,15 +556,23 @@ int _compute_mfcc(
         //printf("Frame %d : %d -> %d\n", frame_index, frame_start, frame_end);
 
         // emphasis + hamming + compute power
-        _apply_emphasis(frame, frame_length, emphasis_factor, &prior);
-        _apply_hamming(frame, frame_length, hamming_coefficients);
+        if (_apply_emphasis(frame, frame_length, emphasis_factor, &prior) != CMFCC_SUCCESS) {
+            return CMFCC_FAILURE;
+        }
+        if (_apply_hamming(frame, frame_length, hamming_coefficients) != CMFCC_SUCCESS) {
+            return CMFCC_FAILURE;
+        }
 
 #ifdef USE_FFTW
         // fftw code
-        _compute_power_fftw(frame, power, fft_order, plan);
+        if (_compute_power_fftw(frame, power, fft_order, plan) != CMFCC_SUCCESS) {
+            return CMFCC_FAILURE;
+        }
 #else
         // own code
-        _compute_power(frame, power, fft_order, sin_table_full, sin_table_half);
+        if (_compute_power(frame, power, fft_order, sin_table_full, sin_table_half) != CMFCC_SUCCESS) {
+            return CMFCC_FAILURE;
+        }
 #endif
 
         // apply Mel filter bank
@@ -568,25 +617,24 @@ int _compute_mfcc(
     sin_table_full = NULL;
     s2dct = NULL;
     filters = NULL;
-
-    return 1;
+    return CMFCC_SUCCESS;
 }
 
 // compute MFCC from data loaded in RAM
 int compute_mfcc_from_data(
         double *data_ptr,
-        const unsigned int data_length,
-        const unsigned int sample_rate,
-        const unsigned int filter_bank_size,
-        const unsigned int mfcc_size,
-        const unsigned int fft_order,
+        const uint32_t data_length,
+        const uint32_t sample_rate,
+        const uint32_t filter_bank_size,
+        const uint32_t mfcc_size,
+        const uint32_t fft_order,
         const double lower_frequency,
         const double upper_frequency,
         const double emphasis_factor,
         const double window_length,
         const double window_shift,
         double **mfcc_ptr,
-        unsigned int *mfcc_length
+        uint32_t *mfcc_length
     ) {
 
     // to keep the compile happy, it will never be used
@@ -614,41 +662,42 @@ int compute_mfcc_from_data(
 // compute MFCC from file on disk
 int compute_mfcc_from_file(
     char *audio_file_path,
-    const unsigned int filter_bank_size,
-    const unsigned int mfcc_size,
-    const unsigned int fft_order,
+    const uint32_t filter_bank_size,
+    const uint32_t mfcc_size,
+    const uint32_t fft_order,
     const double lower_frequency,
     const double upper_frequency,
     const double emphasis_factor,
     const double window_length,
     const double window_shift,
-    unsigned int *data_length_ret,
-    unsigned int *sample_rate_ret,
+    uint32_t *data_length,
+    uint32_t *sample_rate,
     double **mfcc_ptr,
-    unsigned int *mfcc_length
+    uint32_t *mfcc_length
 ) {
 
     FILE *audio_file_ptr;
     struct WAVE_INFO header;
-    unsigned int data_length, sample_rate;
+    uint32_t sample_rate_loc;
+    uint32_t data_length_loc;
     int ret;
 
     // open file
-    memset(&header, 0, sizeof(header));
-    if (! (audio_file_ptr = wave_open(audio_file_path, &header))) {
+    audio_file_ptr = wave_open(audio_file_path, &header);
+    if (audio_file_ptr == NULL) {
         //printf("Error: cannot open file\n");
-        return 0;
+        return CMFCC_FAILURE;
     }
-    data_length = header.coNumSamples;
-    sample_rate = header.leSampleRate;
+    data_length_loc = header.coNumSamples;
+    sample_rate_loc = header.leSampleRate;
 
     // compute mfcc
     ret = _compute_mfcc(
         NULL,
         audio_file_ptr,
         header,
-        data_length,
-        sample_rate,
+        data_length_loc,
+        sample_rate_loc,
         filter_bank_size,
         mfcc_size,
         fft_order,
@@ -663,11 +712,11 @@ int compute_mfcc_from_file(
 
     // close file
     wave_close(audio_file_ptr);
-    *data_length_ret = data_length;
-    *sample_rate_ret = sample_rate;
+    *data_length = data_length_loc;
+    *sample_rate = sample_rate_loc;
 
     return ret;
-};
+}
 
 
 

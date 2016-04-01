@@ -3,7 +3,6 @@
 
 import unittest
 
-from aeneas.language import Language
 import aeneas.globalfunctions as gf
 
 class TestCEW(unittest.TestCase):
@@ -14,7 +13,7 @@ class TestCEW(unittest.TestCase):
             import aeneas.cew.cew
             sr, begin, end = aeneas.cew.cew.synthesize_single(
                 output_file_path,
-                Language.EN,
+                u"en",                      # NOTE cew requires the actual eSpeak voice code
                 u"Dummy"
             )
             self.assertEqual(sr, 22050)
@@ -30,9 +29,9 @@ class TestCEW(unittest.TestCase):
             c_quit_after = 0.0
             c_backwards = 0
             c_text = [
-                (Language.EN, "Dummy 1"),
-                (Language.EN, "Dummy 2"),
-                (Language.EN, "Dummy 3"),
+                (u"en", u"Dummy 1"),        # NOTE cew requires the actual eSpeak voice code
+                (u"en", u"Dummy 2"),        # NOTE cew requires the actual eSpeak voice code
+                (u"en", u"Dummy 3"),        # NOTE cew requires the actual eSpeak voice code
             ]
             import aeneas.cew.cew
             sr, sf, intervals = aeneas.cew.cew.synthesize_multiple(
@@ -54,9 +53,9 @@ class TestCEW(unittest.TestCase):
             c_quit_after = 0.0
             c_backwards = 0
             c_text = [
-                (Language.EN, "Dummy 1"),
-                (Language.IT, "Segnaposto 2"),
-                (Language.EN, "Dummy 3"),
+                (u"en", u"Dummy 1"),        # NOTE cew requires the actual eSpeak voice code
+                (u"it", u"Segnaposto 2"),   # NOTE cew requires the actual eSpeak voice code
+                (u"en", u"Dummy 3"),        # NOTE cew requires the actual eSpeak voice code
             ]
             import aeneas.cew.cew
             sr, sf, intervals = aeneas.cew.cew.synthesize_multiple(

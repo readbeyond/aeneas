@@ -13,6 +13,7 @@ from aeneas.ffprobewrapper import FFPROBEParsingError
 from aeneas.ffprobewrapper import FFPROBEPathError
 from aeneas.ffprobewrapper import FFPROBEUnsupportedFormatError
 from aeneas.ffprobewrapper import FFPROBEWrapper
+from aeneas.runtimeconfiguration import RuntimeConfiguration
 from aeneas.tools.abstract_cli_program import AbstractCLIProgram
 import aeneas.globalfunctions as gf
 
@@ -23,7 +24,7 @@ __copyright__ = """
     Copyright 2015-2016, Alberto Pettarin (www.albertopettarin.it)
     """
 __license__ = "GNU AGPL 3"
-__version__ = "1.4.1"
+__version__ = "1.5.0"
 __email__ = "aeneas@readbeyond.it"
 __status__ = "Production"
 
@@ -38,7 +39,7 @@ class FFPROBEWrapperCLI(AbstractCLIProgram):
     HELP = {
         "description": u"Read audio file properties using the ffprobe wrapper.",
         "synopsis": [
-            u"AUDIO_FILE"
+            (u"AUDIO_FILE", True)
         ],
         "examples": [
             u"%s" % (AUDIO_FILE)
@@ -65,7 +66,7 @@ class FFPROBEWrapperCLI(AbstractCLIProgram):
                 self.print_generic(u"%s %s" % (key, dictionary[key]))
             return self.NO_ERROR_EXIT_CODE
         except FFPROBEPathError:
-            self.print_error(u"Unable to call the ffprobe executable '%s'" % (self.rconf["ffprobe_path"]))
+            self.print_error(u"Unable to call the ffprobe executable '%s'" % (self.rconf[RuntimeConfiguration.FFPROBE_PATH]))
             self.print_error(u"Make sure the path to ffprobe is correct")
         except (FFPROBEUnsupportedFormatError, FFPROBEParsingError):
             self.print_error(u"Cannot read properties of file '%s'" % (audio_file_path))

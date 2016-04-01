@@ -1,4 +1,4 @@
-Diagnostics
+diagnostics
 ===========
 
 .. automodule:: aeneas.diagnostics

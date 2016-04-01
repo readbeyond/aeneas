@@ -15,18 +15,19 @@ from aeneas.task import Task
 from aeneas.task import TaskConfiguration
 from aeneas.textfile import TextFileFormat
 from aeneas.textfile import TextFragment
+from aeneas.timevalue import TimeValue
 import aeneas.globalfunctions as gf
 
 class TestTask(unittest.TestCase):
 
     def dummy_sync_map(self):
         sync_map = SyncMap()
-        frag = TextFragment(u"f001", Language.EN, [u"Fragment 1"])
-        sync_map.append_fragment(SyncMapFragment(frag, 0, 12.345))
-        frag = TextFragment(u"f002", Language.EN, [u"Fragment 2"])
-        sync_map.append_fragment(SyncMapFragment(frag, 12.345, 23.456))
-        frag = TextFragment(u"f003", Language.EN, [u"Fragment 3"])
-        sync_map.append_fragment(SyncMapFragment(frag, 23.456, 34.567))
+        frag = TextFragment(u"f001", Language.ENG, [u"Fragment 1"])
+        sync_map.add_fragment(SyncMapFragment(frag, 0, 12.345))
+        frag = TextFragment(u"f002", Language.ENG, [u"Fragment 2"])
+        sync_map.add_fragment(SyncMapFragment(frag, 12.345, 23.456))
+        frag = TextFragment(u"f003", Language.ENG, [u"Fragment 3"])
+        sync_map.add_fragment(SyncMapFragment(frag, 23.456, 34.567))
         return sync_map
 
     def setter(self, attribute, value, expected):
@@ -41,7 +42,7 @@ class TestTask(unittest.TestCase):
     def set_text_file(self, path, fmt, expected, id_regex=None, class_regex=None, id_sort=None):
         task = Task()
         task.configuration = TaskConfiguration()
-        task.configuration["language"] = Language.EN
+        task.configuration["language"] = Language.ENG
         task.configuration["i_t_format"] = fmt
         if class_regex is not None:
             task.configuration["i_t_unparsed_class_regex"] = class_regex
@@ -64,7 +65,7 @@ class TestTask(unittest.TestCase):
 
     def tc_from_string_some_invalid(self, config_string, expected_description):
         properties = [
-            ["language", Language.IT],
+            ["language", Language.ITA],
             ["description", expected_description],
         ]
         self.tc_from_string(config_string, properties)
@@ -117,7 +118,7 @@ class TestTask(unittest.TestCase):
         task.audio_file_path_absolute = gf.absolute_path("res/container/job/assets/p001.mp3", __file__)
         self.assertIsNotNone(task.audio_file)
         self.assertEqual(task.audio_file.file_size, 426735)
-        self.assertAlmostEqual(task.audio_file.audio_length, 53.3, places=1)
+        self.assertAlmostEqual(task.audio_file.audio_length, TimeValue("53.3"), places=1)
 
     def test_set_audio_file_path_absolute_error(self):
         task = Task()
@@ -190,7 +191,7 @@ class TestTask(unittest.TestCase):
     def test_output_sync_map(self):
         task = Task()
         task.configuration = TaskConfiguration()
-        task.configuration["language"] = Language.EN
+        task.configuration["language"] = Language.ENG
         task.configuration["o_format"] = SyncMapFormat.TXT
         task.sync_map = self.dummy_sync_map()
         handler, output_file_path = gf.tmp_file(suffix=".txt")
@@ -210,19 +211,19 @@ class TestTask(unittest.TestCase):
         self.setter("description", u"Test àèìòù", u"Test àèìòù")
 
     def test_tc_language(self):
-        self.setter("language", Language.IT, Language.IT)
+        self.setter("language", Language.ITA, Language.ITA)
 
     def test_tc_adjust_boundary_algorithm(self):
         self.setter("aba_algorithm", AdjustBoundaryAlgorithm.AUTO, AdjustBoundaryAlgorithm.AUTO)
 
     def test_tc_adjust_boundary_aftercurrent_value(self):
-        self.setter("aba_aftercurrent_value", u"0.100", 0.100)
+        self.setter("aba_aftercurrent_value", u"0.100", TimeValue("0.100"))
 
     def test_tc_adjust_boundary_beforenext_value(self):
-        self.setter("aba_beforenext_value", u"0.100", 0.100)
+        self.setter("aba_beforenext_value", u"0.100", TimeValue("0.100"))
 
     def test_tc_adjust_boundary_offset_value(self):
-        self.setter("aba_offset_value", u"0.100", 0.100)
+        self.setter("aba_offset_value", u"0.100", TimeValue("0.100"))
 
     def test_tc_adjust_boundary_percent_value(self):
         self.setter("aba_percent_value", u"75", 75)
@@ -286,7 +287,7 @@ class TestTask(unittest.TestCase):
 
     def test_tc_config_string(self):
         taskconf = TaskConfiguration()
-        taskconf["language"] = Language.IT
+        taskconf["language"] = Language.ITA
         taskconf["description"] = u"Test description"
         taskconf["custom_id"] = u"customid"
         taskconf["i_a_head"] = u"20"
@@ -295,13 +296,13 @@ class TestTask(unittest.TestCase):
         taskconf["o_name"] = u"output.smil"
         taskconf["o_smil_audio_ref"] = u"../audio/audio001.mp3"
         taskconf["o_smil_page_ref"] = u"../text/page001.xhtml"
-        expected = u"is_audio_file_head_length=20|is_audio_file_process_length=100|os_task_file_format=smil|os_task_file_name=output.smil|os_task_file_smil_audio_ref=../audio/audio001.mp3|os_task_file_smil_page_ref=../text/page001.xhtml|task_custom_id=customid|task_description=Test description|task_language=it"
+        expected = u"is_audio_file_head_length=20|is_audio_file_process_length=100|os_task_file_format=smil|os_task_file_name=output.smil|os_task_file_smil_audio_ref=../audio/audio001.mp3|os_task_file_smil_page_ref=../text/page001.xhtml|task_custom_id=customid|task_description=Test description|task_language=ita"
         self.assertEqual(taskconf.config_string(), expected)
 
     def test_tc_from_string_with_optional(self):
-        config_string = u"task_description=Test description|task_language=it|task_custom_id=customid|is_audio_file_head_length=20|is_audio_file_process_length=100|os_task_file_format=smil|os_task_file_name=output.smil|os_task_file_smil_audio_ref=../audio/audio001.mp3|os_task_file_smil_page_ref=../text/page001.xhtml"
+        config_string = u"task_description=Test description|task_language=ita|task_custom_id=customid|is_audio_file_head_length=20|is_audio_file_process_length=100|os_task_file_format=smil|os_task_file_name=output.smil|os_task_file_smil_audio_ref=../audio/audio001.mp3|os_task_file_smil_page_ref=../text/page001.xhtml"
         properties = [
-            ("language", Language.IT),
+            ("language", Language.ITA),
             ("description", u"Test description"),
             ("custom_id", u"customid"),
             ("i_a_head", 20.0),
@@ -314,9 +315,9 @@ class TestTask(unittest.TestCase):
         self.tc_from_string(config_string, properties)
 
     def test_tc_from_string_no_optional(self):
-        config_string = u"task_description=Test description|task_language=it|task_custom_id=customid|is_audio_file_head_length=20|is_audio_file_process_length=100|os_task_file_format=txt|os_task_file_name=output.txt"
+        config_string = u"task_description=Test description|task_language=ita|task_custom_id=customid|is_audio_file_head_length=20|is_audio_file_process_length=100|os_task_file_format=txt|os_task_file_name=output.txt"
         properties = [
-            ("language", Language.IT),
+            ("language", Language.ITA),
             ("description", u"Test description"),
             ("custom_id", u"customid"),
             ("i_a_head", 20.0),
@@ -330,85 +331,85 @@ class TestTask(unittest.TestCase):
 
     def test_tc_from_string_simple(self):
         self.tc_from_string_some_invalid(
-            u"task_description=Test description|task_language=it",
+            u"task_description=Test description|task_language=ita",
             u"Test description"
         )
 
     def test_tc_from_string_unicode(self):
         self.tc_from_string_some_invalid(
-            u"task_description=Test description àèìòù|task_language=it",
+            u"task_description=Test description àèìòù|task_language=ita",
             u"Test description àèìòù"
         )
 
     def test_tc_from_string_repeated_pipes(self):
         self.tc_from_string_some_invalid(
-            u"task_description=Test description|||task_language=it",
+            u"task_description=Test description|||task_language=ita",
             u"Test description"
         )
 
     def test_tc_from_string_invalid_key_with_value(self):
         self.tc_from_string_some_invalid(
-            u"task_description=Test description|not_a_valid_key=foo|task_language=it",
+            u"task_description=Test description|not_a_valid_key=foo|task_language=ita",
             u"Test description"
         )
 
     def test_tc_from_string_invalid_key_no_value(self):
         self.tc_from_string_some_invalid(
-            u"task_description=Test description|not_a_valid_key=|task_language=it",
+            u"task_description=Test description|not_a_valid_key=|task_language=ita",
             u"Test description"
         )
 
     def test_tc_from_string_value_without_key(self):
         self.tc_from_string_some_invalid(
-            u"task_description=Test description|=foo|task_language=it",
+            u"task_description=Test description|=foo|task_language=ita",
             u"Test description"
         )
 
     def test_tc_from_string_trailing_pipe(self):
         self.tc_from_string_some_invalid(
-            u"task_description=Test description|task_language=it|",
+            u"task_description=Test description|task_language=ita|",
             u"Test description"
         )
 
     def test_tc_from_string_leading_pipe(self):
         self.tc_from_string_some_invalid(
-            u"|task_description=Test description|task_language=it",
+            u"|task_description=Test description|task_language=ita",
             u"Test description"
         )
 
     def test_tc_from_string_leading_and_trailing_pipe(self):
         self.tc_from_string_some_invalid(
-            u"|task_description=Test description|task_language=it|",
+            u"|task_description=Test description|task_language=ita|",
             u"Test description"
         )
 
     def test_tc_from_string_valid_key_no_value(self):
         self.tc_from_string_some_invalid(
-            u"task_description=|task_language=it",
+            u"task_description=|task_language=ita",
             None
         )
 
     def test_tc_from_string_space_before_valid_key(self):
         self.tc_from_string_some_invalid(
-            u"task_description=Test description=|task_language=it",
+            u"task_description=Test description=|task_language=ita",
             None
         )
 
     def test_tc_from_string_value_with_trailing_space(self):
         self.tc_from_string_some_invalid(
-            u"task_description=Test with space |task_language=it",
+            u"task_description=Test with space |task_language=ita",
             u"Test with space "
         )
 
     def test_tc_from_string_space_before_and_after_key_value_pair(self):
         self.tc_from_string_some_invalid(
-            u" task_description=Test with space |task_language=it",
+            u" task_description=Test with space |task_language=ita",
             None
         )
 
     def test_tc_from_string_several_invalid_stuff(self):
         self.tc_from_string_some_invalid(
-            u"task_description=Test description|foo=|=bar|foo=bar|||task_language=it",
+            u"task_description=Test description|foo=|=bar|foo=bar|||task_language=ita",
             u"Test description"
         )
 

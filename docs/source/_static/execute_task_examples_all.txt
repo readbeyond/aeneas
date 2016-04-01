@@ -1,0 +1,87 @@
+$ python -m aeneas.tools.execute_task --examples-all
+
+Example 1 (input: plain text (plain), output: AUD, aba beforenext 0.200)
+  $ python -m aeneas.tools.execute_task --example-aftercurrent
+
+Example 2 (input: plain text (plain), output: AUD, aba beforenext 0.200)
+  $ python -m aeneas.tools.execute_task --example-beforenext
+
+Example 3 (input: plain text, output: TSV, run via cewsubprocess)
+  $ python -m aeneas.tools.execute_task --example-cewsubprocess
+
+Example 4 (input: plain text, output: TSV, tts engine: ctw espeak)
+  $ python -m aeneas.tools.execute_task --example-ctw-espeak
+
+Example 5 (input: plain text, output: TSV, tts engine: ctw speect)
+  $ python -m aeneas.tools.execute_task --example-ctw-speect
+
+Example 6 (input: plain text, output: EAF)
+  $ python -m aeneas.tools.execute_task --example-eaf
+
+Example 7 (input: plain text (plain), output: SRT, print faster than 14.0 chars/s)
+  $ python -m aeneas.tools.execute_task --example-faster-rate
+
+Example 8 (input: plain text, output: TSV, tts engine: Festival)
+  $ python -m aeneas.tools.execute_task --example-festival
+
+Example 9 (input: mplain text (multilevel), output: JSON, levels to output: 1 and 2)
+  $ python -m aeneas.tools.execute_task --example-flatten-12
+
+Example 10 (input: mplain text (multilevel), output: JSON, levels to output: 2)
+  $ python -m aeneas.tools.execute_task --example-flatten-2
+
+Example 11 (input: mplain text (multilevel), output: JSON, levels to output: 3)
+  $ python -m aeneas.tools.execute_task --example-flatten-3
+
+Example 12 (input: plain text, output: TSV, explicit head and tail)
+  $ python -m aeneas.tools.execute_task --example-head-tail
+
+Example 13 (input: plain text, output: JSON)
+  $ python -m aeneas.tools.execute_task --example-json
+
+Example 14 (input: multilevel plain text (mplain), output: JSON)
+  $ python -m aeneas.tools.execute_task --example-mplain-json
+
+Example 15 (input: multilevel plain text (mplain), output: SMIL)
+  $ python -m aeneas.tools.execute_task --example-mplain-smil
+
+Example 16 (input: multilevel unparsed text (munparsed), output: JSON)
+  $ python -m aeneas.tools.execute_task --example-munparsed-json
+
+Example 17 (input: multilevel unparsed text (munparsed), output: SMIL)
+  $ python -m aeneas.tools.execute_task --example-munparsed-smil
+
+Example 18 (input: plain text, output: JSON, resolution: 0.500s)
+  $ python -m aeneas.tools.execute_task --example-mws
+
+Example 19 (input: multilevel plain text (mplain), output: JSON, no zero duration)
+  $ python -m aeneas.tools.execute_task --example-no-zero
+
+Example 20 (input: plain text (plain), output: AUD, aba offset 0.200)
+  $ python -m aeneas.tools.execute_task --example-offset
+
+Example 21 (input: plain text (plain), output: AUD, aba percent 50)
+  $ python -m aeneas.tools.execute_task --example-percent
+
+Example 22 (input: plain text, output: JSON, pure python)
+  $ python -m aeneas.tools.execute_task --example-py
+
+Example 23 (input: plain text (plain), output: SRT, max rate 14.0 chars/s, print rates)
+  $ python -m aeneas.tools.execute_task --example-rates
+
+Example 24 (input: plain text, output: TSV, head/tail detection)
+  $ python -m aeneas.tools.execute_task --example-sd
+
+Example 25 (input: unparsed text, output: SMIL)
+  $ python -m aeneas.tools.execute_task --example-smil
+
+Example 26 (input: subtitles text, output: SRT)
+  $ python -m aeneas.tools.execute_task --example-srt
+
+Example 27 (input: parsed text, output: TSV)
+  $ python -m aeneas.tools.execute_task --example-tsv
+
+Example 28 (input: audio from YouTube, output: TXT)
+  $ python -m aeneas.tools.execute_task --example-youtube
+
+

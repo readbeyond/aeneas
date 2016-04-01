@@ -1,4 +1,4 @@
-ExecuteTask
+executetask
 ===========
 
 .. automodule:: aeneas.executetask

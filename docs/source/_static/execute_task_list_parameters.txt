@@ -1,0 +1,41 @@
+$ python -m aeneas.tools.execute_task --list-parameters
+
+[INFO] You can use --list-values=PARAM on parameters marked by (*)
+[INFO] Available parameters:
+
+  task_language                           : language (*)
+
+  is_audio_file_detect_head_max           : detect audio head, at most this many seconds
+  is_audio_file_detect_head_min           : detect audio head, at least this many seconds
+  is_audio_file_detect_tail_max           : detect audio tail, at most this many seconds
+  is_audio_file_detect_tail_min           : detect audio tail, at least this many seconds
+  is_audio_file_head_length               : ignore this many seconds from the begin of the audio file
+  is_audio_file_process_length            : process this many seconds of the audio file
+  is_audio_file_tail_length               : ignore this many seconds from the end of the audio file
+
+  is_text_type                            : input text format (*)
+  is_text_mplain_word_separator           : word separator (mplain)
+  is_text_munparsed_l1_id_regex           : regex matching level 1 id attributes (munparsed)
+  is_text_munparsed_l2_id_regex           : regex matching level 2 id attributes (munparsed)
+  is_text_munparsed_l3_id_regex           : regex matching level 3 id attributes (munparsed)
+  is_text_unparsed_class_regex            : regex matching class attributes (unparsed)
+  is_text_unparsed_id_regex               : regex matching id attributes (unparsed)
+  is_text_unparsed_id_sort                : sort matched elements by id (unparsed) (*)
+  is_text_file_ignore_regex               : ignore text matched by regex for audio alignment purposes
+  is_text_file_transliterate_map          : apply the given transliteration map for audio alignment purposes
+
+  os_task_file_format                     : output sync map format (*)
+  os_task_file_id_regex                   : id regex for the output sync map (subtitles, plain)
+  os_task_file_head_tail_format           : format audio head/tail (*)
+  os_task_file_levels                     : output the specified levels (mplain)
+  os_task_file_no_zero                    : if True, do not allow zero-length fragments
+  os_task_file_smil_audio_ref             : value for the audio ref (smil, smilh, smilm)
+  os_task_file_smil_page_ref              : value for the text ref (smil, smilh, smilm)
+
+  task_adjust_boundary_algorithm          : adjust sync map fragments using algorithm (*)
+  task_adjust_boundary_aftercurrent_value : offset value, in seconds (aftercurrent)
+  task_adjust_boundary_beforenext_value   : offset value, in seconds (beforenext)
+  task_adjust_boundary_offset_value       : offset value, in seconds (offset)
+  task_adjust_boundary_percent_value      : percent value, in [0..100], (percent)
+  task_adjust_boundary_rate_value         : max rate, in characters/s (rate, rateaggressive)
+

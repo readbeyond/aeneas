@@ -1,0 +1,15 @@
+$ python -m aeneas.tools.execute_task --example-json -l
+
+[INFO] Running example task with arguments:
+  Audio file:    aeneas/tools/res/audio.mp3
+  Text file:     aeneas/tools/res/plain.txt
+  Config string: task_language=eng|is_text_type=plain|os_task_file_format=json
+  Sync map file: output/sonnet.json
+[INFO] Creating task...
+[INFO] Creating task... done
+[INFO] Executing task...
+[INFO] Executing task... done
+[INFO] Creating output sync map file...
+[INFO] Creating output sync map file... done
+[INFO] Created file 'output/sonnet.json'
+[INFO] Log written to file '/tmp/tmpyS_VBv.log'

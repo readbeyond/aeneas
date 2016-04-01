@@ -1,0 +1,56 @@
+$ python -m aeneas.tools.execute_task --help
+
+NAME
+  execute_task - Execute a Task.
+
+SYNOPSIS
+  python -m aeneas.tools.execute_task [-h|--help|--version]
+  python -m aeneas.tools.execute_task --list-parameters
+  python -m aeneas.tools.execute_task --list-values[=PARAM]
+  python -m aeneas.tools.execute_task AUDIO_FILE  TEXT_FILE CONFIG_STRING OUTPUT_FILE [OPTIONS]
+  python -m aeneas.tools.execute_task YOUTUBE_URL TEXT_FILE CONFIG_STRING OUTPUT_FILE -y [OPTIONS]
+
+OPTIONS
+  --faster-rate : print fragments with rate > task_adjust_boundary_rate_value
+  --help : print full help and exit
+  --keep-audio : do not delete the audio file downloaded from YouTube (-y only)
+  --largest-audio : download largest audio stream (-y only)
+  --list-parameters : list all parameters
+  --list-values : list all parameters for which values can be listed
+  --list-values=PARAM : list all allowed values for parameter PARAM
+  --output-html : output HTML file for fine tuning
+  --rates : print rate of each fragment
+  --skip-validator : do not validate the given config string
+  --version : print the program name and version and exit
+  --zero : print fragments with zero duration
+  -h : print short help and exit
+  -l[=FILE], --log[=FILE] : log verbose output to tmp file or FILE if specified
+  -r=CONF, --runtime-configuration=CONF : apply runtime configuration CONF
+  -v, --verbose : verbose output
+  -vv, --very-verbose : verbose output, print date/time values
+  -y, --youtube : download audio from YouTube video
+
+EXAMPLES
+  python -m aeneas.tools.execute_task --examples
+  python -m aeneas.tools.execute_task --examples-all
+
+EXIT CODES
+  0 : no error
+  1 : error
+  2 : help shown, no command run
+
+AUTHOR
+  Alberto Pettarin, http://www.albertopettarin.it/
+
+REPORTING BUGS
+  Please use the GitHub Issues Web page : https://github.com/ReadBeyond/aeneas/issues/
+
+COPYRIGHT
+  2012-2016, Alberto Pettarin and ReadBeyond Srl
+  This software is available under the terms of the GNU Affero General Public License Version 3
+
+SEE ALSO
+  Code repository  : https://github.com/ReadBeyond/aeneas/
+  Documentation    : http://www.readbeyond.it/aeneas/docs/
+  Project Web page : http://www.readbeyond.it/aeneas/
+

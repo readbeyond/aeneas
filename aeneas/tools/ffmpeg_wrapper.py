@@ -11,6 +11,7 @@ import sys
 
 from aeneas.ffmpegwrapper import FFMPEGPathError
 from aeneas.ffmpegwrapper import FFMPEGWrapper
+from aeneas.runtimeconfiguration import RuntimeConfiguration
 from aeneas.tools.abstract_cli_program import AbstractCLIProgram
 import aeneas.globalfunctions as gf
 
@@ -21,7 +22,7 @@ __copyright__ = """
     Copyright 2015-2016, Alberto Pettarin (www.albertopettarin.it)
     """
 __license__ = "GNU AGPL 3"
-__version__ = "1.4.1"
+__version__ = "1.5.0"
 __email__ = "aeneas@readbeyond.it"
 __status__ = "Production"
 
@@ -37,7 +38,7 @@ class FFMPEGWrapperCLI(AbstractCLIProgram):
     HELP = {
         "description": u"Convert audio files to mono WAV using the ffmpeg wrapper.",
         "synopsis": [
-            u"INPUT_FILE OUTPUT_FILE"
+            (u"INPUT_FILE OUTPUT_FILE", True)
         ],
         "examples": [
             u"%s %s" % (INPUT_FILE, OUTPUT_FILE)
@@ -63,10 +64,10 @@ class FFMPEGWrapperCLI(AbstractCLIProgram):
         try:
             converter = FFMPEGWrapper(rconf=self.rconf, logger=self.logger)
             converter.convert(input_file_path, output_file_path)
-            self.print_info(u"Converted '%s' into '%s'" % (input_file_path, output_file_path))
+            self.print_success(u"Converted '%s' into '%s'" % (input_file_path, output_file_path))
             return self.NO_ERROR_EXIT_CODE
         except FFMPEGPathError:
-            self.print_error(u"Unable to call the ffmpeg executable '%s'" % (self.rconf["ffmpeg_path"]))
+            self.print_error(u"Unable to call the ffmpeg executable '%s'" % (self.rconf[RuntimeConfiguration.FFMPEG_PATH]))
             self.print_error(u"Make sure the path to ffmpeg is correct")
         except OSError:
             self.print_error(u"Cannot convert file '%s' into '%s'" % (input_file_path, output_file_path))

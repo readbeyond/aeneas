@@ -1,4 +1,4 @@
-SyncMap
+syncmap
 =======
 
 .. automodule:: aeneas.syncmap

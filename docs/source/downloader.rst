@@ -1,4 +1,4 @@
-Downloader
+downloader
 ==========
 
 .. automodule:: aeneas.downloader

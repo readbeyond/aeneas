@@ -1,4 +1,4 @@
-RuntimeConfiguration
+runtimeconfiguration
 ====================
 
 .. automodule:: aeneas.runtimeconfiguration

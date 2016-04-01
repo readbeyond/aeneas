@@ -1,19 +1,21 @@
 #!/usr/bin/env python
 # coding=utf-8
 
-import os
+import numpy
 import unittest
 
 from aeneas.audiofile import AudioFile
-from aeneas.audiofile import AudioFileMonoWAVE
+from aeneas.audiofile import AudioFileNotInitializedError
 from aeneas.audiofile import AudioFileUnsupportedFormatError
+from aeneas.timevalue import TimeValue
 import aeneas.globalfunctions as gf
 
 class TestAudioFile(unittest.TestCase):
 
-    AUDIO_FILE_PATH_MFCC = "res/cmfcc/audio.wav"
+    AUDIO_FILE_WAVE = "res/audioformats/mono.16000.wav"
     AUDIO_FILE_EMPTY = "res/audioformats/p001.empty"
     AUDIO_FILE_NOT_WAVE = "res/audioformats/p001.mp3"
+    NOT_EXISTING_FILE = "res/audioformats/x/y/z/not_existing.wav"
     FILES = [
         {
             "path": "res/audioformats/p001.aac",
@@ -21,7 +23,7 @@ class TestAudioFile(unittest.TestCase):
             "rate": 44100,
             "channels": 2,
             "format": "aac",
-            "length": 7.9, # 7.907558 Estimating duration from bitrate, this may be inaccurate
+            "length": TimeValue("7.9"), # 7.907558 Estimating duration from bitrate, this may be inaccurate
         },
         {
             "path": "res/audioformats/p001.aiff",
@@ -29,7 +31,7 @@ class TestAudioFile(unittest.TestCase):
             "rate": 44100,
             "channels": 2,
             "format": "pcm_s16be",
-            "length": 9.0, # 8.994989
+            "length": TimeValue("9.0"), # 8.994989
         },
         {
             "path": "res/audioformats/p001.flac",
@@ -37,7 +39,7 @@ class TestAudioFile(unittest.TestCase):
             "rate": 44100,
             "channels": 2,
             "format": "flac",
-            "length": 9.0, # 8.994989
+            "length": TimeValue("9.0"), # 8.994989
         },
         {
             "path": "res/audioformats/p001.mp3",
@@ -45,7 +47,7 @@ class TestAudioFile(unittest.TestCase):
             "rate": 44100,
             "channels": 2,
             "format": "mp3",
-            "length": 9.0, # 9.038367
+            "length": TimeValue("9.0"), # 9.038367
         },
         {
             "path": "res/audioformats/p001.mp4",
@@ -53,7 +55,7 @@ class TestAudioFile(unittest.TestCase):
             "rate": 44100,
             "channels": 2,
             "format": "aac",
-            "length": 9.0, # 9.018209
+            "length": TimeValue("9.0"), # 9.018209
         },
         {
             "path": "res/audioformats/p001.ogg",
@@ -61,7 +63,7 @@ class TestAudioFile(unittest.TestCase):
             "rate": 44100,
             "channels": 2,
             "format": "vorbis",
-            "length": 9.0, # 8.994989
+            "length": TimeValue("9.0"), # 8.994989
         },
         {
             "path": "res/audioformats/p001.wav",
@@ -69,7 +71,7 @@ class TestAudioFile(unittest.TestCase):
             "rate": 44100,
             "channels": 2,
             "format": "pcm_s16le",
-            "length": 9.0, # 8.994989
+            "length": TimeValue("9.0"), # 8.994989
         },
         {
             "path": "res/audioformats/p001.webm",
@@ -77,170 +79,184 @@ class TestAudioFile(unittest.TestCase):
             "rate": 44100,
             "channels": 2,
             "format": "vorbis",
-            "length": 9.0, # 9.0
+            "length": TimeValue("9.0"), # 9.0
         },
     ]
 
-    def load(self, path):
-        return AudioFile(gf.absolute_path(path, __file__))
+    def load(self, path, rp=False, rs=False):
+        af = AudioFile(gf.absolute_path(path, __file__))
+        if rp:
+            af.read_properties()
+        if rs:
+            af.read_samples_from_file()
+        return af
 
-    def test_read_on_none(self):
-        audiofile = self.load(None)
+    def test_read_properties_from_none(self):
         with self.assertRaises(OSError):
-            audiofile.read_properties()
+            audiofile = self.load(None, rp=True)
 
-    def test_read_on_non_existing_path(self):
-        audiofile = self.load("not_existing.mp3")
+    def test_read_properties_from_non_existing_path(self):
         with self.assertRaises(OSError):
-            audiofile.read_properties()
+            audiofile = self.load("not_existing.mp3", rp=True)
 
-    def test_read_on_empty(self):
-        audiofile = self.load(self.AUDIO_FILE_EMPTY)
+    def test_read_properties_from_empty(self):
         with self.assertRaises(AudioFileUnsupportedFormatError):
-            audiofile.read_properties()
+            audiofile = self.load(self.AUDIO_FILE_EMPTY, rp=True)
 
     def test_str(self):
-        audiofile = self.load(self.FILES[0]["path"])
-        audiofile.read_properties()
+        audiofile = self.load(self.AUDIO_FILE_WAVE, rp=True)
         ignored = str(audiofile)
 
-    def test_read(self):
+    def test_read_properties_formats(self):
         for f in self.FILES:
-            audiofile = self.load(f["path"])
-            audiofile.read_properties()
+            audiofile = self.load(f["path"], rp=True)
             self.assertEqual(audiofile.file_size, f["size"])
             self.assertEqual(audiofile.audio_sample_rate, f["rate"])
             self.assertEqual(audiofile.audio_channels, f["channels"])
             self.assertEqual(audiofile.audio_format, f["format"])
             self.assertAlmostEqual(audiofile.audio_length, f["length"], places=1)
 
-
-
-class TestAudioFileMonoWAVE(unittest.TestCase):
-
-    AUDIO_FILE_PATH_MFCC = "res/cmfcc/audio.wav"
-    AUDIO_FILE_EMPTY = "res/audioformats/p001.empty"
-    AUDIO_FILE_NOT_WAVE = "res/audioformats/p001.mp3"
-    NOT_EXISTING_FILE = "res/audioformats/x/y/z/not_existing.wav"
-
-    def load(self, path):
-        return AudioFileMonoWAVE(gf.absolute_path(path, __file__))
-
-    def test_load_on_none(self):
-        audiofile = self.load(None)
+    def test_read_samples_from_none(self):
         with self.assertRaises(OSError):
-            audiofile.load_data()
+            audiofile = self.load(None, rs=True)
 
-    def test_load_on_non_existing_path(self):
-        audiofile = self.load(self.NOT_EXISTING_FILE)
+    def test_read_samples_from_non_existing_path(self):
         with self.assertRaises(OSError):
-            audiofile.load_data()
+            audiofile = self.load(self.NOT_EXISTING_FILE, rs=True)
 
-    def test_load_on_empty(self):
-        audiofile = self.load(self.AUDIO_FILE_EMPTY)
+    def test_read_samples_from_empty(self):
         with self.assertRaises(AudioFileUnsupportedFormatError):
-            audiofile.load_data()
+            audiofile = self.load(self.AUDIO_FILE_EMPTY, rs=True)
 
-    def test_load_not_wave_file(self):
-        audiofile = self.load(self.AUDIO_FILE_NOT_WAVE)
-        with self.assertRaises(AudioFileUnsupportedFormatError):
-            audiofile.load_data()
-
-    def test_load_data(self):
-        audiofile = self.load(self.AUDIO_FILE_PATH_MFCC)
-        audiofile.load_data()
-        self.assertIsNotNone(audiofile.audio_data)
+    def test_read_samples_from_file(self):
+        audiofile = self.load(self.AUDIO_FILE_WAVE, rs=True)
+        self.assertIsNotNone(audiofile.audio_samples)
         audiofile.clear_data()
 
     def test_clear_data(self):
-        audiofile = self.load(self.AUDIO_FILE_PATH_MFCC)
-        audiofile.load_data()
+        audiofile = self.load(self.AUDIO_FILE_WAVE, rs=True)
         audiofile.clear_data()
-        self.assertIsNone(audiofile.audio_data)
-
-    def test_extract_mfcc(self):
-        audiofile = self.load(self.AUDIO_FILE_PATH_MFCC)
-        audiofile.load_data()
-        audiofile.extract_mfcc()
-        audiofile.clear_data()
-        self.assertIsNone(audiofile.audio_data)
-        self.assertEqual(audiofile.audio_mfcc.shape[0], 13)
-        self.assertEqual(audiofile.audio_mfcc.shape[1], 1331)
 
     def test_length(self):
-        audiofile = self.load(self.AUDIO_FILE_PATH_MFCC)
-        audiofile.load_data()
+        audiofile = self.load(self.AUDIO_FILE_WAVE, rs=True)
         audiofile.clear_data()
-        self.assertAlmostEqual(audiofile.audio_length, 53.3, places=1) # 53.266
+        self.assertAlmostEqual(audiofile.audio_length, TimeValue("53.3"), places=1) # 53.266
 
-    def test_append_data(self):
-        audiofile = self.load(self.AUDIO_FILE_PATH_MFCC)
-        audiofile.load_data()
-        data = audiofile.audio_data
+    def test_add_samples_file(self):
+        audiofile = self.load(self.AUDIO_FILE_WAVE, rs=True)
+        data = audiofile.audio_samples
         old_length = audiofile.audio_length
-        audiofile.append_data(data)
+        audiofile.add_samples(data)
         new_length = audiofile.audio_length
         self.assertAlmostEqual(new_length, 2 * old_length, places=1)
 
-    def test_prepend_data(self):
-        audiofile = self.load(self.AUDIO_FILE_PATH_MFCC)
-        audiofile.load_data()
-        data = audiofile.audio_data
+    def test_add_samples_reverse_file(self):
+        audiofile = self.load(self.AUDIO_FILE_WAVE, rs=True)
+        data = audiofile.audio_samples
         old_length = audiofile.audio_length
-        audiofile.prepend_data(data)
+        audiofile.add_samples(data, reverse=True)
         new_length = audiofile.audio_length
         self.assertAlmostEqual(new_length, 2 * old_length, places=1)
 
     def test_reverse(self):
-        audiofile = self.load(self.AUDIO_FILE_PATH_MFCC)
-        audiofile.load_data()
-        data = audiofile.audio_data
+        audiofile = self.load(self.AUDIO_FILE_WAVE, rs=True)
+        data = numpy.array(audiofile.audio_samples)
         audiofile.reverse()
-        rev1 = audiofile.audio_data
+        rev1 = numpy.array(audiofile.audio_samples)
         self.assertFalse((data == rev1).all())
         audiofile.reverse()
-        rev2 = audiofile.audio_data
+        rev2 = numpy.array(audiofile.audio_samples)
         self.assertTrue((data == rev2).all())
         audiofile.clear_data()
 
     def test_trim(self):
         intervals = [
-            [None, None, 53.3],
-            [1.0, None, 52.3],
-            [None, 52.3, 52.3],
-            [1.0, 51.3, 51.3],
-            [0.0, None, 53.3],
-            [None, 60.0, 53.3],
-            [-1.0, None, 53.3],
-            [0.0, -60.0, 0.0],
-            [10.0, 50.0, 43.3]
+            [None, None, TimeValue("53.3")],
+            [TimeValue("1.0"), None, TimeValue("52.3")],
+            [None, TimeValue("52.3"), TimeValue("52.3")],
+            [TimeValue("1.0"), TimeValue("51.3"), TimeValue("51.3")],
+            [TimeValue("0.0"), None, TimeValue("53.3")],
+            [None, TimeValue("60.0"), TimeValue("53.3")],
+            [TimeValue("-1.0"), None, TimeValue("53.3")],
+            [TimeValue("0.0"), TimeValue("-60.0"), TimeValue("0.0")],
+            [TimeValue("10.0"), TimeValue("50.0"), TimeValue("43.3")]
         ]
 
         for interval in intervals:
-            audiofile = self.load(self.AUDIO_FILE_PATH_MFCC)
-            audiofile.load_data()
+            audiofile = self.load(self.AUDIO_FILE_WAVE, rs=True)
             audiofile.trim(interval[0], interval[1])
             self.assertAlmostEqual(audiofile.audio_length, interval[2], places=1) # 53.315918
             audiofile.clear_data()
 
     def test_write_not_existing_path(self):
         output_file_path = gf.absolute_path(self.NOT_EXISTING_FILE, __file__)
-        audiofile = self.load(self.AUDIO_FILE_PATH_MFCC)
-        audiofile.load_data()
+        audiofile = self.load(self.AUDIO_FILE_WAVE, rs=True)
         with self.assertRaises(OSError):
             audiofile.write(output_file_path)
 
     def test_write(self):
-        audiofile = self.load(self.AUDIO_FILE_PATH_MFCC)
-        audiofile.load_data()
-        data = audiofile.audio_data
+        audiofile = self.load(self.AUDIO_FILE_WAVE, rs=True)
+        data = audiofile.audio_samples
         handler, output_file_path = gf.tmp_file(suffix=".wav")
         audiofile.write(output_file_path)
         audiocopy = self.load(output_file_path)
-        audiocopy.load_data()
-        datacopy = audiocopy.audio_data
+        datacopy = audiocopy.audio_samples
         self.assertTrue((datacopy == data).all())
         gf.delete_file(handler, output_file_path)
+
+    def test_create_none(self):
+        audiofile = AudioFile()
+
+    def test_preallocate(self):
+        audiofile = AudioFile()
+        with self.assertRaises(AudioFileNotInitializedError):
+            audiofile.audio_samples
+        audiofile.preallocate_memory(100)
+        self.assertEqual(len(audiofile.audio_samples), 0)
+
+    def test_preallocate_bigger(self):
+        audiofile = AudioFile()
+        audiofile.preallocate_memory(100)
+        self.assertEqual(len(audiofile.audio_samples), 0)
+        audiofile.add_samples(numpy.array([1, 2, 3, 4, 5]))
+        self.assertEqual(len(audiofile.audio_samples), 5)
+        audiofile.preallocate_memory(500)
+        self.assertEqual(len(audiofile.audio_samples), 5)
+
+    def test_preallocate_smaller(self):
+        audiofile = AudioFile()
+        audiofile.preallocate_memory(100)
+        self.assertEqual(len(audiofile.audio_samples), 0)
+        audiofile.add_samples(numpy.array([1, 2, 3, 4, 5]))
+        self.assertEqual(len(audiofile.audio_samples), 5)
+        audiofile.preallocate_memory(2)
+        self.assertEqual(len(audiofile.audio_samples), 2)
+
+    def test_add_samples_memory(self):
+        audiofile = AudioFile()
+        audiofile.add_samples(numpy.array([1, 2, 3, 4, 5]))
+        audiofile.add_samples(numpy.array([6, 7, 8, 9, 10]))
+        self.assertEqual(len(audiofile.audio_samples), 10)
+        self.assertEqual(audiofile.audio_samples[0], 1)
+        self.assertEqual(audiofile.audio_samples[1], 2)
+        self.assertEqual(audiofile.audio_samples[4], 5)
+        self.assertEqual(audiofile.audio_samples[5], 6)
+        self.assertEqual(audiofile.audio_samples[6], 7)
+        self.assertEqual(audiofile.audio_samples[9], 10)
+
+    def test_add_samples_reverse_memory(self):
+        audiofile = AudioFile()
+        audiofile.add_samples(numpy.array([1, 2, 3, 4, 5]), reverse=True)
+        audiofile.add_samples(numpy.array([6, 7, 8, 9, 10]), reverse=True)
+        self.assertEqual(len(audiofile.audio_samples), 10)
+        self.assertEqual(audiofile.audio_samples[0], 5)
+        self.assertEqual(audiofile.audio_samples[1], 4)
+        self.assertEqual(audiofile.audio_samples[4], 1)
+        self.assertEqual(audiofile.audio_samples[5], 10)
+        self.assertEqual(audiofile.audio_samples[6], 9)
+        self.assertEqual(audiofile.audio_samples[9], 6)
+
+
 
 if __name__ == '__main__':
     unittest.main()

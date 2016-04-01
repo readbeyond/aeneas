@@ -1,6 +1,59 @@
 Changelog
 =========
 
+v1.5.0 (2016-04-02)
+-------------------
+
+#. Rewritten ``vad.py``
+#. Rewritten ``sd.py``, removed ``SDMetric``
+#. Rewritten ``adjustboundaryalgorithm.py``
+#. Simplified ``executetask.py``
+#. Added ``Loggable`` to ``logger.py``, now most classes derive from it
+#. Added ``timevalue.py`` containing an arbitrary-precision type to represent time values (instead of ``float``)
+#. Added ``ttswrapper.py`` to support generic TTS engine invocation
+#. Added ``festivalwrapper.py``
+#. Added ``nuancettsapiwrapper.py``
+#. Modified ``espeakwrapper.py`` to fit in the new TTS architecture
+#. Renamed ``espeak_path`` to ``tts_path`` in ``RuntimeConfiguration``
+#. Deleted ``aeneas.tools.espeak_wrapper`` CLI tool, use ``aeneas.tools.synthesize_text`` instead
+#. Added ``CEWSubprocess`` to run ``aeneas.cew`` in a separate process to work around a bug in libespeak
+#. Added ``aeneas/extra`` directory, containing some custom TTS wrappers
+#. Changed meaning of ``language.py`` and added list of supported languages inside TTS wrappers
+#. Added ``plotter.py`` to plot waveforms and sets of labels to image file
+#. Added ``aeneas.tools.plot_waveform`` CLI tool
+#. Added ``tree.py`` to support the new tree-like structure of ``TextFile`` and ``SyncMap``
+#. Modified ``textfile.py`` with the new tree-like structure
+#. Added ``multilevel`` input text format
+#. Added initial support for outputting multilevel JSON, SMIL, TTML, and XML sync maps
+#. Added README files and documentation to the C extensions subdirectories
+#. Added Bash scripts to compile and run C drivers
+#. Added usage messages to C drivers
+#. Converted all ``malloc()`` calls to ``calloc()`` calls to avoid dirty allocations, added checks on the returned pointers
+#. Introduced fixed-size int types in C extensions, with explicit definitions for the MS C compiler
+#. Merged ``AudioFileMonoWAVE`` back into ``AudioFile``
+#. More efficient append/prepend operations in ``AudioFile`` thanks to preallocated memory and space doubling
+#. Created ``AudioFileMFCC`` to handle the MFCC representation of audio files
+#. Added ``run_vad()`` to ``AudioFileMFCC``, ``VAD`` is just an "algorithm-switcher" class now
+#. Added ``detect_head_tail()`` to ``AudioFileMFCC``, ``SD`` is just an "algorithm-switcher" class now
+#. Listed supported keys in ``RuntimeConfiguration`` documentation
+#. Renamed ``ConfigurationObject`` to ``Configuration``
+#. Renamed ``append_*`` functions to ``add_*`` in several classes
+#. Removed ``computed_path`` property in ``DTWAligner``, ``compute_path()`` now returns it
+#. Fixed a bug with logger and rconf initialization in all classes
+#. Added ``--cewsubprocess`` option to ``aeneas.tools.execute_job``
+#. Fixed a bug in ``aeneas.tools.execute_job`` that prevented processing uncompressed containers
+#. Added ``--faster-rate``, ``--rates``, and ``--zero`` options to ``aeneas.tools.execute_task``
+#. More ``--example-*`` shortcuts in ``aeneas.tools.execute_task``
+#. Added list of supported language codes to ``--list-values`` in ``aeneas.tools.execute_task``
+#. All ``aeneas.tools.*`` CLI tools now print messages in color on POSIX OSes
+#. Added ``gc.PPN_TASK_OS_FILE_NO_ZERO`` (i.e., ``os_task_file_no_zero``) to avoid fragments with zero duration in sync maps
+#. Added ``"TRUE"`` and ``"YES"`` as aliases for ``True`` value in ``Configuration``
+#. Added ``AUD``, ``AUDH`` and ``AUDM`` sync map output format for use with ``Audacity``
+#. Added ``EAF`` sync map output format for use with ``ELAN``
+#. Deprecated ``RBSE`` sync map output format
+#. More unit tests
+#. More uniform documentation: unless ``byte`` is specified, ``string`` indicates a Unicode string (``unicode`` in Python 2, ``str`` in Python 3)
+
 v1.4.1 (2016-02-13)
 -------------------
 

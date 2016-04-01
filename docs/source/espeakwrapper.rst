@@ -1,4 +1,4 @@
-ESPEAKWrapper
+espeakwrapper
 =============
 
 .. automodule:: aeneas.espeakwrapper

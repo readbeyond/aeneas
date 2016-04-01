@@ -1,4 +1,4 @@
-Task
+task
 ====
 
 .. automodule:: aeneas.task

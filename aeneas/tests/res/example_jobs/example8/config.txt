@@ -1,0 +1,17 @@
+is_hierarchy_type=flat
+is_hierarchy_prefix=OEBPS/Resources/
+is_text_file_relative_path=.
+is_text_file_name_regex=.*\.txt
+is_text_type=parsed
+is_audio_file_relative_path=.
+is_audio_file_name_regex=.*\.mp3
+
+os_job_file_name=output_example8
+os_job_file_container=zip
+os_job_file_hierarchy_type=flat
+os_job_file_hierarchy_prefix=OEBPS/Resources/
+os_task_file_name=$PREFIX.aud
+os_task_file_format=aud
+
+job_language=en
+job_description=Example 8 (flat hierarchy, parsed text files, 3 identical tasks)

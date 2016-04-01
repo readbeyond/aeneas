@@ -2,7 +2,9 @@
 # coding=utf-8
 
 """
-A class for computing Mel-frequency cepstral coefficients (MFCCs).
+This module contains the following classes:
+
+* :class:`~aeneas.mfcc.MFCC`, computing Mel-frequency cepstral coefficients (MFCCs).
 
 This file is a modified version of the ``mfcc.py`` file
 by David Huggins-Daines from the CMU Sphinx-III project.
@@ -15,7 +17,7 @@ from __future__ import print_function
 import math
 import numpy
 
-from aeneas.logger import Logger
+from aeneas.logger import Loggable
 from aeneas.runtimeconfiguration import RuntimeConfiguration
 
 __author__ = "Alberto Pettarin"
@@ -25,39 +27,40 @@ __copyright__ = """
     Copyright 2015-2016, Alberto Pettarin (www.albertopettarin.it)
     """
 __license__ = "GNU AGPL v3"
-__version__ = "1.4.1"
+__version__ = "1.5.0"
 __email__ = "aeneas@readbeyond.it"
 __status__ = "Production"
 
-class MFCC(object):
+class MFCC(Loggable):
     """
     A class for computing Mel-frequency cepstral coefficients (MFCCs).
 
-    :param rconf: a runtime configuration. Default: ``None``, meaning that
-                  default settings will be used.
-    :type  rconf: :class:`aeneas.runtimeconfiguration.RuntimeConfiguration`
+    :param rconf: a runtime configuration
+    :type  rconf: :class:`~aeneas.runtimeconfiguration.RuntimeConfiguration`
     :param logger: the logger object
-    :type  logger: :class:`aeneas.logger.Logger`
+    :type  logger: :class:`~aeneas.logger.Logger`
     """
 
-    TAG = "MFCC"
-
     CUTOFF = 0.00001
+    """ Cut-off threshold """
+
     MEL_10 = 2595.0
+    """ Base Mel frequency """
+
+    TAG = u"MFCC"
 
     def __init__(self, rconf=None, logger=None):
-        self.logger = logger or Logger()
-        self.rconf = rconf or RuntimeConfiguration()
+        super(MFCC, self).__init__(rconf=rconf, logger=logger)
 
         # store parameters in local attributes
-        self.filter_bank_size = self.rconf["mfcc_filters"]
-        self.mfcc_size = self.rconf["mfcc_size"]
-        self.fft_order = self.rconf["mfcc_order"]
-        self.lower_frequency = self.rconf["mfcc_lower_freq"]
-        self.upper_frequency = self.rconf["mfcc_upper_freq"]
-        self.emphasis_factor = self.rconf["mfcc_emph"]
-        self.window_length = self.rconf["mfcc_win_len"]
-        self.window_shift = self.rconf["mfcc_win_shift"]
+        self.filter_bank_size = self.rconf[RuntimeConfiguration.MFCC_FILTERS]
+        self.mfcc_size = self.rconf[RuntimeConfiguration.MFCC_SIZE]
+        self.fft_order = self.rconf[RuntimeConfiguration.MFCC_FFT_ORDER]
+        self.lower_frequency = self.rconf[RuntimeConfiguration.MFCC_LOWER_FREQUENCY]
+        self.upper_frequency = self.rconf[RuntimeConfiguration.MFCC_UPPER_FREQUENCY]
+        self.emphasis_factor = self.rconf[RuntimeConfiguration.MFCC_EMPHASIS_FACTOR]
+        self.window_length = self.rconf[RuntimeConfiguration.MFCC_WINDOW_LENGTH]
+        self.window_shift = self.rconf[RuntimeConfiguration.MFCC_WINDOW_SHIFT]
 
         # initialize DCT matrix
         self._create_dct_matrix()
@@ -68,17 +71,25 @@ class MFCC(object):
         self.filters = None
         self.hamming_window = None
 
-    def _log(self, message, severity=Logger.DEBUG):
-        """ Log """
-        self.logger.log(message, severity, self.TAG)
+    @classmethod
+    def _hz2mel(cls, frequency):
+        """
+        Convert the given frequency in Hz to the Mel scale.
+
+        :param float frequency: the Hz frequency to convert
+        :rtype: float
+        """
+        return cls.MEL_10 * math.log10(1.0 + (frequency / 700.0))
 
     @classmethod
-    def _hz2mel(cls, f):
-        return cls.MEL_10 * math.log10(1.0 + (f / 700.0))
+    def _mel2hz(cls, mel):
+        """
+        Convert the given Mel value to Hz frequency.
 
-    @classmethod
-    def _mel2hz(cls, m):
-        return 700.0 * (10 ** (m / cls.MEL_10) - 1)
+        :param float mel: the Mel value to convert
+        :rtype: float
+        """
+        return 700.0 * (10 ** (mel / cls.MEL_10) - 1)
 
     def _create_dct_matrix(self):
         """
@@ -99,18 +110,19 @@ class MFCC(object):
 
         Note that it is a function of the audio sample rate,
         so it cannot be created in the class initializer,
-        but only later in ``compute_from_data()``.
+        but only later in :func:`aeneas.mfcc.MFCC.compute_from_data`.
         """
         self.filters = numpy.zeros((1 + (self.fft_order // 2), self.filter_bank_size), 'd')
         dfreq = float(self.sample_rate) / self.fft_order
-        if self.upper_frequency > (self.sample_rate / 2):
-            raise ValueError(u"Upper frequency %f exceeds Nyquist %f" % (self.upper_frequency, self.sample_rate / 2))
+        nyquist_frequency = self.sample_rate / 2
+        if self.upper_frequency > nyquist_frequency:
+            self.log_exc(u"Upper frequency %f exceeds Nyquist frequency %f" % (self.upper_frequency, nyquist_frequency), None, True, ValueError)
         melmax = MFCC._hz2mel(self.upper_frequency)
         melmin = MFCC._hz2mel(self.lower_frequency)
         dmelbw = (melmax - melmin) / (self.filter_bank_size + 1)
         filt_edge = MFCC._mel2hz(melmin + dmelbw * numpy.arange(self.filter_bank_size + 2, dtype='d'))
 
-        # TODO numpify this code
+        # TODO can this code be written more numpy-style?
         #      (the performance loss is negligible, it is just ugly to see)
         for whichfilt in range(0, self.filter_bank_size):
             # int() casts to native int instead of working with numpy.float64
@@ -139,24 +151,26 @@ class MFCC(object):
 
     def _pre_emphasis(self):
         """
-        Pre-emphasize the entire signal at once by self.emphasis_factor.
+        Pre-emphasize the entire signal at once by self.emphasis_factor,
+        overwriting ``self.data``.
         """
         self.data = numpy.append(self.data[0], self.data[1:] - self.emphasis_factor * self.data[:-1])
 
     def compute_from_data(self, data, sample_rate):
         """
-        Compute MFCCs for the given audio data,
-        which must be a 1D numpy array (mono).
+        Compute MFCCs for the given audio data.
+
+        The audio data must be a 1D :class:`numpy.ndarray`,
+        that is, it must represent a monoaural (single channel)
+        array of ``float64`` values in ``[-1.0, 1.0]``.
 
         :param data: the audio data
-        :type  data: 1D numpy array of float64
-        :param sample_rate: the sample rate of the audio data, in samples/s (Hz)
-        :type  sample_rate: int
-
-        :raise ValueError: if the data is not a 1D numpy array (i.e., not mono),
-                           or if the data is empty
-        :raise ValueError: if the upper frequency defined in the ``rconf`` is
-                           larger than the Nyquist frequenct (i.e., half of ``sample_rate``)
+        :type  data: :class:`numpy.ndarray` (1D)
+        :param int sample_rate: the sample rate of the audio data, in samples/s (Hz)
+        :raises: ValueError: if the data is not a 1D :class:`numpy.ndarray` (i.e., not mono),
+                             or if the data is empty
+        :raises: ValueError: if the upper frequency defined in the ``rconf`` is
+                             larger than the Nyquist frequenct (i.e., half of ``sample_rate``)
         """
         def _process_frame(self, frame):
             """
@@ -177,9 +191,9 @@ class MFCC(object):
             return numpy.log(numpy.dot(power, self.filters).clip(self.CUTOFF, numpy.inf))
 
         if len(data.shape) != 1:
-            raise ValueError(u"The audio data must be a 1D numpy array (mono).")
+            self.log_exc(u"The audio data must be a 1D numpy array (mono).", None, True, ValueError)
         if len(data) < 1:
-            raise ValueError(u"The audio data must not be empty.")
+            self.log_exc(u"The audio data must not be empty.", None, True, ValueError)
 
         self.data = data
         self.sample_rate = sample_rate

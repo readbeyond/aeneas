@@ -1,0 +1,4 @@
+$ python -m aeneas.tools.execute_task --list-values=is_text_type
+
+[INFO] Available values for parameter 'is_text_type':
+mplain, munparsed, parsed, plain, subtitles, unparsed

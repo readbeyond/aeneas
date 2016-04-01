@@ -2,18 +2,18 @@
 # coding=utf-8
 
 """
-Wrapper around ``espeak`` to synthesize text into a ``wav`` audio file.
+This module contains the following classes:
+
+* :class:`~aeneas.espeakwrapper.ESPEAKWrapper`, a wrapper for the ``eSpeak`` TTS engine.
 """
 
 from __future__ import absolute_import
 from __future__ import print_function
-import subprocess
 
-from aeneas.audiofile import AudioFileMonoWAVE
-from aeneas.audiofile import AudioFileUnsupportedFormatError
 from aeneas.language import Language
-from aeneas.logger import Logger
 from aeneas.runtimeconfiguration import RuntimeConfiguration
+from aeneas.timevalue import TimeValue
+from aeneas.ttswrapper import TTSWrapper
 import aeneas.globalfunctions as gf
 
 __author__ = "Alberto Pettarin"
@@ -23,126 +23,631 @@ __copyright__ = """
     Copyright 2015-2016, Alberto Pettarin (www.albertopettarin.it)
     """
 __license__ = "GNU AGPL v3"
-__version__ = "1.4.1"
+__version__ = "1.5.0"
 __email__ = "aeneas@readbeyond.it"
 __status__ = "Production"
 
-class ESPEAKWrapper(object):
+class ESPEAKWrapper(TTSWrapper):
     """
-    Wrapper around ``espeak`` to synthesize text into a ``wav`` audio file.
+    A wrapper for the ``espeak`` TTS engine.
 
-    It will perform one or more calls like ::
+    This wrapper is the default TTS engine for ``aeneas``.
 
-        $ espeak -v language_code -w /tmp/output_file.wav < text
+    This wrapper supports calling the TTS engine
+    via ``subprocess`` or via Python C extension.
 
-    In case of multiple text fragments, the resulting wav files
-    will be joined together.
+    In abstract terms, it performs one or more calls like ::
 
+        $ espeak -v voice_code -w /tmp/output_file.wav < text
+
+    To specify the path of the TTS executable, use ::
+
+        "tts=espeak|tts_path=/path/to/espeak"
+
+    in the ``rconf`` object.
+
+    To run the ``cew`` Python C extension
+    in a separate process via
+    :class:`~aeneas.cewsubprocess.CEWSubprocess`, use ::
+
+        "cew_subprocess_enabled=True|cew_subprocess_path=/path/to/python"
+
+    in the ``rconf`` object.
+
+    See :class:`~aeneas.ttswrapper.TTSWrapper` for the available functions.
+    Below are listed the languages supported by this wrapper.
+
+    :param rconf: a runtime configuration
+    :type  rconf: :class:`~aeneas.runtimeconfiguration.RuntimeConfiguration`
     :param logger: the logger object
-    :type  logger: :class:`aeneas.logger.Logger`
+    :type  logger: :class:`~aeneas.logger.Logger`
     """
+
+    AFR = Language.AFR
+    """ Afrikaans (not tested) """
+
+    ARG = Language.ARG
+    """ Aragonese (not tested) """
+
+    BOS = Language.BOS
+    """ Bosnian (not tested) """
+
+    BUL = Language.BUL
+    """ Bulgarian """
+
+    CAT = Language.CAT
+    """ Catalan """
+
+    CES = Language.CES
+    """ Czech """
+
+    CMN = Language.CMN
+    """ Mandarin Chinese (not tested) """
+
+    CYM = Language.CYM
+    """ Welsh """
+
+    DAN = Language.DAN
+    """ Danish """
+
+    DEU = Language.DEU
+    """ German """
+
+    ELL = Language.ELL
+    """ Greek (Modern) """
+
+    ENG = Language.ENG
+    """ English """
+
+    EPO = Language.EPO
+    """ Esperanto (not tested) """
+
+    EST = Language.EST
+    """ Estonian """
+
+    FAS = Language.FAS
+    """ Persian """
+
+    FIN = Language.FIN
+    """ Finnish """
+
+    FRA = Language.FRA
+    """ French """
+
+    GLE = Language.GLE
+    """ Irish """
+
+    GRC = Language.GRC
+    """ Greek (Ancient) """
+
+    HIN = Language.HIN
+    """ Hindi (not tested) """
+
+    HRV = Language.HRV
+    """ Croatian """
+
+    HUN = Language.HUN
+    """ Hungarian """
+
+    HYE = Language.HYE
+    """ Armenian (not tested) """
+
+    IND = Language.IND
+    """ Indonesian (not tested) """
+
+    ISL = Language.ISL
+    """ Icelandic """
+
+    ITA = Language.ITA
+    """ Italian """
+
+    JBO = Language.JBO
+    """ Lojban (not tested) """
+
+    KAN = Language.KAN
+    """ Kannada (not tested) """
+
+    KAT = Language.KAT
+    """ Georgian (not tested) """
+
+    KUR = Language.KUR
+    """ Kurdish (not tested) """
+
+    LAT = Language.LAT
+    """ Latin """
+
+    LAV = Language.LAV
+    """ Latvian """
+
+    LFN = Language.LFN
+    """ Lingua Franca Nova (not tested) """
+
+    LIT = Language.LIT
+    """ Lithuanian """
+
+    MAL = Language.MAL
+    """ Malayalam (not tested) """
+
+    MKD = Language.MKD
+    """ Macedonian (not tested) """
+
+    MSA = Language.MSA
+    """ Malay (not tested) """
+
+    NEP = Language.NEP
+    """ Nepali (not tested) """
+
+    NLD = Language.NLD
+    """ Dutch """
+
+    NOR = Language.NOR
+    """ Norwegian """
+
+    PAN = Language.PAN
+    """ Panjabi (not tested) """
+
+    POL = Language.POL
+    """ Polish """
+
+    POR = Language.POR
+    """ Portuguese """
+
+    RON = Language.RON
+    """ Romanian """
+
+    RUS = Language.RUS
+    """ Russian """
+
+    SLK = Language.SLK
+    """ Slovak """
+
+    SPA = Language.SPA
+    """ Spanish """
+
+    SQI = Language.SQI
+    """ Albanian (not tested) """
+
+    SRP = Language.SRP
+    """ Serbian """
+
+    SWA = Language.SWA
+    """ Swahili """
+
+    SWE = Language.SWE
+    """ Swedish """
+
+    TAM = Language.TAM
+    """ Tamil (not tested) """
+
+    TUR = Language.TUR
+    """ Turkish """
+
+    UKR = Language.UKR
+    """ Ukrainian """
+
+    VIE = Language.VIE
+    """ Vietnamese (not tested) """
+
+    YUE = Language.YUE
+    """ Yue Chinese (not tested) """
+
+    ZHO = Language.ZHO
+    """ Chinese (not tested) """
+
+    ENG_GBR = "eng-GBR"
+    """ English (GB) """
+
+    ENG_SCT = "eng-SCT"
+    """ English (Scotland) (not tested) """
+
+    ENG_USA = "eng-USA"
+    """ English (USA) """
+
+    SPA_ESP = "spa-ESP"
+    """ Spanish (Castillan) """
+
+    FRA_BEL = "fra-BEL"
+    """ French (Belgium) (not tested) """
+
+    FRA_FRA = "fra-FRA"
+    """ French (France) """
+
+    POR_BRA = "por-bra"
+    """ Portuguese (Brazil) (not tested) """
+
+    POR_PRT = "por-prt"
+    """ Portuguese (Portugal) """
+
+    AF = "af"
+    """ Afrikaans (not tested) """
+
+    AN = "an"
+    """ Aragonese (not tested) """
+
+    BG = "bg"
+    """ Bulgarian """
+
+    BS = "bs"
+    """ Bosnian (not tested) """
+
+    CA = "ca"
+    """ Catalan """
+
+    CS = "cs"
+    """ Czech """
+
+    CY = "cy"
+    """ Welsh """
+
+    DA = "da"
+    """ Danish """
+
+    DE = "de"
+    """ German """
+
+    EL = "el"
+    """ Greek (Modern) """
+
+    EN = "en"
+    """ English """
+
+    EN_GB = "en-gb"
+    """ English (GB) """
+
+    EN_SC = "en-sc"
+    """ English (Scotland) (not tested) """
+
+    EN_UK_NORTH = "en-uk-north"
+    """ English (Northern) (not tested) """
+
+    EN_UK_RP = "en-uk-rp"
+    """ English (Received Pronunciation) (not tested) """
+
+    EN_UK_WMIDS = "en-uk-wmids"
+    """ English (Midlands) (not tested) """
+
+    EN_US = "en-us"
+    """ English (USA) """
+
+    EN_WI = "en-wi"
+    """ English (West Indies) (not tested) """
+
+    EO = "eo"
+    """ Esperanto (not tested) """
+
+    ES = "es"
+    """ Spanish (Castillan) """
+
+    ES_LA = "es-la"
+    """ Spanish (Latin America) (not tested) """
+
+    ET = "et"
+    """ Estonian """
+
+    FA = "fa"
+    """ Persian """
+
+    FA_PIN = "fa-pin"
+    """ Persian (Pinglish) """
+
+    FI = "fi"
+    """ Finnish """
+
+    FR = "fr"
+    """ French """
+
+    FR_BE = "fr-be"
+    """ French (Belgium) (not tested) """
+
+    FR_FR = "fr-fr"
+    """ French (France) """
+
+    GA = "ga"
+    """ Irish """
+
+    # NOTE already defined
+    #GRC = "grc"
+    #""" Greek (Ancient) """
+
+    HI = "hi"
+    """ Hindi (not tested) """
+
+    HR = "hr"
+    """ Croatian """
+
+    HU = "hu"
+    """ Hungarian """
+
+    HY = "hy"
+    """ Armenian (not tested) """
+
+    HY_WEST = "hy-west"
+    """ Armenian (West) (not tested) """
+
+    ID = "id"
+    """ Indonesian (not tested) """
+
+    IS = "is"
+    """ Icelandic """
+
+    IT = "it"
+    """ Italian """
+
+    # NOTE already defined
+    #JBO = "jbo"
+    #""" Lojban (not tested) """
+
+    KA = "ka"
+    """ Georgian (not tested) """
+
+    KN = "kn"
+    """ Kannada (not tested) """
+
+    KU = "ku"
+    """ Kurdish (not tested) """
+
+    LA = "la"
+    """ Latin """
+
+    # NOTE already defined
+    #LFN = "lfn"
+    #""" Lingua Franca Nova (not tested) """
+
+    LT = "lt"
+    """ Lithuanian """
+
+    LV = "lv"
+    """ Latvian """
+
+    MK = "mk"
+    """ Macedonian (not tested) """
+
+    ML = "ml"
+    """ Malayalam (not tested) """
+
+    MS = "ms"
+    """ Malay (not tested) """
+
+    NE = "ne"
+    """ Nepali (not tested) """
+
+    NL = "nl"
+    """ Dutch """
+
+    NO = "no"
+    """ Norwegian """
+
+    PA = "pa"
+    """ Panjabi (not tested) """
+
+    PL = "pl"
+    """ Polish """
+
+    PT = "pt"
+    """ Portuguese """
+
+    PT_BR = "pt-br"
+    """ Portuguese (Brazil) (not tested) """
+
+    PT_PT = "pt-pt"
+    """ Portuguese (Portugal) """
+
+    RO = "ro"
+    """ Romanian """
+
+    RU = "ru"
+    """ Russian """
+
+    SQ = "sq"
+    """ Albanian (not tested) """
+
+    SK = "sk"
+    """ Slovak """
+
+    SR = "sr"
+    """ Serbian """
+
+    SV = "sv"
+    """ Swedish """
+
+    SW = "sw"
+    """ Swahili """
+
+    TA = "ta"
+    """ Tamil (not tested) """
+
+    TR = "tr"
+    """ Turkish """
+
+    UK = "uk"
+    """ Ukrainian """
+
+    VI = "vi"
+    """ Vietnamese (not tested) """
+
+    VI_HUE = "vi-hue"
+    """ Vietnamese (hue) (not tested) """
+
+    VI_SGN = "vi-sgn"
+    """ Vietnamese (sgn) (not tested) """
+
+    ZH = "zh"
+    """ Mandarin Chinese (not tested) """
+
+    ZH_YUE = "zh-yue"
+    """ Yue Chinese (not tested) """
+
+    LANGUAGE_TO_VOICE_CODE = {
+        AF : "af",
+        AN : "an",
+        BG : "bg",
+        BS : "bs",
+        CA : "ca",
+        CS : "cs",
+        CY : "cy",
+        DA : "da",
+        DE : "de",
+        EL : "el",
+        EN : "en",
+        EN_GB : "en-gb",
+        EN_SC : "en-sc",
+        EN_UK_NORTH : "en-uk-north",
+        EN_UK_RP : "en-uk-rp",
+        EN_UK_WMIDS : "en-uk-wmids",
+        EN_US : "en-us",
+        EN_WI : "en-wi",
+        EO : "eo",
+        ES : "es",
+        ES_LA : "es-la",
+        ET : "et",
+        FA : "fa",
+        FA_PIN : "fa-pin",
+        FI : "fi",
+        FR : "fr",
+        FR_BE : "fr-be",
+        FR_FR : "fr-fr",
+        GA : "ga",
+        #GRC : "grc",
+        HI : "hi",
+        HR : "hr",
+        HU : "hu",
+        HY : "hy",
+        HY_WEST : "hy-west",
+        ID : "id",
+        IS : "is",
+        IT : "it",
+        #JBO : "jbo",
+        KA : "ka",
+        KN : "kn",
+        KU : "ku",
+        LA : "la",
+        #LFN : "lfn",
+        LT : "lt",
+        LV : "lv",
+        MK : "mk",
+        ML : "ml",
+        MS : "ms",
+        NE : "ne",
+        NL : "nl",
+        NO : "no",
+        PA : "pa",
+        PL : "pl",
+        PT : "pt",
+        PT_BR : "pt-br",
+        PT_PT : "pt-pt",
+        RO : "ro",
+        RU : "ru",
+        SQ : "sq",
+        SK : "sk",
+        SR : "sr",
+        SV : "sv",
+        SW : "sw",
+        TA : "ta",
+        TR : "tr",
+        UK : "ru", # NOTE mocking support for Ukrainian with Russian voice
+        VI : "vi",
+        VI_HUE : "vi-hue",
+        VI_SGN : "vi-sgn",
+        ZH : "zh",
+        ZH_YUE : "zh-yue",
+        AFR : "af",
+        ARG : "an",
+        BOS : "bs",
+        BUL : "bg",
+        CAT : "ca",
+        CES : "cs",
+        CMN : "zh",
+        CYM : "cy",
+        DAN : "da",
+        DEU : "de",
+        ELL : "el",
+        ENG : "en",
+        EPO : "eo",
+        EST : "et",
+        FAS : "fa",
+        FIN : "fi",
+        FRA : "fr",
+        GLE : "ga",
+        GRC : "grc",
+        HIN : "hi",
+        HRV : "hr",
+        HUN : "hu",
+        HYE : "hy",
+        IND : "id",
+        ISL : "is",
+        ITA : "it",
+        JBO : "jbo",
+        KAN : "kn",
+        KAT : "ka",
+        KUR : "ku",
+        LAT : "la",
+        LAV : "lv",
+        LFN : "lfn",
+        LIT : "lt",
+        MAL : "ml",
+        MKD : "mk",
+        MSA : "ms",
+        NEP : "ne",
+        NLD : "nl",
+        NOR : "no",
+        PAN : "pa",
+        POL : "pl",
+        POR : "pt",
+        RON : "ro",
+        RUS : "ru",
+        SLK : "sk",
+        SPA : "es",
+        SQI : "sq",
+        SRP : "sr",
+        SWA : "sw",
+        SWE : "sv",
+        TAM : "ta",
+        TUR : "tr",
+        UKR : "ru", # NOTE mocking support for Ukrainian with Russian voice
+        VIE : "vi",
+        YUE : "zh-yue",
+        ZHO : "zh",
+        ENG_GBR : "en-gb",
+        ENG_SCT : "en-sc",
+        ENG_USA : "en-us",
+        SPA_ESP : "es-es",
+        FRA_BEL : "fr-be",
+        FRA_FRA : "fr-fr",
+        POR_BRA : "pt-br",
+        POR_PRT : "pt-pt"
+    }
+    DEFAULT_LANGUAGE = ENG
+
+    OUTPUT_MONO_WAVE = True
 
     TAG = u"ESPEAKWrapper"
 
     def __init__(self, rconf=None, logger=None):
-        self.logger = logger or Logger()
-        self.rconf = rconf or RuntimeConfiguration()
-
-    def _log(self, message, severity=Logger.DEBUG):
-        """ Log """
-        self.logger.log(message, severity, self.TAG)
-
-    def _replace_language(self, language):
-        """
-        Mock support for a given language by
-        synthesizing using a similar language.
-
-        :param language: the requested language
-        :type  language: :class:`aeneas.language.Language` enum
-        :rtype: :class:`aeneas.language.Language` enum
-        """
-        if language == Language.UK:
-            self._log([u"Replaced '%s' with '%s'", Language.UK, Language.RU])
-            return Language.RU
-        return language
-
-    def synthesize_multiple(
-            self,
-            text_file,
-            output_file_path,
-            quit_after=None,
-            backwards=False
-    ):
-        """
-        Synthesize the text contained in the given fragment list
-        into a ``wav`` file.
-
-        :param text_file: the text file to be synthesized
-        :type  text_file: :class:`aeneas.textfile.TextFile`
-        :param output_file_path: the path to the output audio file
-        :type  output_file_path: string (path)
-        :param quit_after: stop synthesizing as soon as
-                           reaching this many seconds
-        :type  quit_after: float
-        :param backwards: synthesizing from the end of the text file
-        :type  backwards: bool
-        :rtype: tuple (anchors, total_time, num_chars)
-
-        :raise TypeError: if ``text_file`` is ``None`` or
-                          one of the text fragments is not a ``unicode`` object
-        :raise ValueError: if ``rconf["allow_unlisted_languages"]`` is ``False`` and
-                           a fragment has its language code not listed in
-                           :class:`aeneas.language.Language`
-        :raise OSError: if output file cannot be written to ``output_file_path``
-        :raise RuntimeError: if both the C extension and
-                             the pure Python code did not succeed.
-        """
-        # check that text_file is not None
-        if text_file is None:
-            self._log(u"text_file is None", Logger.CRITICAL)
-            raise TypeError("text_file is None")
-
-        # check that the lines in the text file all have
-        # a supported language code and unicode type
-        if not self.rconf["allow_unlisted_languages"]:
-            for fragment in text_file.fragments:
-                if fragment.language not in Language.ALLOWED_VALUES:
-                    self._log([u"Language '%s' is not allowed", fragment.language], Logger.CRITICAL)
-                    raise ValueError("Language code not allowed")
-        for fragment in text_file.fragments:
-            for line in fragment.lines:
-                if not gf.is_unicode(line):
-                    self._log(u"Text file must contain only unicode strings", Logger.CRITICAL)
-                    raise TypeError("Text file must contain only unicode strings")
-
-        # log parameters
-        if quit_after is not None:
-            self._log([u"Quit after reaching %.3f", quit_after])
-        if backwards:
-            self._log(u"Synthesizing backwards")
-
-        # check that output_file_path can be written
-        if not gf.file_can_be_written(output_file_path):
-            self._log([u"Cannot write output file to '%s'", output_file_path], Logger.CRITICAL)
-            raise OSError("Cannot write output file")
-
-        return gf.run_c_extension_with_fallback(
-            self._log,
-            "cew",
-            self._synthesize_multiple_c_extension,
-            self._synthesize_multiple_pure_python,
-            (text_file, output_file_path, quit_after, backwards),
-            c_extension=self.rconf["c_ext"]
+        super(ESPEAKWrapper, self).__init__(
+            has_subprocess_call=True,
+            has_c_extension_call=True,
+            has_python_call=False,
+            rconf=rconf,
+            logger=logger
         )
+        self.set_subprocess_arguments([
+            self.rconf[RuntimeConfiguration.TTS_PATH],
+            u"-v",
+            TTSWrapper.CLI_PARAMETER_VOICE_CODE_STRING,
+            u"-w",
+            TTSWrapper.CLI_PARAMETER_WAVE_PATH,
+            TTSWrapper.CLI_PARAMETER_TEXT_STDIN
+        ])
 
-    def _synthesize_multiple_c_extension(
-            self,
-            text_file,
-            output_file_path,
-            quit_after=None,
-            backwards=False
-    ):
-        self._log(u"Synthesizing using C extension...")
+    def _synthesize_multiple_c_extension(self, text_file, output_file_path, quit_after=None, backwards=False):
+        """
+        Synthesize multiple text fragments, using the cew extension.
+
+        Return a tuple (anchors, total_time, num_chars).
+
+        :rtype: (bool, (list, :class:`~aeneas.timevalue.TimeValue`, int))
+        """
+        self.log(u"Synthesizing using C extension...")
 
         # convert parameters from Python values to C values
         try:
@@ -152,52 +657,75 @@ class ESPEAKWrapper(object):
         c_backwards = 0
         if backwards:
             c_backwards = 1
-        self._log([u"output_file_path: %s", output_file_path])
-        self._log([u"c_quit_after:     %.3f", c_quit_after])
-        self._log([u"c_backwards:      %d", c_backwards])
-        self._log(u"Preparing c_text...")
-        c_text = []
+        self.log([u"output_file_path: %s", output_file_path])
+        self.log([u"c_quit_after:     %.3f", c_quit_after])
+        self.log([u"c_backwards:      %d", c_backwards])
+        self.log(u"Preparing u_text...")
+        u_text = []
         fragments = text_file.fragments
         for fragment in fragments:
             f_lang = fragment.language
             f_text = fragment.filtered_text
             if f_lang is None:
-                f_lang = Language.EN
-            f_lang = self._replace_language(f_lang)
+                f_lang = self.DEFAULT_LANGUAGE
+            f_voice_code = self._language_to_voice_code(f_lang)
             if f_text is None:
                 f_text = u""
-            if gf.PY2:
-                # Python 2 => pass byte strings
-                c_text.append((gf.safe_bytes(f_lang), gf.safe_bytes(f_text)))
-            else:
-                # Python 3 => pass Unicode strings
-                c_text.append((gf.safe_unicode(f_lang), gf.safe_unicode(f_text)))
-        self._log(u"Preparing c_text... done")
+            u_text.append((f_voice_code, f_text))
+        self.log(u"Preparing u_text... done")
 
         # call C extension
-        try:
-            self._log(u"Importing aeneas.cew...")
-            import aeneas.cew.cew
-            self._log(u"Importing aeneas.cew... done")
-            self._log(u"Calling aeneas.cew...")
-            sr, sf, intervals = aeneas.cew.cew.synthesize_multiple(
-                output_file_path,
-                c_quit_after,
-                c_backwards,
-                c_text
-            )
-            self._log(u"Calling aeneas.cew... done")
-        except Exception as exc:
-            self._log(u"Calling aeneas.cew... failed")
-            self._log(u"An unexpected exception occurred while running cew:", Logger.WARNING)
-            self._log([u"%s", exc], Logger.WARNING)
-            return (False, None)
-        self._log([u"sr: %d", sr])
-        self._log([u"sf: %d", sf])
+        sr = None
+        sf = None
+        intervals = None
+        if self.rconf[RuntimeConfiguration.CEW_SUBPROCESS_ENABLED]:
+            self.log(u"Using cewsubprocess to call aeneas.cew")
+            try:
+                self.log(u"Importing aeneas.cewsubprocess...")
+                from aeneas.cewsubprocess import CEWSubprocess
+                self.log(u"Importing aeneas.cewsubprocess... done")
+                self.log(u"Calling aeneas.cewsubprocess...")
+                cewsub = CEWSubprocess(rconf=self.rconf, logger=self.logger)
+                sr, sf, intervals = cewsub.synthesize_multiple(output_file_path, c_quit_after, c_backwards, u_text)
+                self.log(u"Calling aeneas.cewsubprocess... done")
+            except Exception as exc:
+                self.log_exc(u"An unexpected error occurred while running cewsubprocess", exc, False, None)
+                # NOTE not critical, try calling aeneas.cew directly
+                #return (False, None)
+
+        if sr is None:
+            self.log(u"Preparing c_text...")
+            if gf.PY2:
+                # Python 2 => pass byte strings
+                c_text = [(gf.safe_bytes(t[0]), gf.safe_bytes(t[1])) for t in u_text]
+            else:
+                # Python 3 => pass Unicode strings
+                c_text = [(gf.safe_unicode(t[0]), gf.safe_unicode(t[1])) for t in u_text]
+            self.log(u"Preparing c_text... done")
+
+            self.log(u"Calling aeneas.cew directly")
+            try:
+                self.log(u"Importing aeneas.cew...")
+                import aeneas.cew.cew
+                self.log(u"Importing aeneas.cew... done")
+                self.log(u"Calling aeneas.cew...")
+                sr, sf, intervals = aeneas.cew.cew.synthesize_multiple(
+                    output_file_path,
+                    c_quit_after,
+                    c_backwards,
+                    c_text
+                )
+                self.log(u"Calling aeneas.cew... done")
+            except Exception as exc:
+                self.log_exc(u"An unexpected error occurred while running cew", exc, False, None)
+                return (False, None)
+
+        self.log([u"sr: %d", sr])
+        self.log([u"sf: %d", sf])
 
         # create output
         anchors = []
-        current_time = 0.0
+        current_time = TimeValue("0.000")
         num_chars = 0
         if backwards:
             fragments = fragments[::-1]
@@ -206,301 +734,78 @@ class ESPEAKWrapper(object):
             fragment = fragments[i]
             # store for later output
             anchors.append([
-                intervals[i][0],
+                TimeValue(intervals[i][0]),
                 fragment.identifier,
                 fragment.filtered_text
             ])
             # increase the character counter
             num_chars += fragment.characters
             # update current_time
-            current_time = intervals[i][1]
+            current_time = TimeValue(intervals[i][1])
 
         # return output
         # NOTE anchors do not make sense if backwards == True
-        self._log([u"Returning %d time anchors", len(anchors)])
-        self._log([u"Current time %.3f", current_time])
-        self._log([u"Synthesized %d characters", num_chars])
-        self._log(u"Synthesizing using C extension... done")
+        self.log([u"Returning %d time anchors", len(anchors)])
+        self.log([u"Current time %.3f", current_time])
+        self.log([u"Synthesized %d characters", num_chars])
+        self.log(u"Synthesizing using C extension... done")
         return (True, (anchors, current_time, num_chars))
 
-    def _synthesize_multiple_pure_python(
-            self,
-            text_file,
-            output_file_path,
-            quit_after=None,
-            backwards=False
-    ):
-        def synthesize_and_clean(text, language):
-            """
-            Synthesize a single fragment, pure Python,
-            and immediately remove the temporary file.
-            """
-            self._log(u"Synthesizing text...")
-            handler, tmp_destination = gf.tmp_file(suffix=u".wav", root=self.rconf["tmp_path"])
-            result, data = self._synthesize_single_pure_python(
-                text=(text + u" "),
-                language=language,
-                output_file_path=tmp_destination
-            )
-            self._log([u"Removing temporary file '%s'", tmp_destination])
-            gf.delete_file(handler, tmp_destination)
-            self._log(u"Synthesizing text... done")
-            return data
-
-        self._log(u"Synthesizing using pure Python...")
-
-        try:
-            # get sample rate and encoding
-            du_nu, sample_rate, encoding, da_nu = synthesize_and_clean(
-                u"Dummy text to get sample_rate",
-                Language.EN
-            )
-
-            # open output file
-            output_file = AudioFileMonoWAVE(
-                file_path=output_file_path,
-                logger=self.logger
-            )
-            output_file.audio_format = encoding
-            output_file.audio_sample_rate = sample_rate
-
-            # create output
-            anchors = []
-            current_time = 0.0
-            num = 0
-            num_chars = 0
-            fragments = text_file.fragments
-            if backwards:
-                fragments = fragments[::-1]
-            for fragment in fragments:
-                # replace language
-                language = self._replace_language(fragment.language)
-                # synthesize and get the duration of the output file
-                self._log([u"Synthesizing fragment %d", num])
-                duration, sr_nu, enc_nu, data = synthesize_and_clean(
-                    text=fragment.filtered_text,
-                    language=language
-                )
-                # store for later output
-                anchors.append([current_time, fragment.identifier, fragment.text])
-                # increase the character counter
-                num_chars += fragment.characters
-                # append/prepend data
-                self._log([u"Fragment %d starts at: %f", num, current_time])
-                if duration > 0:
-                    self._log([u"Fragment %d duration: %f", num, duration])
-                    current_time += duration
-                    #
-                    # NOTE since numpy.append cannot be in place,
-                    # it seems that the only alternative to make
-                    # this more efficient consists in pre-allocating
-                    # the destination array,
-                    # possibly truncating or extending it as needed
-                    #
-                    if backwards:
-                        output_file.prepend_data(data)
-                    else:
-                        output_file.append_data(data)
-                else:
-                    self._log([u"Fragment %d has zero duration", num])
-
-                # increment fragment counter
-                num += 1
-
-                # check if we must stop synthesizing because we have enough audio
-                if (quit_after is not None) and (current_time > quit_after):
-                    self._log([u"Quitting after reached duration %.3f", current_time])
-                    break
-
-            # write output file
-            self._log([u"Writing audio file '%s'", output_file_path])
-            output_file.write(file_path=output_file_path)
-            self._log(u"Synthesizing using pure Python... done")
-        except Exception as exc:
-            self._log(u"Synthesizing using pure Python... failed")
-            self._log(u"An unexpected exception occurred while running pure Python code:", Logger.WARNING)
-            self._log([u"%s", exc], Logger.WARNING)
-            return (False, None)
-
-        # return output
-        # NOTE anchors do not make sense if backwards == True
-        self._log([u"Returning %d time anchors", len(anchors)])
-        self._log([u"Current time %.3f", current_time])
-        self._log([u"Synthesized %d characters", num_chars])
-        self._log(u"Synthesizing using pure Python... done")
-        return (True, (anchors, current_time, num_chars))
-
-    def synthesize_single(
-            self,
-            text,
-            language,
-            output_file_path
-    ):
+    def _synthesize_single_c_extension(self, text, voice_code, output_file_path):
         """
-        Create a ``wav`` audio file containing the synthesized text.
-
-        The ``text`` must be a unicode string encodable with UTF-8,
-        otherwise ``espeak`` might fail.
-
-        Return the duration of the synthesized audio file, in seconds.
-
-        :param text: the text to synthesize
-        :type  text: unicode
-        :param language: the language to use
-        :type  language: :class:`aeneas.language.Language` enum
-        :param output_file_path: the path of the output audio file
-        :type  output_file_path: string
-        :rtype: float
-
-        :raise TypeError: if ``text`` is ``None`` or it is not a ``unicode`` object
-        :raise ValueError: if ``rconf["allow_unlisted_languages"]`` is ``False`` and
-                           ``language`` is not listed in
-                           :class:`aeneas.language.Language`
-        :raise OSError: if output file cannot be written to ``output_file_path``
-        :raise RuntimeError: if both the C extension and
-                             the pure Python code did not succeed.
-        """
-        # check that text_file is not None
-        if text is None:
-            self._log(u"text is None", Logger.CRITICAL)
-            raise TypeError("text is None")
-
-        # check that text has unicode type
-        if not gf.is_unicode(text):
-            self._log(u"text must be a unicode string", Logger.CRITICAL)
-            raise TypeError("text must be a unicode string")
-
-        # check that output_file_path can be written
-        if not gf.file_can_be_written(output_file_path):
-            self._log([u"Cannot write output file to '%s'", output_file_path], Logger.CRITICAL)
-            raise OSError("Cannot write output file")
-
-        # check that the requested language is listed in language.py
-        if (language not in Language.ALLOWED_VALUES) and (not self.rconf["allow_unlisted_languages"]):
-            self._log([u"Language '%s' is not allowed", language], Logger.CRITICAL)
-            raise ValueError("Language code not allowed")
-
-        self._log([u"Synthesizing text: '%s'", text])
-        self._log([u"Synthesizing language: '%s'", language])
-        self._log([u"Synthesizing to file: '%s'", output_file_path])
-
-        # return zero if text is the empty string
-        if len(text) == 0:
-            self._log(u"len(text) is zero: returning 0.0")
-            return 0.0
-
-        # replace language
-        language = self._replace_language(language)
-        self._log([u"Using language: '%s'", language])
-
-        result = gf.run_c_extension_with_fallback(
-            self._log,
-            "cew",
-            self._synthesize_single_c_extension,
-            self._synthesize_single_pure_python,
-            (text, language, output_file_path),
-            c_extension=self.rconf["c_ext"]
-        )
-        return result[0]
-
-    def _synthesize_single_c_extension(self, text, language, output_file_path):
-        """
-        Synthesize a single text fragment, using cew extension.
+        Synthesize a single text fragment, using the cew extension.
 
         Return the duration of the synthesized text, in seconds.
 
-        :rtype: (bool, (float, ))
+        :rtype: (bool, (:class:`~aeneas.timevalue.TimeValue`, ))
         """
-        self._log(u"Synthesizing using C extension...")
+        self.log(u"Synthesizing using C extension...")
 
-        self._log(u"Preparing c_text...")
-        if gf.PY2:
-            # Python 2 => pass byte strings
-            c_text = gf.safe_bytes(text)
-        else:
-            # Python 3 => pass Unicode strings
-            c_text = text
-        # NOTE language has been replaced already!
-        self._log(u"Preparing c_text... done")
+        end = None
+        if self.rconf[RuntimeConfiguration.CEW_SUBPROCESS_ENABLED]:
+            self.log(u"Using cewsubprocess to call aeneas.cew")
+            try:
+                self.log(u"Importing aeneas.cewsubprocess...")
+                from aeneas.cewsubprocess import CEWSubprocess
+                self.log(u"Importing aeneas.cewsubprocess... done")
+                self.log(u"Calling aeneas.cewsubprocess...")
+                cewsub = CEWSubprocess(rconf=self.rconf, logger=self.logger)
+                end = cewsub.synthesize_single(output_file_path, voice_code, text)
+                self.log(u"Calling aeneas.cewsubprocess... done")
+            except Exception as exc:
+                self.log_exc(u"An unexpected error occurred while running cewsubprocess", exc, False, None)
+                # NOTE not critical, try calling aeneas.cew directly
+                #return (False, None)
 
-        try:
-            self._log(u"Importing aeneas.cew...")
-            import aeneas.cew.cew
-            self._log(u"Importing aeneas.cew... done")
-            self._log(u"Calling aeneas.cew...")
-            sr, begin, end = aeneas.cew.cew.synthesize_single(
-                output_file_path,
-                language,
-                c_text
-            )
-            self._log(u"Calling aeneas.cew... done")
-        except Exception as exc:
-            self._log(u"Calling aeneas.cew... failed")
-            self._log(u"An unexpected exception occurred while running cew:", Logger.WARNING)
-            self._log([u"%s", exc], Logger.WARNING)
-            return (False, None)
-
-        self._log(u"Synthesizing using C extension... done")
-        return (True, (end, ))
-
-    def _synthesize_single_pure_python(self, text, language, output_file_path):
-        """
-        Synthesize a single text fragment, pure Python.
-
-        :rtype: tuple (duration, sample_rate, encoding, data)
-        """
-        self._log(u"Synthesizing using pure Python...")
-
-        # NOTE language has been replaced already!
-
-        try:
-            # call espeak via subprocess
-            self._log(u"Calling espeak ...")
-            arguments = [self.rconf["espeak_path"], "-v", language, "-w", output_file_path]
-            self._log([u"Calling with arguments '%s'", " ".join(arguments)])
-            self._log([u"Calling with text '%s'", text])
-            proc = subprocess.Popen(
-                arguments,
-                stdout=subprocess.PIPE,
-                stdin=subprocess.PIPE,
-                stderr=subprocess.PIPE,
-                universal_newlines=True)
+        if end is None:
+            self.log(u"Preparing c_text...")
             if gf.PY2:
-                proc.communicate(input=gf.safe_bytes(text))
+                # Python 2 => pass byte strings
+                c_text = gf.safe_bytes(text)
             else:
-                proc.communicate(input=text)
-            proc.stdout.close()
-            proc.stdin.close()
-            proc.stderr.close()
-            self._log(u"Calling espeak ... done")
-        except Exception as exc:
-            self._log(u"Calling espeak ... failed")
-            self._log(u"An unexpected exception occurred while running pure Python code:", Logger.WARNING)
-            self._log([u"%s", exc], Logger.WARNING)
-            return (False, None)
+                # Python 3 => pass Unicode strings
+                c_text = gf.safe_unicode(text)
+            self.log(u"Preparing c_text... done")
 
-        # check the file can be read
-        if not gf.file_can_be_read(output_file_path):
-            self._log([u"Output file '%s' does not exist", output_file_path], Logger.CRITICAL)
-            return (False, None)
+            self.log(u"Calling aeneas.cew directly")
+            try:
+                self.log(u"Importing aeneas.cew...")
+                import aeneas.cew.cew
+                self.log(u"Importing aeneas.cew... done")
+                self.log(u"Calling aeneas.cew...")
+                sr, begin, end = aeneas.cew.cew.synthesize_single(
+                    output_file_path,
+                    voice_code,
+                    c_text
+                )
+                end = TimeValue(end)
+                self.log(u"Calling aeneas.cew... done")
+            except Exception as exc:
+                self.log_exc(u"An unexpected error occurred while running cew", exc, False, None)
+                return (False, None)
 
-        # return the duration of the output file
-        try:
-            audio_file = AudioFileMonoWAVE(
-                file_path=output_file_path,
-                logger=self.logger
-            )
-            audio_file.load_data()
-            duration = audio_file.audio_length
-            sample_rate = audio_file.audio_sample_rate
-            encoding = audio_file.audio_format
-            data = audio_file.audio_data
-            self._log([u"Duration of '%s': %f", output_file_path, duration])
-            self._log(u"Synthesizing using pure Python... done")
-            return (True, (duration, sample_rate, encoding, data))
-        except (AudioFileUnsupportedFormatError, OSError) as exc:
-            self._log(u"Error while trying reading the sythesized audio file", Logger.CRITICAL)
-            return (False, None)
+        self.log(u"Synthesizing using C extension... done")
+        return (True, (end, ))
 
 
 

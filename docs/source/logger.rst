@@ -1,4 +1,4 @@
-Logger
+logger
 ======
 
 .. automodule:: aeneas.logger

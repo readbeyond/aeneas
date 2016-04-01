@@ -1,4 +1,4 @@
-MFCC
+mfcc
 ====
 
 .. automodule:: aeneas.mfcc

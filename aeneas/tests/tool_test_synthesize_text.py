@@ -33,7 +33,7 @@ class TestSynthesizeTextCLI(unittest.TestCase):
         self.execute([
             ("", "list"),
             ("", "From|fairest|creatures|we|desire|increase"),
-            ("", "en"),
+            ("", "eng"),
             ("out", "synthesized.wav")
         ], 0)
 
@@ -41,7 +41,7 @@ class TestSynthesizeTextCLI(unittest.TestCase):
         self.execute([
             ("", "parsed"),
             ("in", "../tools/res/parsed.txt"),
-            ("", "en"),
+            ("", "eng"),
             ("out", "synthesized.wav")
         ], 0)
 
@@ -49,7 +49,7 @@ class TestSynthesizeTextCLI(unittest.TestCase):
         self.execute([
             ("", "plain"),
             ("in", "../tools/res/plain.txt"),
-            ("", "en"),
+            ("", "eng"),
             ("out", "synthesized.wav")
         ], 0)
 
@@ -57,7 +57,7 @@ class TestSynthesizeTextCLI(unittest.TestCase):
         self.execute([
             ("", "subtitles"),
             ("in", "../tools/res/subtitles.txt"),
-            ("", "en"),
+            ("", "eng"),
             ("out", "synthesized.wav")
         ], 0)
 
@@ -65,7 +65,7 @@ class TestSynthesizeTextCLI(unittest.TestCase):
         self.execute([
             ("", "unparsed"),
             ("in", "../tools/res/unparsed.xhtml"),
-            ("", "en"),
+            ("", "eng"),
             ("out", "synthesized.wav"),
             ("", "--id-regex=f[0-9]*")
         ], 0)
@@ -74,7 +74,7 @@ class TestSynthesizeTextCLI(unittest.TestCase):
         self.execute([
             ("", "unparsed"),
             ("in", "../tools/res/unparsed.xhtml"),
-            ("", "en"),
+            ("", "eng"),
             ("out", "synthesized.wav"),
             ("", "--class-regex=ra"),
             ("", "--sort=unsorted"),
@@ -84,7 +84,7 @@ class TestSynthesizeTextCLI(unittest.TestCase):
         self.execute([
             ("", "unparsed"),
             ("in", "../tools/res/unparsed.xhtml"),
-            ("", "en"),
+            ("", "eng"),
             ("out", "synthesized.wav"),
             ("", "--id-regex=f[0-9]*"),
             ("", "--sort=numeric")
@@ -94,7 +94,7 @@ class TestSynthesizeTextCLI(unittest.TestCase):
         self.execute([
             ("", "unparsed"),
             ("in", "../tools/res/unparsed.xhtml"),
-            ("", "en"),
+            ("", "eng"),
             ("out", "synthesized.wav"),
             ("", "--id-regex=f[0-9]*"),
             ("", "--sort=lexicographic")
@@ -103,14 +103,14 @@ class TestSynthesizeTextCLI(unittest.TestCase):
     def test_synt_missing_1(self):
         self.execute([
             ("", "list"),
-            ("", "en"),
+            ("", "eng"),
             ("in", "../tools/res/audio.mp3")
         ], 2)
 
     def test_synt_missing_2(self):
         self.execute([
             ("", "From|fairest|creatures|we|desire|increase"),
-            ("", "en"),
+            ("", "eng"),
             ("out", "synthesized.wav")
         ], 2)
 
@@ -125,14 +125,14 @@ class TestSynthesizeTextCLI(unittest.TestCase):
         self.execute([
             ("", "list"),
             ("", "From|fairest|creatures|we|desire|increase"),
-            ("", "en")
+            ("", "eng")
         ], 2)
 
     def test_synt_cannot_read(self):
         self.execute([
             ("", "plain"),
             ("", "/foo/bar/baz.wav"),
-            ("", "en"),
+            ("", "eng"),
             ("out", "synthesized.wav")
         ], 1)
 
@@ -140,7 +140,7 @@ class TestSynthesizeTextCLI(unittest.TestCase):
         self.execute([
             ("", "unparsed"),
             ("in", "../tools/res/unparsed.xhtml"),
-            ("", "en"),
+            ("", "eng"),
             ("out", "synthesized.wav")
         ], 1)
 
@@ -148,7 +148,7 @@ class TestSynthesizeTextCLI(unittest.TestCase):
         self.execute([
             ("", "plain"),
             ("in", "../tools/res/plain.txt"),
-            ("", "en"),
+            ("", "eng"),
             ("out", "synthesized.wav"),
             ("", "--start=5")
         ], 0)
@@ -157,7 +157,7 @@ class TestSynthesizeTextCLI(unittest.TestCase):
         self.execute([
             ("", "plain"),
             ("in", "../tools/res/plain.txt"),
-            ("", "en"),
+            ("", "eng"),
             ("out", "synthesized.wav"),
             ("", "--end=10")
         ], 0)
@@ -166,7 +166,7 @@ class TestSynthesizeTextCLI(unittest.TestCase):
         self.execute([
             ("", "plain"),
             ("in", "../tools/res/plain.txt"),
-            ("", "en"),
+            ("", "eng"),
             ("out", "synthesized.wav"),
             ("", "--start=5"),
             ("", "--end=10")
@@ -176,7 +176,7 @@ class TestSynthesizeTextCLI(unittest.TestCase):
         self.execute([
             ("", "plain"),
             ("in", "../tools/res/plain.txt"),
-            ("", "en"),
+            ("", "eng"),
             ("out", "synthesized.wav"),
             ("", "--backwards")
         ], 0)
@@ -185,7 +185,7 @@ class TestSynthesizeTextCLI(unittest.TestCase):
         self.execute([
             ("", "plain"),
             ("in", "../tools/res/plain.txt"),
-            ("", "en"),
+            ("", "eng"),
             ("out", "synthesized.wav"),
             ("", "--quit-after=10.0")
         ], 0)
@@ -194,7 +194,7 @@ class TestSynthesizeTextCLI(unittest.TestCase):
         self.execute([
             ("", "plain"),
             ("in", "../tools/res/plain.txt"),
-            ("", "en"),
+            ("", "eng"),
             ("out", "synthesized.wav"),
             ("", "--backwards"),
             ("", "--quit-after=10.0")
@@ -204,9 +204,18 @@ class TestSynthesizeTextCLI(unittest.TestCase):
         self.execute([
             ("", "plain"),
             ("in", "../tools/res/plain.txt"),
-            ("", "en"),
+            ("", "eng"),
             ("out", "synthesized.wav"),
             ("", "-r=\"c_extensions=False\"")
+        ], 0)
+
+    def test_synt_plain_cew_subprocess(self):
+        self.execute([
+            ("", "plain"),
+            ("in", "../tools/res/plain.txt"),
+            ("", "eng"),
+            ("out", "synthesized.wav"),
+            ("", "-r=\"cew_subprocess_enabled=True\"")
         ], 0)
 
     def test_synt_path(self):
@@ -216,9 +225,9 @@ class TestSynthesizeTextCLI(unittest.TestCase):
             self.execute([
                 ("", "plain"),
                 ("in", "../tools/res/plain.txt"),
-                ("", "en"),
+                ("", "eng"),
                 ("out", "synthesized.wav"),
-                ("", "-r=\"c_extensions=False|espeak_path=%s\"" % path)
+                ("", "-r=\"c_extensions=False|tts=espeak|tts_path=%s\"" % path)
             ], 0)
 
     def test_synt_path_bad(self):
@@ -226,9 +235,9 @@ class TestSynthesizeTextCLI(unittest.TestCase):
         self.execute([
             ("", "plain"),
             ("in", "../tools/res/plain.txt"),
-            ("", "en"),
+            ("", "eng"),
             ("out", "synthesized.wav"),
-            ("", "-r=\"c_extensions=False|espeak_path=%s\"" % path)
+            ("", "-r=\"c_extensions=False|tts=espeak|tts_path=%s\"" % path)
         ], 1)
 
 

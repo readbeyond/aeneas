@@ -1,4 +1,4 @@
-Synthesizer
+synthesizer
 ===========
 
 .. automodule:: aeneas.synthesizer

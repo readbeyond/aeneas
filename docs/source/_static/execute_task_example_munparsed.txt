@@ -1,0 +1,14 @@
+$ python -m aeneas.tools.execute_task --example-munparsed-smil
+
+[INFO] Running example task with arguments:
+  Audio file:    aeneas/tools/res/audio.mp3
+  Text file:     aeneas/tools/res/munparsed.xhtml
+  Config string: task_language=eng|is_text_type=munparsed|is_text_munparsed_l1_id_regex=p[0-9]+|is_text_munparsed_l2_id_regex=p[0-9]+s[0-9]+|is_text_munparsed_l3_id_regex=p[0-9]+s[0-9]+w[0-9]+|os_task_file_format=smil|os_task_file_smil_audio_ref=p001.mp3|os_task_file_smil_page_ref=p001.xhtml
+  Sync map file: output/sonnet.munparsed.smil
+[INFO] Creating task...
+[INFO] Creating task... done
+[INFO] Executing task...
+[INFO] Executing task... done
+[INFO] Creating output sync map file...
+[INFO] Creating output sync map file... done
+[INFO] Created file 'output/sonnet.munparsed.smil'
