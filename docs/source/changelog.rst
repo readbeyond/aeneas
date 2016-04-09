@@ -1,6 +1,16 @@
 Changelog
 =========
 
+v1.5.0.2 (2016-04-09)
+---------------------
+
+#. Fix an issue in ``dtw`` with ``numpy.searchsorted`` returning an invalid index
+
+v1.5.0.1 (2016-04-03)
+---------------------
+
+#. Fix an issue with compiling C extensions on Windows
+
 v1.5.0 (2016-04-02)
 -------------------
 
