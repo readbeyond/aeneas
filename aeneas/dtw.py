@@ -222,11 +222,22 @@ class DTWAligner(Loggable):
         # synt_anchors as in seconds, convert them in MFCC indices
         mws = self.rconf.mws
         anchor_indices = numpy.array([int(a[0] / mws) for a in synt_anchors])
+        #
         # right side sets the split point at the very beginning of "next" fragment
-        begin_indices = numpy.searchsorted(synt_indices, anchor_indices, side="right")
+        #
+        # NOTE clip() is needed since searchsorted() with side="right" might return
+        #      an index == len(synt_indices) == len(real_indices)
+        #      when the insertion point is past the last element of synt_indices
+        #      causing the fancy indexing real_indices[...] below might fail
+        begin_indices = numpy.clip(numpy.searchsorted(synt_indices, anchor_indices, side="right"), 0, len(synt_indices)-1)
         # first split must occur at zero
         begin_indices[0] = 0
+        #
         # map onto real indices, obtaining "default" boundary indices
+        #
+        # NOTE since len(synt_indices) == len(real_indices)
+        #      and because the numpy.clip() above, the fancy indexing is always valid
+        #
         boundary_indices = numpy.append(real_indices[begin_indices], self.real_wave_mfcc.tail_begin)
         self.log([u"Boundary indices: %d", len(boundary_indices)])
         self.log(u"Computing boundary indices... done")
