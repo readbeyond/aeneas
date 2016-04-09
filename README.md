@@ -2,13 +2,13 @@
 
 **aeneas** is a Python/C library and a set of tools to automagically synchronize audio and text (aka forced alignment).
 
-* Version: 1.5.0
-* Date: 2016-04-02
+* Version: 1.5.0.2
+* Date: 2016-04-09
 * Developed by: [ReadBeyond](http://www.readbeyond.it/)
 * Lead Developer: [Alberto Pettarin](http://www.albertopettarin.it/)
 * License: the GNU Affero General Public License Version 3 (AGPL v3)
 * Contact: [aeneas@readbeyond.it](mailto:aeneas@readbeyond.it)
-* Quick Links: [Home](http://www.readbeyond.it/aeneas/) - [GitHub](https://github.com/readbeyond/aeneas/) - [PyPI](https://pypi.python.org/pypi/aeneas/) - [Docs](http://www.readbeyond.it/aeneas/docs/) - [Tutorial](http://www.readbeyond.it/aeneas/docs/clitutorial.html) - [Mailing List](https://groups.google.com/d/forum/aeneas-forced-alignment) - [Web App](http://aeneasweb.org)
+* Quick Links: [Home](http://www.readbeyond.it/aeneas/) - [GitHub](https://github.com/readbeyond/aeneas/) - [PyPI](https://pypi.python.org/pypi/aeneas/) - [Docs](http://www.readbeyond.it/aeneas/docs/) - [Tutorial](http://www.readbeyond.it/aeneas/docs/clitutorial.html) - [Benchmark](https://readbeyond.github.io/aeneas-benchmark/) - [Mailing List](https://groups.google.com/d/forum/aeneas-forced-alignment) - [Web App](http://aeneasweb.org)
 
  
 ## Goal
@@ -206,10 +206,12 @@ which explains how to use the built-in command line tools.
   [https://groups.google.com/d/forum/aeneas-forced-alignment](https://groups.google.com/d/forum/aeneas-forced-alignment)
 * Changelog:
   [http://www.readbeyond.it/aeneas/docs/changelog.html](http://www.readbeyond.it/aeneas/docs/changelog.html)
-* High level description of how **aeneas** works:
+* High level description of how aeneas works:
   [HOWITWORKS](https://github.com/readbeyond/aeneas/blob/master/wiki/HOWITWORKS.md)
 * Development history:
   [HISTORY](https://github.com/readbeyond/aeneas/blob/master/wiki/HISTORY.md)
+* Benchmark suite:
+  [https://readbeyond.github.io/aeneas-benchmark/](https://readbeyond.github.io/aeneas-benchmark/)
 
 
 ## Supported Features

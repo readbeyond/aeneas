@@ -4,8 +4,8 @@ aeneas
 **aeneas** is a Python/C library and a set of tools to automagically
 synchronize audio and text (aka forced alignment).
 
--  Version: 1.5.0
--  Date: 2016-04-02
+-  Version: 1.5.0.2
+-  Date: 2016-04-09
 -  Developed by: `ReadBeyond <http://www.readbeyond.it/>`__
 -  Lead Developer: `Alberto Pettarin <http://www.albertopettarin.it/>`__
 -  License: the GNU Affero General Public License Version 3 (AGPL v3)
@@ -15,7 +15,8 @@ synchronize audio and text (aka forced alignment).
    `PyPI <https://pypi.python.org/pypi/aeneas/>`__ -
    `Docs <http://www.readbeyond.it/aeneas/docs/>`__ -
    `Tutorial <http://www.readbeyond.it/aeneas/docs/clitutorial.html>`__
-   - `Mailing
+   - `Benchmark <https://readbeyond.github.io/aeneas-benchmark/>`__ -
+   `Mailing
    List <https://groups.google.com/d/forum/aeneas-forced-alignment>`__ -
    `Web App <http://aeneasweb.org>`__
 
@@ -208,10 +209,11 @@ Documentation and Support
 -  Mailing list:
    https://groups.google.com/d/forum/aeneas-forced-alignment
 -  Changelog: http://www.readbeyond.it/aeneas/docs/changelog.html
--  High level description of how **aeneas** works:
+-  High level description of how aeneas works:
    `HOWITWORKS <https://github.com/readbeyond/aeneas/blob/master/wiki/HOWITWORKS.md>`__
 -  Development history:
    `HISTORY <https://github.com/readbeyond/aeneas/blob/master/wiki/HISTORY.md>`__
+-  Benchmark suite: https://readbeyond.github.io/aeneas-benchmark/
 
 Supported Features
 ------------------
