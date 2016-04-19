@@ -134,7 +134,7 @@ class AudioFileMFCC(Loggable):
                 self._compute_mfcc_c_extension,
                 self._compute_mfcc_pure_python,
                 (),
-                c_extension=self.rconf[RuntimeConfiguration.C_EXTENSIONS]
+                rconf=self.rconf
             )
             self.audio_length = self.audio_file.audio_length
             if audio_file_was_none:

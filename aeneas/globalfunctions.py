@@ -759,7 +759,7 @@ def run_c_extension_with_fallback(
         c_function,
         py_function,
         args,
-        c_extension=True
+        rconf
 ):
     """
     Run a function calling a C extension, falling back
@@ -769,8 +769,8 @@ def run_c_extension_with_fallback(
     :param string extension: the name of the extension
     :param function c_function: the (Python) function calling the C extension
     :param function py_function: the (Python) function providing the fallback
-    :param bool c_extension: if ``True``, try running the C extension first;
-                             if ``False``, directly run the pure Python fallback
+    :param rconf: the runtime configuration
+    :type  rconf: :class:`aeneas.runtimeconfiguration.RuntimeConfiguration`
     :rtype: depends on the extension being called
     :raises: RuntimeError: if both the C extension and
                            the pure Python code did not succeed.
@@ -778,20 +778,26 @@ def run_c_extension_with_fallback(
     .. versionadded:: 1.4.0
     """
     computed = False
-    if (c_extension) and (c_function is not None):
-        log_function(u"C extensions enabled")
-        if can_run_c_extension(extension):
-            log_function([u"C extensions enabled and %s can be loaded", extension])
+    if not rconf[u"c_extensions"]:
+        log_function(u"C extensions disabled")
+    elif not rconf[extension]:
+        log_function([u"C extension %s disabled", extension])
+    else:
+        log_function([u"C extension %s enabled", extension])
+        if c_function is None:
+            log_function(u"C function is None")
+        elif can_run_c_extension(extension):
+            log_function([u"C extension %s enabled and it can be loaded", extension])
             computed, result = c_function(*args)
         else:
-            log_function([u"C extensions enabled but %s cannot be loaded", extension])
-    else:
-        log_function(u"C extensions disabled")
-    if (not computed) and (py_function is not None):
-        log_function(u"Running the pure Python code")
-        computed, result = py_function(*args)
+            log_function([u"C extension %s enabled but it cannot be loaded", extension])
     if not computed:
-        # TODO create a more meaningful message
+        if py_function is None:
+            log_function(u"Python function is None")
+        else:
+            log_function(u"Running the pure Python code")
+            computed, result = py_function(*args)
+    if not computed:
         raise RuntimeError(u"Both the C extension and the pure Python code failed. (Wrong arguments? Input too big?)")
     return result
 

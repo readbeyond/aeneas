@@ -310,7 +310,7 @@ class DTWStripe(Loggable):
             self._compute_acm_c_extension,
             self._compute_acm_pure_python,
             (),
-            c_extension=self.rconf[RuntimeConfiguration.C_EXTENSIONS]
+            rconf=self.rconf
         )
 
     def _compute_acm_c_extension(self):
@@ -355,7 +355,7 @@ class DTWStripe(Loggable):
             self._compute_path_c_extension,
             self._compute_path_pure_python,
             (),
-            c_extension=self.rconf[RuntimeConfiguration.C_EXTENSIONS]
+            rconf=self.rconf
         )
 
     def _compute_path_c_extension(self):
@@ -412,7 +412,7 @@ class DTWStripe(Loggable):
             self.log(u"Limiting delta to m")
             delta = m
         cost_matrix = numpy.zeros((n, delta))
-        centers = numpy.zeros(n)
+        centers = numpy.zeros(n, dtype=int)
         for i in range(n):
             # center j at row i
             center_j = (m * i) // n

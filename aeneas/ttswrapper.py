@@ -280,7 +280,7 @@ class TTSWrapper(Loggable):
             c_extension_function,
             subprocess_function,
             (text_file, output_file_path, quit_after, backwards),
-            c_extension=self.rconf[RuntimeConfiguration.C_EXTENSIONS]
+            rconf=self.rconf
         )
 
     def _synthesize_multiple_python(self, text_file, output_file_path, quit_after=None, backwards=False):
@@ -477,7 +477,7 @@ class TTSWrapper(Loggable):
             c_extension_function,
             subprocess_function,
             (text, voice_code, output_file_path),
-            c_extension=self.rconf[RuntimeConfiguration.C_EXTENSIONS]
+            rconf=self.rconf
         )
         return result[0]
 

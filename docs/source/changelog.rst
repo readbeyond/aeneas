@@ -5,6 +5,8 @@ v1.5.1 (2016-??-??)
 -------------------
 
 #. Added ``invoke`` parameter to ``AbstractCLIProgram`` constructor and modified tools consequently
+#. Added rconf ``CDTW``, ``CEW``, and ``CMFCC`` parameters to prevent running a single C extension
+#. Fixed a numerical issue in ``dtw.py`` by explicit stating ``dtype=int`` in ``centers`` initializer, pure Python code only
 
 v1.5.0.2 (2016-04-09)
 ---------------------
