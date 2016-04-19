@@ -60,19 +60,19 @@ class Validator(Loggable):
         #),
         #
         (
-            gc.PPN_JOB_OS_CONTAINER_FORMAT,
-            ContainerFormat.ALLOWED_VALUES
-        ),
-        (
             gc.PPN_JOB_IS_HIERARCHY_TYPE,
             HierarchyType.ALLOWED_VALUES
+        ),
+        (
+            gc.PPN_JOB_OS_CONTAINER_FORMAT,
+            ContainerFormat.ALLOWED_VALUES
         ),
         (
             gc.PPN_JOB_OS_HIERARCHY_TYPE,
             HierarchyType.ALLOWED_VALUES
         ),
         (
-            gc.PPN_JOB_IS_TEXT_FILE_FORMAT,
+            gc.PPN_TASK_IS_TEXT_FILE_FORMAT,
             TextFileFormat.ALLOWED_VALUES
         ),
         (
@@ -80,7 +80,7 @@ class Validator(Loggable):
             SyncMapFormat.ALLOWED_VALUES
         ),
         (
-            gc.PPN_JOB_IS_TEXT_UNPARSED_ID_SORT,
+            gc.PPN_TASK_IS_TEXT_UNPARSED_ID_SORT,
             IDSortingAlgorithm.ALLOWED_VALUES
         ),
         (
@@ -102,36 +102,36 @@ class Validator(Loggable):
         ),
         (
             # is_text_type=unparsed => is_text_unparsed_id_sort
-            gc.PPN_JOB_IS_TEXT_FILE_FORMAT,
+            gc.PPN_TASK_IS_TEXT_FILE_FORMAT,
             [TextFileFormat.UNPARSED],
-            [gc.PPN_JOB_IS_TEXT_UNPARSED_ID_SORT]
+            [gc.PPN_TASK_IS_TEXT_UNPARSED_ID_SORT]
         ),
         (
             # is_text_type=munparsed => is_text_munparsed_l1_id_regex
-            gc.PPN_JOB_IS_TEXT_FILE_FORMAT,
+            gc.PPN_TASK_IS_TEXT_FILE_FORMAT,
             [TextFileFormat.MUNPARSED],
-            [gc.PPN_JOB_IS_TEXT_MUNPARSED_L1_ID_REGEX]
+            [gc.PPN_TASK_IS_TEXT_MUNPARSED_L1_ID_REGEX]
         ),
         (
             # is_text_type=munparsed => is_text_munparsed_l2_id_regex
-            gc.PPN_JOB_IS_TEXT_FILE_FORMAT,
+            gc.PPN_TASK_IS_TEXT_FILE_FORMAT,
             [TextFileFormat.MUNPARSED],
-            [gc.PPN_JOB_IS_TEXT_MUNPARSED_L2_ID_REGEX]
+            [gc.PPN_TASK_IS_TEXT_MUNPARSED_L2_ID_REGEX]
         ),
         (
             # is_text_type=munparsed => is_text_munparsed_l3_id_regex
-            gc.PPN_JOB_IS_TEXT_FILE_FORMAT,
+            gc.PPN_TASK_IS_TEXT_FILE_FORMAT,
             [TextFileFormat.MUNPARSED],
-            [gc.PPN_JOB_IS_TEXT_MUNPARSED_L3_ID_REGEX]
+            [gc.PPN_TASK_IS_TEXT_MUNPARSED_L3_ID_REGEX]
         ),
         (
             # is_text_type=unparsed => is_text_unparsed_class_regex or
             #                          is_text_unparsed_id_regex
-            gc.PPN_JOB_IS_TEXT_FILE_FORMAT,
+            gc.PPN_TASK_IS_TEXT_FILE_FORMAT,
             [TextFileFormat.UNPARSED],
             [
-                gc.PPN_JOB_IS_TEXT_UNPARSED_CLASS_REGEX,
-                gc.PPN_JOB_IS_TEXT_UNPARSED_ID_REGEX
+                gc.PPN_TASK_IS_TEXT_UNPARSED_CLASS_REGEX,
+                gc.PPN_TASK_IS_TEXT_UNPARSED_ID_REGEX
             ]
         ),
         (
@@ -190,54 +190,54 @@ class Validator(Loggable):
 
     JOB_REQUIRED_PARAMETERS = [
         gc.PPN_JOB_LANGUAGE,
+        gc.PPN_JOB_OS_CONTAINER_FORMAT,
         gc.PPN_JOB_OS_FILE_NAME,
-        gc.PPN_JOB_OS_CONTAINER_FORMAT
     ]
 
     TASK_REQUIRED_PARAMETERS = [
         gc.PPN_TASK_IS_TEXT_FILE_FORMAT,
         gc.PPN_TASK_LANGUAGE,
+        gc.PPN_TASK_OS_FILE_FORMAT,
         gc.PPN_TASK_OS_FILE_NAME,
-        gc.PPN_TASK_OS_FILE_FORMAT
     ]
 
     TASK_REQUIRED_PARAMETERS_EXTERNAL_NAME = [
         gc.PPN_TASK_IS_TEXT_FILE_FORMAT,
         gc.PPN_TASK_LANGUAGE,
-        gc.PPN_TASK_OS_FILE_FORMAT
+        gc.PPN_TASK_OS_FILE_FORMAT,
     ]
 
     TXT_REQUIRED_PARAMETERS = [
-        gc.PPN_JOB_IS_HIERARCHY_TYPE,
-        gc.PPN_JOB_IS_HIERARCHY_PREFIX,
-        gc.PPN_JOB_IS_TEXT_FILE_RELATIVE_PATH,
-        gc.PPN_JOB_IS_TEXT_FILE_NAME_REGEX,
-        gc.PPN_JOB_IS_TEXT_FILE_FORMAT,
-        gc.PPN_JOB_IS_AUDIO_FILE_RELATIVE_PATH,
         gc.PPN_JOB_IS_AUDIO_FILE_NAME_REGEX,
-        gc.PPN_JOB_OS_FILE_NAME,
+        gc.PPN_JOB_IS_AUDIO_FILE_RELATIVE_PATH,
+        gc.PPN_JOB_IS_HIERARCHY_PREFIX,
+        gc.PPN_JOB_IS_HIERARCHY_TYPE,
+        gc.PPN_JOB_IS_TEXT_FILE_NAME_REGEX,
+        gc.PPN_JOB_IS_TEXT_FILE_RELATIVE_PATH,
+        gc.PPN_JOB_LANGUAGE,
         gc.PPN_JOB_OS_CONTAINER_FORMAT,
-        gc.PPN_JOB_OS_HIERARCHY_TYPE,
+        gc.PPN_JOB_OS_FILE_NAME,
         gc.PPN_JOB_OS_HIERARCHY_PREFIX,
-        gc.PPN_TASK_OS_FILE_NAME,
+        gc.PPN_JOB_OS_HIERARCHY_TYPE,
+        gc.PPN_TASK_IS_TEXT_FILE_FORMAT,
         gc.PPN_TASK_OS_FILE_FORMAT,
-        gc.PPN_JOB_LANGUAGE
+        gc.PPN_TASK_OS_FILE_NAME,
     ]
 
     XML_JOB_REQUIRED_PARAMETERS = [
-        gc.PPN_JOB_OS_FILE_NAME,
         gc.PPN_JOB_OS_CONTAINER_FORMAT,
+        gc.PPN_JOB_OS_FILE_NAME,
+        gc.PPN_JOB_OS_HIERARCHY_PREFIX,
         gc.PPN_JOB_OS_HIERARCHY_TYPE,
-        gc.PPN_JOB_OS_HIERARCHY_PREFIX
     ]
 
     XML_TASK_REQUIRED_PARAMETERS = [
-        gc.PPN_TASK_LANGUAGE,
+        gc.PPN_TASK_IS_AUDIO_FILE_XML,
         gc.PPN_TASK_IS_TEXT_FILE_FORMAT,
         gc.PPN_TASK_IS_TEXT_FILE_XML,
-        gc.PPN_TASK_IS_AUDIO_FILE_XML,
-        gc.PPN_TASK_OS_FILE_NAME,
+        gc.PPN_TASK_LANGUAGE,
         gc.PPN_TASK_OS_FILE_FORMAT,
+        gc.PPN_TASK_OS_FILE_NAME,
     ]
 
     TAG = u"Validator"

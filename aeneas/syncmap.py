@@ -20,7 +20,6 @@ from __future__ import absolute_import
 from __future__ import print_function
 from functools import partial
 from itertools import chain
-from lxml import etree
 import io
 import json
 import os
@@ -1060,6 +1059,7 @@ class SyncMap(Loggable):
 
     def _read_eaf(self, input_file):
         """ Read from EAF file """
+        from lxml import etree
         # namespaces
         xsi = "http://www.w3.org/2001/XMLSchema-instance"
         ns_map = {"xsi" : xsi}
@@ -1090,6 +1090,7 @@ class SyncMap(Loggable):
 
     def _write_eaf(self, output_file, parameters=None):
         """ Write to EAF file """
+        from lxml import etree
         # namespaces
         xsi = "http://www.w3.org/2001/XMLSchema-instance"
         ns_map = {"xsi" : xsi}
@@ -1210,6 +1211,7 @@ class SyncMap(Loggable):
         2. timings must have hh:mm:ss.mmm or ss.mmm format (autodetected)
         3. both clipBegin and clipEnd attributes of <audio> must be populated
         """
+        from lxml import etree
         smil_ns = "{http://www.w3.org/ns/SMIL}"
         root = etree.fromstring(gf.safe_bytes(input_file.read()))
         for par in root.iter(smil_ns + "par"):
@@ -1236,6 +1238,7 @@ class SyncMap(Loggable):
 
     def _write_smil(self, output_file, format_time, parameters):
         """ Write to SMIL file """
+        from lxml import etree
         # we are sure we have them
         text_ref = parameters[gc.PPN_TASK_OS_FILE_SMIL_PAGE_REF]
         audio_ref = parameters[gc.PPN_TASK_OS_FILE_SMIL_AUDIO_REF]
@@ -1482,6 +1485,7 @@ class SyncMap(Loggable):
 
     def _read_ttml(self, input_file):
         """ Read from TTML file """
+        from lxml import etree
         ttml_ns = "{http://www.w3.org/ns/ttml}"
         xml_ns = "{http://www.w3.org/XML/1998/namespace}"
         root = etree.fromstring(gf.safe_bytes(input_file.read()))
@@ -1505,6 +1509,7 @@ class SyncMap(Loggable):
 
     def _write_ttml(self, output_file, parameters):
         """ Write to TTML file """
+        from lxml import etree
         # get language
         language = None
         if (parameters is not None) and ("language" in parameters):
@@ -1649,6 +1654,7 @@ class SyncMap(Loggable):
 
     def _read_xml(self, input_file):
         """ Read from XML file """
+        from lxml import etree
         root = etree.fromstring(gf.safe_bytes(input_file.read()))
         for frag in root:
             identifier = gf.safe_unicode(frag.get("id"))
@@ -1671,6 +1677,7 @@ class SyncMap(Loggable):
 
     def _write_xml(self, output_file):
         """ Write to XML file """
+        from lxml import etree
         def visit_children(node, parent_elem):
             """ Recursively visit the fragments_tree """
             for child in node.children_not_empty:
@@ -1690,6 +1697,7 @@ class SyncMap(Loggable):
 
     def _read_xml_legacy(self, input_file):
         """ Read from XML file (legacy format) """
+        from lxml import etree
         root = etree.fromstring(gf.safe_bytes(input_file.read()))
         for frag in root:
             for child in frag:
@@ -1735,6 +1743,7 @@ class SyncMap(Loggable):
         """
         Write an ``lxml`` tree to the given output file.
         """
+        from lxml import etree
         string = etree.tostring(
             root_element,
             encoding="UTF-8",
@@ -1751,6 +1760,7 @@ class SyncMap(Loggable):
         where the line separator is ``<br xmlns=... />``.
         """
         # TODO more robust parsing
+        from lxml import etree
         parts = ([node.text] + list(chain(*([etree.tostring(c, with_tail=False), c.tail] for c in node.getchildren()))) + [node.tail])
         parts = [gf.safe_unicode(p) for p in parts]
         parts = [p.strip() for p in parts if not p.startswith(u"<br ")]

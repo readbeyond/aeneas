@@ -28,9 +28,9 @@ class TestTextFile(unittest.TestCase):
         gc.PPN_TASK_IS_TEXT_MUNPARSED_L1_ID_REGEX : "p[0-9]+",
         gc.PPN_TASK_IS_TEXT_MUNPARSED_L2_ID_REGEX : "p[0-9]+s[0-9]+",
         gc.PPN_TASK_IS_TEXT_MUNPARSED_L3_ID_REGEX : "p[0-9]+s[0-9]+w[0-9]+",
-        gc.PPN_JOB_IS_TEXT_UNPARSED_ID_REGEX : "f[0-9]+",
-        gc.PPN_JOB_IS_TEXT_UNPARSED_CLASS_REGEX : "ra",
-        gc.PPN_JOB_IS_TEXT_UNPARSED_ID_SORT : IDSortingAlgorithm.UNSORTED,
+        gc.PPN_TASK_IS_TEXT_UNPARSED_ID_REGEX : "f[0-9]+",
+        gc.PPN_TASK_IS_TEXT_UNPARSED_CLASS_REGEX : "ra",
+        gc.PPN_TASK_IS_TEXT_UNPARSED_ID_SORT : IDSortingAlgorithm.UNSORTED,
     }
     ID_REGEX_PARAMETERS = {
         gc.PPN_TASK_OS_FILE_ID_REGEX : u"word%06d"
@@ -47,8 +47,8 @@ class TestTextFile(unittest.TestCase):
 
     def load_and_sort_id(self, input_file_path, id_regex, id_sort, expected):
         parameters = {}
-        parameters[gc.PPN_JOB_IS_TEXT_UNPARSED_ID_REGEX] = id_regex
-        parameters[gc.PPN_JOB_IS_TEXT_UNPARSED_ID_SORT] = id_sort
+        parameters[gc.PPN_TASK_IS_TEXT_UNPARSED_ID_REGEX] = id_regex
+        parameters[gc.PPN_TASK_IS_TEXT_UNPARSED_ID_SORT] = id_sort
         tfl = self.load(input_file_path, TextFileFormat.UNPARSED, 5, parameters)
         i = 0
         for e in expected:
@@ -263,26 +263,26 @@ class TestTextFile(unittest.TestCase):
                 {
                     "path": "res/inputtext/sonnet_unparsed_soup_1.txt",
                     "parameters": {
-                        gc.PPN_JOB_IS_TEXT_UNPARSED_ID_REGEX : "f[0-9]*"
+                        gc.PPN_TASK_IS_TEXT_UNPARSED_ID_REGEX : "f[0-9]*"
                     }
                 },
                 {
                     "path": "res/inputtext/sonnet_unparsed_soup_2.txt",
                     "parameters": {
-                        gc.PPN_JOB_IS_TEXT_UNPARSED_ID_REGEX : "f[0-9]*",
-                        gc.PPN_JOB_IS_TEXT_UNPARSED_CLASS_REGEX : "ra"
+                        gc.PPN_TASK_IS_TEXT_UNPARSED_ID_REGEX : "f[0-9]*",
+                        gc.PPN_TASK_IS_TEXT_UNPARSED_CLASS_REGEX : "ra"
                     }
                 },
                 {
                     "path": "res/inputtext/sonnet_unparsed_soup_3.txt",
                     "parameters": {
-                        gc.PPN_JOB_IS_TEXT_UNPARSED_CLASS_REGEX : "ra"
+                        gc.PPN_TASK_IS_TEXT_UNPARSED_CLASS_REGEX : "ra"
                     }
                 },
                 {
                     "path": "res/inputtext/sonnet_unparsed.xhtml",
                     "parameters": {
-                        gc.PPN_JOB_IS_TEXT_UNPARSED_ID_REGEX : "f[0-9]*"
+                        gc.PPN_TASK_IS_TEXT_UNPARSED_ID_REGEX : "f[0-9]*"
                     }
                 },
         ]:

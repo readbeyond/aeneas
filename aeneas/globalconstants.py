@@ -202,11 +202,6 @@ Example::
 
 """
 
-PPN_JOB_IS_TEXT_FILE_FORMAT = "is_text_type"
-"""
-See PPN_TASK_IS_TEXT_FILE_FORMAT
-"""
-
 PPN_JOB_IS_TEXT_FILE_NAME_REGEX = "is_text_file_name_regex"
 """
 The regex for matching the text file name
@@ -238,36 +233,6 @@ Example::
     is_audio_file_relative_path=xhtml
     is_audio_file_relative_path=.
 
-"""
-
-PPN_JOB_IS_TEXT_MUNPARSED_L1_ID_REGEX = "is_text_munparsed_l1_id_regex"
-"""
-See PPN_TASK_IS_TEXT_MUNPARSED_L1_ID_REGEX
-"""
-
-PPN_JOB_IS_TEXT_MUNPARSED_L2_ID_REGEX = "is_text_munparsed_l2_id_regex"
-"""
-See PPN_TASK_IS_TEXT_MUNPARSED_L2_ID_REGEX
-"""
-
-PPN_JOB_IS_TEXT_MUNPARSED_L3_ID_REGEX = "is_text_munparsed_l3_id_regex"
-"""
-See PPN_TASK_IS_TEXT_MUNPARSED_L3_ID_REGEX
-"""
-
-PPN_JOB_IS_TEXT_UNPARSED_CLASS_REGEX = "is_text_unparsed_class_regex"
-"""
-See PPN_TASK_IS_TEXT_UNPARSED_CLASS_REGEX
-"""
-
-PPN_JOB_IS_TEXT_UNPARSED_ID_REGEX = "is_text_unparsed_id_regex"
-"""
-See PPN_TASK_IS_TEXT_UNPARSED_ID_REGEX
-"""
-
-PPN_JOB_IS_TEXT_UNPARSED_ID_SORT = "is_text_unparsed_id_sort"
-"""
-See PPN_TASK_IS_TEXT_UNPARSED_ID_SORT
 """
 
 PPN_JOB_OS_CONTAINER_FORMAT = "os_job_file_container"

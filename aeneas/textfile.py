@@ -16,7 +16,6 @@ This module contains the following classes:
 
 from __future__ import absolute_import
 from __future__ import print_function
-from bs4 import BeautifulSoup
 import io
 import re
 
@@ -744,6 +743,7 @@ class TextFile(Loggable):
 
         :param list lines: the lines of the unparsed text file
         """
+        from bs4 import BeautifulSoup
         def nodes_at_level(root, level):
             """ Return a dict with the bs4 filter parameters """
             LEVEL_TO_REGEX_MAP = [
@@ -899,12 +899,13 @@ class TextFile(Loggable):
 
         :param list lines: the lines of the unparsed text file
         """
+        from bs4 import BeautifulSoup
         def filter_attributes():
             """ Return a dict with the bs4 filter parameters """
             attributes = {}
             for attribute_name, filter_name in [
-                    ("class", gc.PPN_JOB_IS_TEXT_UNPARSED_CLASS_REGEX),
-                    ("id", gc.PPN_JOB_IS_TEXT_UNPARSED_ID_REGEX)
+                    ("class", gc.PPN_TASK_IS_TEXT_UNPARSED_CLASS_REGEX),
+                    ("id", gc.PPN_TASK_IS_TEXT_UNPARSED_ID_REGEX)
             ]:
                 if filter_name in self.parameters:
                     regex_string = self.parameters[filter_name]
@@ -941,7 +942,7 @@ class TextFile(Loggable):
         # sort by ID as requested
         id_sort = gf.safe_get(
             dictionary=self.parameters,
-            key=gc.PPN_JOB_IS_TEXT_UNPARSED_ID_SORT,
+            key=gc.PPN_TASK_IS_TEXT_UNPARSED_ID_SORT,
             default_value=IDSortingAlgorithm.UNSORTED,
             can_return_none=False
         )

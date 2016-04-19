@@ -115,13 +115,6 @@ class JobConfiguration(Configuration):
     * :data:`~aeneas.globalconstants.PPN_JOB_OS_FILE_NAME`                  or ``o_name``
     * :data:`~aeneas.globalconstants.PPN_JOB_OS_HIERARCHY_PREFIX`           or ``o_hierarchy_prefix``
     * :data:`~aeneas.globalconstants.PPN_JOB_OS_HIERARCHY_TYPE`             or ``o_hierarchy_type``
-    * :data:`~aeneas.globalconstants.PPN_JOB_IS_TEXT_FILE_FORMAT`           or ``i_t_format``
-    * :data:`~aeneas.globalconstants.PPN_JOB_IS_TEXT_MUNPARSED_L1_ID_REGEX` or ``i_t_munparsed_l1_id_regex``
-    * :data:`~aeneas.globalconstants.PPN_JOB_IS_TEXT_MUNPARSED_L2_ID_REGEX` or ``i_t_munparsed_l2_id_regex``
-    * :data:`~aeneas.globalconstants.PPN_JOB_IS_TEXT_MUNPARSED_L3_ID_REGEX` or ``i_t_munparsed_l3_id_regex``
-    * :data:`~aeneas.globalconstants.PPN_JOB_IS_TEXT_UNPARSED_CLASS_REGEX`  or ``i_t_unparsed_class_regex``
-    * :data:`~aeneas.globalconstants.PPN_JOB_IS_TEXT_UNPARSED_ID_REGEX`     or ``i_t_unparsed_id_regex``
-    * :data:`~aeneas.globalconstants.PPN_JOB_IS_TEXT_UNPARSED_ID_SORT`      or ``i_t_unparsed_id_sort``
 
     :param string config_string: the job configuration string
     :raises: TypeError: if ``config_string`` is not ``None`` and
@@ -143,14 +136,6 @@ class JobConfiguration(Configuration):
         (gc.PPN_JOB_OS_FILE_NAME, (None, None, ["o_name"])),
         (gc.PPN_JOB_OS_HIERARCHY_PREFIX, (None, None, ["o_hierarchy_prefix"])),
         (gc.PPN_JOB_OS_HIERARCHY_TYPE, (None, None, ["o_hierarchy_type"])),
-        # TODO the following ones should probably go
-        (gc.PPN_JOB_IS_TEXT_FILE_FORMAT, (None, None, ["i_t_format"])),
-        (gc.PPN_JOB_IS_TEXT_MUNPARSED_L1_ID_REGEX, (None, None, ["i_t_munparsed_l1_id_regex"])),
-        (gc.PPN_JOB_IS_TEXT_MUNPARSED_L2_ID_REGEX, (None, None, ["i_t_munparsed_l2_id_regex"])),
-        (gc.PPN_JOB_IS_TEXT_MUNPARSED_L3_ID_REGEX, (None, None, ["i_t_munparsed_l3_id_regex"])),
-        (gc.PPN_JOB_IS_TEXT_UNPARSED_CLASS_REGEX, (None, None, ["i_t_unparsed_class_regex"])),
-        (gc.PPN_JOB_IS_TEXT_UNPARSED_ID_REGEX, (None, None, ["i_t_unparsed_id_regex"])),
-        (gc.PPN_JOB_IS_TEXT_UNPARSED_ID_SORT, (None, None, ["i_t_unparsed_id_sort"])),
     ]
 
     TAG = u"JobConfiguration"

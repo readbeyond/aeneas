@@ -7,7 +7,6 @@ Global common functions.
 
 from __future__ import absolute_import
 from __future__ import print_function
-from lxml import etree
 import datetime
 import io
 import math
@@ -352,8 +351,6 @@ def config_string_to_dict(string, result=None):
     pairs = string.split(gc.CONFIG_STRING_SEPARATOR_SYMBOL)
     return pairs_to_dict(pairs, result)
 
-# TODO this is the only function using lxml, shall we move it somewhere else?
-#      the two places it is used are analyzecontainer.py and validator.py
 def config_xml_to_dict(contents, result, parse_job=True):
     """
     Convert the contents of a XML config file
@@ -369,6 +366,7 @@ def config_xml_to_dict(contents, result, parse_job=True):
                            if ``False``, parse the tasks properties
     :rtype: dict (``parse_job=True``) or list of dict (``parse_job=False``)
     """
+    from lxml import etree
     try:
         root = etree.fromstring(contents)
         pairs = []
