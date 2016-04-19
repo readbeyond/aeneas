@@ -23,7 +23,7 @@ __status__ = "Production"
 #if USE_SNDFILE
 #include <sndfile.h>
 #else
-#include "cwave_func.h"
+#include "../cwave/cwave_func.h"
 #endif
 
 #define DRIVER_SUCCESS 0

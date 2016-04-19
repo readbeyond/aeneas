@@ -27,7 +27,7 @@ __status__ = "Production"
 #include <string.h>
 
 #include "cmfcc_func.h"
-#include "cwave_func.h"
+#include "../cwave/cwave_func.h"
 
 #ifdef USE_FFTW
 #include <rfftw.h>

@@ -27,7 +27,7 @@ __version__ = "1.5.1"
 __email__ = "aeneas@readbeyond.it"
 __status__ = "Production"
 
-CMODULE = Extension("cdtw", sources=["cdtw_py.c", "cdtw_func.c", "cint.c"], include_dirs=[get_include()])
+CMODULE = Extension("cdtw", sources=["cdtw_py.c", "cdtw_func.c", "../cint/cint.c"], include_dirs=[get_include()])
 
 setup(
     name="cdtw",

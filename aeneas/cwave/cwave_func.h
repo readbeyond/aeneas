@@ -15,7 +15,7 @@ __status__ = "Production"
 
 */
 
-#include "cint.h"
+#include "../cint/cint.h"
 
 #define CWAVE_SUCCESS 0
 #define CWAVE_FAILURE 1

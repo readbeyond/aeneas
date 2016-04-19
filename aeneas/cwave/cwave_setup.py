@@ -27,7 +27,7 @@ __version__ = "1.5.1"
 __email__ = "aeneas@readbeyond.it"
 __status__ = "Production"
 
-CMODULE = Extension("cwave", sources=["cwave_py.c", "cwave_func.c", "cint.c"], include_dirs=[get_include()])
+CMODULE = Extension("cwave", sources=["cwave_py.c", "cwave_func.c", "../cint/cint.c"], include_dirs=[get_include()])
 
 setup(
     name="cwave",

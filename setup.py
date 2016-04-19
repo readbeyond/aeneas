@@ -40,7 +40,7 @@ INCLUDE_DIRS = [misc_util.get_numpy_include_dirs()]
 
 EXTENSION_CDTW = Extension(
     "aeneas.cdtw.cdtw",
-    ["aeneas/cdtw/cdtw_py.c", "aeneas/cdtw/cdtw_func.c", "aeneas/cdtw/cint.c"],
+    ["aeneas/cdtw/cdtw_py.c", "aeneas/cdtw/cdtw_func.c", "aeneas/cint/cint.c"],
     include_dirs=[get_include()]
 )
 EXTENSION_CEW = Extension(
@@ -50,7 +50,7 @@ EXTENSION_CEW = Extension(
 )
 EXTENSION_CMFCC = Extension(
     "aeneas.cmfcc.cmfcc",
-    ["aeneas/cmfcc/cmfcc_py.c", "aeneas/cmfcc/cmfcc_func.c", "aeneas/cmfcc/cwave_func.c", "aeneas/cmfcc/cint.c"],
+    ["aeneas/cmfcc/cmfcc_py.c", "aeneas/cmfcc/cmfcc_func.c", "aeneas/cwave/cwave_func.c", "aeneas/cint/cint.c"],
     include_dirs=[get_include()]
 )
 # cwave is ready, but currently not used

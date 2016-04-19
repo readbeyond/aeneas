@@ -15,7 +15,7 @@ __status__ = "Production"
 
 */
 
-#include "cint.h"
+#include "../cint/cint.h"
 
 #define CMFCC_SUCCESS 0
 #define CMFCC_FAILURE 1

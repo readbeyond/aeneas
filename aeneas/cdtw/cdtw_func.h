@@ -15,7 +15,7 @@ __status__ = "Production"
 
 */
 
-#include "cint.h"
+#include "../cint/cint.h"
 
 #define CDTW_SUCCESS 0
 #define CDTW_FAILURE 1
