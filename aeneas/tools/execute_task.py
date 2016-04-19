@@ -11,6 +11,7 @@ from __future__ import print_function
 import sys
 
 from aeneas.adjustboundaryalgorithm import AdjustBoundaryAlgorithm
+from aeneas.audiofile import AudioFile
 from aeneas.downloader import Downloader
 from aeneas.espeakwrapper import ESPEAKWrapper
 from aeneas.executetask import ExecuteTask
@@ -525,6 +526,13 @@ class ExecuteTaskCLI(AbstractCLIProgram):
                 self.print_error(u"An unexpected error occurred while downloading audio from YouTube:")
                 self.print_error(u"%s" % exc)
                 return self.ERROR_EXIT_CODE
+        else:
+            audio_extension = gf.file_extension(audio_file_path)
+            if audio_extension.lower() not in AudioFile.FILE_EXTENSIONS:
+                self.print_warning(u"Your audio file path has extension '%s', which is uncommon for an audio file." % audio_extension)
+                self.print_warning(u"Attempting at executing your Task anyway.")
+                self.print_warning(u"If it fails, you might have swapped the first two arguments.")
+                self.print_warning(u"The audio file path should be the first argument, the text file path the second.")
 
         try:
             self.print_info(u"Creating task...")
