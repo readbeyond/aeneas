@@ -25,7 +25,7 @@ __copyright__ = """
     Copyright 2015-2016, Alberto Pettarin (www.albertopettarin.it)
     """
 __license__ = "GNU AGPL 3"
-__version__ = "1.5.0"
+__version__ = "1.5.1"
 __email__ = "aeneas@readbeyond.it"
 __status__ = "Production"
 
@@ -41,6 +41,7 @@ class AbstractCLIProgram(Loggable):
                     otherwise, never call ``sys.exit`` and
                     just return a return code/value
     :type  use_sys: bool
+    :param string invoke: the CLI command to be invoked
     :param rconf: a runtime configuration. Default: ``None``, meaning that
                   default settings will be used.
     :type  rconf: :class:`aeneas.runtimeconfiguration.RuntimeConfiguration`
@@ -72,8 +73,9 @@ class AbstractCLIProgram(Loggable):
 
     TAG = u"CLI"
 
-    def __init__(self, use_sys=True, rconf=None, logger=None):
+    def __init__(self, use_sys=True, invoke=None, rconf=None, logger=None):
         super(AbstractCLIProgram, self).__init__(rconf=rconf, logger=logger)
+        self.invoke = u"python -m aeneas.tools.%s" % (self.NAME) if (invoke is None) else invoke
         self.use_sys = use_sys
         self.formal_arguments_raw = []
         self.formal_arguments = []
@@ -171,7 +173,7 @@ class AbstractCLIProgram(Loggable):
 
         synopsis = [
             u"SYNOPSIS",
-            u"  python -m aeneas.tools.%s [-h|--help|--version]" % (self.NAME)
+            u"  %s [-h|--help|--version]" % (self.invoke)
         ]
         if "synopsis" in self.HELP:
             for syn, opt in self.HELP["synopsis"]:
@@ -179,7 +181,7 @@ class AbstractCLIProgram(Loggable):
                     opt = u" [OPTIONS]"
                 else:
                     opt = u""
-                synopsis.append(u"  python -m aeneas.tools.%s %s%s" % (self.NAME, syn, opt))
+                synopsis.append(u"  %s %s%s" % (self.invoke, syn, opt))
 
         synopsis.append(u"")
 
@@ -208,7 +210,7 @@ class AbstractCLIProgram(Loggable):
         if ("examples" in self.HELP) and (len(self.HELP["examples"]) > 0):
             examples.append(u"EXAMPLES")
             for exa in self.HELP["examples"]:
-                examples.append(u"  python -m aeneas.tools.%s %s" % (self.NAME, exa))
+                examples.append(u"  %s %s" % (self.invoke, exa))
             examples.append(u"")
 
         footer = [

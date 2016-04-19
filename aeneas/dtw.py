@@ -48,7 +48,7 @@ __copyright__ = """
     Copyright 2015-2016, Alberto Pettarin (www.albertopettarin.it)
     """
 __license__ = "GNU AGPL v3"
-__version__ = "1.5.0"
+__version__ = "1.5.1"
 __email__ = "aeneas@readbeyond.it"
 __status__ = "Production"
 
@@ -310,7 +310,7 @@ class DTWStripe(Loggable):
             self._compute_acm_c_extension,
             self._compute_acm_pure_python,
             (),
-            c_extension=True
+            c_extension=self.rconf[RuntimeConfiguration.C_EXTENSIONS]
         )
 
     def _compute_acm_c_extension(self):
@@ -355,7 +355,7 @@ class DTWStripe(Loggable):
             self._compute_path_c_extension,
             self._compute_path_pure_python,
             (),
-            c_extension=True
+            c_extension=self.rconf[RuntimeConfiguration.C_EXTENSIONS]
         )
 
     def _compute_path_c_extension(self):

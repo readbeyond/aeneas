@@ -19,7 +19,7 @@ __copyright__ = """
     Copyright 2015-2016, Alberto Pettarin (www.albertopettarin.it)
     """
 __license__ = "GNU AGPL 3"
-__version__ = "1.5.0"
+__version__ = "1.5.1"
 __email__ = "aeneas@readbeyond.it"
 __status__ = "Production"
 
@@ -28,7 +28,7 @@ def main():
     Synthesize several text fragments,
     producing a WAV audio file.
     """
-    SynthesizeTextCLI().run(arguments=sys.argv)
+    SynthesizeTextCLI(invoke="aeneas_synthesize_text").run(arguments=sys.argv)
 
 if __name__ == '__main__':
     main()

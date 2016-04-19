@@ -37,7 +37,7 @@ __copyright__ = """
     Copyright 2015-2016, Alberto Pettarin (www.albertopettarin.it)
     """
 __license__ = "GNU AGPL 3"
-__version__ = "1.5.0"
+__version__ = "1.5.1"
 __email__ = "aeneas@readbeyond.it"
 __status__ = "Production"
 
@@ -617,15 +617,15 @@ class ExecuteTaskCLI(AbstractCLIProgram):
                 msg.append(u"Example %d (%s)" % (i, example[u"description"]))
                 # NOTE too verbose now that we have dozens of examples
                 #msg.append(u"  $ CONFIG_STRING=\"%s\"" % (example[u"config"]))
-                #msg.append(u"  $ python -m aeneas.tools.%s %s %s \"$CONFIG_STRING\" %s %s" % (
-                #    self.NAME,
+                #msg.append(u"  $ %s %s %s \"$CONFIG_STRING\" %s %s" % (
+                #    self.invoke,
                 #    example[u"audio"],
                 #    example[u"text"],
                 #    example[u"syncmap"],
                 #    example[u"options"]
                 #))
                 #msg.append(u"  or")
-                msg.append(u"  $ python -m aeneas.tools.%s %s" % (self.NAME, key))
+                msg.append(u"  $ %s %s" % (self.invoke, key))
                 msg.append(u"")
                 i += 1
         self.print_generic(u"\n" + u"\n".join(msg) + u"\n")

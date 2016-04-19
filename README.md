@@ -2,7 +2,7 @@
 
 **aeneas** is a Python/C library and a set of tools to automagically synchronize audio and text (aka forced alignment).
 
-* Version: 1.5.0.2
+* Version: 1.5.1.0
 * Date: 2016-04-09
 * Developed by: [ReadBeyond](http://www.readbeyond.it/)
 * Lead Developer: [Alberto Pettarin](http://www.albertopettarin.it/)

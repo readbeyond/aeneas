@@ -20,7 +20,7 @@ __copyright__ = """
     Copyright 2015-2016, Alberto Pettarin (www.albertopettarin.it)
     """
 __license__ = "GNU AGPL 3"
-__version__ = "1.5.0"
+__version__ = "1.5.1"
 __email__ = "aeneas@readbeyond.it"
 __status__ = "Production"
 
@@ -30,7 +30,7 @@ def main():
     as a container and a configuration string
     (i.e., from a wizard).
     """
-    ExecuteJobCLI().run(arguments=sys.argv)
+    ExecuteJobCLI(invoke="aeneas_execute_job").run(arguments=sys.argv)
 
 if __name__ == '__main__':
     main()

@@ -1,6 +1,11 @@
 Changelog
 =========
 
+v1.5.1 (2016-??-??)
+-------------------
+
+#. Added ``invoke`` parameter to ``AbstractCLIProgram`` constructor and modified tools consequently
+
 v1.5.0.2 (2016-04-09)
 ---------------------
 

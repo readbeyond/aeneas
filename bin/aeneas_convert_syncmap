@@ -18,7 +18,7 @@ __copyright__ = """
     Copyright 2015-2016, Alberto Pettarin (www.albertopettarin.it)
     """
 __license__ = "GNU AGPL 3"
-__version__ = "1.5.0"
+__version__ = "1.5.1"
 __email__ = "aeneas@readbeyond.it"
 __status__ = "Production"
 
@@ -26,7 +26,7 @@ def main():
     """
     Convert a sync map from a format to another.
     """
-    ConvertSyncMapCLI().run(arguments=sys.argv)
+    ConvertSyncMapCLI(invoke="aeneas_convert_syncmap").run(arguments=sys.argv)
 
 if __name__ == '__main__':
     main()
