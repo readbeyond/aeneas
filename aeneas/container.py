@@ -363,19 +363,21 @@ class Container(Loggable):
 
         # set the actual container
         self.log(u"Setting actual container...")
-        # TODO map this
-        if self.container_format == ContainerFormat.ZIP:
-            self.actual_container = _ContainerZIP(self.file_path, rconf=self.rconf, logger=self.logger)
-        elif self.container_format == ContainerFormat.EPUB:
-            self.actual_container = _ContainerZIP(self.file_path, rconf=self.rconf, logger=self.logger)
-        elif self.container_format == ContainerFormat.TAR:
-            self.actual_container = _ContainerTAR(self.file_path, "", rconf=self.rconf, logger=self.logger)
-        elif self.container_format == ContainerFormat.TAR_GZ:
-            self.actual_container = _ContainerTAR(self.file_path, ":gz", rconf=self.rconf, logger=self.logger)
-        elif self.container_format == ContainerFormat.TAR_BZ2:
-            self.actual_container = _ContainerTAR(self.file_path, ":bz2", rconf=self.rconf, logger=self.logger)
-        elif self.container_format == ContainerFormat.UNPACKED:
-            self.actual_container = _ContainerUnpacked(self.file_path, rconf=self.rconf, logger=self.logger)
+        class_map = {
+            ContainerFormat.ZIP: (_ContainerZIP, None),
+            ContainerFormat.EPUB: (_ContainerZIP, None),
+            ContainerFormat.TAR: (_ContainerTAR, ""),
+            ContainerFormat.TAR_GZ: (_ContainerTAR, ":gz"),
+            ContainerFormat.TAR_BZ2: (_ContainerTAR, ":bz2"),
+            ContainerFormat.UNPACKED: (_ContainerUnpacked, None)
+        }
+        actual_class, variant = class_map[self.container_format]
+        self.actual_container = actual_class(
+            file_path=self.file_path,
+            variant=variant,
+            rconf=self.rconf,
+            logger=self.logger
+        )
         self.log([u"Actual container format: '%s'", self.container_format])
         self.log(u"Setting actual container... done")
 
@@ -445,7 +447,7 @@ class _ContainerZIP(Loggable):
 
     TAG = u"ContainerZIP"
 
-    def __init__(self, file_path, rconf=None, logger=None):
+    def __init__(self, file_path, variant=None, rconf=None, logger=None):
         super(_ContainerZIP, self).__init__(rconf=rconf, logger=logger)
         self.file_path = file_path
 
@@ -497,7 +499,7 @@ class _ContainerUnpacked(Loggable):
 
     TAG = u"ContainerUnpacked"
 
-    def __init__(self, file_path, rconf=None, logger=None):
+    def __init__(self, file_path, variant=None, rconf=None, logger=None):
         super(_ContainerUnpacked, self).__init__(rconf=rconf, logger=logger)
         self.file_path = file_path
 

@@ -570,6 +570,7 @@ class ExecuteTaskCLI(AbstractCLIProgram):
             try:
                 parameters = {}
                 parameters[gc.PPN_TASK_OS_FILE_FORMAT] = task.configuration["o_format"]
+                parameters[gc.PPN_TASK_OS_FILE_EAF_AUDIO_REF] = task.configuration["o_eaf_audio_ref"]
                 parameters[gc.PPN_TASK_OS_FILE_SMIL_AUDIO_REF] = task.configuration["o_smil_audio_ref"]
                 parameters[gc.PPN_TASK_OS_FILE_SMIL_PAGE_REF] = task.configuration["o_smil_page_ref"]
                 self.print_info(u"Creating output HTML file...")

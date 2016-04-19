@@ -1097,17 +1097,17 @@ class SyncMap(Loggable):
         doc = etree.Element("ANNOTATION_DOCUMENT", nsmap=ns_map)
         doc.attrib["{%s}noNamespaceSchemaLocation" % xsi] = "http://www.mpi.nl/tools/elan/EAFv2.8.xsd"
         doc.attrib["AUTHOR"] = "aeneas"
-        doc.attrib["DATE"] = "2016-01-01T00:00:00+00:00"
+        doc.attrib["DATE"] = gf.datetime_string(time_zone=True)
         doc.attrib["FORMAT"] = "2.8"
         doc.attrib["VERSION"] = "2.8"
         # header
         header = etree.SubElement(doc, "HEADER")
         header.attrib["MEDIA_FILE"] = ""
         header.attrib["TIME_UNITS"] = "milliseconds"
-        if (not parameters is None) and ("audio_file_path_absolute" in parameters):
+        if (not parameters is None) and (gc.PPN_TASK_OS_FILE_EAF_AUDIO_REF in parameters) and (parameters[gc.PPN_TASK_OS_FILE_EAF_AUDIO_REF] is not None):
             media = etree.SubElement(header, "MEDIA_DESCRIPTOR")
-            media.attrib["MEDIA_URL"] = "file://%s" % parameters["audio_file_path_absolute"]
-            media.attrib["MIME_TYPE"] = gf.mimetype_from_path(parameters["audio_file_path_absolute"])
+            media.attrib["MEDIA_URL"] = parameters[gc.PPN_TASK_OS_FILE_EAF_AUDIO_REF]
+            media.attrib["MIME_TYPE"] = gf.mimetype_from_path(parameters[gc.PPN_TASK_OS_FILE_EAF_AUDIO_REF])
         # time order
         time_order = etree.SubElement(doc, "TIME_ORDER")
         # tier

@@ -924,6 +924,22 @@ Example::
 .. versionadded:: 1.5.0
 """
 
+PPN_TASK_OS_FILE_EAF_AUDIO_REF = "os_task_file_eaf_audio_ref"
+"""
+The value of the ``<MEDIA_URL>`` element in the output sync map,
+complete with the ``file://`` prefix.
+It applies to ``EAF`` sync maps only.
+
+Usage: config string, TXT config file, XML config file
+
+Values: string
+
+Example::
+
+    os_task_file_eaf_audio_ref=file:///audio/p001.mp3
+
+"""
+
 PPN_TASK_OS_FILE_SMIL_AUDIO_REF = "os_task_file_smil_audio_ref"
 """
 The value of the ``src`` attribute for the ``<audio>`` element

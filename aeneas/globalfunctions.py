@@ -8,8 +8,9 @@ Global common functions.
 from __future__ import absolute_import
 from __future__ import print_function
 from lxml import etree
-import math
+import datetime
 import io
+import math
 import os
 import re
 import shutil
@@ -214,6 +215,28 @@ def file_name_without_extension(path):
     if path is None:
         return None
     return os.path.splitext(os.path.basename(path))[0]
+
+def datetime_string(time_zone=False):
+    """
+    Return a string representing the current date and time,
+    in ``YYYY-MM-DDThh:mm:ss`` or ``YYYY-MM-DDThh:mm:ss+hh:mm`` format
+
+    :param boolean time_zone: if ``True``, add the time zone offset.
+
+    :rtype: string
+    """
+    time = datetime.datetime.now()
+    template = u"%04d-%02d-%02dT%02d:%02d:%02d"
+    if time_zone:
+        template += u"+00:00"
+    return template % (
+        time.year,
+        time.month,
+        time.day,
+        time.hour,
+        time.minute,
+        time.second
+    )
 
 def safe_float(string, default=None):
     """
@@ -642,6 +665,9 @@ def split_url(url):
     Split the given URL ``base#anchor`` into ``(base, anchor)``,
     or ``(base, None)`` if no anchor is present.
 
+    In case there are two or more ``#`` characters,
+    return only the first two tokens: ``a#b#c => (a, b)``.
+
     :param string url: the url
     :rtype: list of str
     """
@@ -650,10 +676,7 @@ def split_url(url):
     array = url.split("#")
     if len(array) == 1:
         array.append(None)
-    elif len(array) > 2:
-        # TODO throw exception instead?
-        array = array[0:2]
-    return tuple(array)
+    return tuple(array[0:2])
 
 def is_posix():
     """
@@ -703,7 +726,6 @@ def fix_slash(path):
     :rtype: string
     """
     if not is_posix():
-        # TODO is there a better way to do this?
         path = path.replace("\\", "/")
     return path
 
@@ -813,9 +835,8 @@ def file_can_be_read(path):
     if path is None:
         return False
     try:
-        # TODO is testing with os attributes better than this?
-        test_file = io.open(path, "rb")
-        test_file.close()
+        with io.open(path, "rb") as test_file:
+            pass
         return True
     except (IOError, OSError):
         pass
@@ -836,9 +857,8 @@ def file_can_be_written(path):
     if path is None:
         return False
     try:
-        # TODO is testing with os attributes better than this?
-        test_file = io.open(path, "wb")
-        test_file.close()
+        with io.open(path, "wb") as test_file:
+            pass
         delete_file(None, path)
         return True
     except (IOError, OSError):
