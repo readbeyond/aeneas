@@ -86,7 +86,7 @@ setup(
         "aeneas.extra": ["*.md"],
         "aeneas.tools": ["res/*", "*.md"]
     },
-    version="1.5.0.2",
+    version="1.5.0.3",
     description=SHORT_DESCRIPTION,
     author="Alberto Pettarin",
     author_email="alberto@albertopettarin.it",
