@@ -1,6 +1,11 @@
 Changelog
 =========
 
+v1.5.0.3 (2016-04-23)
+---------------------
+
+#. Fix an issue in ``sd`` with ``float`` returned instead of ``TimeValue``
+
 v1.5.0.2 (2016-04-09)
 ---------------------
 
