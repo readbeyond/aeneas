@@ -266,7 +266,7 @@ class SD(Loggable):
             self.log(u"No speech intervals, hence no start found")
             if tail:
                 self.real_wave_mfcc.reverse()
-            return 0.0
+            return TimeValue("0.000")
 
         # generate a list of begin indices
         search_end = None
@@ -317,7 +317,7 @@ class SD(Loggable):
         # return
         if len(candidates) < 1:
             self.log(u"No candidates found")
-            return 0.0
+            return TimeValue("0.000")
         self.log(u"Candidates:")
         for candidate in candidates:
             self.log([u"  Value: %.6f Begin Time: %.3f Min Index: %d", candidate[0], candidate[1] * mws, candidate[2]])
