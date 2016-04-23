@@ -13,6 +13,11 @@ v1.5.1 (2016-??-??)
 #. Moved import statements for ``lxml`` and ``bs4`` inside the functions actually using them (for future purposes)
 #. Fixed a numerical issue in ``dtw.py`` by explicit stating ``dtype=int`` in ``centers`` initializer, pure Python code only
 
+v1.5.0.3 (2016-04-23)
+---------------------
+
+#. Fix an issue in ``sd`` with ``float`` returned instead of ``TimeValue``
+
 v1.5.0.2 (2016-04-09)
 ---------------------
 
