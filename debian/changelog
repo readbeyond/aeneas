@@ -1,3 +1,20 @@
+aeneas (1.5.0) stable; urgency=medium
+
+  * Rewritten vad.py, sd.py, adjustboundaryalgorithm.py
+  * Arbitrary precision time values via timevalue.py
+  * Multiple TTS wrappers, including eSpeak, Festival, Nuance TTS APIs
+  * Possibility of using custom, user-defined TTS wrappers
+  * Possibility of using cew in a separate subprocess to work around a bug in eSpeak C API
+  * Plot waveforms with plotter.py and aeneas.tools.plot_waveform
+  * Initial support for multilevel input files and sync maps
+  * Added AUD and EAF sync map formats
+  * More efficient I/O of WAVE files in Python code
+  * Improvements to Python C API code
+  * Bug fixes and improvements in several Python modules
+  * Better documentation
+
+ -- alberto <alberto@nievo>  Sat, 28 May 2016 20:37:21 +0200
+
 aeneas (1.4.1) stable; urgency=medium
 
   * Added DFXP sync map output format, alias for TTML
