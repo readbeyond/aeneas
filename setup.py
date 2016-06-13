@@ -34,7 +34,10 @@ IS_LINUX = (os.name == "posix") and (os.uname()[0] == "Linux")
 
 SHORT_DESCRIPTION = "aeneas is a Python/C library and a set of tools to automagically synchronize audio and text (aka forced alignment)"
 
-LONG_DESCRIPTION = io.open("README.rst", "r", encoding="utf-8").read()
+try:
+    LONG_DESCRIPTION = io.open("README.rst", "r", encoding="utf-8").read()
+except:
+    LONG_DESCRIPTION = SHORT_DESCRIPTION
 
 INCLUDE_DIRS = [misc_util.get_numpy_include_dirs()]
 

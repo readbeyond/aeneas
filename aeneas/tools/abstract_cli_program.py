@@ -253,7 +253,7 @@ class AbstractCLIProgram(Loggable):
             self.print_generic(u"%s v%s" % (self.NAME, __version__))
         return self.exit(self.HELP_EXIT_CODE)
 
-    def run(self, arguments):
+    def run(self, arguments, show_help=True):
         """
         Program entry point.
 
@@ -264,31 +264,35 @@ class AbstractCLIProgram(Loggable):
 
         :param arguments: the list of arguments
         :type  arguments: list
+        :param show_help: if ``False``, do not show help on ``-h`` and ``--help``
+        :type  show_help: bool
         :rtype: int
         """
         # convert arguments into Unicode strings
         if self.use_sys:
             # check that sys.stdin.encoding and sys.stdout.encoding are set to utf-8
-            if sys.stdin.encoding not in ["UTF-8", "UTF8"]:
-                self.print_warning(u"The default input encoding is not UTF-8.")
-                self.print_warning(u"You might want to set 'PYTHONIOENCODING=UTF-8' in your shell.")
-            if sys.stdout.encoding not in ["UTF-8", "UTF8"]:
-                self.print_warning(u"The default output encoding is not UTF-8.")
-                self.print_warning(u"You might want to set 'PYTHONIOENCODING=UTF-8' in your shell.")
+            if not gf.FROZEN:
+                if sys.stdin.encoding not in ["UTF-8", "UTF8"]:
+                    self.print_warning(u"The default input encoding is not UTF-8.")
+                    self.print_warning(u"You might want to set 'PYTHONIOENCODING=UTF-8' in your shell.")
+                if sys.stdout.encoding not in ["UTF-8", "UTF8"]:
+                    self.print_warning(u"The default output encoding is not UTF-8.")
+                    self.print_warning(u"You might want to set 'PYTHONIOENCODING=UTF-8' in your shell.")
             # decode using sys.stdin.encoding
             args = [gf.safe_unicode_stdin(arg) for arg in arguments]
         else:
             # decode using utf-8 (but you should pass Unicode strings as parameters anyway)
             args = [gf.safe_unicode(arg) for arg in arguments]
 
-        if u"-h" in args:
-            return self.print_help(short=True)
+        if show_help:
+            if u"-h" in args:
+                return self.print_help(short=True)
 
-        if u"--help" in args:
-            return self.print_help(short=False)
+            if u"--help" in args:
+                return self.print_help(short=False)
 
-        if u"--version" in args:
-            return self.print_name_version()
+            if u"--version" in args:
+                return self.print_name_version()
 
         # store formal arguments
         self.formal_arguments_raw = arguments
@@ -328,7 +332,7 @@ class AbstractCLIProgram(Loggable):
                 self.log_file_path = log_path
 
         # if no actual arguments left, print help
-        if len(args) < 1:
+        if (len(args) < 1) and (show_help):
             return self.print_help(short=True)
 
         # store actual arguments

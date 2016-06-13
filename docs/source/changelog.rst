@@ -1,10 +1,12 @@
 Changelog
 =========
 
-v1.5.1 (2016-??-??)
+v1.5.1 (2016-06-??)
 -------------------
 
 #. Added ``invoke`` parameter to ``AbstractCLIProgram`` constructor and modified tools consequently
+#. Added ``aeneas.tools.hydra`` tool to run all other aeneas.tools.* scripts
+#. Added ``pyinstaller-*`` configuration files for ``pyinstaller``
 #. Added rconf ``CDTW``, ``CEW``, and ``CMFCC`` parameters to prevent running a single C extension
 #. Added ``PPN_TASK_OS_FILE_EAF_AUDIO_REF`` to specify audio file URI for EAF output sync maps
 #. Added function to output current date and time in EAF output sync maps

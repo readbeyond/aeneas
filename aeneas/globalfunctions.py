@@ -33,13 +33,23 @@ __status__ = "Production"
 
 ### RUNTIME CONSTANTS ###
 
+# ANSI codes to color output in terminal
 ANSI_END = u"\033[0m"
 ANSI_ERROR = u"\033[91m"
 ANSI_OK = u"\033[92m"
 ANSI_WARNING = u"\033[93m"
+
+# timing regex patterns
 HHMMSS_MMM_PATTERN = re.compile(r"([0-9]*):([0-9]*):([0-9]*)\.([0-9]*)")
 HHMMSS_MMM_PATTERN_COMMA = re.compile(r"([0-9]*):([0-9]*):([0-9]*),([0-9]*)")
+
+# True if running from a frozen binary (e.g., compiled with pyinstaller)
+FROZEN = getattr(sys, "frozen", False)
+
+# True if running under Python 2
 PY2 = (sys.version_info[0] == 2)
+
+
 
 ### COMMON FUNCTIONS ###
 
@@ -933,9 +943,14 @@ def delete_file(handler, path):
 def relative_path(path, from_file):
     """
     Return the relative path of a file or directory, specified
-    as ``path`` relative to (the parent directory of) ``from file``.
+    as ``path`` relative to (the parent directory of) ``from_file``.
+
+    This method is intented to be called with ``__file__``
+    as second argument.
 
     The returned path is relative to the current working directory.
+
+    If ``path`` is ``None``, return ``None``.
 
     Example: ::
 
@@ -961,6 +976,8 @@ def absolute_path(path, from_file):
 
     This method is intented to be called with ``__file__``
     as second argument.
+
+    If ``path`` is ``None``, return ``None``.
 
     Example: ::
 
@@ -1106,16 +1123,22 @@ def safe_unicode_stdin(string):
     Safely convert the given string to a Unicode string,
     decoding using ``sys.stdin.encoding`` if needed.
 
+    If running from a frozen binary, ``utf-8`` encoding is assumed.
+
     :param variant string: the byte string or Unicode string to convert
     :rtype: string
     """
     if string is None:
         return None
     if is_bytes(string):
+        if FROZEN:
+            return string.decode("utf-8")
         try:
             return string.decode(sys.stdin.encoding)
         except UnicodeDecodeError:
             return string.decode(sys.stdin.encoding, "replace")
+        except:
+            return string.decode("utf-8")
     return string
 
 def object_to_unicode(obj):
@@ -1139,6 +1162,17 @@ def object_to_bytes(obj):
     if PY2:
         return str(obj)
     return bytes(obj, encoding="utf-8")
+
+def bundle_directory():
+    """
+    Return the absolute path of the bundle directory
+    if running from a frozen binary; otherwise return ``None``.
+
+    :rtype: string
+    """
+    if FROZEN:
+        return sys._MEIPASS
+    return None
 
 
 
