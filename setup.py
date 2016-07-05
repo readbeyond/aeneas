@@ -62,9 +62,8 @@ EXTENSION_CMFCC = Extension(
 #EXTENSIONS = [EXTENSION_CDTW, EXTENSION_CMFCC, EXTENSION_CWAVE]
 
 EXTENSIONS = [EXTENSION_CDTW, EXTENSION_CMFCC]
-if IS_LINUX:
-    # cew is available only for Linux at the moment
-    EXTENSIONS.append(EXTENSION_CEW)
+
+EXTENSIONS.append(EXTENSION_CEW)
 
 setup(
     name="aeneas",
