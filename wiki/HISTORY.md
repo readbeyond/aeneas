@@ -50,3 +50,7 @@ supporting both Python 2.7 and 3.4 or later
 with faster C extension, multilevel alignment,
 custom TTS support, and more
 
+**July 2016**: release of v1.5.1,
+with cew C extension support for Mac OS X,
+and installers for Mac OS X and Windows
+

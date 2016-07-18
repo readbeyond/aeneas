@@ -31,6 +31,7 @@ except ImportError:
     sys.exit(1)
 
 IS_LINUX = (os.name == "posix") and (os.uname()[0] == "Linux")
+IS_OSX = (os.name == "posix") and (os.uname()[0] == "Darwin")
 
 SHORT_DESCRIPTION = "aeneas is a Python/C library and a set of tools to automagically synchronize audio and text (aka forced alignment)"
 
@@ -65,8 +66,8 @@ EXTENSION_CMFCC = Extension(
 #EXTENSIONS = [EXTENSION_CDTW, EXTENSION_CMFCC, EXTENSION_CWAVE]
 
 EXTENSIONS = [EXTENSION_CDTW, EXTENSION_CMFCC]
-if IS_LINUX:
-    # cew is available only for Linux at the moment
+if IS_LINUX or IS_OSX:
+    # cew is available only for Linux and Mac OS X at the moment
     EXTENSIONS.append(EXTENSION_CEW)
 
 setup(

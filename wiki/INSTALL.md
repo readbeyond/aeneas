@@ -66,6 +66,14 @@ you can install all the dependencies by downloading and running
 
 ## Windows
 
+### All-in-one Installer
+
+[SIL International](http://www.sil.org) developed an handy all-in-one installer,
+providing **aeneas** and all the required dependencies,
+that you can download from [this page](https://github.com/sillsdev/aeneas-installer/releases).
+
+### Manual Procedure
+
 Please follow the installation instructions
 contained in the
 ["Using aeneas for Audio-Text Synchronization" PDF](http://software.sil.org/scriptureappbuilder/resources/),
@@ -78,6 +86,14 @@ with Python 2.7, since compiling the C extensions on Python 3.4 or 3.5
 requires [a complex setup process](http://stackoverflow.com/questions/29909330/microsoft-visual-c-compiler-for-python-3-4).
 
 ## Mac OS X
+
+### All-in-one Installer
+
+[SIL International](http://www.sil.org) developed an handy all-in-one installer,
+providing **aeneas** and all the required dependencies,
+that you can download from [this page](https://github.com/sillsdev/aeneas-installer/releases).
+
+### Manual Procedure
 
 Feel free to jump to step 9 if you already have
 `python`, `ffmpeg`/`ffprobe` and `espeak` installed.
@@ -108,6 +124,12 @@ Feel free to jump to step 9 if you already have
     $ brew install espeak
     $ brew install ffmpeg
     ```
+
+    **NOTE**: if you installed ``espeak`` before 2016-07-18,
+    please uninstall it and install it again.
+    This way you will benefit from the ``aeneas.cew`` extension,
+    which relies on the presence of the ``libespeak`` shared library in your system,
+    added to the ``brew`` formula on that date.
 
 5. Install Python:
 

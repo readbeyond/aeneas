@@ -343,6 +343,9 @@ packaging aeneas as a Debian/Ubuntu `.deb`.
 **Firat Ozdemir** contributed the `finetuneas`
 HTML/JS code for fine tuning sync maps in the browser.
 
+**Daniel Bair**, **Chris Hubbard**, and **Richard Margetts**
+packaged the installers for Mac OS X and Windows.
+
 All the mighty
 [GitHub contributors](https://github.com/readbeyond/aeneas/graphs/contributors),
 and the members of the
