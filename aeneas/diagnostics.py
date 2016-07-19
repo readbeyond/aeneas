@@ -227,16 +227,8 @@ class Diagnostics(object):
 
         Return ``True`` on failure and ``False`` on success.
 
-        For those OSes where ``cew`` is not available,
-        print a warning and return ``False`` (success).
-
         :rtype: bool
         """
-        if not (gf.is_linux() or gf.is_osx()):
-            gf.print_warning(u"aeneas.cew     NOT AVAILABLE")
-            gf.print_info(u"  The Python C Extension cew is not available for your OS")
-            gf.print_info(u"  You can still run aeneas but it will be a bit slower (than Linux)")
-            return False
         if gf.can_run_c_extension("cew"):
             gf.print_success(u"aeneas.cew     COMPILED")
             return False

@@ -15,7 +15,7 @@ v1.5.1 (2016-07-??)
 #. Removed unused keys from ``JobConfiguration`` and related source files
 #. Moved import statements for ``lxml`` and ``bs4`` inside the functions actually using them (better isolation for future purposes)
 #. Fixed a numerical issue in ``dtw.py`` by explicit stating ``dtype=int`` in ``centers`` initializer, pure Python code only
-#. Extension ``cew`` compiled in both Linux and Mac OS X
+#. Extension ``cew`` compiled for Mac OS X and Windows
 #. Added links to installers for Mac OS X and Windows in the documentation
 
 v1.5.0.3 (2016-04-23)

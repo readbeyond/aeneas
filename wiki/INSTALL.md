@@ -85,6 +85,32 @@ Please note that on Windows it is recommended to run **aeneas**
 with Python 2.7, since compiling the C extensions on Python 3.4 or 3.5
 requires [a complex setup process](http://stackoverflow.com/questions/29909330/microsoft-visual-c-compiler-for-python-3-4).
 
+#### Solving Errors When Compiling ``cew``
+
+Compilation of the Python C extension ``cew`` on Windows is experimental,
+and it requires the following files:
+
+* ``espeak_sapi.dll`` from the eSpeak installation directory must be copied into
+``C:\Windows\System32\espeak.dll`` (**NOTE: file renamed!**), and
+* ``espeak.lib`` from the ``thirdparty/`` directory of this repository must be copied into
+``PYTHONDIR\libs\espeak.lib``, where ``PYTHONDIR`` is the directory where Python is installed,
+for example ``C:\Python27``.
+
+The ``setup.py`` script will attempt to identify and/or copy these two files,
+but it might fail if you installed eSpeak in a non-standard location or
+if you are not running with admin privileges.
+In both cases, to install **aeneas** with ``cew`` compiled,
+you can manually copy the above two files into their expected locations listed above,
+and run the **aeneas** setup again.
+
+If something goes wrong with ``cew`` while installing **aeneas**,
+you can disable the C extension ``cew``
+specifying the ``--without-cew`` flag:
+
+```bash
+python setup.py build_ext --inplace --without-cew
+```
+
 ## Mac OS X
 
 ### All-in-one Installer
@@ -126,9 +152,10 @@ Feel free to jump to step 9 if you already have
     ```
 
     **NOTE**: if you installed ``espeak`` before 2016-07-18,
-    please uninstall it and install it again.
+    please update brew and upgrade the espeak formula
+    (``brew update && brew upgrade --cleanup espeak``).
     This way you will benefit from the ``aeneas.cew`` extension,
-    which relies on the presence of the ``libespeak`` shared library in your system,
+    which requires the presence of the ``libespeak`` shared library in your system,
     added to the ``brew`` formula on that date.
 
 5. Install Python:
@@ -180,5 +207,24 @@ Feel free to jump to step 9 if you already have
     $ sudo pip install aeneas
     (Optional: $ sudo pip install pafy)
     ```
+
+#### Solving Errors When Compiling ``cew``
+
+Compilation of the Python C extension ``cew`` on Mac OS X is experimental,
+and it requires the new brew formula installing ``libespeak``, the library version of eSpeak.
+You can get it with:
+
+```bash
+brew update && brew upgrade --cleanup espeak
+```
+
+If something goes wrong with ``cew`` while installing **aeneas**,
+you can disable the C extension ``cew``
+specifying the ``--without-cew`` flag:
+
+```bash
+python setup.py build_ext --inplace --without-cew
+```
+
 
 
