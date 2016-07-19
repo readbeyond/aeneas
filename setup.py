@@ -96,6 +96,7 @@ def prepare_cew_for_windows():
         print("[WARN] Unexpected exception while preparing cew: %s" % e)
     return False
 
+# try importing numpy: if it fails, warn user and exit
 try:
     from numpy import get_include
     from numpy.distutils import misc_util
@@ -105,22 +106,47 @@ except ImportError:
     print("[INFO] $ sudo pip install numpy")
     sys.exit(1)
 
-WITHOUT_CEW = "--without-cew" in sys.argv
-if WITHOUT_CEW:
-    sys.argv.remove("--without-cew")
+# package version, must be unique for each PyPI upload
+PACKAGE_VERSION = "1.5.1.0"
+
+# check whether the user set additional parameters using environment variables
+# NOTE this should be done by subclassing the setuptools Distribution object
+#      but for now using environment variables is good enough
+WITHOUT_CEW = os.getenv("AENEAS_WITH_CEW", "True") not in ["TRUE", "True", "true", "Yes", "yes", "1"]
+FORCE_CEW = os.getenv("AENEAS_FORCE_CEW", "False") in ["TRUE", "True", "true", "Yes", "yes", "1"]
+
+# get platform
 IS_LINUX = (os.name == "posix") and (os.uname()[0] == "Linux")
 IS_OSX = (os.name == "posix") and (os.uname()[0] == "Darwin")
 IS_WINDOWS = os.name == "nt"
 
+# get human-readable descriptions
 SHORT_DESCRIPTION = "aeneas is a Python/C library and a set of tools to automagically synchronize audio and text (aka forced alignment)"
-
 try:
     LONG_DESCRIPTION = io.open("README.rst", "r", encoding="utf-8").read()
 except:
     LONG_DESCRIPTION = SHORT_DESCRIPTION
 
+# to compile cdtw and cmfcc, we need to include the NumPy dirs
 INCLUDE_DIRS = [misc_util.get_numpy_include_dirs()]
 
+# scripts to be installed globally
+# on Linux and Mac OS X, use the file without extension
+# on Windows, use the copy with .py extension
+SCRIPTS = [
+    "bin/aeneas_check_setup",
+    "bin/aeneas_convert_syncmap",
+    "bin/aeneas_download",
+    "bin/aeneas_execute_job",
+    "bin/aeneas_execute_task",
+    "bin/aeneas_plot_waveform",
+    "bin/aeneas_synthesize_text",
+    "bin/aeneas_validate",
+]
+if IS_WINDOWS:
+    SCRIPTS = [s + ".py" for s in SCRIPTS]
+
+# prepare Extension objects
 EXTENSION_CDTW = Extension(
     "aeneas.cdtw.cdtw",
     ["aeneas/cdtw/cdtw_py.c", "aeneas/cdtw/cdtw_func.c", "aeneas/cint/cint.c"],
@@ -144,11 +170,17 @@ EXTENSION_CMFCC = Extension(
 #)
 #EXTENSIONS = [EXTENSION_CDTW, EXTENSION_CMFCC, EXTENSION_CWAVE]
 
+# append or ignore cew extension as requested
 EXTENSIONS = [EXTENSION_CDTW, EXTENSION_CMFCC]
 if WITHOUT_CEW:
     print("[INFO] ******************************************************************")
-    print("[INFO] The user specified the --without-cew switch: not building cew")
+    print("[INFO] The user specified AENEAS_WITH_CEW=False: not building cew")
     print("[INFO] ******************************************************************")
+elif FORCE_CEW:
+    print("[INFO] ***************************************************************************")
+    print("[INFO] The user specified AENEAS_FORCE_CEW=True: building cew without checks")
+    print("[INFO] ***************************************************************************")
+    EXTENSIONS.append(EXTENSION_CEW)
 else:
     if IS_LINUX:
         EXTENSIONS.append(EXTENSION_CEW)
@@ -158,14 +190,14 @@ else:
         print("[INFO] Before installing aeneas with cew, you must run:")
         print("[INFO] $ brew update && brew upgrade --cleanup espeak")
         print("[INFO] to run the new brew formula installing libespeak, the library version of espeak.")
-        print("[INFO] If you experience problems, disable cew compilation specifying the --without-cew switch.")
+        print("[INFO] If you experience problems, disable cew compilation specifying AENEAS_WITH_CEW=False.")
         print("[INFO] Please see the aeneas installation documentation for details.")
         print("[INFO] *********************************************************************************************")
         EXTENSIONS.append(EXTENSION_CEW)
     elif IS_WINDOWS:
         print("[INFO] *********************************************************************************************")
         print("[INFO] Compiling C extension cew on Windows is experimental.")
-        print("[INFO] If you experience problems, disable cew compilation specifying the --without-cew switch.")
+        print("[INFO] If you experience problems, disable cew compilation specifying AENEAS_WITH_CEW=False.")
         print("[INFO] Please see the aeneas installation documentation for details.")
         print("[INFO] *********************************************************************************************")
         if prepare_cew_for_windows():
@@ -175,6 +207,7 @@ else:
     else:
         print("[INFO] Extension cew is not available for your OS")
 
+# finally set the aeneas module up
 setup(
     name="aeneas",
     packages=[
@@ -195,7 +228,7 @@ setup(
         "aeneas.extra": ["*.md"],
         "aeneas.tools": ["res/*", "*.md"]
     },
-    version="1.5.1.0",
+    version=PACKAGE_VERSION,
     description=SHORT_DESCRIPTION,
     author="Alberto Pettarin",
     author_email="alberto@albertopettarin.it",
@@ -214,16 +247,7 @@ setup(
         "pillow": ["Pillow>=3.1.1"],
         "requests": ["requests>=2.9.1"],
     },
-    scripts=[
-        "bin/aeneas_check_setup",
-        "bin/aeneas_convert_syncmap",
-        "bin/aeneas_download",
-        "bin/aeneas_execute_job",
-        "bin/aeneas_execute_task",
-        "bin/aeneas_plot_waveform",
-        "bin/aeneas_synthesize_text",
-        "bin/aeneas_validate",
-    ],
+    scripts=SCRIPTS,
     keywords=[
         "AUD",
         "CSV",

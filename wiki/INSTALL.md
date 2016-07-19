@@ -105,10 +105,18 @@ and run the **aeneas** setup again.
 
 If something goes wrong with ``cew`` while installing **aeneas**,
 you can disable the C extension ``cew``
-specifying the ``--without-cew`` flag:
+specifying the ``AENEAS_WITH_CEW=False`` environment variable:
 
 ```bash
-python setup.py build_ext --inplace --without-cew
+set AENEAS_WITH_CEW=False
+python setup.py build_ext --inplace
+```
+
+or
+
+```bash
+set AENEAS_WITH_CEW=False
+pip install aeneas
 ```
 
 ## Mac OS X
@@ -220,10 +228,16 @@ brew update && brew upgrade --cleanup espeak
 
 If something goes wrong with ``cew`` while installing **aeneas**,
 you can disable the C extension ``cew``
-specifying the ``--without-cew`` flag:
+specifying the ``AENEAS_WITH_CEW=False`` environment variable:
 
 ```bash
-python setup.py build_ext --inplace --without-cew
+AENEAS_WITH_CEW=False python setup.py build_ext --inplace
+```
+
+or
+
+```bash
+AENEAS_WITH_CEW=False pip install aeneas
 ```
 
 

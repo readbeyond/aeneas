@@ -776,12 +776,7 @@ def can_run_c_extension(name=None):
     elif name == "cew":
         return can_run_cew()
     else:
-        if is_linux():
-            # Linux
-            return can_run_cdtw() and can_run_cmfcc() and can_run_cew()
-        else:
-            # no cew for other OSes
-            return can_run_cdtw() and can_run_cmfcc()
+        return can_run_cdtw() and can_run_cmfcc() and can_run_cew()
 
 def run_c_extension_with_fallback(
         log_function,
