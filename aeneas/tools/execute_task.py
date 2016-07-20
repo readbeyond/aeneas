@@ -11,6 +11,7 @@ from __future__ import print_function
 import sys
 
 from aeneas.adjustboundaryalgorithm import AdjustBoundaryAlgorithm
+from aeneas.audiofile import AudioFile
 from aeneas.downloader import Downloader
 from aeneas.espeakwrapper import ESPEAKWrapper
 from aeneas.executetask import ExecuteTask
@@ -37,7 +38,7 @@ __copyright__ = """
     Copyright 2015-2016, Alberto Pettarin (www.albertopettarin.it)
     """
 __license__ = "GNU AGPL 3"
-__version__ = "1.5.0"
+__version__ = "1.5.1"
 __email__ = "aeneas@readbeyond.it"
 __status__ = "Production"
 
@@ -525,6 +526,13 @@ class ExecuteTaskCLI(AbstractCLIProgram):
                 self.print_error(u"An unexpected error occurred while downloading audio from YouTube:")
                 self.print_error(u"%s" % exc)
                 return self.ERROR_EXIT_CODE
+        else:
+            audio_extension = gf.file_extension(audio_file_path)
+            if audio_extension.lower() not in AudioFile.FILE_EXTENSIONS:
+                self.print_warning(u"Your audio file path has extension '%s', which is uncommon for an audio file." % audio_extension)
+                self.print_warning(u"Attempting at executing your Task anyway.")
+                self.print_warning(u"If it fails, you might have swapped the first two arguments.")
+                self.print_warning(u"The audio file path should be the first argument, the text file path the second.")
 
         try:
             self.print_info(u"Creating task...")
@@ -562,6 +570,7 @@ class ExecuteTaskCLI(AbstractCLIProgram):
             try:
                 parameters = {}
                 parameters[gc.PPN_TASK_OS_FILE_FORMAT] = task.configuration["o_format"]
+                parameters[gc.PPN_TASK_OS_FILE_EAF_AUDIO_REF] = task.configuration["o_eaf_audio_ref"]
                 parameters[gc.PPN_TASK_OS_FILE_SMIL_AUDIO_REF] = task.configuration["o_smil_audio_ref"]
                 parameters[gc.PPN_TASK_OS_FILE_SMIL_PAGE_REF] = task.configuration["o_smil_page_ref"]
                 self.print_info(u"Creating output HTML file...")
@@ -617,15 +626,15 @@ class ExecuteTaskCLI(AbstractCLIProgram):
                 msg.append(u"Example %d (%s)" % (i, example[u"description"]))
                 # NOTE too verbose now that we have dozens of examples
                 #msg.append(u"  $ CONFIG_STRING=\"%s\"" % (example[u"config"]))
-                #msg.append(u"  $ python -m aeneas.tools.%s %s %s \"$CONFIG_STRING\" %s %s" % (
-                #    self.NAME,
+                #msg.append(u"  $ %s %s %s \"$CONFIG_STRING\" %s %s" % (
+                #    self.invoke,
                 #    example[u"audio"],
                 #    example[u"text"],
                 #    example[u"syncmap"],
                 #    example[u"options"]
                 #))
                 #msg.append(u"  or")
-                msg.append(u"  $ python -m aeneas.tools.%s %s" % (self.NAME, key))
+                msg.append(u"  $ %s %s" % (self.invoke, key))
                 msg.append(u"")
                 i += 1
         self.print_generic(u"\n" + u"\n".join(msg) + u"\n")

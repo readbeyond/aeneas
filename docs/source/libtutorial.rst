@@ -424,5 +424,9 @@ Resources needed to run the live examples,
 for example audio and text files,
 are located in the ``aeneas/tools/res/`` directory.
 
+The module also contains the ``aeneas.tools.hydra`` script,
+which can run any of the tools listed above.
+Run it without arguments to get its manual.
+
 
 

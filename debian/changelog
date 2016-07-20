@@ -1,3 +1,14 @@
+aeneas (1.5.1) stable; urgency=medium
+
+  * Better aeneas.tools.*
+  * Added rconf parameters to prevent running a single C extension
+  * Better EAF output
+  * Code improvements
+  * Extension cew compiled for Mac OS X and Windows
+  * Added links to installers for Mac OS X and Windows in the documentation
+
+ -- alberto <alberto@nievo>  Mon, 18 Jul 2016 10:21:51 +0200
+
 aeneas (1.5.0) stable; urgency=medium
 
   * Rewritten vad.py, sd.py, adjustboundaryalgorithm.py

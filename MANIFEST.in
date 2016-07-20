@@ -14,6 +14,7 @@ prune docs/build
 include CHANGELOG
 include LICENSE
 recursive-include licenses *
+include output/.gitignore
 include README.md
 include README.rst
 include requirements.txt
