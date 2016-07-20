@@ -19,7 +19,7 @@
 
 **Notes**
 (1) The ``cew`` Python C extension to speed up text synthesis
-is available only on Linux and Mac OS X at the moment.
+is available only on Linux, Mac OS X, and Windows 32 bit at the moment.
 (2) On Windows and Python 3.4/3.5, compiling the Python C extensions
 is quite complex; however, running **aeneas** in pure Python mode
 has been confirmed to work.

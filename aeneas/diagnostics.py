@@ -31,8 +31,6 @@ __version__ = "1.5.1"
 __email__ = "aeneas@readbeyond.it"
 __status__ = "Production"
 
-SETUP_COMMAND = u"'python setup.py build_ext --inplace'"
-
 class Diagnostics(object):
     """
     Check whether the setup of ``aeneas`` was successful.
@@ -200,7 +198,7 @@ class Diagnostics(object):
             return False
         gf.print_warning(u"aeneas.cdtw    NOT COMPILED")
         gf.print_info(u"  You can still run aeneas but it will be significantly slower")
-        gf.print_info(u"  To compile the cdtw module, run %s" % SETUP_COMMAND)
+        gf.print_info(u"  Please refer to the installation documentation for details")
         return True
 
     @classmethod
@@ -217,7 +215,7 @@ class Diagnostics(object):
             return False
         gf.print_warning(u"aeneas.cmfcc   NOT COMPILED")
         gf.print_info(u"  You can still run aeneas but it will be significantly slower")
-        gf.print_info(u"  To compile the cmfcc module, run %s" % SETUP_COMMAND)
+        gf.print_info(u"  Please refer to the installation documentation for details")
         return True
 
     @classmethod
@@ -234,7 +232,7 @@ class Diagnostics(object):
             return False
         gf.print_warning(u"aeneas.cew     NOT COMPILED")
         gf.print_info(u"  You can still run aeneas but it will be a bit slower")
-        gf.print_info(u"  To compile the cew module, run %s" % SETUP_COMMAND)
+        gf.print_info(u"  Please refer to the installation documentation for details")
         return True
 
     @classmethod

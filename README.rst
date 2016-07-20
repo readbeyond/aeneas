@@ -5,7 +5,7 @@ aeneas
 synchronize audio and text (aka forced alignment).
 
 -  Version: 1.5.1.0
--  Date: 2016-07-??
+-  Date: 2016-07-25
 -  Developed by: `ReadBeyond <http://www.readbeyond.it/>`__
 -  Lead Developer: `Alberto Pettarin <http://www.albertopettarin.it/>`__
 -  License: the GNU Affero General Public License Version 3 (AGPL v3)
@@ -100,6 +100,16 @@ modern OS (Linux, Mac OS X, Windows).
 Installation
 ~~~~~~~~~~~~
 
+All-in-one installers are available for Mac OS X and Windows, and a Bash
+script for deb-based Linux distributions (Debian, Ubuntu) is provided in
+this repository. It is also possible to download a VirtualBox+Vagrant
+virtual machine. Please see the `INSTALL
+file <https://github.com/readbeyond/aeneas/blob/master/wiki/INSTALL.md>`__
+for detailed, step-by-step installation procedures for different
+operating systems.
+
+The generic OS-independent procedure is simple:
+
 1. Install `Python <https://python.org/>`__ (2.7.x preferred),
    `FFmpeg <https://www.ffmpeg.org/>`__, and
    `eSpeak <http://espeak.sourceforge.net/>`__
@@ -114,18 +124,14 @@ Installation
        pip install numpy
        pip install aeneas
 
-See the `INSTALL
-file <https://github.com/readbeyond/aeneas/blob/master/wiki/INSTALL.md>`__
-for detailed, step-by-step procedures for Linux, OS X, and Windows.
+4. To **check** whether you installed **aeneas** correctly, run:
+
+``bash     python -m aeneas.diagnostics``
 
 Usage
 -----
 
-1. To **check** whether you installed **aeneas** correctly, run:
-
-``bash     python -m aeneas.diagnostics``
-
-2. Run without arguments to get the **usage message**:
+1. Run without arguments to get the **usage message**:
 
    .. code:: bash
 
@@ -140,7 +146,7 @@ Usage
        python -m aeneas.tools.execute_task --examples
        python -m aeneas.tools.execute_task --examples-all
 
-3. To **compute a synchronization map** ``map.json`` for a pair
+2. To **compute a synchronization map** ``map.json`` for a pair
    (``audio.mp3``, ``text.txt`` in
    `plain <http://www.readbeyond.it/aeneas/docs/textfile.html#aeneas.textfile.TextFileFormat.PLAIN>`__
    text format), you can run:
@@ -178,7 +184,7 @@ specifies the parameters controlling the I/O formats and the processing
 options for the task. Consult the
 `documentation <http://www.readbeyond.it/aeneas/docs/>`__ for details.
 
-4. If you have several tasks to process, you can create a **job
+3. If you have several tasks to process, you can create a **job
    container** to batch process them:
 
    .. code:: bash
@@ -230,16 +236,17 @@ Supported Features
 -  Output sync map formats: AUD, CSV, EAF, JSON, SMIL, SRT, SSV, SUB,
    TSV, TTML, TXT, VTT, XML
 -  Tested languages: ARA, BUL, CAT, CYM, CES, DAN, DEU, ELL, ENG, EPO,
-   EST, FAS, FIN, FRA, GLE, GRC, HRV, HUN, ISL, ITA, LAT, LAV, LIT, NLD,
-   NOR, RON, RUS, POL, POR, SLK, SPA, SRP, SWA, SWE, TUR, UKR
+   EST, FAS, FIN, FRA, GLE, GRC, HRV, HUN, ISL, ITA, JPN, LAT, LAV, LIT,
+   NLD, NOR, RON, RUS, POL, POR, SLK, SPA, SRP, SWA, SWE, TUR, UKR
 -  MFCC and DTW computed via Python C extensions to reduce the
    processing time
--  On Linux, eSpeak called via a Python C extension for faster audio
-   synthesis
--  Batch processing of multiple audio/text pairs
 -  Several built-in TTS engine wrappers: eSpeak (default, FLOSS),
    Festival (FLOSS), Nuance TTS API (commercial)
--  Use custom TTS engine wrappers besides the built-in ones
+-  Default TTS (eSpeak) called via a Python C extension for fast audio
+   synthesis
+-  A custom, user-provided TTS engine Python wrapper can be used instead
+   of the built-in ones (included example for speect)
+-  Batch processing of multiple audio/text pairs
 -  Download audio from a YouTube video
 -  In multilevel mode, recursive alignment from paragraph to sentence to
    word level
@@ -259,9 +266,10 @@ Limitations and Missing Features
 
 -  Audio should match the text: large portions of spurious text or audio
    might produce a wrong sync map
--  Audio is assumed to be spoken: not suitable/YMMV for song captioning
+-  Audio is assumed to be spoken: not suitable for song captioning, YMMV
+   for CC applications
 -  No protection against memory trashing if you feed extremely long
-   audio files
+   audio files (>1.5h per single audio file)
 -  `Open issues <https://github.com/readbeyond/aeneas/issues>`__
 
 License
@@ -362,11 +370,11 @@ asynchronous usage.
 **Chris Hubbard** prepared the files for packaging aeneas as a
 Debian/Ubuntu ``.deb``.
 
-**Firat Ozdemir** contributed the ``finetuneas`` HTML/JS code for fine
-tuning sync maps in the browser.
-
 **Daniel Bair**, **Chris Hubbard**, and **Richard Margetts** packaged
 the installers for Mac OS X and Windows.
+
+**Firat Ozdemir** contributed the ``finetuneas`` HTML/JS code for fine
+tuning sync maps in the browser.
 
 All the mighty `GitHub
 contributors <https://github.com/readbeyond/aeneas/graphs/contributors>`__,
