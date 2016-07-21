@@ -24,9 +24,9 @@ __status__ = "Production"
 
 def prepare_cew_for_windows():
     """
-    Copy files needed to compile the C extension cew on Windows.
+    Copy files needed to compile the ``cew`` Python C extension on Windows.
 
-    In a glorious day, when Windows will offer a decent support
+    A glorious day, when Microsoft will offer a decent support
     for Python and shared libraries,
     all this mess will be unnecessary and it should be removed.
     May that day come soon.
@@ -110,15 +110,15 @@ except ImportError:
 PACKAGE_VERSION = "1.5.1.0"
 
 # check whether the user set additional parameters using environment variables
-# NOTE this should be done by subclassing the setuptools Distribution object
+# NOTE by the book this should be done by subclassing the setuptools Distribution object
 #      but for now using environment variables is good enough
-WITHOUT_CEW = os.getenv("AENEAS_WITH_CEW", "True") not in ["TRUE", "True", "true", "Yes", "yes", "1"]
-FORCE_CEW = os.getenv("AENEAS_FORCE_CEW", "False") in ["TRUE", "True", "true", "Yes", "yes", "1"]
+WITHOUT_CEW = os.getenv("AENEAS_WITH_CEW", "True") not in ["TRUE", "True", "true", "YES", "Yes", "yes", "1", 1]
+FORCE_CEW = os.getenv("AENEAS_FORCE_CEW", "False") in ["TRUE", "True", "true", "YES", "Yes", "yes", "1", 1]
 
 # get platform
 IS_LINUX = (os.name == "posix") and (os.uname()[0] == "Linux")
 IS_OSX = (os.name == "posix") and (os.uname()[0] == "Darwin")
-IS_WINDOWS = os.name == "nt"
+IS_WINDOWS = (os.name == "nt")
 
 # get human-readable descriptions
 SHORT_DESCRIPTION = "aeneas is a Python/C library and a set of tools to automagically synchronize audio and text (aka forced alignment)"
@@ -132,7 +132,7 @@ INCLUDE_DIRS = [misc_util.get_numpy_include_dirs()]
 
 # scripts to be installed globally
 # on Linux and Mac OS X, use the file without extension
-# on Windows, use the copy with .py extension
+# on Windows, use the file with .py extension
 SCRIPTS = [
     "bin/aeneas_check_setup",
     "bin/aeneas_convert_syncmap",
@@ -173,33 +173,36 @@ EXTENSION_CMFCC = Extension(
 # append or ignore cew extension as requested
 EXTENSIONS = [EXTENSION_CDTW, EXTENSION_CMFCC]
 if WITHOUT_CEW:
-    print("[INFO] ******************************************************************")
+    print("[INFO] **********************************************************")
     print("[INFO] The user specified AENEAS_WITH_CEW=False: not building cew")
-    print("[INFO] ******************************************************************")
+    print("[INFO] **********************************************************")
 elif FORCE_CEW:
-    print("[INFO] ***************************************************************************")
-    print("[INFO] The user specified AENEAS_FORCE_CEW=True: building cew without checks")
-    print("[INFO] ***************************************************************************")
+    print("[INFO] *******************************************************************************************")
+    print("[INFO] The user specified AENEAS_FORCE_CEW=True: attempting to build cew without performing checks")
+    print("[INFO] *******************************************************************************************")
     EXTENSIONS.append(EXTENSION_CEW)
 else:
     if IS_LINUX:
         EXTENSIONS.append(EXTENSION_CEW)
     elif IS_OSX:
-        print("[INFO] *********************************************************************************************")
+        print("[INFO] *************************************************************************************")
         print("[INFO] Compiling C extension cew on Mac OS X is experimental.")
+        print("[INFO] ")
         print("[INFO] Before installing aeneas with cew, you must run:")
         print("[INFO] $ brew update && brew upgrade --cleanup espeak")
         print("[INFO] to run the new brew formula installing libespeak, the library version of espeak.")
+        print("[INFO] ")
         print("[INFO] If you experience problems, disable cew compilation specifying AENEAS_WITH_CEW=False.")
         print("[INFO] Please see the aeneas installation documentation for details.")
-        print("[INFO] *********************************************************************************************")
+        print("[INFO] *************************************************************************************")
         EXTENSIONS.append(EXTENSION_CEW)
     elif IS_WINDOWS:
-        print("[INFO] *********************************************************************************************")
+        print("[INFO] *************************************************************************************")
         print("[INFO] Compiling C extension cew on Windows is experimental.")
+        print("[INFO] ")
         print("[INFO] If you experience problems, disable cew compilation specifying AENEAS_WITH_CEW=False.")
         print("[INFO] Please see the aeneas installation documentation for details.")
-        print("[INFO] *********************************************************************************************")
+        print("[INFO] *************************************************************************************")
         if prepare_cew_for_windows():
             EXTENSIONS.append(EXTENSION_CEW)
         else:

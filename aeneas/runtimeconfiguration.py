@@ -59,7 +59,7 @@ class RuntimeConfiguration(Configuration):
     Otherwise, use pure Python code.
 
     This option is equivalent to
-    setting ``CDTW``, ``CEW`` and ``CMFCC`` at once.
+    setting ``CDTW``, ``CEW``, and ``CMFCC`` to ``True`` at once.
 
     Default: ``True``.
 

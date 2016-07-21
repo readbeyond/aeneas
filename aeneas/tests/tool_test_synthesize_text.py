@@ -209,6 +209,15 @@ class TestSynthesizeTextCLI(unittest.TestCase):
             ("", "-r=\"c_extensions=False\"")
         ], 0)
 
+    def test_synt_plain_no_cew(self):
+        self.execute([
+            ("", "plain"),
+            ("in", "../tools/res/plain.txt"),
+            ("", "eng"),
+            ("out", "synthesized.wav"),
+            ("", "-r=\"cew=False\"")
+        ], 0)
+
     def test_synt_plain_cew_subprocess(self):
         self.execute([
             ("", "plain"),
