@@ -239,8 +239,8 @@ setup(
     license="GNU Affero General Public License v3 (AGPL v3)",
     long_description=LONG_DESCRIPTION,
     install_requires=[
-        "BeautifulSoup4>=4.4",
-        "lxml>=3.0",
+        "BeautifulSoup4==4.4.1",
+        "lxml==3.6.0",
         "numpy>=1.9"
     ],
     extras_require={

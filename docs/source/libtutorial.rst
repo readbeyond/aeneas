@@ -9,7 +9,7 @@ Overview
 Although a majority of ``aeneas`` users work with the built-in command line tools,
 ``aeneas`` is primarily designed for being used as a Python library.
 Even the ``aeneas.tools`` can be used programmatically,
-thanks to their standardize I/O interface.
+thanks to their standard I/O interface.
 
 .. Topic:: Example
 
