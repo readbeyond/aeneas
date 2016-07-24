@@ -30,9 +30,7 @@
         #echo "[INFO] A.2 Downloading and installing deb-multimedia keyring... done"
 
     echo "[INFO] A.1 Adding deb-multimedia to apt sources..."
-    sudo sh -c 'echo "" >> /etc/apt/sources.list'
-    sudo sh -c 'echo "deb http://www.deb-multimedia.org jessie main" >> /etc/apt/sources.list'
-    sudo sh -c 'echo "" >> /etc/apt/sources.list'
+    sudo sh -c 'echo "deb http://www.deb-multimedia.org jessie main" > /etc/apt/sources.list.d/deb-multimedia.list'
     echo "[INFO] A.1 Adding deb-multimedia to apt sources... done"
 
     echo "[INFO] A.2 Updating apt..."
