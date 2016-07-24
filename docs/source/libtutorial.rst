@@ -9,7 +9,7 @@ Overview
 Although a majority of ``aeneas`` users work with the built-in command line tools,
 ``aeneas`` is primarily designed for being used as a Python library.
 Even the ``aeneas.tools`` can be used programmatically,
-thanks to their standardize I/O interface.
+thanks to their standard I/O interface.
 
 .. Topic:: Example
 
@@ -181,9 +181,11 @@ The Python C extensions included in ``aeneas`` are:
 
 .. note::
     
-    Currently :mod:`aeneas.cew` is available only on Linux,
-    since compiling it on Mac OS X and Windows cannot be automated.
-    However, starting from v1.5.0, the pure Python code
+    Currently :mod:`aeneas.cew` is available on Linux, Mac OS X, and Windows.
+    On Windows 64 bit it does not seem to work, probably because
+    eSpeak is available only as a 32 bit program/library,
+    and hence ``aeneas`` will fall back to run the pure Python code.
+    Starting with v1.5.0, the pure Python code
     for synthesizing text with eSpeak via ``subprocess``
     is only 2-3 times slower than :mod:`aeneas.cew`.
     Unless you work with thousands of text fragments,
@@ -192,6 +194,7 @@ The Python C extensions included in ``aeneas`` are:
 .. note::
     
     Currently :mod:`aeneas.cwave` is not used.
+    It will be enabled in a future version of ``aeneas``.
     
 
 

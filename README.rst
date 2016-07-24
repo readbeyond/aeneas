@@ -235,9 +235,10 @@ Supported Features
 -  Input audio file formats: all those readable by ``ffmpeg``
 -  Output sync map formats: AUD, CSV, EAF, JSON, SMIL, SRT, SSV, SUB,
    TSV, TTML, TXT, VTT, XML
--  Tested languages: ARA, BUL, CAT, CYM, CES, DAN, DEU, ELL, ENG, EPO,
-   EST, FAS, FIN, FRA, GLE, GRC, HRV, HUN, ISL, ITA, JPN, LAT, LAV, LIT,
-   NLD, NOR, RON, RUS, POL, POR, SLK, SPA, SRP, SWA, SWE, TUR, UKR
+-  Confirmed working on languages: ARA, BUL, CAT, CYM, CES, DAN, DEU,
+   ELL, ENG, EPO, EST, FAS, FIN, FRA, GLE, GRC, HRV, HUN, ISL, ITA, JPN,
+   LAT, LAV, LIT, NLD, NOR, RON, RUS, POL, POR, SLK, SPA, SRP, SWA, SWE,
+   TUR, UKR
 -  MFCC and DTW computed via Python C extensions to reduce the
    processing time
 -  Several built-in TTS engine wrappers: eSpeak (default, FLOSS),
@@ -260,6 +261,8 @@ Supported Features
 -  Execution parameters tunable at runtime
 -  Code suitable for Web app deployment (e.g., on-demand cloud
    computing)
+-  Extensive test suite including 898 unit/integration/performance
+   tests, that run and must pass before each release
 
 Limitations and Missing Features
 --------------------------------

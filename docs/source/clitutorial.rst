@@ -366,6 +366,10 @@ Examples:
 
     python -m aeneas.tools.execute_task --example-json -r="c_extensions=False"
 
+#. disable only the ``cew`` Python C extension, while ``cdtw`` and ``cmfcc`` will still run (if compiled)::
+
+    python -m aeneas.tools.execute_task --example-json -r="cew=False"
+
 #. set the DTW margin to ``10.000`` seconds::
 
     python -m aeneas.tools.execute_task --example-json -r="dtw_margin=10"

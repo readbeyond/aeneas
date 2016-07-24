@@ -17,6 +17,7 @@ v1.5.1 (2016-07-25)
 #. Fixed a numerical issue in ``dtw.py`` by explicit stating ``dtype=int`` in ``centers`` initializer, pure Python code only
 #. Extension ``cew`` compiled for Mac OS X and Windows
 #. Added links to installers for Mac OS X and Windows in the documentation
+#. Explicitly requiring lxml v3.6.0 and BeautifulSoup4 v4.4.1 due to a change in BeautifulSoup4 v4.5.0 API (to be investigated later)
 
 v1.5.0.3 (2016-04-23)
 ---------------------
