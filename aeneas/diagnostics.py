@@ -27,11 +27,9 @@ __copyright__ = """
     Copyright 2015-2016, Alberto Pettarin (www.albertopettarin.it)
     """
 __license__ = "GNU AGPL v3"
-__version__ = "1.5.0"
+__version__ = "1.5.1"
 __email__ = "aeneas@readbeyond.it"
 __status__ = "Production"
-
-SETUP_COMMAND = u"'python setup.py build_ext --inplace'"
 
 class Diagnostics(object):
     """
@@ -200,7 +198,7 @@ class Diagnostics(object):
             return False
         gf.print_warning(u"aeneas.cdtw    NOT COMPILED")
         gf.print_info(u"  You can still run aeneas but it will be significantly slower")
-        gf.print_info(u"  To compile the cdtw module, run %s" % SETUP_COMMAND)
+        gf.print_info(u"  Please refer to the installation documentation for details")
         return True
 
     @classmethod
@@ -217,7 +215,7 @@ class Diagnostics(object):
             return False
         gf.print_warning(u"aeneas.cmfcc   NOT COMPILED")
         gf.print_info(u"  You can still run aeneas but it will be significantly slower")
-        gf.print_info(u"  To compile the cmfcc module, run %s" % SETUP_COMMAND)
+        gf.print_info(u"  Please refer to the installation documentation for details")
         return True
 
     @classmethod
@@ -227,22 +225,14 @@ class Diagnostics(object):
 
         Return ``True`` on failure and ``False`` on success.
 
-        For those OSes where ``cew`` is not available,
-        print a warning and return ``False`` (success).
-
         :rtype: bool
         """
-        if not gf.is_linux():
-            gf.print_warning(u"aeneas.cew     NOT AVAILABLE")
-            gf.print_info(u"  The Python C Extension cew is not available for your OS")
-            gf.print_info(u"  You can still run aeneas but it will be a bit slower (than Linux)")
-            return False
         if gf.can_run_c_extension("cew"):
             gf.print_success(u"aeneas.cew     COMPILED")
             return False
         gf.print_warning(u"aeneas.cew     NOT COMPILED")
         gf.print_info(u"  You can still run aeneas but it will be a bit slower")
-        gf.print_info(u"  To compile the cew module, run %s" % SETUP_COMMAND)
+        gf.print_info(u"  Please refer to the installation documentation for details")
         return True
 
     @classmethod

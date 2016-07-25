@@ -42,6 +42,27 @@ class TestExecuteJobCLI(unittest.TestCase):
             ("", "-r=\"c_extensions=False\"")
         ], 0)
 
+    def test_exec_container_no_cew(self):
+        self.execute([
+            ("in", "../tools/res/job.zip"),
+            ("out", ""),
+            ("", "-r=\"cew=False\"")
+        ], 0)
+
+    def test_exec_container_no_cmfcc(self):
+        self.execute([
+            ("in", "../tools/res/job.zip"),
+            ("out", ""),
+            ("", "-r=\"cmfcc=False\"")
+        ], 0)
+
+    def test_exec_container_no_cdtw(self):
+        self.execute([
+            ("in", "../tools/res/job.zip"),
+            ("out", ""),
+            ("", "-r=\"cdtw=False\"")
+        ], 0)
+
     def test_exec_container_cew_subprocess_flag(self):
         self.execute([
             ("in", "../tools/res/job.zip"),

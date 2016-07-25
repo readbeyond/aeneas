@@ -309,6 +309,12 @@ class TestGlobalFunctions(unittest.TestCase):
         with self.assertRaises(OSError):
             gf.ensure_parent_directory("/foo/bar/baz", ensure_parent=False)
 
+    def test_datetime_string(self):
+        self.assertEqual(type(gf.datetime_string()), type(u""))
+        self.assertEqual(len(gf.datetime_string()), len(u"2016-01-01T00:00:00"))
+        self.assertEqual(type(gf.datetime_string(time_zone=True)), type(u""))
+        self.assertEqual(len(gf.datetime_string(time_zone=True)), len(u"2016-01-01T00:00:00+00:00"))
+
     def test_time_from_ttml(self):
         tests = [
             (None, TimeValue("0")),
