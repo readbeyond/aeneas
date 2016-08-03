@@ -28,7 +28,7 @@ __copyright__ = """
     Copyright 2015-2016, Alberto Pettarin (www.albertopettarin.it)
     """
 __license__ = "GNU AGPL 3"
-__version__ = "1.5.0"
+__version__ = "1.5.1"
 __email__ = "aeneas@readbeyond.it"
 __status__ = "Production"
 
@@ -97,9 +97,9 @@ class RunSDCLI(AbstractCLIProgram):
             gc.PPN_TASK_IS_TEXT_MUNPARSED_L1_ID_REGEX : l1_id_regex,
             gc.PPN_TASK_IS_TEXT_MUNPARSED_L2_ID_REGEX : l2_id_regex,
             gc.PPN_TASK_IS_TEXT_MUNPARSED_L3_ID_REGEX : l3_id_regex,
-            gc.PPN_JOB_IS_TEXT_UNPARSED_ID_REGEX : id_regex,
-            gc.PPN_JOB_IS_TEXT_UNPARSED_CLASS_REGEX : class_regex,
-            gc.PPN_JOB_IS_TEXT_UNPARSED_ID_SORT : sort
+            gc.PPN_TASK_IS_TEXT_UNPARSED_CLASS_REGEX : class_regex,
+            gc.PPN_TASK_IS_TEXT_UNPARSED_ID_REGEX : id_regex,
+            gc.PPN_TASK_IS_TEXT_UNPARSED_ID_SORT : sort,
         }
         if (text_format == TextFileFormat.MUNPARSED) and ((l1_id_regex is None) or (l2_id_regex is None) or (l3_id_regex is None)):
             self.print_error(u"You must specify --l1-id-regex and --l2-id-regex and --l3-id-regex for munparsed format")

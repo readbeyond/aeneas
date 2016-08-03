@@ -107,6 +107,33 @@ class TestExecuteTaskCLI(unittest.TestCase):
             ("", "-r=\"c_extensions=False\"")
         ], 0)
 
+    def test_exec_srt_no_cew(self):
+        self.execute([
+            ("in", "../tools/res/audio.mp3"),
+            ("in", "../tools/res/subtitles.txt"),
+            ("", "task_language=eng|is_text_type=subtitles|os_task_file_format=srt"),
+            ("out", "sonnet.srt"),
+            ("", "-r=\"cew=False\"")
+        ], 0)
+
+    def test_exec_srt_no_cmfcc(self):
+        self.execute([
+            ("in", "../tools/res/audio.mp3"),
+            ("in", "../tools/res/subtitles.txt"),
+            ("", "task_language=eng|is_text_type=subtitles|os_task_file_format=srt"),
+            ("out", "sonnet.srt"),
+            ("", "-r=\"cmfcc=False\"")
+        ], 0)
+
+    def test_exec_srt_no_cdtw(self):
+        self.execute([
+            ("in", "../tools/res/audio.mp3"),
+            ("in", "../tools/res/subtitles.txt"),
+            ("", "task_language=eng|is_text_type=subtitles|os_task_file_format=srt"),
+            ("out", "sonnet.srt"),
+            ("", "-r=\"cdtw=False\"")
+        ], 0)
+
     def test_exec_srt_cew_subprocess(self):
         self.execute([
             ("in", "../tools/res/audio.mp3"),

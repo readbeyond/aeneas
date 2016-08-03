@@ -29,7 +29,7 @@ __copyright__ = """
     Copyright 2015-2016, Alberto Pettarin (www.albertopettarin.it)
     """
 __license__ = "GNU AGPL v3"
-__version__ = "1.5.0"
+__version__ = "1.5.1"
 __email__ = "aeneas@readbeyond.it"
 __status__ = "Production"
 
@@ -170,21 +170,20 @@ class Task(Loggable):
         self.log([u"Output sync map to %s", path])
 
         sync_map_format = self.configuration["o_format"]
-        audio_ref = self.configuration["o_smil_audio_ref"]
-        page_ref = self.configuration["o_smil_page_ref"]
+        eaf_audio_ref = self.configuration["o_eaf_audio_ref"]
+        smil_audio_ref = self.configuration["o_smil_audio_ref"]
+        smil_page_ref = self.configuration["o_smil_page_ref"]
 
         self.log([u"sync_map_format is %s", sync_map_format])
-        self.log([u"page_ref is %s", page_ref])
-        self.log([u"audio_ref is %s", audio_ref])
+        self.log([u"eaf_audio_ref is %s", eaf_audio_ref])
+        self.log([u"smil_audio_ref is %s", smil_audio_ref])
+        self.log([u"smil_page_ref is %s", smil_page_ref])
 
         self.log(u"Calling sync_map.write...")
-        afpa = self.audio_file_path_absolute
-        if afpa is not None:
-            afpa = os.path.abspath(afpa)
         parameters = {
-            "audio_file_path_absolute": afpa,
-            gc.PPN_TASK_OS_FILE_SMIL_PAGE_REF : page_ref,
-            gc.PPN_TASK_OS_FILE_SMIL_AUDIO_REF : audio_ref
+            gc.PPN_TASK_OS_FILE_EAF_AUDIO_REF: eaf_audio_ref,
+            gc.PPN_TASK_OS_FILE_SMIL_AUDIO_REF: smil_audio_ref,
+            gc.PPN_TASK_OS_FILE_SMIL_PAGE_REF: smil_page_ref,
         }
         self.sync_map.write(sync_map_format, path, parameters)
         self.log(u"Calling sync_map.write... done")
@@ -276,6 +275,7 @@ class TaskConfiguration(Configuration):
     * :data:`~aeneas.globalconstants.PPN_TASK_IS_TEXT_UNPARSED_CLASS_REGEX`       or ``i_t_unparsed_class_regex``
     * :data:`~aeneas.globalconstants.PPN_TASK_IS_TEXT_UNPARSED_ID_REGEX`          or ``i_t_unparsed_id_regex``
     * :data:`~aeneas.globalconstants.PPN_TASK_IS_TEXT_UNPARSED_ID_SORT`           or ``i_t_unparsed_id_sort``
+    * :data:`~aeneas.globalconstants.PPN_TASK_OS_FILE_EAF_AUDIO_REF`              or ``o_eaf_audio_ref``
     * :data:`~aeneas.globalconstants.PPN_TASK_OS_FILE_FORMAT`                     or ``o_format``
     * :data:`~aeneas.globalconstants.PPN_TASK_OS_FILE_HEAD_TAIL_FORMAT`           or ``o_h_t_format``
     * :data:`~aeneas.globalconstants.PPN_TASK_OS_FILE_ID_REGEX`                   or ``o_id_regex``
@@ -317,6 +317,7 @@ class TaskConfiguration(Configuration):
         (gc.PPN_TASK_IS_TEXT_UNPARSED_CLASS_REGEX, (None, None, ["i_t_unparsed_class_regex"])),
         (gc.PPN_TASK_IS_TEXT_UNPARSED_ID_REGEX, (None, None, ["i_t_unparsed_id_regex"])),
         (gc.PPN_TASK_IS_TEXT_UNPARSED_ID_SORT, (None, None, ["i_t_unparsed_id_sort"])),
+        (gc.PPN_TASK_OS_FILE_EAF_AUDIO_REF, (None, None, ["o_eaf_audio_ref"])),
         (gc.PPN_TASK_OS_FILE_FORMAT, (None, None, ["o_format"])),
         (gc.PPN_TASK_OS_FILE_HEAD_TAIL_FORMAT, (None, None, ["o_h_t_format"])),
         (gc.PPN_TASK_OS_FILE_ID_REGEX, (None, None, ["o_id_regex"])),

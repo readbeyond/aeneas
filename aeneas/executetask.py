@@ -41,7 +41,7 @@ __copyright__ = """
     Copyright 2015-2016, Alberto Pettarin (www.albertopettarin.it)
     """
 __license__ = "GNU AGPL v3"
-__version__ = "1.5.0"
+__version__ = "1.5.1"
 __email__ = "aeneas@readbeyond.it"
 __status__ = "Production"
 
@@ -655,7 +655,6 @@ class ExecuteTask(Loggable):
         """ Check for fragments with zero duration """
         if self.task.configuration["o_no_zero"]:
             self.log(u"Checking for fragments with zero duration...")
-            # TODO use min_mws when doable, e.g. only one fragment?
             delta = TimeValue("0.001")
             leaves = self.task.sync_map.fragments_tree.vleaves_not_empty
             # first and last leaves are HEAD and TAIL, skipping them

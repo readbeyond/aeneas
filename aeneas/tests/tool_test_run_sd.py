@@ -186,6 +186,33 @@ class TestRunSDCLI(unittest.TestCase):
             ("", "-r=\"c_extensions=False\"")
         ], 0)
 
+    def test_sd_no_cew(self):
+        self.execute([
+            ("", "list"),
+            ("", "From|fairest|creatures|we|desire|increase"),
+            ("", "eng"),
+            ("in", "../tools/res/audio.mp3"),
+            ("", "-r=\"cew=False\"")
+        ], 0)
+
+    def test_sd_no_cmfcc(self):
+        self.execute([
+            ("", "list"),
+            ("", "From|fairest|creatures|we|desire|increase"),
+            ("", "eng"),
+            ("in", "../tools/res/audio.mp3"),
+            ("", "-r=\"cmfcc=False\"")
+        ], 0)
+
+    def test_sd_no_cdtw(self):
+        self.execute([
+            ("", "list"),
+            ("", "From|fairest|creatures|we|desire|increase"),
+            ("", "eng"),
+            ("in", "../tools/res/audio.mp3"),
+            ("", "-r=\"cdtw=False\"")
+        ], 0)
+
 
 
 if __name__ == '__main__':
