@@ -26,7 +26,7 @@ __copyright__ = """
     Copyright 2015-2016, Alberto Pettarin (www.albertopettarin.it)
     """
 __license__ = "GNU AGPL v3"
-__version__ = "1.5.0"
+__version__ = "1.5.1"
 __email__ = "aeneas@readbeyond.it"
 __status__ = "Production"
 
@@ -280,7 +280,7 @@ class TTSWrapper(Loggable):
             c_extension_function,
             subprocess_function,
             (text_file, output_file_path, quit_after, backwards),
-            c_extension=self.rconf[RuntimeConfiguration.C_EXTENSIONS]
+            rconf=self.rconf
         )
 
     def _synthesize_multiple_python(self, text_file, output_file_path, quit_after=None, backwards=False):
@@ -477,7 +477,7 @@ class TTSWrapper(Loggable):
             c_extension_function,
             subprocess_function,
             (text, voice_code, output_file_path),
-            c_extension=self.rconf[RuntimeConfiguration.C_EXTENSIONS]
+            rconf=self.rconf
         )
         return result[0]
 

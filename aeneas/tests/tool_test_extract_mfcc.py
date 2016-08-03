@@ -48,6 +48,13 @@ class TestExtractMFCCCLI(unittest.TestCase):
             ("", "-r=\"c_extensions=False\"")
         ], 0)
 
+    def test_extract_no_cmfcc(self):
+        self.execute([
+            ("in", "../tools/res/audio.wav"),
+            ("out", "audio.wav.mfcc.txt"),
+            ("", "-r=\"cmfcc=False\"")
+        ], 0)
+
     def test_extract_mfcc_filters(self):
         self.execute([
             ("in", "../tools/res/audio.wav"),

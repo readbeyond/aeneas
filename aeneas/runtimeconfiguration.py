@@ -24,7 +24,7 @@ __copyright__ = """
     Copyright 2015-2016, Alberto Pettarin (www.albertopettarin.it)
     """
 __license__ = "GNU AGPL v3"
-__version__ = "1.5.0"
+__version__ = "1.5.1"
 __email__ = "aeneas@readbeyond.it"
 __status__ = "Production"
 
@@ -58,9 +58,32 @@ class RuntimeConfiguration(Configuration):
     If ``True`` and Python C extensions are available, use them.
     Otherwise, use pure Python code.
 
+    This option is equivalent to
+    setting ``CDTW``, ``CEW``, and ``CMFCC`` to ``True`` at once.
+
     Default: ``True``.
 
     .. versionadded:: 1.4.1
+    """
+
+    CDTW = "cdtw"
+    """
+    If ``True`` and Python C extension ``cdtw`` is available, use it.
+    Otherwise, use pure Python code.
+
+    Default: ``True``.
+
+    .. versionadded:: 1.5.1
+    """
+
+    CEW = "cew"
+    """
+    If ``True`` and Python C extension ``cew`` is available, use it.
+    Otherwise, use pure Python code.
+
+    Default: ``True``.
+
+    .. versionadded:: 1.5.1
     """
 
     CEW_SUBPROCESS_ENABLED = "cew_subprocess_enabled"
@@ -82,6 +105,16 @@ class RuntimeConfiguration(Configuration):
     Default: ``python``.
 
     .. versionadded:: 1.5.0
+    """
+
+    CMFCC = "cmfcc"
+    """
+    If ``True`` and Python C extension ``cmfcc`` is available, use it.
+    Otherwise, use pure Python code.
+
+    Default: ``True``.
+
+    .. versionadded:: 1.5.1
     """
 
     DTW_ALGORITHM = "dtw_algorithm"
@@ -510,6 +543,9 @@ class RuntimeConfiguration(Configuration):
         (ALLOW_UNLISTED_LANGUAGES, (False, bool, [])),
 
         (C_EXTENSIONS, (True, bool, [])),
+        (CDTW, (True, bool, [])),
+        (CEW, (True, bool, [])),
+        (CMFCC, (True, bool, [])),
 
         (CEW_SUBPROCESS_ENABLED, (False, bool, [])),
         (CEW_SUBPROCESS_PATH, ("python", None, [])), # or a full path like "/usr/bin/python"

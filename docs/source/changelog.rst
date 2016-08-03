@@ -1,6 +1,24 @@
 Changelog
 =========
 
+v1.5.1 (2016-07-25)
+-------------------
+
+#. Added ``invoke`` parameter to ``AbstractCLIProgram`` constructor and modified tools consequently
+#. Added ``aeneas.tools.hydra`` tool to run all other aeneas.tools.* scripts
+#. Added ``pyinstaller-*`` configuration files for ``pyinstaller``
+#. Added the ``PYINSTALLER.md`` file documenting how to compile an executable with PyInstaller
+#. Added rconf ``CDTW``, ``CEW``, and ``CMFCC`` parameters to prevent running a single C extension
+#. Added ``PPN_TASK_OS_FILE_EAF_AUDIO_REF`` to specify audio file URI for EAF output sync maps
+#. Added function to output current date and time in EAF output sync maps
+#. Removed copies of ``cint.[ch]`` and ``cwave.[ch]`` in other C extensions, changed include paths
+#. Removed unused keys from ``JobConfiguration`` and related source files
+#. Moved import statements for ``lxml`` and ``bs4`` inside the functions actually using them (better isolation for future purposes)
+#. Fixed a numerical issue in ``dtw.py`` by explicit stating ``dtype=int`` in ``centers`` initializer, pure Python code only
+#. Extension ``cew`` compiled for Mac OS X and Windows
+#. Added links to installers for Mac OS X and Windows in the documentation
+#. Explicitly requiring lxml v3.6.0 and BeautifulSoup4 v4.4.1 due to a change in BeautifulSoup4 v4.5.0 API (to be investigated later)
+
 v1.5.0.3 (2016-04-23)
 ---------------------
 

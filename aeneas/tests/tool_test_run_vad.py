@@ -58,6 +58,14 @@ class TestRunVADCLI(unittest.TestCase):
             ("", "-r=\"c_extensions=False\"")
         ], 0)
 
+    def test_run_no_cmfcc(self):
+        self.execute([
+            ("in", "../tools/res/audio.mp3"),
+            ("", "both"),
+            ("out", "both.txt"),
+            ("", "-r=\"cmfcc=False\"")
+        ], 0)
+
     def test_run_extend_after(self):
         self.execute([
             ("in", "../tools/res/audio.mp3"),

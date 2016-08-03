@@ -23,15 +23,15 @@ __copyright__ = """
     Copyright 2015-2016, Alberto Pettarin (www.albertopettarin.it)
     """
 __license__ = "GNU AGPL v3"
-__version__ = "1.5.0"
+__version__ = "1.5.1"
 __email__ = "aeneas@readbeyond.it"
 __status__ = "Production"
 
-CMODULE = Extension("cdtw", sources=["cdtw_py.c", "cdtw_func.c", "cint.c"], include_dirs=[get_include()])
+CMODULE = Extension("cdtw", sources=["cdtw_py.c", "cdtw_func.c", "../cint/cint.c"], include_dirs=[get_include()])
 
 setup(
     name="cdtw",
-    version="1.5.0",
+    version="1.5.1",
     description="""
     Python C Extension for computing the DTW as fast as your bare metal allows.
     """,

@@ -93,6 +93,12 @@ In the constructor of ``ExecuteTaskCLI`` you might want to specify
 ``use_sys=False`` so that the tool never calls a ``sys.exit()`` or
 outputs to stdout directly.
 
+If you are creating an executable wrapper, like those in the ``aeneas/bin/`` directory,
+you can also pass an ``invoke`` parameter to the constructor,
+specifying the command string
+(e.g., ``python your_tool_name.py`` or ``your_tool_name``, etc.)
+which the user can use to invoke your tool.
+
 Note that the first element of the ``arguments`` list must be a dummy placeholder,
 to formally resemble the ``sys.argv[0]``.
 (This defect will be removed in a future version.)
