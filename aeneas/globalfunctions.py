@@ -7,9 +7,9 @@ Global common functions.
 
 from __future__ import absolute_import
 from __future__ import print_function
-from lxml import etree
-import math
+import datetime
 import io
+import math
 import os
 import re
 import shutil
@@ -27,19 +27,29 @@ __copyright__ = """
     Copyright 2015-2016, Alberto Pettarin (www.albertopettarin.it)
     """
 __license__ = "GNU AGPL v3"
-__version__ = "1.5.0"
+__version__ = "1.5.1"
 __email__ = "aeneas@readbeyond.it"
 __status__ = "Production"
 
 ### RUNTIME CONSTANTS ###
 
+# ANSI codes to color output in terminal
 ANSI_END = u"\033[0m"
 ANSI_ERROR = u"\033[91m"
 ANSI_OK = u"\033[92m"
 ANSI_WARNING = u"\033[93m"
+
+# timing regex patterns
 HHMMSS_MMM_PATTERN = re.compile(r"([0-9]*):([0-9]*):([0-9]*)\.([0-9]*)")
 HHMMSS_MMM_PATTERN_COMMA = re.compile(r"([0-9]*):([0-9]*):([0-9]*),([0-9]*)")
+
+# True if running from a frozen binary (e.g., compiled with pyinstaller)
+FROZEN = getattr(sys, "frozen", False)
+
+# True if running under Python 2
 PY2 = (sys.version_info[0] == 2)
+
+
 
 ### COMMON FUNCTIONS ###
 
@@ -215,6 +225,28 @@ def file_name_without_extension(path):
         return None
     return os.path.splitext(os.path.basename(path))[0]
 
+def datetime_string(time_zone=False):
+    """
+    Return a string representing the current date and time,
+    in ``YYYY-MM-DDThh:mm:ss`` or ``YYYY-MM-DDThh:mm:ss+hh:mm`` format
+
+    :param boolean time_zone: if ``True``, add the time zone offset.
+
+    :rtype: string
+    """
+    time = datetime.datetime.now()
+    template = u"%04d-%02d-%02dT%02d:%02d:%02d"
+    if time_zone:
+        template += u"+00:00"
+    return template % (
+        time.year,
+        time.month,
+        time.day,
+        time.hour,
+        time.minute,
+        time.second
+    )
+
 def safe_float(string, default=None):
     """
     Safely parse a string into a float.
@@ -329,8 +361,6 @@ def config_string_to_dict(string, result=None):
     pairs = string.split(gc.CONFIG_STRING_SEPARATOR_SYMBOL)
     return pairs_to_dict(pairs, result)
 
-# TODO this is the only function using lxml, shall we move it somewhere else?
-#      the two places it is used are analyzecontainer.py and validator.py
 def config_xml_to_dict(contents, result, parse_job=True):
     """
     Convert the contents of a XML config file
@@ -346,6 +376,7 @@ def config_xml_to_dict(contents, result, parse_job=True):
                            if ``False``, parse the tasks properties
     :rtype: dict (``parse_job=True``) or list of dict (``parse_job=False``)
     """
+    from lxml import etree
     try:
         root = etree.fromstring(contents)
         pairs = []
@@ -642,6 +673,9 @@ def split_url(url):
     Split the given URL ``base#anchor`` into ``(base, anchor)``,
     or ``(base, None)`` if no anchor is present.
 
+    In case there are two or more ``#`` characters,
+    return only the first two tokens: ``a#b#c => (a, b)``.
+
     :param string url: the url
     :rtype: list of str
     """
@@ -650,10 +684,7 @@ def split_url(url):
     array = url.split("#")
     if len(array) == 1:
         array.append(None)
-    elif len(array) > 2:
-        # TODO throw exception instead?
-        array = array[0:2]
-    return tuple(array)
+    return tuple(array[0:2])
 
 def is_posix():
     """
@@ -703,7 +734,6 @@ def fix_slash(path):
     :rtype: string
     """
     if not is_posix():
-        # TODO is there a better way to do this?
         path = path.replace("\\", "/")
     return path
 
@@ -746,12 +776,7 @@ def can_run_c_extension(name=None):
     elif name == "cew":
         return can_run_cew()
     else:
-        if is_linux():
-            # Linux
-            return can_run_cdtw() and can_run_cmfcc() and can_run_cew()
-        else:
-            # no cew for other OSes
-            return can_run_cdtw() and can_run_cmfcc()
+        return can_run_cdtw() and can_run_cmfcc() and can_run_cew()
 
 def run_c_extension_with_fallback(
         log_function,
@@ -759,7 +784,7 @@ def run_c_extension_with_fallback(
         c_function,
         py_function,
         args,
-        c_extension=True
+        rconf
 ):
     """
     Run a function calling a C extension, falling back
@@ -769,8 +794,8 @@ def run_c_extension_with_fallback(
     :param string extension: the name of the extension
     :param function c_function: the (Python) function calling the C extension
     :param function py_function: the (Python) function providing the fallback
-    :param bool c_extension: if ``True``, try running the C extension first;
-                             if ``False``, directly run the pure Python fallback
+    :param rconf: the runtime configuration
+    :type  rconf: :class:`aeneas.runtimeconfiguration.RuntimeConfiguration`
     :rtype: depends on the extension being called
     :raises: RuntimeError: if both the C extension and
                            the pure Python code did not succeed.
@@ -778,20 +803,26 @@ def run_c_extension_with_fallback(
     .. versionadded:: 1.4.0
     """
     computed = False
-    if (c_extension) and (c_function is not None):
-        log_function(u"C extensions enabled")
-        if can_run_c_extension(extension):
-            log_function([u"C extensions enabled and %s can be loaded", extension])
+    if not rconf[u"c_extensions"]:
+        log_function(u"C extensions disabled")
+    elif not rconf[extension]:
+        log_function([u"C extension %s disabled", extension])
+    else:
+        log_function([u"C extension %s enabled", extension])
+        if c_function is None:
+            log_function(u"C function is None")
+        elif can_run_c_extension(extension):
+            log_function([u"C extension %s enabled and it can be loaded", extension])
             computed, result = c_function(*args)
         else:
-            log_function([u"C extensions enabled but %s cannot be loaded", extension])
-    else:
-        log_function(u"C extensions disabled")
-    if (not computed) and (py_function is not None):
-        log_function(u"Running the pure Python code")
-        computed, result = py_function(*args)
+            log_function([u"C extension %s enabled but it cannot be loaded", extension])
     if not computed:
-        # TODO create a more meaningful message
+        if py_function is None:
+            log_function(u"Python function is None")
+        else:
+            log_function(u"Running the pure Python code")
+            computed, result = py_function(*args)
+    if not computed:
         raise RuntimeError(u"Both the C extension and the pure Python code failed. (Wrong arguments? Input too big?)")
     return result
 
@@ -807,9 +838,8 @@ def file_can_be_read(path):
     if path is None:
         return False
     try:
-        # TODO is testing with os attributes better than this?
-        test_file = io.open(path, "rb")
-        test_file.close()
+        with io.open(path, "rb") as test_file:
+            pass
         return True
     except (IOError, OSError):
         pass
@@ -830,9 +860,8 @@ def file_can_be_written(path):
     if path is None:
         return False
     try:
-        # TODO is testing with os attributes better than this?
-        test_file = io.open(path, "wb")
-        test_file.close()
+        with io.open(path, "wb") as test_file:
+            pass
         delete_file(None, path)
         return True
     except (IOError, OSError):
@@ -909,9 +938,14 @@ def delete_file(handler, path):
 def relative_path(path, from_file):
     """
     Return the relative path of a file or directory, specified
-    as ``path`` relative to (the parent directory of) ``from file``.
+    as ``path`` relative to (the parent directory of) ``from_file``.
+
+    This method is intented to be called with ``__file__``
+    as second argument.
 
     The returned path is relative to the current working directory.
+
+    If ``path`` is ``None``, return ``None``.
 
     Example: ::
 
@@ -937,6 +971,8 @@ def absolute_path(path, from_file):
 
     This method is intented to be called with ``__file__``
     as second argument.
+
+    If ``path`` is ``None``, return ``None``.
 
     Example: ::
 
@@ -1082,16 +1118,22 @@ def safe_unicode_stdin(string):
     Safely convert the given string to a Unicode string,
     decoding using ``sys.stdin.encoding`` if needed.
 
+    If running from a frozen binary, ``utf-8`` encoding is assumed.
+
     :param variant string: the byte string or Unicode string to convert
     :rtype: string
     """
     if string is None:
         return None
     if is_bytes(string):
+        if FROZEN:
+            return string.decode("utf-8")
         try:
             return string.decode(sys.stdin.encoding)
         except UnicodeDecodeError:
             return string.decode(sys.stdin.encoding, "replace")
+        except:
+            return string.decode("utf-8")
     return string
 
 def object_to_unicode(obj):
@@ -1115,6 +1157,17 @@ def object_to_bytes(obj):
     if PY2:
         return str(obj)
     return bytes(obj, encoding="utf-8")
+
+def bundle_directory():
+    """
+    Return the absolute path of the bundle directory
+    if running from a frozen binary; otherwise return ``None``.
+
+    :rtype: string
+    """
+    if FROZEN:
+        return sys._MEIPASS
+    return None
 
 
 

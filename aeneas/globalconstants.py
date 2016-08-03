@@ -13,7 +13,7 @@ __copyright__ = """
     Copyright 2015-2016, Alberto Pettarin (www.albertopettarin.it)
     """
 __license__ = "GNU AGPL v3"
-__version__ = "1.5.0"
+__version__ = "1.5.1"
 __email__ = "aeneas@readbeyond.it"
 __status__ = "Production"
 
@@ -202,11 +202,6 @@ Example::
 
 """
 
-PPN_JOB_IS_TEXT_FILE_FORMAT = "is_text_type"
-"""
-See PPN_TASK_IS_TEXT_FILE_FORMAT
-"""
-
 PPN_JOB_IS_TEXT_FILE_NAME_REGEX = "is_text_file_name_regex"
 """
 The regex for matching the text file name
@@ -238,36 +233,6 @@ Example::
     is_audio_file_relative_path=xhtml
     is_audio_file_relative_path=.
 
-"""
-
-PPN_JOB_IS_TEXT_MUNPARSED_L1_ID_REGEX = "is_text_munparsed_l1_id_regex"
-"""
-See PPN_TASK_IS_TEXT_MUNPARSED_L1_ID_REGEX
-"""
-
-PPN_JOB_IS_TEXT_MUNPARSED_L2_ID_REGEX = "is_text_munparsed_l2_id_regex"
-"""
-See PPN_TASK_IS_TEXT_MUNPARSED_L2_ID_REGEX
-"""
-
-PPN_JOB_IS_TEXT_MUNPARSED_L3_ID_REGEX = "is_text_munparsed_l3_id_regex"
-"""
-See PPN_TASK_IS_TEXT_MUNPARSED_L3_ID_REGEX
-"""
-
-PPN_JOB_IS_TEXT_UNPARSED_CLASS_REGEX = "is_text_unparsed_class_regex"
-"""
-See PPN_TASK_IS_TEXT_UNPARSED_CLASS_REGEX
-"""
-
-PPN_JOB_IS_TEXT_UNPARSED_ID_REGEX = "is_text_unparsed_id_regex"
-"""
-See PPN_TASK_IS_TEXT_UNPARSED_ID_REGEX
-"""
-
-PPN_JOB_IS_TEXT_UNPARSED_ID_SORT = "is_text_unparsed_id_sort"
-"""
-See PPN_TASK_IS_TEXT_UNPARSED_ID_SORT
 """
 
 PPN_JOB_OS_CONTAINER_FORMAT = "os_job_file_container"
@@ -922,6 +887,22 @@ Example::
     os_task_file_no_zero=True
 
 .. versionadded:: 1.5.0
+"""
+
+PPN_TASK_OS_FILE_EAF_AUDIO_REF = "os_task_file_eaf_audio_ref"
+"""
+The value of the ``<MEDIA_URL>`` element in the output sync map,
+complete with the ``file://`` prefix.
+It applies to ``EAF`` sync maps only.
+
+Usage: config string, TXT config file, XML config file
+
+Values: string
+
+Example::
+
+    os_task_file_eaf_audio_ref=file:///audio/p001.mp3
+
 """
 
 PPN_TASK_OS_FILE_SMIL_AUDIO_REF = "os_task_file_smil_audio_ref"
