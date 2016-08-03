@@ -22,7 +22,7 @@ __version__ = "1.5.1"
 __email__ = "aeneas@readbeyond.it"
 __status__ = "Production"
 
-def prepare_cew_for_windows():
+def prepare_cew_for_windows_compile():
     """
     Copy files needed to compile the ``cew`` Python C extension on Windows.
 
@@ -36,7 +36,46 @@ def prepare_cew_for_windows():
     :rtype: bool
     """
     try:
+        # copy thirdparty/espeak.lib to $PYTHON\libs\espeak.lib
+        espeak_lib_src_path = os.path.join(os.path.dirname(__file__), "thirdparty", "espeak.lib")
+        espeak_lib_dst_path = os.path.join(sys.prefix, "libs", "espeak.lib")
+        if os.path.exists(espeak_lib_dst_path):
+            print("[INFO] Found eSpeak LIB in %s" % espeak_lib_dst_path)
+        else:
+            try:
+                print("[INFO] Copying eSpeak LIB into %s" % espeak_lib_dst_path)
+                shutil.copyfile(espeak_lib_src_path, espeak_lib_dst_path)
+                print("[INFO] Copied eSpeak LIB")
+            except:
+                print("[WARN] Unable to copy the eSpeak LIB, probably because you are not running with admin privileges.")
+                print("[WARN] If you want to compile the C extension cew,")
+                print("[WARN] please copy espeak.lib from the thirdparty directory into %s" % espeak_lib_dst_path)
+                print("[WARN] and run the aeneas setup again.")
+                return False
+        
+        # Only espeak.lib is necessary to compile aeneas.cew. Yet espeak.dll is necessary at runtime...
+        # if here, we have completed the setup, return True
+        return True
+    except Exception as e:
+        print("[WARN] Unexpected exception while preparing cew: %s" % e)
+    return False
+
+def prepare_cew_for_windows_run():
+    """
+    Copy files needed to run the ``cew`` Python C extension on Windows.
+
+    A glorious day, when Microsoft will offer a decent support
+    for Python and shared libraries,
+    all this mess will be unnecessary and it should be removed.
+    May that day come soon.
+
+    Return ``True`` if successful, ``False`` otherwise.
+
+    :rtype: bool
+    """
+    try:
         # copy espeak_sapi.dll to C:\Windows\System32\espeak.dll
+        # espeak_dll_dst_path = "aeneas\\cew\\espeak.dll"  # this works too...
         espeak_dll_dst_path = "C:\\Windows\\System32\\espeak.dll"
         espeak_dll_src_paths = [
             "C:\\aeneas\\eSpeak\\espeak_sapi.dll",
@@ -62,34 +101,16 @@ def prepare_cew_for_windows():
                     break
             if not found:
                 print("[WARN] Unable to find the eSpeak DLL, probably because you installed eSpeak in a non-standard location.")
-                print("[WARN] If you want to compile the C extension cew,")
+                print("[WARN] If you want to run aeneas with the C extension cew,")
                 print("[WARN] please copy espeak_sapi.dll from your eSpeak directory into %s" % espeak_dll_dst_path)
-                print("[WARN] and run the aeneas setup again.")
-                return False
+                # return False
             elif not copied:
                 print("[WARN] Unable to copy the eSpeak DLL, probably because you are not running with admin privileges.")
-                print("[WARN] If you want to compile the C extension cew,")
+                print("[WARN] If you want to run aeneas with the C extension cew,")
                 print("[WARN] please copy espeak_sapi.dll from your eSpeak directory into %s" % espeak_dll_dst_path)
-                print("[WARN] and run the aeneas setup again.")
-                return False
+                # return False
 
-        # copy thirdparty/espeak.lib to $PYTHON\libs\espeak.lib
-        espeak_lib_src_path = os.path.join(os.path.dirname(__file__), "thirdparty", "espeak.lib")
-        espeak_lib_dst_path = os.path.join(sys.prefix, "libs", "espeak.lib")
-        if os.path.exists(espeak_lib_dst_path):
-            print("[INFO] Found eSpeak LIB in %s" % espeak_lib_dst_path)
-        else:
-            try:
-                print("[INFO] Copying eSpeak LIB into %s" % espeak_lib_dst_path)
-                shutil.copyfile(espeak_lib_src_path, espeak_lib_dst_path)
-                print("[INFO] Copied eSpeak LIB")
-            except:
-                print("[WARN] Unable to copy the eSpeak LIB, probably because you are not running with admin privileges.")
-                print("[WARN] If you want to compile the C extension cew,")
-                print("[WARN] please copy espeak.lib from the thirdparty directory into %s" % espeak_lib_dst_path)
-                print("[WARN] and run the aeneas setup again.")
-                return False
-        
+        # Only espeak.lib is necessary to compile aeneas.cew. Yet espeak.dll is necessary at runtime...
         # if here, we have completed the setup, return True
         return True
     except Exception as e:
@@ -172,10 +193,6 @@ EXTENSION_CMFCC = Extension(
 
 # append or ignore cew extension as requested
 EXTENSIONS = [EXTENSION_CDTW, EXTENSION_CMFCC]
-<<<<<<< HEAD
-
-EXTENSIONS.append(EXTENSION_CEW)
-=======
 if WITHOUT_CEW:
     print("[INFO] **********************************************************")
     print("[INFO] The user specified AENEAS_WITH_CEW=False: not building cew")
@@ -207,13 +224,12 @@ else:
         print("[INFO] If you experience problems, disable cew compilation specifying AENEAS_WITH_CEW=False.")
         print("[INFO] Please see the aeneas installation documentation for details.")
         print("[INFO] *************************************************************************************")
-        if prepare_cew_for_windows():
+        if prepare_cew_for_windows_compile():
             EXTENSIONS.append(EXTENSION_CEW)
         else:
             print("[WARN] Unable to complete C extension cew setup, not compiling it.")
     else:
         print("[INFO] Extension cew is not available for your OS")
->>>>>>> readbeyond/master
 
 # finally set the aeneas module up
 setup(
@@ -330,3 +346,5 @@ setup(
     ext_modules=EXTENSIONS,
     include_dirs=INCLUDE_DIRS,
 )
+if IS_WINDOWS:
+    prepare_cew_for_windows_run()
