@@ -37,7 +37,8 @@ def prepare_cew_for_windows():
     """
     try:
         # copy espeak_sapi.dll to C:\Windows\System32\espeak.dll
-        espeak_dll_dst_path = "C:\\Windows\\System32\\espeak.dll"
+        espeak_dll_win_path = "C:\\Windows\\System32\\espeak.dll"
+        espeak_dll_dst_path = "aeneas\\cew\\espeak.dll"
         espeak_dll_src_paths = [
             "C:\\aeneas\\eSpeak\\espeak_sapi.dll",
             "C:\\sync\\eSpeak\\espeak_sapi.dll",
@@ -62,20 +63,21 @@ def prepare_cew_for_windows():
                     break
             if not found:
                 print("[WARN] Unable to find the eSpeak DLL, probably because you installed eSpeak in a non-standard location.")
-                print("[WARN] If you want to compile the C extension cew,")
-                print("[WARN] please copy espeak_sapi.dll from your eSpeak directory into %s" % espeak_dll_dst_path)
-                print("[WARN] and run the aeneas setup again.")
-                return False
+                print("[WARN] If you want to run aeneas with the C extension cew,")
+                print("[WARN] please copy espeak_sapi.dll from your eSpeak directory to %s" % espeak_dll_win_path)
+                # print("[WARN] and run the aeneas setup again.")
+                # return False
             elif not copied:
                 print("[WARN] Unable to copy the eSpeak DLL, probably because you are not running with admin privileges.")
-                print("[WARN] If you want to compile the C extension cew,")
-                print("[WARN] please copy espeak_sapi.dll from your eSpeak directory into %s" % espeak_dll_dst_path)
-                print("[WARN] and run the aeneas setup again.")
-                return False
+                print("[WARN] If you want to run aeneas with the C extension cew,")
+                print("[WARN] please copy espeak_sapi.dll from your eSpeak directory to %s" % espeak_dll_win_path)
+                # print("[WARN] and run the aeneas setup again.")
+                # return False
 
-        # copy thirdparty/espeak.lib to $PYTHON\libs\espeak.lib
+        # copy thirdparty\espeak.lib to $PYTHON\libs\espeak.lib
         espeak_lib_src_path = os.path.join(os.path.dirname(__file__), "thirdparty", "espeak.lib")
-        espeak_lib_dst_path = os.path.join(sys.prefix, "libs", "espeak.lib")
+        espeak_lib_dst_path = os.path.join(os.path.dirname(__file__), "espeak.lib")
+        #espeak_lib_dst_path = os.path.join(sys.prefix, "libs", "espeak.lib")
         if os.path.exists(espeak_lib_dst_path):
             print("[INFO] Found eSpeak LIB in %s" % espeak_lib_dst_path)
         else:
@@ -225,7 +227,7 @@ setup(
     package_data={
         "aeneas": ["res/*", "*.md"],
         "aeneas.cdtw": ["*.c", "*.h", "*.md"],
-        "aeneas.cew": ["*.c", "*.h", "*.md"],
+        "aeneas.cew": ["*.c", "*.h", "*.md", "*.dll"],
         "aeneas.cmfcc": ["*.c", "*.h", "*.md"],
         "aeneas.cwave": ["*.c", "*.h", "*.md"],
         "aeneas.extra": ["*.md"],
