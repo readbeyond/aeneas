@@ -194,9 +194,9 @@ class Diagnostics(object):
         :rtype: bool
         """
         if gf.can_run_c_extension("cdtw"):
-            gf.print_success(u"aeneas.cdtw    COMPILED")
+            gf.print_success(u"aeneas.cdtw    AVAILABLE")
             return False
-        gf.print_warning(u"aeneas.cdtw    NOT COMPILED")
+        gf.print_warning(u"aeneas.cdtw    NOT AVAILABLE")
         gf.print_info(u"  You can still run aeneas but it will be significantly slower")
         gf.print_info(u"  Please refer to the installation documentation for details")
         return True
@@ -211,9 +211,9 @@ class Diagnostics(object):
         :rtype: bool
         """
         if gf.can_run_c_extension("cmfcc"):
-            gf.print_success(u"aeneas.cmfcc   COMPILED")
+            gf.print_success(u"aeneas.cmfcc   AVAILABLE")
             return False
-        gf.print_warning(u"aeneas.cmfcc   NOT COMPILED")
+        gf.print_warning(u"aeneas.cmfcc   NOT AVAILABLE")
         gf.print_info(u"  You can still run aeneas but it will be significantly slower")
         gf.print_info(u"  Please refer to the installation documentation for details")
         return True
@@ -228,9 +228,9 @@ class Diagnostics(object):
         :rtype: bool
         """
         if gf.can_run_c_extension("cew"):
-            gf.print_success(u"aeneas.cew     COMPILED")
+            gf.print_success(u"aeneas.cew     AVAILABLE")
             return False
-        gf.print_warning(u"aeneas.cew     NOT COMPILED")
+        gf.print_warning(u"aeneas.cew     NOT AVAILABLE")
         gf.print_info(u"  You can still run aeneas but it will be a bit slower")
         gf.print_info(u"  Please refer to the installation documentation for details")
         return True
