@@ -84,12 +84,12 @@ def main():
     if errors:
         sys.exit(1)
     if c_ext_warnings:
-        print_warning(u"All required dependencies are met but at least one available Python C extension is not compiled")
+        print_warning(u"All required dependencies are met but at least one Python C extension is not available")
         print_warning(u"You can still run aeneas but it will be slower")
         print_warning(u"Enjoy running aeneas!")
         sys.exit(2)
     else:
-        print_success(u"All required dependencies are met and all available Python C extensions are compiled")
+        print_success(u"All required dependencies are met and all available Python C extensions are working")
         print_success(u"Enjoy running aeneas!")
         sys.exit(0)
 

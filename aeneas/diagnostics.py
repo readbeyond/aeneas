@@ -276,10 +276,10 @@ def main():
     if errors:
         sys.exit(1)
     if c_ext_warnings:
-        gf.print_warning(u"All required dependencies are met but at least one available Python C extension is not compiled")
+        gf.print_warning(u"All required dependencies are met but at least one Python C extension is not available")
         sys.exit(2)
     else:
-        gf.print_success(u"All required dependencies are met and all available Python C extensions are compiled")
+        gf.print_success(u"All required dependencies are met and all available Python C extensions are working")
         sys.exit(0)
 
 
