@@ -1,6 +1,26 @@
 #!/usr/bin/env python
 # coding=utf-8
 
+# aeneas is a Python/C library and a set of tools
+# to automagically synchronize audio and text (aka forced alignment)
+#
+# Copyright (C) 2012-2013, Alberto Pettarin (www.albertopettarin.it)
+# Copyright (C) 2013-2015, ReadBeyond Srl   (www.readbeyond.it)
+# Copyright (C) 2015-2016, Alberto Pettarin (www.albertopettarin.it)
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU Affero General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU Affero General Public License for more details.
+#
+# You should have received a copy of the GNU Affero General Public License
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
 """
 This module contains the following classes:
 
@@ -22,16 +42,6 @@ from aeneas.timevalue import TimeValue
 from aeneas.vad import VAD
 import aeneas.globalfunctions as gf
 
-__author__ = "Alberto Pettarin"
-__copyright__ = """
-    Copyright 2012-2013, Alberto Pettarin (www.albertopettarin.it)
-    Copyright 2013-2015, ReadBeyond Srl   (www.readbeyond.it)
-    Copyright 2015-2016, Alberto Pettarin (www.albertopettarin.it)
-    """
-__license__ = "GNU AGPL v3"
-__version__ = "1.5.1"
-__email__ = "aeneas@readbeyond.it"
-__status__ = "Production"
 
 class AudioFileMFCC(Loggable):
     """
@@ -260,6 +270,7 @@ class AudioFileMFCC(Loggable):
         :rtype: :class:`~aeneas.timevalue.TimeValue`
         """
         return self.__audio_length
+
     @audio_length.setter
     def audio_length(self, audio_length):
         self.__audio_length = audio_length
@@ -272,6 +283,7 @@ class AudioFileMFCC(Loggable):
         :rtype: bool
         """
         return self.__is_reversed
+
     @is_reversed.setter
     def is_reversed(self, is_reversed):
         self.__is_reversed = is_reversed
@@ -589,7 +601,7 @@ class AudioFileMFCC(Loggable):
         self.log(u"Running VAD... done")
         self.log(u"Storing speech and nonspeech intervals...")
         # where( == True) already computed, reusing
-        #runs = _compute_runs((numpy.where(self.__mfcc_mask))[0])
+        # COMMENTED runs = _compute_runs((numpy.where(self.__mfcc_mask))[0])
         runs = _compute_runs(self.__mfcc_mask_map)
         self.__speech_intervals = [(r[0], r[-1]) for r in runs]
         # where( == False) not already computed, computing now
@@ -632,6 +644,3 @@ class AudioFileMFCC(Loggable):
             self.middle_end = self.all_length - int(tail_length / mws)
         self.log([u"After:  0 %d %d %d", self.middle_begin, self.middle_end, self.all_length])
         self.log(u"Setting head middle tail... done")
-
-
-

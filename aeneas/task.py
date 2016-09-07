@@ -1,6 +1,26 @@
 #!/usr/bin/env python
 # coding=utf-8
 
+# aeneas is a Python/C library and a set of tools
+# to automagically synchronize audio and text (aka forced alignment)
+#
+# Copyright (C) 2012-2013, Alberto Pettarin (www.albertopettarin.it)
+# Copyright (C) 2013-2015, ReadBeyond Srl   (www.readbeyond.it)
+# Copyright (C) 2015-2016, Alberto Pettarin (www.albertopettarin.it)
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU Affero General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU Affero General Public License for more details.
+#
+# You should have received a copy of the GNU Affero General Public License
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
 """
 This module contains the following classes:
 
@@ -22,16 +42,6 @@ from aeneas.timevalue import TimeValue
 import aeneas.globalconstants as gc
 import aeneas.globalfunctions as gf
 
-__author__ = "Alberto Pettarin"
-__copyright__ = """
-    Copyright 2012-2013, Alberto Pettarin (www.albertopettarin.it)
-    Copyright 2013-2015, ReadBeyond Srl   (www.readbeyond.it)
-    Copyright 2015-2016, Alberto Pettarin (www.albertopettarin.it)
-    """
-__license__ = "GNU AGPL v3"
-__version__ = "1.5.1"
-__email__ = "aeneas@readbeyond.it"
-__status__ = "Production"
 
 class Task(Loggable):
     """
@@ -54,14 +64,14 @@ class Task(Loggable):
         super(Task, self).__init__(rconf=rconf, logger=logger)
         self.identifier = gf.uuid_string()
         self.configuration = None
-        self.audio_file_path = None # relative to input container root
-        self.audio_file_path_absolute = None # concrete path, file will be read from this!
+        self.audio_file_path = None                 # relative to input container root
+        self.audio_file_path_absolute = None        # concrete path, file will be read from this!
         self.audio_file = None
-        self.text_file_path = None # relative to input container root
-        self.text_file_path_absolute = None # concrete path, file will be read from this!
+        self.text_file_path = None                  # relative to input container root
+        self.text_file_path_absolute = None         # concrete path, file will be read from this!
         self.text_file = None
-        self.sync_map_file_path = None # relative to output container root
-        self.sync_map_file_path_absolute = None # concrete path, file will be written to this!
+        self.sync_map_file_path = None              # relative to output container root
+        self.sync_map_file_path_absolute = None     # concrete path, file will be written to this!
         self.sync_map = None
         if config_string is not None:
             self.configuration = TaskConfiguration(config_string)
@@ -90,6 +100,7 @@ class Task(Loggable):
         :rtype: string
         """
         return self.__identifier
+
     @identifier.setter
     def identifier(self, value):
         self.__identifier = value
@@ -102,6 +113,7 @@ class Task(Loggable):
         :rtype: string
         """
         return self.__audio_file_path_absolute
+
     @audio_file_path_absolute.setter
     def audio_file_path_absolute(self, audio_file_path_absolute):
         self.__audio_file_path_absolute = audio_file_path_absolute
@@ -115,6 +127,7 @@ class Task(Loggable):
         :rtype: string
         """
         return self.__text_file_path_absolute
+
     @text_file_path_absolute.setter
     def text_file_path_absolute(self, text_file_path_absolute):
         self.__text_file_path_absolute = text_file_path_absolute
@@ -128,6 +141,7 @@ class Task(Loggable):
         :rtype: string
         """
         return self.__sync_map_file_path_absolute
+
     @sync_map_file_path_absolute.setter
     def sync_map_file_path_absolute(self, sync_map_file_path_absolute):
         self.__sync_map_file_path_absolute = sync_map_file_path_absolute
@@ -215,19 +229,19 @@ class Task(Loggable):
         if (
                 (self.text_file_path_absolute is not None) and
                 (self.configuration["language"] is not None)
-            ):
+        ):
             # the following values might be None
             parameters = {
-                gc.PPN_TASK_IS_TEXT_FILE_IGNORE_REGEX : self.configuration["i_t_ignore_regex"],
-                gc.PPN_TASK_IS_TEXT_FILE_TRANSLITERATE_MAP : self.configuration["i_t_transliterate_map"],
-                gc.PPN_TASK_IS_TEXT_MPLAIN_WORD_SEPARATOR : self.configuration["i_t_mplain_word_separator"],
-                gc.PPN_TASK_IS_TEXT_MUNPARSED_L1_ID_REGEX : self.configuration["i_t_munparsed_l1_id_regex"],
-                gc.PPN_TASK_IS_TEXT_MUNPARSED_L2_ID_REGEX : self.configuration["i_t_munparsed_l2_id_regex"],
-                gc.PPN_TASK_IS_TEXT_MUNPARSED_L3_ID_REGEX : self.configuration["i_t_munparsed_l3_id_regex"],
-                gc.PPN_TASK_IS_TEXT_UNPARSED_CLASS_REGEX : self.configuration["i_t_unparsed_class_regex"],
-                gc.PPN_TASK_IS_TEXT_UNPARSED_ID_REGEX : self.configuration["i_t_unparsed_id_regex"],
-                gc.PPN_TASK_IS_TEXT_UNPARSED_ID_SORT : self.configuration["i_t_unparsed_id_sort"],
-                gc.PPN_TASK_OS_FILE_ID_REGEX : self.configuration["o_id_regex"]
+                gc.PPN_TASK_IS_TEXT_FILE_IGNORE_REGEX: self.configuration["i_t_ignore_regex"],
+                gc.PPN_TASK_IS_TEXT_FILE_TRANSLITERATE_MAP: self.configuration["i_t_transliterate_map"],
+                gc.PPN_TASK_IS_TEXT_MPLAIN_WORD_SEPARATOR: self.configuration["i_t_mplain_word_separator"],
+                gc.PPN_TASK_IS_TEXT_MUNPARSED_L1_ID_REGEX: self.configuration["i_t_munparsed_l1_id_regex"],
+                gc.PPN_TASK_IS_TEXT_MUNPARSED_L2_ID_REGEX: self.configuration["i_t_munparsed_l2_id_regex"],
+                gc.PPN_TASK_IS_TEXT_MUNPARSED_L3_ID_REGEX: self.configuration["i_t_munparsed_l3_id_regex"],
+                gc.PPN_TASK_IS_TEXT_UNPARSED_CLASS_REGEX: self.configuration["i_t_unparsed_class_regex"],
+                gc.PPN_TASK_IS_TEXT_UNPARSED_ID_REGEX: self.configuration["i_t_unparsed_id_regex"],
+                gc.PPN_TASK_IS_TEXT_UNPARSED_ID_SORT: self.configuration["i_t_unparsed_id_sort"],
+                gc.PPN_TASK_OS_FILE_ID_REGEX: self.configuration["o_id_regex"]
             }
             self.text_file = TextFile(
                 file_path=self.text_file_path_absolute,
@@ -239,7 +253,6 @@ class Task(Loggable):
         else:
             self.log(u"text_file_path_absolute and/or language is None")
         self.log(u"Populate text file... done")
-
 
 
 class TaskConfiguration(Configuration):
@@ -342,18 +355,15 @@ class TaskConfiguration(Configuration):
         :rtype: tuple
         """
         ABA_MAP = {
-            AdjustBoundaryAlgorithm.AFTERCURRENT : [self[gc.PPN_TASK_ADJUST_BOUNDARY_AFTERCURRENT_VALUE]],
-            AdjustBoundaryAlgorithm.AUTO : [],
-            AdjustBoundaryAlgorithm.BEFORENEXT : [self[gc.PPN_TASK_ADJUST_BOUNDARY_BEFORENEXT_VALUE]],
-            AdjustBoundaryAlgorithm.OFFSET : [self[gc.PPN_TASK_ADJUST_BOUNDARY_OFFSET_VALUE]],
-            AdjustBoundaryAlgorithm.PERCENT : [self[gc.PPN_TASK_ADJUST_BOUNDARY_PERCENT_VALUE]],
-            AdjustBoundaryAlgorithm.RATE : [self[gc.PPN_TASK_ADJUST_BOUNDARY_RATE_VALUE]],
-            AdjustBoundaryAlgorithm.RATEAGGRESSIVE : [self[gc.PPN_TASK_ADJUST_BOUNDARY_RATE_VALUE]]
+            AdjustBoundaryAlgorithm.AFTERCURRENT: [self[gc.PPN_TASK_ADJUST_BOUNDARY_AFTERCURRENT_VALUE]],
+            AdjustBoundaryAlgorithm.AUTO: [],
+            AdjustBoundaryAlgorithm.BEFORENEXT: [self[gc.PPN_TASK_ADJUST_BOUNDARY_BEFORENEXT_VALUE]],
+            AdjustBoundaryAlgorithm.OFFSET: [self[gc.PPN_TASK_ADJUST_BOUNDARY_OFFSET_VALUE]],
+            AdjustBoundaryAlgorithm.PERCENT: [self[gc.PPN_TASK_ADJUST_BOUNDARY_PERCENT_VALUE]],
+            AdjustBoundaryAlgorithm.RATE: [self[gc.PPN_TASK_ADJUST_BOUNDARY_RATE_VALUE]],
+            AdjustBoundaryAlgorithm.RATEAGGRESSIVE: [self[gc.PPN_TASK_ADJUST_BOUNDARY_RATE_VALUE]]
         }
         aba_algorithm = self["aba_algorithm"]
         if aba_algorithm is None:
             aba_algorithm = AdjustBoundaryAlgorithm.AUTO
         return (aba_algorithm, ABA_MAP[aba_algorithm])
-
-
-

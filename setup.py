@@ -1,8 +1,28 @@
 #!/usr/bin/env python
 # coding=utf-8
 
+# aeneas is a Python/C library and a set of tools
+# to automagically synchronize audio and text (aka forced alignment)
+#
+# Copyright (C) 2012-2013, Alberto Pettarin (www.albertopettarin.it)
+# Copyright (C) 2013-2015, ReadBeyond Srl   (www.readbeyond.it)
+# Copyright (C) 2015-2016, Alberto Pettarin (www.albertopettarin.it)
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU Affero General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU Affero General Public License for more details.
+#
+# You should have received a copy of the GNU Affero General Public License
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
 """
-Set aeneas package up
+Set the aeneas package up.
 """
 
 from setuptools import setup, Extension
@@ -11,16 +31,39 @@ import os
 import shutil
 import sys
 
+from setupmeta import PKG_AUTHOR
+from setupmeta import PKG_AUTHOR_EMAIL
+from setupmeta import PKG_CLASSIFIERS
+from setupmeta import PKG_EXTRAS_REQUIRE
+from setupmeta import PKG_INSTALL_REQUIRES
+from setupmeta import PKG_KEYWORDS
+from setupmeta import PKG_LICENSE
+from setupmeta import PKG_LONG_DESCRIPTION
+from setupmeta import PKG_NAME
+from setupmeta import PKG_PACKAGES
+from setupmeta import PKG_PACKAGE_DATA
+from setupmeta import PKG_SCRIPTS
+from setupmeta import PKG_SHORT_DESCRIPTION
+from setupmeta import PKG_URL
+from setupmeta import PKG_VERSION
+
 __author__ = "Alberto Pettarin"
+__email__ = "aeneas@readbeyond.it"
 __copyright__ = """
     Copyright 2012-2013, Alberto Pettarin (www.albertopettarin.it)
     Copyright 2013-2015, ReadBeyond Srl   (www.readbeyond.it)
     Copyright 2015-2016, Alberto Pettarin (www.albertopettarin.it)
-    """
+"""
 __license__ = "GNU AGPL 3"
-__version__ = "1.5.1"
-__email__ = "aeneas@readbeyond.it"
 __status__ = "Production"
+__version__ = "1.5.2"
+
+
+##############################################################################
+#
+# Windows-specific setup for compiling cew
+#
+##############################################################################
 
 def prepare_cew_for_windows():
     """
@@ -74,10 +117,12 @@ def prepare_cew_for_windows():
                 # print("[WARN] and run the aeneas setup again.")
                 # return False
 
-        # copy thirdparty\espeak.lib to $PYTHON\libs\espeak.lib
+        # NOTE: espeak.lib is needed only while compiling the C extension, not when using it
+        #       so, we copy it in the current working directory from the included thirdparty\ directory
+        # NOTE: PREV: copy thirdparty\espeak.lib to $PYTHON\libs\espeak.lib
+        # NOTE: PREV: espeak_lib_dst_path = os.path.join(sys.prefix, "libs", "espeak.lib")
         espeak_lib_src_path = os.path.join(os.path.dirname(__file__), "thirdparty", "espeak.lib")
         espeak_lib_dst_path = os.path.join(os.path.dirname(__file__), "espeak.lib")
-        #espeak_lib_dst_path = os.path.join(sys.prefix, "libs", "espeak.lib")
         if os.path.exists(espeak_lib_dst_path):
             print("[INFO] Found eSpeak LIB in %s" % espeak_lib_dst_path)
         else:
@@ -91,12 +136,49 @@ def prepare_cew_for_windows():
                 print("[WARN] please copy espeak.lib from the thirdparty directory into %s" % espeak_lib_dst_path)
                 print("[WARN] and run the aeneas setup again.")
                 return False
-        
+
         # if here, we have completed the setup, return True
         return True
     except Exception as e:
         print("[WARN] Unexpected exception while preparing cew: %s" % e)
     return False
+
+
+##############################################################################
+#
+# find the OS out and read environment variables for options
+#
+##############################################################################
+
+# get platform
+IS_LINUX = (os.name == "posix") and (os.uname()[0] == "Linux")
+IS_OSX = (os.name == "posix") and (os.uname()[0] == "Darwin")
+IS_WINDOWS = (os.name == "nt")
+
+# define what values of environment variables are considered equal to True
+TRUE_VALUES = [
+    "TRUE",
+    "True",
+    "true",
+    "YES",
+    "Yes",
+    "yes",
+    "1",
+    1
+]
+
+# check whether the user set additional parameters using environment variables
+# NOTE by the book this should be done by subclassing the setuptools Distribution object
+#      but for now using environment variables is good enough
+WITHOUT_CEW = os.getenv("AENEAS_WITH_CEW", "True") not in TRUE_VALUES
+FORCE_CEW = os.getenv("AENEAS_FORCE_CEW", "False") in TRUE_VALUES
+
+
+##############################################################################
+#
+# actual setup
+#
+##############################################################################
 
 # try importing numpy: if it fails, warn user and exit
 try:
@@ -108,72 +190,67 @@ except ImportError:
     print("[INFO] $ sudo pip install numpy")
     sys.exit(1)
 
-# package version, must be unique for each PyPI upload
-PACKAGE_VERSION = "1.5.1.0"
-
-# check whether the user set additional parameters using environment variables
-# NOTE by the book this should be done by subclassing the setuptools Distribution object
-#      but for now using environment variables is good enough
-WITHOUT_CEW = os.getenv("AENEAS_WITH_CEW", "True") not in ["TRUE", "True", "true", "YES", "Yes", "yes", "1", 1]
-FORCE_CEW = os.getenv("AENEAS_FORCE_CEW", "False") in ["TRUE", "True", "true", "YES", "Yes", "yes", "1", 1]
-
-# get platform
-IS_LINUX = (os.name == "posix") and (os.uname()[0] == "Linux")
-IS_OSX = (os.name == "posix") and (os.uname()[0] == "Darwin")
-IS_WINDOWS = (os.name == "nt")
-
-# get human-readable descriptions
-SHORT_DESCRIPTION = "aeneas is a Python/C library and a set of tools to automagically synchronize audio and text (aka forced alignment)"
-try:
-    LONG_DESCRIPTION = io.open("README.rst", "r", encoding="utf-8").read()
-except:
-    LONG_DESCRIPTION = SHORT_DESCRIPTION
-
 # to compile cdtw and cmfcc, we need to include the NumPy dirs
 INCLUDE_DIRS = [misc_util.get_numpy_include_dirs()]
 
 # scripts to be installed globally
 # on Linux and Mac OS X, use the file without extension
 # on Windows, use the file with .py extension
-SCRIPTS = [
-    "bin/aeneas_check_setup",
-    "bin/aeneas_convert_syncmap",
-    "bin/aeneas_download",
-    "bin/aeneas_execute_job",
-    "bin/aeneas_execute_task",
-    "bin/aeneas_plot_waveform",
-    "bin/aeneas_synthesize_text",
-    "bin/aeneas_validate",
-]
 if IS_WINDOWS:
-    SCRIPTS = [s + ".py" for s in SCRIPTS]
+    PKG_SCRIPTS = [s + ".py" for s in PKG_SCRIPTS]
 
 # prepare Extension objects
 EXTENSION_CDTW = Extension(
-    "aeneas.cdtw.cdtw",
-    ["aeneas/cdtw/cdtw_py.c", "aeneas/cdtw/cdtw_func.c", "aeneas/cint/cint.c"],
-    include_dirs=[get_include()]
+    name="aeneas.cdtw.cdtw",
+    sources=[
+        "aeneas/cdtw/cdtw_py.c",
+        "aeneas/cdtw/cdtw_func.c",
+        "aeneas/cint/cint.c"
+    ],
+    include_dirs=[
+        get_include()
+    ]
 )
 EXTENSION_CEW = Extension(
-    "aeneas.cew.cew",
-    ["aeneas/cew/cew_py.c", "aeneas/cew/cew_func.c"],
-    libraries=["espeak"]
+    name="aeneas.cew.cew",
+    sources=[
+        "aeneas/cew/cew_py.c",
+        "aeneas/cew/cew_func.c"
+    ],
+    libraries=[
+        "espeak"
+    ]
 )
 EXTENSION_CMFCC = Extension(
-    "aeneas.cmfcc.cmfcc",
-    ["aeneas/cmfcc/cmfcc_py.c", "aeneas/cmfcc/cmfcc_func.c", "aeneas/cwave/cwave_func.c", "aeneas/cint/cint.c"],
-    include_dirs=[get_include()]
+    name="aeneas.cmfcc.cmfcc",
+    sources=[
+        "aeneas/cmfcc/cmfcc_py.c",
+        "aeneas/cmfcc/cmfcc_func.c",
+        "aeneas/cwave/cwave_func.c",
+        "aeneas/cint/cint.c"
+    ],
+    include_dirs=[
+        get_include()
+    ]
 )
 # cwave is ready, but currently not used
-#EXTENSION_CWAVE = Extension(
-#    "aeneas.cwave.cwave",
-#    ["aeneas/cwave/cwave_py.c", "aeneas/cwave/cwave_func.c"],
-#    include_dirs=[get_include()]
-#)
-#EXTENSIONS = [EXTENSION_CDTW, EXTENSION_CMFCC, EXTENSION_CWAVE]
+# EXTENSION_CWAVE = Extension(
+#     name="aeneas.cwave.cwave",
+#     sources=[
+#         "aeneas/cwave/cwave_py.c",
+#         "aeneas/cwave/cwave_func.c"
+#     ],
+#     include_dirs=[
+#         get_include()
+#     ]
+# )
 
 # append or ignore cew extension as requested
-EXTENSIONS = [EXTENSION_CDTW, EXTENSION_CMFCC]
+EXTENSIONS = [
+    EXTENSION_CDTW,
+    EXTENSION_CMFCC,
+    # EXTENSION_CWAVE
+]
 if WITHOUT_CEW:
     print("[INFO] **********************************************************")
     print("[INFO] The user specified AENEAS_WITH_CEW=False: not building cew")
@@ -212,118 +289,23 @@ else:
     else:
         print("[INFO] Extension cew is not available for your OS")
 
-# finally set the aeneas module up
+# now we are ready to call setup()
 setup(
-    name="aeneas",
-    packages=[
-        "aeneas",
-        "aeneas.cdtw",
-        "aeneas.cew",
-        "aeneas.cmfcc",
-        "aeneas.cwave",
-        "aeneas.extra",
-        "aeneas.tools"
-    ],
-    package_data={
-        "aeneas": ["res/*", "*.md"],
-        "aeneas.cdtw": ["*.c", "*.h", "*.md"],
-        "aeneas.cew": ["*.c", "*.h", "*.md", "*.dll"],
-        "aeneas.cmfcc": ["*.c", "*.h", "*.md"],
-        "aeneas.cwave": ["*.c", "*.h", "*.md"],
-        "aeneas.extra": ["*.md"],
-        "aeneas.tools": ["res/*", "*.md"]
-    },
-    version=PACKAGE_VERSION,
-    description=SHORT_DESCRIPTION,
-    author="Alberto Pettarin",
-    author_email="alberto@albertopettarin.it",
-    url="https://github.com/readbeyond/aeneas",
-    license="GNU Affero General Public License v3 (AGPL v3)",
-    long_description=LONG_DESCRIPTION,
-    install_requires=[
-        "BeautifulSoup4==4.4.1",
-        "lxml==3.6.0",
-        "numpy>=1.9"
-    ],
-    extras_require={
-        "full": ["pafy>=0.3.74", "Pillow>=3.1.1", "requests>=2.9.1", "youtube-dl>=2015.7.21"],
-        "nopillow" : ["pafy>=0.3.74", "requests>=2.9.1", "youtube-dl>=2015.7.21"],
-        "pafy": ["pafy>=0.3.74", "youtube-dl>=2015.7.21"],
-        "pillow": ["Pillow>=3.1.1"],
-        "requests": ["requests>=2.9.1"],
-    },
-    scripts=SCRIPTS,
-    keywords=[
-        "AUD",
-        "CSV",
-        "DTW",
-        "EAF",
-        "ELAN",
-        "EPUB 3 Media Overlay",
-        "EPUB 3",
-        "EPUB",
-        "JSON",
-        "MFCC",
-        "Mel-frequency cepstral coefficients",
-        "ReadBeyond Sync",
-        "ReadBeyond",
-        "SBV",
-        "SMIL",
-        "SRT",
-        "SSV",
-        "SUB",
-        "TSV",
-        "TTML",
-        "VTT",
-        "XML",
-        "aeneas",
-        "audio/text alignment",
-        "dynamic time warping",
-        "espeak",
-        "ffmpeg",
-        "ffprobe",
-        "forced alignment",
-        "media overlay",
-        "rb_smil_emulator",
-        "subtitles",
-        "sync",
-        "synchronization",
-    ],
-    classifiers=[
-        "Development Status :: 5 - Production/Stable",
-        "Environment :: Console",
-        "Intended Audience :: Developers",
-        "Intended Audience :: Education",
-        "Intended Audience :: End Users/Desktop",
-        "Intended Audience :: Science/Research",
-        "License :: OSI Approved :: GNU Affero General Public License v3",
-        "Natural Language :: English",
-        "Operating System :: MacOS :: MacOS X",
-        "Operating System :: Microsoft :: Windows",
-        "Operating System :: POSIX :: Linux",
-        "Programming Language :: C",
-        "Programming Language :: Python",
-        "Programming Language :: Python :: 2",
-        "Programming Language :: Python :: 2.7",
-        "Programming Language :: Python :: 3",
-        "Programming Language :: Python :: 3.4",
-        "Programming Language :: Python :: 3.5",
-        "Topic :: Education",
-        "Topic :: Multimedia",
-        "Topic :: Multimedia :: Sound/Audio",
-        "Topic :: Multimedia :: Sound/Audio :: Analysis",
-        "Topic :: Multimedia :: Sound/Audio :: Speech",
-        "Topic :: Printing",
-        "Topic :: Scientific/Engineering",
-        "Topic :: Scientific/Engineering :: Mathematics",
-        "Topic :: Software Development :: Libraries :: Python Modules",
-        "Topic :: Text Processing",
-        "Topic :: Text Processing :: Linguistic",
-        "Topic :: Text Processing :: Markup",
-        "Topic :: Text Processing :: Markup :: HTML",
-        "Topic :: Text Processing :: Markup :: XML",
-        "Topic :: Utilities"
-    ],
-    ext_modules=EXTENSIONS,
+    name=PKG_NAME,
+    version=PKG_VERSION,
+    packages=PKG_PACKAGES,
+    package_data=PKG_PACKAGE_DATA,
+    description=PKG_SHORT_DESCRIPTION,
+    long_description=PKG_LONG_DESCRIPTION,
+    author=PKG_AUTHOR,
+    author_email=PKG_AUTHOR_EMAIL,
+    url=PKG_URL,
+    license=PKG_LICENSE,
+    keywords=PKG_KEYWORDS,
+    classifiers=PKG_CLASSIFIERS,
+    install_requires=PKG_INSTALL_REQUIRES,
+    extras_require=PKG_EXTRAS_REQUIRE,
+    scripts=PKG_SCRIPTS,
     include_dirs=INCLUDE_DIRS,
+    ext_modules=EXTENSIONS
 )

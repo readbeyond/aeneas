@@ -1,6 +1,26 @@
 #!/usr/bin/env python
 # coding=utf-8
 
+# aeneas is a Python/C library and a set of tools
+# to automagically synchronize audio and text (aka forced alignment)
+#
+# Copyright (C) 2012-2013, Alberto Pettarin (www.albertopettarin.it)
+# Copyright (C) 2013-2015, ReadBeyond Srl   (www.readbeyond.it)
+# Copyright (C) 2015-2016, Alberto Pettarin (www.albertopettarin.it)
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU Affero General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU Affero General Public License for more details.
+#
+# You should have received a copy of the GNU Affero General Public License
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
 """
 Execute a Task, that is, a pair of audio/text files
 and a configuration string.
@@ -31,16 +51,6 @@ from aeneas.validator import Validator
 import aeneas.globalconstants as gc
 import aeneas.globalfunctions as gf
 
-__author__ = "Alberto Pettarin"
-__copyright__ = """
-    Copyright 2012-2013, Alberto Pettarin (www.albertopettarin.it)
-    Copyright 2013-2015, ReadBeyond Srl   (www.readbeyond.it)
-    Copyright 2015-2016, Alberto Pettarin (www.albertopettarin.it)
-    """
-__license__ = "GNU AGPL 3"
-__version__ = "1.5.1"
-__email__ = "aeneas@readbeyond.it"
-__status__ = "Production"
 
 class ExecuteTaskCLI(AbstractCLIProgram):
     """
@@ -53,7 +63,7 @@ class ExecuteTaskCLI(AbstractCLIProgram):
     CTW_SPEECT = gf.relative_path("../extra/ctw_speect/ctw_speect.py", __file__)
 
     DEMOS = {
-        u"--example-aftercurrent" : {
+        u"--example-aftercurrent": {
             u"description": u"input: plain text (plain), output: AUD, aba beforenext 0.200",
             u"audio": AUDIO_FILE,
             u"text": gf.relative_path("res/plain.txt", __file__),
@@ -62,7 +72,7 @@ class ExecuteTaskCLI(AbstractCLIProgram):
             u"options": u"",
             u"show": False
         },
-        u"--example-beforenext" : {
+        u"--example-beforenext": {
             u"description": u"input: plain text (plain), output: AUD, aba beforenext 0.200",
             u"audio": AUDIO_FILE,
             u"text": gf.relative_path("res/plain.txt", __file__),
@@ -71,7 +81,7 @@ class ExecuteTaskCLI(AbstractCLIProgram):
             u"options": u"",
             u"show": False
         },
-        u"--example-cewsubprocess" : {
+        u"--example-cewsubprocess": {
             u"description": u"input: plain text, output: TSV, run via cewsubprocess",
             u"audio": AUDIO_FILE,
             u"text": gf.relative_path("res/plain.txt", __file__),
@@ -80,7 +90,7 @@ class ExecuteTaskCLI(AbstractCLIProgram):
             u"options": u"-r=\"cew_subprocess_enabled=True\"",
             u"show": False
         },
-        u"--example-ctw-espeak" : {
+        u"--example-ctw-espeak": {
             u"description": u"input: plain text, output: TSV, tts engine: ctw espeak",
             u"audio": AUDIO_FILE,
             u"text": gf.relative_path("res/plain.txt", __file__),
@@ -89,7 +99,7 @@ class ExecuteTaskCLI(AbstractCLIProgram):
             u"options": u"-r=\"tts=custom|tts_path=%s\"" % CTW_ESPEAK,
             u"show": False
         },
-        u"--example-ctw-speect" : {
+        u"--example-ctw-speect": {
             u"description": u"input: plain text, output: TSV, tts engine: ctw speect",
             u"audio": AUDIO_FILE,
             u"text": gf.relative_path("res/plain.txt", __file__),
@@ -98,7 +108,7 @@ class ExecuteTaskCLI(AbstractCLIProgram):
             u"options": u"-r=\"tts=custom|tts_path=%s\"" % CTW_SPEECT,
             u"show": False
         },
-        u"--example-eaf" : {
+        u"--example-eaf": {
             u"description": u"input: plain text, output: EAF",
             u"audio": AUDIO_FILE,
             u"text": gf.relative_path("res/plain.txt", __file__),
@@ -107,7 +117,7 @@ class ExecuteTaskCLI(AbstractCLIProgram):
             u"options": u"",
             u"show": True
         },
-        u"--example-faster-rate" : {
+        u"--example-faster-rate": {
             u"description": u"input: plain text (plain), output: SRT, print faster than 14.0 chars/s",
             u"audio": AUDIO_FILE,
             u"text": gf.relative_path("res/plain.txt", __file__),
@@ -116,7 +126,7 @@ class ExecuteTaskCLI(AbstractCLIProgram):
             u"options": u"--faster-rate",
             u"show": False
         },
-        u"--example-festival" : {
+        u"--example-festival": {
             u"description": u"input: plain text, output: TSV, tts engine: Festival",
             u"audio": AUDIO_FILE,
             u"text": gf.relative_path("res/plain.txt", __file__),
@@ -125,7 +135,7 @@ class ExecuteTaskCLI(AbstractCLIProgram):
             u"options": u"-r=\"tts=festival|tts_path=text2wave\"",
             u"show": False
         },
-        u"--example-flatten-12" : {
+        u"--example-flatten-12": {
             u"description": u"input: mplain text (multilevel), output: JSON, levels to output: 1 and 2",
             u"audio": AUDIO_FILE,
             u"text": gf.relative_path("res/mplain.txt", __file__),
@@ -134,7 +144,7 @@ class ExecuteTaskCLI(AbstractCLIProgram):
             u"options": u"",
             u"show": False
         },
-        u"--example-flatten-2" : {
+        u"--example-flatten-2": {
             u"description": u"input: mplain text (multilevel), output: JSON, levels to output: 2",
             u"audio": AUDIO_FILE,
             u"text": gf.relative_path("res/mplain.txt", __file__),
@@ -143,7 +153,7 @@ class ExecuteTaskCLI(AbstractCLIProgram):
             u"options": u"",
             u"show": False
         },
-        u"--example-flatten-3" : {
+        u"--example-flatten-3": {
             u"description": u"input: mplain text (multilevel), output: JSON, levels to output: 3",
             u"audio": AUDIO_FILE,
             u"text": gf.relative_path("res/mplain.txt", __file__),
@@ -152,7 +162,7 @@ class ExecuteTaskCLI(AbstractCLIProgram):
             u"options": u"",
             u"show": False
         },
-        u"--example-head-tail" : {
+        u"--example-head-tail": {
             u"description": u"input: plain text, output: TSV, explicit head and tail",
             u"audio": AUDIO_FILE,
             u"text": gf.relative_path("res/plain.txt", __file__),
@@ -161,7 +171,7 @@ class ExecuteTaskCLI(AbstractCLIProgram):
             u"options": u"",
             u"show": False
         },
-        u"--example-json" : {
+        u"--example-json": {
             u"description": u"input: plain text, output: JSON",
             u"audio": AUDIO_FILE,
             u"text": gf.relative_path("res/plain.txt", __file__),
@@ -170,7 +180,7 @@ class ExecuteTaskCLI(AbstractCLIProgram):
             u"options": u"",
             u"show": True
         },
-        u"--example-mplain-json" : {
+        u"--example-mplain-json": {
             u"description": u"input: multilevel plain text (mplain), output: JSON",
             u"audio": AUDIO_FILE,
             u"text": gf.relative_path("res/mplain.txt", __file__),
@@ -179,7 +189,7 @@ class ExecuteTaskCLI(AbstractCLIProgram):
             u"options": u"",
             u"show": False
         },
-        u"--example-mplain-smil" : {
+        u"--example-mplain-smil": {
             u"description": u"input: multilevel plain text (mplain), output: SMIL",
             u"audio": AUDIO_FILE,
             u"text": gf.relative_path("res/mplain.txt", __file__),
@@ -188,7 +198,7 @@ class ExecuteTaskCLI(AbstractCLIProgram):
             u"options": u"",
             u"show": True
         },
-        u"--example-munparsed-json" : {
+        u"--example-munparsed-json": {
             u"description": u"input: multilevel unparsed text (munparsed), output: JSON",
             u"audio": AUDIO_FILE,
             u"text": gf.relative_path("res/munparsed2.xhtml", __file__),
@@ -197,7 +207,7 @@ class ExecuteTaskCLI(AbstractCLIProgram):
             u"options": u"",
             u"show": False
         },
-        u"--example-munparsed-smil" : {
+        u"--example-munparsed-smil": {
             u"description": u"input: multilevel unparsed text (munparsed), output: SMIL",
             u"audio": AUDIO_FILE,
             u"text": gf.relative_path("res/munparsed.xhtml", __file__),
@@ -206,7 +216,7 @@ class ExecuteTaskCLI(AbstractCLIProgram):
             u"options": u"",
             u"show": True
         },
-        u"--example-mws" : {
+        u"--example-mws": {
             u"description": u"input: plain text, output: JSON, resolution: 0.500s",
             u"audio": AUDIO_FILE,
             u"text": gf.relative_path("res/plain.txt", __file__),
@@ -215,7 +225,7 @@ class ExecuteTaskCLI(AbstractCLIProgram):
             u"options": u"-r=\"mfcc_window_length=1.500|mfcc_window_shift=0.500\"",
             u"show": False
         },
-        u"--example-no-zero" : {
+        u"--example-no-zero": {
             u"description": u"input: multilevel plain text (mplain), output: JSON, no zero duration",
             u"audio": AUDIO_FILE,
             u"text": gf.relative_path("res/mplain.txt", __file__),
@@ -224,7 +234,7 @@ class ExecuteTaskCLI(AbstractCLIProgram):
             u"options": u"--zero",
             u"show": False
         },
-        u"--example-offset" : {
+        u"--example-offset": {
             u"description": u"input: plain text (plain), output: AUD, aba offset 0.200",
             u"audio": AUDIO_FILE,
             u"text": gf.relative_path("res/plain.txt", __file__),
@@ -233,7 +243,7 @@ class ExecuteTaskCLI(AbstractCLIProgram):
             u"options": u"",
             u"show": False
         },
-        u"--example-percent" : {
+        u"--example-percent": {
             u"description": u"input: plain text (plain), output: AUD, aba percent 50",
             u"audio": AUDIO_FILE,
             u"text": gf.relative_path("res/plain.txt", __file__),
@@ -242,7 +252,7 @@ class ExecuteTaskCLI(AbstractCLIProgram):
             u"options": u"",
             u"show": False
         },
-        u"--example-py" : {
+        u"--example-py": {
             u"description": u"input: plain text, output: JSON, pure python",
             u"audio": AUDIO_FILE,
             u"text": gf.relative_path("res/plain.txt", __file__),
@@ -251,7 +261,7 @@ class ExecuteTaskCLI(AbstractCLIProgram):
             u"options": u"-r=\"c_extensions=False\"",
             u"show": False
         },
-        u"--example-rates" : {
+        u"--example-rates": {
             u"description": u"input: plain text (plain), output: SRT, max rate 14.0 chars/s, print rates",
             u"audio": AUDIO_FILE,
             u"text": gf.relative_path("res/plain.txt", __file__),
@@ -260,7 +270,7 @@ class ExecuteTaskCLI(AbstractCLIProgram):
             u"options": u"--rates",
             u"show": False
         },
-        u"--example-sd" : {
+        u"--example-sd": {
             u"description": u"input: plain text, output: TSV, head/tail detection",
             u"audio": AUDIO_FILE,
             u"text": gf.relative_path("res/plain.txt", __file__),
@@ -269,7 +279,7 @@ class ExecuteTaskCLI(AbstractCLIProgram):
             u"options": u"",
             u"show": False
         },
-        u"--example-srt" : {
+        u"--example-srt": {
             u"description": u"input: subtitles text, output: SRT",
             u"audio": AUDIO_FILE,
             u"text": gf.relative_path("res/subtitles.txt", __file__),
@@ -278,7 +288,7 @@ class ExecuteTaskCLI(AbstractCLIProgram):
             u"options": u"",
             u"show": True
         },
-        u"--example-smil" : {
+        u"--example-smil": {
             u"description": u"input: unparsed text, output: SMIL",
             u"audio": AUDIO_FILE,
             u"text": gf.relative_path("res/page.xhtml", __file__),
@@ -287,7 +297,7 @@ class ExecuteTaskCLI(AbstractCLIProgram):
             u"options": u"",
             u"show": True
         },
-        u"--example-tsv" : {
+        u"--example-tsv": {
             u"description": u"input: parsed text, output: TSV",
             u"audio": AUDIO_FILE,
             u"text": gf.relative_path("res/parsed.txt", __file__),
@@ -296,7 +306,7 @@ class ExecuteTaskCLI(AbstractCLIProgram):
             u"options": u"",
             u"show": True
         },
-        u"--example-youtube" : {
+        u"--example-youtube": {
             u"description": u"input: audio from YouTube, output: TXT",
             u"audio": "https://www.youtube.com/watch?v=rU4a7AA8wM0",
             u"text": gf.relative_path("res/plain.txt", __file__),
@@ -346,15 +356,15 @@ class ExecuteTaskCLI(AbstractCLIProgram):
     ]
 
     VALUES = {
-        "espeak" : sorted(ESPEAKWrapper.LANGUAGE_TO_VOICE_CODE.keys()),
-        "festival" : sorted(FESTIVALWrapper.LANGUAGE_TO_VOICE_CODE.keys()),
+        "espeak": sorted(ESPEAKWrapper.LANGUAGE_TO_VOICE_CODE.keys()),
+        "festival": sorted(FESTIVALWrapper.LANGUAGE_TO_VOICE_CODE.keys()),
         "nuancettsapi": sorted(NuanceTTSAPIWrapper.LANGUAGE_TO_VOICE_CODE.keys()),
-        "task_language" : Language.ALLOWED_VALUES,
-        "is_text_type" : TextFileFormat.ALLOWED_VALUES,
-        "is_text_unparsed_id_sort" : IDSortingAlgorithm.ALLOWED_VALUES,
-        "os_task_file_format" : SyncMapFormat.ALLOWED_VALUES,
-        "os_task_file_head_tail_format" : SyncMapHeadTailFormat.ALLOWED_VALUES,
-        "task_adjust_boundary_algorithm" : AdjustBoundaryAlgorithm.ALLOWED_VALUES,
+        "task_language": Language.ALLOWED_VALUES,
+        "is_text_type": TextFileFormat.ALLOWED_VALUES,
+        "is_text_unparsed_id_sort": IDSortingAlgorithm.ALLOWED_VALUES,
+        "os_task_file_format": SyncMapFormat.ALLOWED_VALUES,
+        "os_task_file_head_tail_format": SyncMapHeadTailFormat.ALLOWED_VALUES,
+        "task_adjust_boundary_algorithm": AdjustBoundaryAlgorithm.ALLOWED_VALUES,
     }
 
     NAME = gf.file_name_without_extension(__file__)
@@ -625,15 +635,15 @@ class ExecuteTaskCLI(AbstractCLIProgram):
             if full or example["show"]:
                 msg.append(u"Example %d (%s)" % (i, example[u"description"]))
                 # NOTE too verbose now that we have dozens of examples
-                #msg.append(u"  $ CONFIG_STRING=\"%s\"" % (example[u"config"]))
-                #msg.append(u"  $ %s %s %s \"$CONFIG_STRING\" %s %s" % (
-                #    self.invoke,
-                #    example[u"audio"],
-                #    example[u"text"],
-                #    example[u"syncmap"],
-                #    example[u"options"]
-                #))
-                #msg.append(u"  or")
+                # COMMENTED msg.append(u"  $ CONFIG_STRING=\"%s\"" % (example[u"config"]))
+                # COMMENTED msg.append(u"  $ %s %s %s \"$CONFIG_STRING\" %s %s" % (
+                # COMMENTED     self.invoke,
+                # COMMENTED     example[u"audio"],
+                # COMMENTED     example[u"text"],
+                # COMMENTED     example[u"syncmap"],
+                # COMMENTED     example[u"options"]
+                # COMMENTED ))
+                # COMMENTED msg.append(u"  or")
                 msg.append(u"  $ %s %s" % (self.invoke, key))
                 msg.append(u"")
                 i += 1
@@ -670,7 +680,6 @@ class ExecuteTaskCLI(AbstractCLIProgram):
         return self.HELP_EXIT_CODE
 
 
-
 def main():
     """
     Execute program.
@@ -679,6 +688,3 @@ def main():
 
 if __name__ == '__main__':
     main()
-
-
-
