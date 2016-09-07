@@ -2,8 +2,8 @@
 
 **aeneas** is a Python/C library and a set of tools to automagically synchronize audio and text (aka forced alignment).
 
-* Version: 1.5.1.0
-* Date: 2016-07-25
+* Version: 1.5.2.0
+* Date: 2016-09-??
 * Developed by: [ReadBeyond](http://www.readbeyond.it/)
 * Lead Developer: [Alberto Pettarin](http://www.albertopettarin.it/)
 * License: the GNU Affero General Public License Version 3 (AGPL v3)
@@ -316,8 +316,7 @@ Just a few rules, to make life easier for both you and me:
 
 2. Please make your code consistent with
    the existing code base style
-   (see the
-   [Google Python Style Guide](https://google-styleguide.googlecode.com/svn/trunk/pyguide.html)
+   (see the [Code Style Guide](https://github.com/readbeyond/aeneas/blob/master/wiki/CODESTYLE.md)
    ), and test your contributed code
    against the unit tests
    before opening the pull request.
@@ -346,6 +345,9 @@ for its asynchronous usage.
 
 **Chris Hubbard** prepared the files for
 packaging aeneas as a Debian/Ubuntu `.deb`.
+
+**Daniel Bair** prepared the `brew` formula
+for installing **aeneas** and its dependencies on Mac OS X.
 
 **Daniel Bair**, **Chris Hubbard**, and **Richard Margetts**
 packaged the installers for Mac OS X and Windows.

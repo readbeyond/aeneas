@@ -118,8 +118,8 @@ Dependencies
 ------------
 
 * ``numpy`` (v1.9 or later)
-* ``lxml`` (v3.0 or later)
-* ``BeautifulSoup`` (v4.4 or later)
+* ``lxml`` (v3.6.0)
+* ``BeautifulSoup`` (v4.4.1)
 
 Only ``numpy`` is actually needed, as it is heavily used for the alignment computation.
 

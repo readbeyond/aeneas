@@ -1,6 +1,26 @@
 #!/usr/bin/env python
 # coding=utf-8
 
+# aeneas is a Python/C library and a set of tools
+# to automagically synchronize audio and text (aka forced alignment)
+#
+# Copyright (C) 2012-2013, Alberto Pettarin (www.albertopettarin.it)
+# Copyright (C) 2013-2015, ReadBeyond Srl   (www.readbeyond.it)
+# Copyright (C) 2015-2016, Alberto Pettarin (www.albertopettarin.it)
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU Affero General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU Affero General Public License for more details.
+#
+# You should have received a copy of the GNU Affero General Public License
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
 """
 This module contains the following classes:
 
@@ -34,16 +54,6 @@ from aeneas.timevalue import TimeValue
 from aeneas.tree import Tree
 import aeneas.globalfunctions as gf
 
-__author__ = "Alberto Pettarin"
-__copyright__ = """
-    Copyright 2012-2013, Alberto Pettarin (www.albertopettarin.it)
-    Copyright 2013-2015, ReadBeyond Srl   (www.readbeyond.it)
-    Copyright 2015-2016, Alberto Pettarin (www.albertopettarin.it)
-    """
-__license__ = "GNU AGPL v3"
-__version__ = "1.5.1"
-__email__ = "aeneas@readbeyond.it"
-__status__ = "Production"
 
 class ExecuteTaskExecutionError(Exception):
     """
@@ -52,13 +62,11 @@ class ExecuteTaskExecutionError(Exception):
     pass
 
 
-
 class ExecuteTaskInputError(Exception):
     """
     Error raised when the input parameters of the task are invalid or missing.
     """
     pass
-
 
 
 class ExecuteTask(Loggable):
@@ -139,13 +147,13 @@ class ExecuteTask(Loggable):
         if (
                 (self.task.audio_file.audio_length is None) or
                 (self.task.audio_file.audio_length <= 0)
-            ):
+        ):
             self.log_exc(u"The task seems to have an invalid audio file", None, True, ExecuteTaskInputError)
         task_max_audio_length = self.rconf[RuntimeConfiguration.TASK_MAX_AUDIO_LENGTH]
         if (
                 (task_max_audio_length > 0) and
                 (self.task.audio_file.audio_length > task_max_audio_length)
-            ):
+        ):
             self.log_exc(u"The audio file of the task has length %.3f, more than the maximum allowed (%.3f)." % (self.task.audio_file.audio_length, task_max_audio_length), None, True, ExecuteTaskInputError)
 
         # check that we have the TextFile object
@@ -157,7 +165,7 @@ class ExecuteTask(Loggable):
         if (
                 (task_max_text_length > 0) and
                 (len(self.task.text_file) > task_max_text_length)
-            ):
+        ):
             self.log_exc(u"The text file of the task has %d fragments, more than the maximum allowed (%d)." % (len(self.task.text_file), task_max_text_length), None, True, ExecuteTaskInputError)
         if self.task.text_file.chars == 0:
             self.log_exc(u"The task text file seems to have empty text", None, True, ExecuteTaskInputError)
@@ -231,12 +239,12 @@ class ExecuteTask(Loggable):
             # extract MFCC for each level
             for i in range(1, len(level_rconfs)):
                 self._step_begin(u"extract MFCC real wave level %d" % i)
-                if (i == 1) or (level_rconfs[i].mws != level_rconfs[i-1].mws) or (level_rconfs[i].mwl != level_rconfs[i-1].mwl):
+                if (i == 1) or (level_rconfs[i].mws != level_rconfs[i - 1].mws) or (level_rconfs[i].mwl != level_rconfs[i - 1].mwl):
                     self.rconf = level_rconfs[i]
                     level_mfccs[i] = self._extract_mfcc(audio_file=audio_file)
                 else:
                     self.log(u"Keeping MFCC real wave from previous level")
-                    level_mfccs[i] = level_mfccs[i-1]
+                    level_mfccs[i] = level_mfccs[i - 1]
                 self._step_end()
 
             self.log(u"Clearing AudioFile object...")
@@ -685,6 +693,3 @@ class ExecuteTask(Loggable):
             self.log(u"Checking for fragments with zero duration... done")
         else:
             self.log(u"Not checking for fragments with zero duration")
-
-
-

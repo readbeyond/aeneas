@@ -1,11 +1,32 @@
 #!/usr/bin/env python
 # coding=utf-8
 
+# aeneas is a Python/C library and a set of tools
+# to automagically synchronize audio and text (aka forced alignment)
+#
+# Copyright (C) 2012-2013, Alberto Pettarin (www.albertopettarin.it)
+# Copyright (C) 2013-2015, ReadBeyond Srl   (www.readbeyond.it)
+# Copyright (C) 2015-2016, Alberto Pettarin (www.albertopettarin.it)
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU Affero General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU Affero General Public License for more details.
+#
+# You should have received a copy of the GNU Affero General Public License
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
 import unittest
 
 from aeneas.logger import Logger
 from aeneas.validator import Validator
 import aeneas.globalfunctions as gf
+
 
 class TestValidator(unittest.TestCase):
 
@@ -124,8 +145,8 @@ class TestValidator(unittest.TestCase):
         self.jc(u"job_language=it|os_job_file_container=zip", False)
 
     # language is no longer checked
-    #def test_check_jc_invalid_value_job_language(self):
-    #    self.jc(u"job_language=zzzz|os_job_file_name=output.zip|os_job_file_container=zip", False)
+    # COMMENTED def test_check_jc_invalid_value_job_language(self):
+    # COMMENTED   self.jc(u"job_language=zzzz|os_job_file_name=output.zip|os_job_file_container=zip", False)
 
     def test_check_jc_invalid_value_os_job_file_container(self):
         self.jc(u"job_language=it|os_job_file_name=output.zip|os_job_file_container=zzzzzz", False)
@@ -185,8 +206,8 @@ class TestValidator(unittest.TestCase):
         self.tc(u"task_language=it|is_text_type=plain|os_task_file_name=output.txt", False)
 
     # language is no longer checked
-    #def test_check_tc_invalid_value_task_language(self):
-    #    self.tc(u"task_language=zzzz|is_text_type=plain|os_task_file_name=output.txt|os_task_file_format=txt", False)
+    # COMMENTED def test_check_tc_invalid_value_task_language(self):
+    # COMMENTED   self.tc(u"task_language=zzzz|is_text_type=plain|os_task_file_name=output.txt|os_task_file_format=txt", False)
 
     def test_check_tc_invalid_value_is_text_type(self):
         self.tc(u"task_language=it|is_text_type=zzzzzz|os_task_file_name=output.txt|os_task_file_format=txt", False)
@@ -326,8 +347,6 @@ class TestValidator(unittest.TestCase):
     def test_check_container_xml_not_root_nested(self):
         self.container("res/validator/job_xml_config_not_root_nested", True)
 
+
 if __name__ == '__main__':
     unittest.main()
-
-
-

@@ -1,6 +1,26 @@
 #!/usr/bin/env python
 # coding=utf-8
 
+# aeneas is a Python/C library and a set of tools
+# to automagically synchronize audio and text (aka forced alignment)
+#
+# Copyright (C) 2012-2013, Alberto Pettarin (www.albertopettarin.it)
+# Copyright (C) 2013-2015, ReadBeyond Srl   (www.readbeyond.it)
+# Copyright (C) 2015-2016, Alberto Pettarin (www.albertopettarin.it)
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU Affero General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU Affero General Public License for more details.
+#
+# You should have received a copy of the GNU Affero General Public License
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
 """
 This module contains the following classes:
 
@@ -23,16 +43,6 @@ from aeneas.textfile import TextFile
 from aeneas.timevalue import Decimal
 from aeneas.timevalue import TimeValue
 
-__author__ = "Alberto Pettarin"
-__copyright__ = """
-    Copyright 2012-2013, Alberto Pettarin (www.albertopettarin.it)
-    Copyright 2013-2015, ReadBeyond Srl   (www.readbeyond.it)
-    Copyright 2015-2016, Alberto Pettarin (www.albertopettarin.it)
-    """
-__license__ = "GNU AGPL v3"
-__version__ = "1.5.1"
-__email__ = "aeneas@readbeyond.it"
-__status__ = "Production"
 
 class AdjustBoundaryAlgorithm(Loggable):
     """
@@ -233,7 +243,7 @@ class AdjustBoundaryAlgorithm(Loggable):
             text_file,
             rconf=None,
             logger=None
-        ):
+    ):
         if algorithm not in self.ALLOWED_VALUES:
             raise ValueError(u"Algorithm value not allowed")
         if boundary_indices is None:
@@ -440,7 +450,7 @@ class AdjustBoundaryAlgorithm(Loggable):
         :type  times: list of :class:`~aeneas.timevalue.TimeValue`
         """
         self.log(u"Converting times to intervals...")
-        intervals = [[times[i], times[i+1]] for i in range(len(times) - 1)]
+        intervals = [[times[i], times[i + 1]] for i in range(len(times) - 1)]
         self.log(u"Converting times to intervals... done")
         self.log(u"Adding head and tail...")
         self.intervals = [[TimeValue("0.000"), intervals[0][0]]] + intervals + [[intervals[-1][1], self.real_wave_mfcc.audio_length]]
@@ -487,8 +497,8 @@ class AdjustBoundaryAlgorithm(Loggable):
         #
         self.log(u"  First iteration...")
         nonspeech_counter = numpy.zeros(len(nonspeech_intervals), dtype=int)
-        i = 0 # index of current boundary_index
-        j = 0 # index of current nonspeech_interval
+        i = 0   # index of current boundary_index
+        j = 0   # index of current nonspeech_interval
         while i < len(self.boundary_indices):
             # current boundary index
             cbi = self.boundary_indices[i]
@@ -533,7 +543,7 @@ class AdjustBoundaryAlgorithm(Loggable):
                     (cbi - 1 >= cni[0]) and
                     (cbi - 1 <= cni[1]) and
                     (nonspeech_counter[j] == 1) and (i < len(self.boundary_indices) - 1)
-                ):
+            ):
                 # falling inside and unique and not last => adjust
                 times[i] = adjust_function(cni[0], cni[1], cbi)
                 self.log([u"SI  Adjusted cbi %d : %.3f => %.3f", cbi, cbi * mws, times[i]])
@@ -550,6 +560,3 @@ class AdjustBoundaryAlgorithm(Loggable):
             i += 1
         self.log(u"  Second iteration... done")
         self._times_to_intervals(times)
-
-
-

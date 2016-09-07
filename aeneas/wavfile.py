@@ -42,7 +42,7 @@ def _read_fmt_chunk(fid):
         fmt = '>'
     else:
         fmt = '<'
-    res = struct.unpack(fmt+'iHHIIHH', fid.read(20))
+    res = struct.unpack(fmt + 'iHHIIHH', fid.read(20))
     size, comp, noc, rate, sbytes, ba, bits = res
     if comp not in KNOWN_WAVE_FORMATS or size > 16:
         comp = WAVE_FORMAT_PCM
@@ -62,7 +62,7 @@ def _read_data_chunk(fid, comp, noc, bits, mmap=False):
         fmt = '<i'
     size = struct.unpack(fmt, fid.read(4))[0]
 
-    bytes = bits//8
+    bytes = bits // 8
     if bits == 8:
         dtype = 'u1'
     else:
@@ -79,7 +79,7 @@ def _read_data_chunk(fid, comp, noc, bits, mmap=False):
     else:
         start = fid.tell()
         data = numpy.memmap(fid, dtype=dtype, mode='c', offset=start,
-                            shape=(size//bytes,))
+                            shape=(size // bytes,))
         fid.seek(start + size)
 
     if noc > 1:
@@ -245,7 +245,7 @@ def write(filename, rate, data):
         else:
             noc = data.shape[1]
         bits = data.dtype.itemsize * 8
-        sbytes = rate*(bits // 8)*noc
+        sbytes = rate * (bits // 8) * noc
         ba = noc * (bits // 8)
         fid.write(struct.pack('<ihHIIHH', 16, comp, noc, rate, sbytes,
                               ba, bits))
@@ -261,7 +261,7 @@ def write(filename, rate, data):
         #  position at start of the file.
         size = fid.tell()
         fid.seek(4)
-        fid.write(struct.pack('<i', size-8))
+        fid.write(struct.pack('<i', size - 8))
 
     finally:
         if not hasattr(filename, 'write'):

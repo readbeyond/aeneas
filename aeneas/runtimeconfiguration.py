@@ -1,6 +1,25 @@
 #!/usr/bin/env python
 # coding=utf-8
 
+# aeneas is a Python/C library and a set of tools
+# to automagically synchronize audio and text (aka forced alignment)
+#
+# Copyright (C) 2012-2013, Alberto Pettarin (www.albertopettarin.it)
+# Copyright (C) 2013-2015, ReadBeyond Srl   (www.readbeyond.it)
+# Copyright (C) 2015-2016, Alberto Pettarin (www.albertopettarin.it)
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU Affero General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU Affero General Public License for more details.
+#
+# You should have received a copy of the GNU Affero General Public License
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 """
 This module contains the following classes:
@@ -17,16 +36,6 @@ from __future__ import print_function
 from aeneas.configuration import Configuration
 from aeneas.timevalue import TimeValue
 
-__author__ = "Alberto Pettarin"
-__copyright__ = """
-    Copyright 2012-2013, Alberto Pettarin (www.albertopettarin.it)
-    Copyright 2013-2015, ReadBeyond Srl   (www.readbeyond.it)
-    Copyright 2015-2016, Alberto Pettarin (www.albertopettarin.it)
-    """
-__license__ = "GNU AGPL v3"
-__version__ = "1.5.1"
-__email__ = "aeneas@readbeyond.it"
-__status__ = "Production"
 
 class RuntimeConfiguration(Configuration):
     """
@@ -548,15 +557,15 @@ class RuntimeConfiguration(Configuration):
         (CMFCC, (True, bool, [])),
 
         (CEW_SUBPROCESS_ENABLED, (False, bool, [])),
-        (CEW_SUBPROCESS_PATH, ("python", None, [])), # or a full path like "/usr/bin/python"
+        (CEW_SUBPROCESS_PATH, ("python", None, [])),    # or a full path like "/usr/bin/python"
 
         (DTW_ALGORITHM, ("stripe", None, [])),
         (DTW_MARGIN, ("60.000", TimeValue, [])),
 
-        (FFMPEG_PATH, ("ffmpeg", None, [])), # or a full path like "/usr/bin/ffmpeg"
+        (FFMPEG_PATH, ("ffmpeg", None, [])),            # or a full path like "/usr/bin/ffmpeg"
         (FFMPEG_SAMPLE_RATE, (16000, int, [])),
 
-        (FFPROBE_PATH, ("ffprobe", None, [])), # or a full path like "/usr/bin/ffprobe"
+        (FFPROBE_PATH, ("ffprobe", None, [])),          # or a full path like "/usr/bin/ffprobe"
 
         (JOB_MAX_TASKS, (0, int, [])),
 
@@ -587,7 +596,7 @@ class RuntimeConfiguration(Configuration):
         (TMP_PATH, (None, None, [])),
 
         (TTS, ("espeak", None, [])),
-        (TTS_PATH, ("espeak", None, [])), # or a full path like "/usr/bin/espeak"
+        (TTS_PATH, ("espeak", None, [])),               # or a full path like "/usr/bin/espeak"
         (TTS_VOICE_CODE, (None, None, [])),
 
         (VAD_EXTEND_SPEECH_INTERVAL_AFTER, ("0.000", TimeValue, [])),
@@ -656,6 +665,3 @@ class RuntimeConfiguration(Configuration):
             length_key, shift_key = self.MFCC_GRANULARITY_MAP[level]
             self[self.MFCC_WINDOW_LENGTH] = self[length_key]
             self[self.MFCC_WINDOW_SHIFT] = self[shift_key]
-
-
-

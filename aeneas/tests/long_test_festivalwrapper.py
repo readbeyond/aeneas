@@ -1,6 +1,26 @@
 #!/usr/bin/env python
 # coding=utf-8
 
+# aeneas is a Python/C library and a set of tools
+# to automagically synchronize audio and text (aka forced alignment)
+#
+# Copyright (C) 2012-2013, Alberto Pettarin (www.albertopettarin.it)
+# Copyright (C) 2013-2015, ReadBeyond Srl   (www.readbeyond.it)
+# Copyright (C) 2015-2016, Alberto Pettarin (www.albertopettarin.it)
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU Affero General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU Affero General Public License for more details.
+#
+# You should have received a copy of the GNU Affero General Public License
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
 import unittest
 
 from aeneas.festivalwrapper import FESTIVALWrapper
@@ -8,6 +28,7 @@ from aeneas.textfile import TextFile
 from aeneas.textfile import TextFragment
 from aeneas.runtimeconfiguration import RuntimeConfiguration
 import aeneas.globalfunctions as gf
+
 
 class TestFESTIVALWrapper(unittest.TestCase):
 
@@ -88,36 +109,36 @@ class TestFESTIVALWrapper(unittest.TestCase):
         self.synthesize_multiple(tfl)
 
     # TODO disabling this test, festival does not handle empty text
-    #def test_multiple_empty(self):
-    #    tfl = self.tfl([(FESTIVALWrapper.ENG, [u""])])
-    #    self.synthesize_multiple(tfl)
+    # COMMENTED def test_multiple_empty(self):
+    # COMMENTED   tfl = self.tfl([(FESTIVALWrapper.ENG, [u""])])
+    # COMMENTED   self.synthesize_multiple(tfl)
 
     # TODO disabling this test, festival does not handle empty text
-    #def test_multiple_empty_multiline(self):
-    #    tfl = self.tfl([(FESTIVALWrapper.ENG, [u"", u"", u""])])
-    #    self.synthesize_multiple(tfl)
+    # COMMENTED def test_multiple_empty_multiline(self):
+    # COMMENTED     tfl = self.tfl([(FESTIVALWrapper.ENG, [u"", u"", u""])])
+    # COMMENTED     self.synthesize_multiple(tfl)
 
     # TODO disabling this test, festival does not handle empty text
-    #def test_multiple_empty_fragments(self):
-    #    tfl = self.tfl([
-    #        (FESTIVALWrapper.ENG, [u""]),
-    #        (FESTIVALWrapper.ENG, [u""]),
-    #        (FESTIVALWrapper.ENG, [u""]),
-    #    ])
-    #    self.synthesize_multiple(tfl)
+    # COMMENTED def test_multiple_empty_fragments(self):
+    # COMMENTED     tfl = self.tfl([
+    # COMMENTED         (FESTIVALWrapper.ENG, [u""]),
+    # COMMENTED         (FESTIVALWrapper.ENG, [u""]),
+    # COMMENTED         (FESTIVALWrapper.ENG, [u""]),
+    # COMMENTED     ])
+    # COMMENTED     self.synthesize_multiple(tfl)
 
     def test_multiple_empty_mixed(self):
         tfl = self.tfl([(FESTIVALWrapper.ENG, [u"Word", u"", u"Word"])])
         self.synthesize_multiple(tfl)
 
     # TODO disabling this test, festival does not handle empty text
-    #def test_multiple_empty_mixed_fragments(self):
-    #    tfl = self.tfl([
-    #        (FESTIVALWrapper.ENG, [u"Word"]),
-    #        (FESTIVALWrapper.ENG, [u""]),
-    #        (FESTIVALWrapper.ENG, [u"Word"]),
-    #    ])
-    #    self.synthesize_multiple(tfl)
+    # COMMENTED def test_multiple_empty_mixed_fragments(self):
+    # COMMENTED     tfl = self.tfl([
+    # COMMENTED         (FESTIVALWrapper.ENG, [u"Word"]),
+    # COMMENTED         (FESTIVALWrapper.ENG, [u""]),
+    # COMMENTED         (FESTIVALWrapper.ENG, [u"Word"]),
+    # COMMENTED     ])
+    # COMMENTED     self.synthesize_multiple(tfl)
 
     def test_multiple_invalid_language(self):
         tfl = self.tfl([("zzzz", [u"Word"])])
@@ -161,9 +182,5 @@ class TestFESTIVALWrapper(unittest.TestCase):
             self.synthesize_single(u"Word", "zzzz")
 
 
-
 if __name__ == '__main__':
     unittest.main()
-
-
-

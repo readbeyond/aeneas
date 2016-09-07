@@ -1,6 +1,26 @@
 #!/usr/bin/env python
 # coding=utf-8
 
+# aeneas is a Python/C library and a set of tools
+# to automagically synchronize audio and text (aka forced alignment)
+#
+# Copyright (C) 2012-2013, Alberto Pettarin (www.albertopettarin.it)
+# Copyright (C) 2013-2015, ReadBeyond Srl   (www.readbeyond.it)
+# Copyright (C) 2015-2016, Alberto Pettarin (www.albertopettarin.it)
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU Affero General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU Affero General Public License for more details.
+#
+# You should have received a copy of the GNU Affero General Public License
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
 """
 This module contains the following classes:
 
@@ -30,23 +50,12 @@ from aeneas.wavfile import read as scipywavread
 from aeneas.wavfile import write as scipywavwrite
 import aeneas.globalfunctions as gf
 
-__author__ = "Alberto Pettarin"
-__copyright__ = """
-    Copyright 2012-2013, Alberto Pettarin (www.albertopettarin.it)
-    Copyright 2013-2015, ReadBeyond Srl   (www.readbeyond.it)
-    Copyright 2015-2016, Alberto Pettarin (www.albertopettarin.it)
-    """
-__license__ = "GNU AGPL v3"
-__version__ = "1.5.1"
-__email__ = "aeneas@readbeyond.it"
-__status__ = "Production"
 
 class AudioFileConverterError(Exception):
     """
     Error raised when the audio converter executable cannot be executed.
     """
     pass
-
 
 
 class AudioFileNotInitializedError(Exception):
@@ -58,7 +67,6 @@ class AudioFileNotInitializedError(Exception):
     pass
 
 
-
 class AudioFileProbeError(Exception):
     """
     Error raised when the audio probe executable cannot be executed.
@@ -66,13 +74,11 @@ class AudioFileProbeError(Exception):
     pass
 
 
-
 class AudioFileUnsupportedFormatError(Exception):
     """
     Error raised when the format of the given file cannot be decoded.
     """
     pass
-
 
 
 class AudioFile(Loggable):
@@ -226,6 +232,7 @@ class AudioFile(Loggable):
         :rtype: string
         """
         return self.__file_path
+
     @file_path.setter
     def file_path(self, file_path):
         self.__file_path = file_path
@@ -238,6 +245,7 @@ class AudioFile(Loggable):
         :rtype: int
         """
         return self.__file_size
+
     @file_size.setter
     def file_size(self, file_size):
         self.__file_size = file_size
@@ -250,6 +258,7 @@ class AudioFile(Loggable):
         :rtype: :class:`~aeneas.timevalue.TimeValue`
         """
         return self.__audio_length
+
     @audio_length.setter
     def audio_length(self, audio_length):
         self.__audio_length = audio_length
@@ -262,6 +271,7 @@ class AudioFile(Loggable):
         :rtype: string
         """
         return self.__audio_format
+
     @audio_format.setter
     def audio_format(self, audio_format):
         self.__audio_format = audio_format
@@ -274,6 +284,7 @@ class AudioFile(Loggable):
         :rtype: int
         """
         return self.__audio_sample_rate
+
     @audio_sample_rate.setter
     def audio_sample_rate(self, audio_sample_rate):
         self.__audio_sample_rate = audio_sample_rate
@@ -286,6 +297,7 @@ class AudioFile(Loggable):
         :rtype: int
         """
         return self.__audio_channels
+
     @audio_channels.setter
     def audio_channels(self, audio_channels):
         self.__audio_channels = audio_channels
@@ -615,6 +627,3 @@ class AudioFile(Loggable):
         """
         if (self.audio_sample_rate is not None) and (self.__samples is not None):
             self.audio_length = TimeValue(self.__samples_length / self.audio_sample_rate)
-
-
-

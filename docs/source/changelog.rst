@@ -1,6 +1,16 @@
 Changelog
 =========
 
+v1.5.2 (2016-09-??)
+-------------------
+
+#. Moved package metadata from ``setup.py`` into ``setupmeta.py``
+#. Added AGPL header to all source files
+#. Removed metadata from all source files, except those directly facing the user
+#. PEP8 compliance (except for E501) for all Python files
+#. Added ``wiki/CODESTYLE.md`` explaining how to check the code style using pep8
+#. Using Sphinx theme from readthedocs.org
+
 v1.5.1 (2016-07-25)
 -------------------
 

@@ -1,6 +1,26 @@
 #!/usr/bin/env python
 # coding=utf-8
 
+# aeneas is a Python/C library and a set of tools
+# to automagically synchronize audio and text (aka forced alignment)
+#
+# Copyright (C) 2012-2013, Alberto Pettarin (www.albertopettarin.it)
+# Copyright (C) 2013-2015, ReadBeyond Srl   (www.readbeyond.it)
+# Copyright (C) 2015-2016, Alberto Pettarin (www.albertopettarin.it)
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU Affero General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU Affero General Public License for more details.
+#
+# You should have received a copy of the GNU Affero General Public License
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
 """
 This module contains the following classes:
 
@@ -16,18 +36,6 @@ import io
 
 from aeneas.runtimeconfiguration import RuntimeConfiguration
 import aeneas.globalfunctions as gf
-
-__author__ = "Alberto Pettarin"
-__copyright__ = """
-    Copyright 2012-2013, Alberto Pettarin (www.albertopettarin.it)
-    Copyright 2013-2015, ReadBeyond Srl   (www.readbeyond.it)
-    Copyright 2015-2016, Alberto Pettarin (www.albertopettarin.it)
-    """
-__license__ = "GNU AGPL v3"
-__version__ = "1.5.1"
-__email__ = "aeneas@readbeyond.it"
-__status__ = "Production"
-
 
 
 class Logger(object):
@@ -87,6 +95,7 @@ class Logger(object):
         :rtype: bool
         """
         return self.__tee
+
     @tee.setter
     def tee(self, tee):
         self.__tee = tee
@@ -99,6 +108,7 @@ class Logger(object):
         :rtype: bool
         """
         return self.__tee_show_datetime
+
     @tee_show_datetime.setter
     def tee_show_datetime(self, tee_show_datetime):
         self.__tee_show_datetime = tee_show_datetime
@@ -112,6 +122,7 @@ class Logger(object):
         :rtype: int
         """
         return self.__indentation
+
     @indentation.setter
     def indentation(self, indentation):
         self.__indentation = indentation
@@ -193,7 +204,6 @@ class Logger(object):
         return sanitized
 
 
-
 class _LogEntry(object):
     """
     A structure for a log entry.
@@ -237,6 +247,7 @@ class _LogEntry(object):
         :rtype: string
         """
         return self.__message
+
     @message.setter
     def message(self, message):
         self.__message = message
@@ -249,6 +260,7 @@ class _LogEntry(object):
         :rtype: :class:`~aeneas.logger.Logger`
         """
         return self.__severity
+
     @severity.setter
     def severity(self, severity):
         self.__severity = severity
@@ -261,6 +273,7 @@ class _LogEntry(object):
         :rtype: string
         """
         return self.__tag
+
     @tag.setter
     def tag(self, tag):
         self.__tag = tag
@@ -273,6 +286,7 @@ class _LogEntry(object):
         :rtype: string
         """
         return self.__indentation
+
     @indentation.setter
     def indentation(self, indentation):
         self.__indentation = indentation
@@ -285,10 +299,10 @@ class _LogEntry(object):
         :rtype: datetime.time
         """
         return self.__time
+
     @time.setter
     def time(self, time):
         self.__time = time
-
 
 
 class Loggable(object):
@@ -371,6 +385,3 @@ class Loggable(object):
         :rtype: datetime
         """
         return self._log(message, Logger.CRITICAL)
-
-
-

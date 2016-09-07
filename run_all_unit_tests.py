@@ -1,8 +1,28 @@
 #!/usr/bin/env python
 # coding=utf-8
 
+# aeneas is a Python/C library and a set of tools
+# to automagically synchronize audio and text (aka forced alignment)
+#
+# Copyright (C) 2012-2013, Alberto Pettarin (www.albertopettarin.it)
+# Copyright (C) 2013-2015, ReadBeyond Srl   (www.readbeyond.it)
+# Copyright (C) 2015-2016, Alberto Pettarin (www.albertopettarin.it)
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU Affero General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU Affero General Public License for more details.
+#
+# You should have received a copy of the GNU Affero General Public License
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
 """
-Run all unit tests.
+Run all unit tests for the aeneas package.
 """
 
 from __future__ import absolute_import
@@ -13,15 +33,15 @@ import sys
 import unittest
 
 __author__ = "Alberto Pettarin"
+__email__ = "aeneas@readbeyond.it"
 __copyright__ = """
     Copyright 2012-2013, Alberto Pettarin (www.albertopettarin.it)
     Copyright 2013-2015, ReadBeyond Srl   (www.readbeyond.it)
     Copyright 2015-2016, Alberto Pettarin (www.albertopettarin.it)
-    """
+"""
 __license__ = "GNU AGPL 3"
-__version__ = "1.5.1"
-__email__ = "aeneas@readbeyond.it"
 __status__ = "Production"
+__version__ = "1.5.2"
 
 TEST_DIRECTORY = "aeneas/tests"
 TEST_PATTERN = "test_*.py"
@@ -33,17 +53,21 @@ NET_PREFIX = "net_test_"
 TOOL_PATTERN = "tool_test_*.py"
 TOOL_PREFIX = "tool_test_"
 
+
 class NOPStream(object):
     """ NOP stream """
     def __init__(self, verbose=False):
         self.verbose = verbose
+
     def flush(self):
         """ NOP """
         pass
+
     def write(self, msg):
         """ NOP """
         if self.verbose:
             print(msg)
+
 
 def main():
     """ Perform tests """
@@ -97,9 +121,9 @@ def main():
         testsuite = unittest.TestLoader().discover(start_dir=TEST_DIRECTORY, pattern=test_file)
         result = unittest.TextTestRunner(stream=nop_stream, verbosity=verbosity).run(testsuite)
         results[test_file] = {
-            "tests" : result.testsRun,
-            "errors" : len(result.errors),
-            "failures" : len(result.failures)
+            "tests": result.testsRun,
+            "errors": len(result.errors),
+            "failures": len(result.failures)
         }
     total_tests = sum([results[k]["tests"] for k in results])
     total_errors = sum([results[k]["errors"] for k in results])
@@ -132,9 +156,5 @@ def main():
         sys.exit(1)
 
 
-
 if __name__ == '__main__':
     main()
-
-
-

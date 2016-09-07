@@ -1,6 +1,26 @@
 #!/usr/bin/env python
 # coding=utf-8
 
+# aeneas is a Python/C library and a set of tools
+# to automagically synchronize audio and text (aka forced alignment)
+#
+# Copyright (C) 2012-2013, Alberto Pettarin (www.albertopettarin.it)
+# Copyright (C) 2013-2015, ReadBeyond Srl   (www.readbeyond.it)
+# Copyright (C) 2015-2016, Alberto Pettarin (www.albertopettarin.it)
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU Affero General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU Affero General Public License for more details.
+#
+# You should have received a copy of the GNU Affero General Public License
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
 """
 This module contains the following classes:
 
@@ -16,16 +36,6 @@ from aeneas.timevalue import TimeValue
 from aeneas.ttswrapper import TTSWrapper
 import aeneas.globalfunctions as gf
 
-__author__ = "Alberto Pettarin"
-__copyright__ = """
-    Copyright 2012-2013, Alberto Pettarin (www.albertopettarin.it)
-    Copyright 2013-2015, ReadBeyond Srl   (www.readbeyond.it)
-    Copyright 2015-2016, Alberto Pettarin (www.albertopettarin.it)
-    """
-__license__ = "GNU AGPL v3"
-__version__ = "1.5.1"
-__email__ = "aeneas@readbeyond.it"
-__status__ = "Production"
 
 class ESPEAKWrapper(TTSWrapper):
     """
@@ -346,8 +356,8 @@ class ESPEAKWrapper(TTSWrapper):
     """ Irish """
 
     # NOTE already defined
-    #GRC = "grc"
-    #""" Greek (Ancient) """
+    # COMMENTED GRC = "grc"
+    # COMMENTED """ Greek (Ancient) """
 
     HI = "hi"
     """ Hindi (not tested) """
@@ -374,8 +384,8 @@ class ESPEAKWrapper(TTSWrapper):
     """ Italian """
 
     # NOTE already defined
-    #JBO = "jbo"
-    #""" Lojban (not tested) """
+    # COMMENTED JBO = "jbo"
+    # COMMENTED """ Lojban (not tested) """
 
     KA = "ka"
     """ Georgian (not tested) """
@@ -390,8 +400,8 @@ class ESPEAKWrapper(TTSWrapper):
     """ Latin """
 
     # NOTE already defined
-    #LFN = "lfn"
-    #""" Lingua Franca Nova (not tested) """
+    # COMMENTED LFN = "lfn"
+    # COMMENTED """ Lingua Franca Nova (not tested) """
 
     LT = "lt"
     """ Lithuanian """
@@ -478,143 +488,143 @@ class ESPEAKWrapper(TTSWrapper):
     """ Yue Chinese (not tested) """
 
     LANGUAGE_TO_VOICE_CODE = {
-        AF : "af",
-        AN : "an",
-        BG : "bg",
-        BS : "bs",
-        CA : "ca",
-        CS : "cs",
-        CY : "cy",
-        DA : "da",
-        DE : "de",
-        EL : "el",
-        EN : "en",
-        EN_GB : "en-gb",
-        EN_SC : "en-sc",
-        EN_UK_NORTH : "en-uk-north",
-        EN_UK_RP : "en-uk-rp",
-        EN_UK_WMIDS : "en-uk-wmids",
-        EN_US : "en-us",
-        EN_WI : "en-wi",
-        EO : "eo",
-        ES : "es",
-        ES_LA : "es-la",
-        ET : "et",
-        FA : "fa",
-        FA_PIN : "fa-pin",
-        FI : "fi",
-        FR : "fr",
-        FR_BE : "fr-be",
-        FR_FR : "fr-fr",
-        GA : "ga",
-        #GRC : "grc",
-        HI : "hi",
-        HR : "hr",
-        HU : "hu",
-        HY : "hy",
-        HY_WEST : "hy-west",
-        ID : "id",
-        IS : "is",
-        IT : "it",
-        #JBO : "jbo",
-        KA : "ka",
-        KN : "kn",
-        KU : "ku",
-        LA : "la",
-        #LFN : "lfn",
-        LT : "lt",
-        LV : "lv",
-        MK : "mk",
-        ML : "ml",
-        MS : "ms",
-        NE : "ne",
-        NL : "nl",
-        NO : "no",
-        PA : "pa",
-        PL : "pl",
-        PT : "pt",
-        PT_BR : "pt-br",
-        PT_PT : "pt-pt",
-        RO : "ro",
-        RU : "ru",
-        SQ : "sq",
-        SK : "sk",
-        SR : "sr",
-        SV : "sv",
-        SW : "sw",
-        TA : "ta",
-        TR : "tr",
-        UK : "ru", # NOTE mocking support for Ukrainian with Russian voice
-        VI : "vi",
-        VI_HUE : "vi-hue",
-        VI_SGN : "vi-sgn",
-        ZH : "zh",
-        ZH_YUE : "zh-yue",
-        AFR : "af",
-        ARG : "an",
-        BOS : "bs",
-        BUL : "bg",
-        CAT : "ca",
-        CES : "cs",
-        CMN : "zh",
-        CYM : "cy",
-        DAN : "da",
-        DEU : "de",
-        ELL : "el",
-        ENG : "en",
-        EPO : "eo",
-        EST : "et",
-        FAS : "fa",
-        FIN : "fi",
-        FRA : "fr",
-        GLE : "ga",
-        GRC : "grc",
-        HIN : "hi",
-        HRV : "hr",
-        HUN : "hu",
-        HYE : "hy",
-        IND : "id",
-        ISL : "is",
-        ITA : "it",
-        JBO : "jbo",
-        KAN : "kn",
-        KAT : "ka",
-        KUR : "ku",
-        LAT : "la",
-        LAV : "lv",
-        LFN : "lfn",
-        LIT : "lt",
-        MAL : "ml",
-        MKD : "mk",
-        MSA : "ms",
-        NEP : "ne",
-        NLD : "nl",
-        NOR : "no",
-        PAN : "pa",
-        POL : "pl",
-        POR : "pt",
-        RON : "ro",
-        RUS : "ru",
-        SLK : "sk",
-        SPA : "es",
-        SQI : "sq",
-        SRP : "sr",
-        SWA : "sw",
-        SWE : "sv",
-        TAM : "ta",
-        TUR : "tr",
-        UKR : "ru", # NOTE mocking support for Ukrainian with Russian voice
-        VIE : "vi",
-        YUE : "zh-yue",
-        ZHO : "zh",
-        ENG_GBR : "en-gb",
-        ENG_SCT : "en-sc",
-        ENG_USA : "en-us",
-        SPA_ESP : "es-es",
-        FRA_BEL : "fr-be",
-        FRA_FRA : "fr-fr",
-        POR_BRA : "pt-br",
-        POR_PRT : "pt-pt"
+        AF: "af",
+        AN: "an",
+        BG: "bg",
+        BS: "bs",
+        CA: "ca",
+        CS: "cs",
+        CY: "cy",
+        DA: "da",
+        DE: "de",
+        EL: "el",
+        EN: "en",
+        EN_GB: "en-gb",
+        EN_SC: "en-sc",
+        EN_UK_NORTH: "en-uk-north",
+        EN_UK_RP: "en-uk-rp",
+        EN_UK_WMIDS: "en-uk-wmids",
+        EN_US: "en-us",
+        EN_WI: "en-wi",
+        EO: "eo",
+        ES: "es",
+        ES_LA: "es-la",
+        ET: "et",
+        FA: "fa",
+        FA_PIN: "fa-pin",
+        FI: "fi",
+        FR: "fr",
+        FR_BE: "fr-be",
+        FR_FR: "fr-fr",
+        GA: "ga",
+        # COMMENTED GRC: "grc",
+        HI: "hi",
+        HR: "hr",
+        HU: "hu",
+        HY: "hy",
+        HY_WEST: "hy-west",
+        ID: "id",
+        IS: "is",
+        IT: "it",
+        # COMMENTED JBO: "jbo",
+        KA: "ka",
+        KN: "kn",
+        KU: "ku",
+        LA: "la",
+        # COMMENTED LFN: "lfn",
+        LT: "lt",
+        LV: "lv",
+        MK: "mk",
+        ML: "ml",
+        MS: "ms",
+        NE: "ne",
+        NL: "nl",
+        NO: "no",
+        PA: "pa",
+        PL: "pl",
+        PT: "pt",
+        PT_BR: "pt-br",
+        PT_PT: "pt-pt",
+        RO: "ro",
+        RU: "ru",
+        SQ: "sq",
+        SK: "sk",
+        SR: "sr",
+        SV: "sv",
+        SW: "sw",
+        TA: "ta",
+        TR: "tr",
+        UK: "ru",   # NOTE mocking support for Ukrainian with Russian voice
+        VI: "vi",
+        VI_HUE: "vi-hue",
+        VI_SGN: "vi-sgn",
+        ZH: "zh",
+        ZH_YUE: "zh-yue",
+        AFR: "af",
+        ARG: "an",
+        BOS: "bs",
+        BUL: "bg",
+        CAT: "ca",
+        CES: "cs",
+        CMN: "zh",
+        CYM: "cy",
+        DAN: "da",
+        DEU: "de",
+        ELL: "el",
+        ENG: "en",
+        EPO: "eo",
+        EST: "et",
+        FAS: "fa",
+        FIN: "fi",
+        FRA: "fr",
+        GLE: "ga",
+        GRC: "grc",
+        HIN: "hi",
+        HRV: "hr",
+        HUN: "hu",
+        HYE: "hy",
+        IND: "id",
+        ISL: "is",
+        ITA: "it",
+        JBO: "jbo",
+        KAN: "kn",
+        KAT: "ka",
+        KUR: "ku",
+        LAT: "la",
+        LAV: "lv",
+        LFN: "lfn",
+        LIT: "lt",
+        MAL: "ml",
+        MKD: "mk",
+        MSA: "ms",
+        NEP: "ne",
+        NLD: "nl",
+        NOR: "no",
+        PAN: "pa",
+        POL: "pl",
+        POR: "pt",
+        RON: "ro",
+        RUS: "ru",
+        SLK: "sk",
+        SPA: "es",
+        SQI: "sq",
+        SRP: "sr",
+        SWA: "sw",
+        SWE: "sv",
+        TAM: "ta",
+        TUR: "tr",
+        UKR: "ru",  # NOTE mocking support for Ukrainian with Russian voice
+        VIE: "vi",
+        YUE: "zh-yue",
+        ZHO: "zh",
+        ENG_GBR: "en-gb",
+        ENG_SCT: "en-sc",
+        ENG_USA: "en-us",
+        SPA_ESP: "es-es",
+        FRA_BEL: "fr-be",
+        FRA_FRA: "fr-fr",
+        POR_BRA: "pt-br",
+        POR_PRT: "pt-pt"
     }
     DEFAULT_LANGUAGE = ENG
 
@@ -691,7 +701,7 @@ class ESPEAKWrapper(TTSWrapper):
             except Exception as exc:
                 self.log_exc(u"An unexpected error occurred while running cewsubprocess", exc, False, None)
                 # NOTE not critical, try calling aeneas.cew directly
-                #return (False, None)
+                # COMMENTED return (False, None)
 
         if sr is None:
             self.log(u"Preparing c_text...")
@@ -775,7 +785,7 @@ class ESPEAKWrapper(TTSWrapper):
             except Exception as exc:
                 self.log_exc(u"An unexpected error occurred while running cewsubprocess", exc, False, None)
                 # NOTE not critical, try calling aeneas.cew directly
-                #return (False, None)
+                # COMMENTED return (False, None)
 
         if end is None:
             self.log(u"Preparing c_text...")
@@ -806,6 +816,3 @@ class ESPEAKWrapper(TTSWrapper):
 
         self.log(u"Synthesizing using C extension... done")
         return (True, (end, ))
-
-
-

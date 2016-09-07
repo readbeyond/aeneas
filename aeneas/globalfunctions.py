@@ -1,6 +1,26 @@
 #!/usr/bin/env python
 # coding=utf-8
 
+# aeneas is a Python/C library and a set of tools
+# to automagically synchronize audio and text (aka forced alignment)
+#
+# Copyright (C) 2012-2013, Alberto Pettarin (www.albertopettarin.it)
+# Copyright (C) 2013-2015, ReadBeyond Srl   (www.readbeyond.it)
+# Copyright (C) 2015-2016, Alberto Pettarin (www.albertopettarin.it)
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU Affero General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU Affero General Public License for more details.
+#
+# You should have received a copy of the GNU Affero General Public License
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
 """
 Global common functions.
 """
@@ -20,18 +40,8 @@ import uuid
 import aeneas.globalconstants as gc
 from aeneas.timevalue import TimeValue
 
-__author__ = "Alberto Pettarin"
-__copyright__ = """
-    Copyright 2012-2013, Alberto Pettarin (www.albertopettarin.it)
-    Copyright 2013-2015, ReadBeyond Srl   (www.readbeyond.it)
-    Copyright 2015-2016, Alberto Pettarin (www.albertopettarin.it)
-    """
-__license__ = "GNU AGPL v3"
-__version__ = "1.5.1"
-__email__ = "aeneas@readbeyond.it"
-__status__ = "Production"
 
-### RUNTIME CONSTANTS ###
+# RUNTIME CONSTANTS
 
 # ANSI codes to color output in terminal
 ANSI_END = u"\033[0m"
@@ -50,8 +60,7 @@ FROZEN = getattr(sys, "frozen", False)
 PY2 = (sys.version_info[0] == 2)
 
 
-
-### COMMON FUNCTIONS ###
+# COMMON FUNCTIONS
 
 def safe_print(msg):
     """
@@ -74,6 +83,7 @@ def safe_print(msg):
             print(u"[ERRO] Please check that your file/string encoding matches the shell encoding.")
             print(u"[ERRO] If possible, set your shell encoding to UTF-8 and convert any files with legacy encodings.")
 
+
 def print_error(msg, color=True):
     """
     Print an error message.
@@ -86,6 +96,7 @@ def print_error(msg, color=True):
     else:
         safe_print(u"[ERRO] %s" % (msg))
 
+
 def print_info(msg, color=True):
     """
     Print an info message.
@@ -94,6 +105,7 @@ def print_info(msg, color=True):
     :param bool color: if ``True``, print with POSIX color
     """
     safe_print(u"[INFO] %s" % (msg))
+
 
 def print_success(msg, color=True):
     """
@@ -107,6 +119,7 @@ def print_success(msg, color=True):
     else:
         safe_print(u"[INFO] %s" % (msg))
 
+
 def print_warning(msg, color=True):
     """
     Print a warning message.
@@ -119,6 +132,7 @@ def print_warning(msg, color=True):
     else:
         safe_print(u"[WARN] %s" % (msg))
 
+
 def uuid_string():
     """
     Return a uuid4 as a Unicode string.
@@ -126,6 +140,7 @@ def uuid_string():
     :rtype: string
     """
     return safe_unicode(str(uuid.uuid4())).lower()
+
 
 def custom_tmp_dir():
     """
@@ -147,6 +162,7 @@ def custom_tmp_dir():
         return gc.TMP_PATH_DEFAULT_POSIX
     return gc.TMP_PATH_DEFAULT_NONPOSIX
 
+
 def tmp_directory(root=None):
     """
     Return the path of a temporary directory created by ``tempfile``.
@@ -159,6 +175,7 @@ def tmp_directory(root=None):
     if root is None:
         root = custom_tmp_dir()
     return tempfile.mkdtemp(dir=root)
+
 
 def tmp_file(suffix=u"", root=None):
     """
@@ -174,6 +191,7 @@ def tmp_file(suffix=u"", root=None):
     if root is None:
         root = custom_tmp_dir()
     return tempfile.mkstemp(suffix=suffix, dir=root)
+
 
 def file_extension(path):
     """
@@ -194,6 +212,7 @@ def file_extension(path):
         ext = ext[1:]
     return ext
 
+
 def mimetype_from_path(path):
     """
     Return a mimetype from the file extension.
@@ -202,11 +221,12 @@ def mimetype_from_path(path):
     :rtype: string
     """
     extension = file_extension(path)
-    if not extension is None:
+    if extension is not None:
         extension = extension.lower()
         if extension in gc.MIMETYPE_MAP:
             return gc.MIMETYPE_MAP[extension]
     return None
+
 
 def file_name_without_extension(path):
     """
@@ -224,6 +244,7 @@ def file_name_without_extension(path):
     if path is None:
         return None
     return os.path.splitext(os.path.basename(path))[0]
+
 
 def datetime_string(time_zone=False):
     """
@@ -247,6 +268,7 @@ def datetime_string(time_zone=False):
         time.second
     )
 
+
 def safe_float(string, default=None):
     """
     Safely parse a string into a float.
@@ -266,6 +288,7 @@ def safe_float(string, default=None):
         pass
     return value
 
+
 def safe_int(string, default=None):
     """
     Safely parse a string into an int.
@@ -280,6 +303,7 @@ def safe_int(string, default=None):
     if value is not None:
         value = int(value)
     return value
+
 
 def safe_get(dictionary, key, default_value, can_return_none=True):
     """
@@ -305,6 +329,7 @@ def safe_get(dictionary, key, default_value, can_return_none=True):
         pass
     return return_value
 
+
 def norm_join(prefix, suffix):
     """
     Join ``prefix`` and ``suffix`` paths
@@ -321,6 +346,7 @@ def norm_join(prefix, suffix):
     if suffix is None:
         return os.path.normpath(prefix)
     return os.path.normpath(os.path.join(prefix, suffix))
+
 
 def config_txt_to_string(string):
     """
@@ -339,6 +365,7 @@ def config_txt_to_string(string):
         return None
     pairs = [l.strip() for l in string.splitlines() if len(l.strip()) > 0]
     return gc.CONFIG_STRING_SEPARATOR_SYMBOL.join(pairs)
+
 
 def config_string_to_dict(string, result=None):
     """
@@ -360,6 +387,7 @@ def config_string_to_dict(string, result=None):
         return {}
     pairs = string.split(gc.CONFIG_STRING_SEPARATOR_SYMBOL)
     return pairs_to_dict(pairs, result)
+
 
 def config_xml_to_dict(contents, result, parse_job=True):
     """
@@ -414,6 +442,7 @@ def config_xml_to_dict(contents, result, parse_job=True):
         else:
             return []
 
+
 def config_dict_to_string(dictionary):
     """
     Convert a given config dictionary ::
@@ -438,6 +467,7 @@ def config_dict_to_string(dictionary):
             dictionary[key]
         ))
     return gc.CONFIG_STRING_SEPARATOR_SYMBOL.join(parameters)
+
 
 def pairs_to_dict(pairs, result=None):
     """
@@ -466,6 +496,7 @@ def pairs_to_dict(pairs, result=None):
             elif result is not None:
                 result.add_warning("Invalid key=value string: '%s'" % pair)
     return dictionary
+
 
 def copytree(source_directory, destination_directory, ignore=None):
     """
@@ -502,6 +533,7 @@ def copytree(source_directory, destination_directory, ignore=None):
     else:
         shutil.copyfile(source_directory, destination_directory)
 
+
 def ensure_parent_directory(path, ensure_parent=True):
     """
     Ensures the parent directory exists.
@@ -520,6 +552,7 @@ def ensure_parent_directory(path, ensure_parent=True):
         except (IOError, OSError):
             raise OSError(u"Directory '%s' cannot be created" % parent_directory)
 
+
 def time_from_ttml(string):
     """
     Parse the given ``SS.mmms`` string
@@ -534,6 +567,7 @@ def time_from_ttml(string):
     # strips "s" at the end
     string = string[:-1]
     return time_from_ssmmm(string)
+
 
 def time_to_ttml(time_value):
     """
@@ -554,6 +588,7 @@ def time_to_ttml(time_value):
         time_value = 0
     return "%ss" % time_to_ssmmm(time_value)
 
+
 def time_from_ssmmm(string):
     """
     Parse the given ``SS.mmm`` string and return a time value.
@@ -564,6 +599,7 @@ def time_from_ssmmm(string):
     if (string is None) or (len(string) < 1):
         return TimeValue("0.000")
     return TimeValue(string)
+
 
 def time_to_ssmmm(time_value):
     """
@@ -582,6 +618,7 @@ def time_to_ssmmm(time_value):
     if time_value is None:
         time_value = 0
     return "%.3f" % (time_value)
+
 
 def time_from_hhmmssmmm(string, decimal_separator="."):
     """
@@ -607,6 +644,7 @@ def time_from_hhmmssmmm(string, decimal_separator="."):
     except:
         pass
     return v_length
+
 
 def time_to_hhmmssmmm(time_value, decimal_separator="."):
     """
@@ -646,6 +684,7 @@ def time_to_hhmmssmmm(time_value, decimal_separator="."):
         milliseconds
     )
 
+
 def time_to_srt(time_value):
     """
     Format the given time value into a ``HH:MM:SS,mmm`` string,
@@ -668,6 +707,7 @@ def time_to_srt(time_value):
     """
     return time_to_hhmmssmmm(time_value, ",")
 
+
 def split_url(url):
     """
     Split the given URL ``base#anchor`` into ``(base, anchor)``,
@@ -686,6 +726,7 @@ def split_url(url):
         array.append(None)
     return tuple(array[0:2])
 
+
 def is_posix():
     """
     Return ``True`` if running on a POSIX OS.
@@ -697,6 +738,7 @@ def is_posix():
     # "posix", "nt", "os2", "ce", "java", "riscos"
     return os.name == "posix"
 
+
 def is_linux():
     """
     Return ``True`` if running on Linux.
@@ -704,6 +746,7 @@ def is_linux():
     :rtype: bool
     """
     return (is_posix()) and (os.uname()[0] == "Linux")
+
 
 def is_osx():
     """
@@ -713,6 +756,7 @@ def is_osx():
     """
     return (is_posix()) and (os.uname()[0] == "Darwin")
 
+
 def is_windows():
     """
     Return ``True`` if running on Windows.
@@ -720,6 +764,7 @@ def is_windows():
     :rtype: bool
     """
     return os.name == "nt"
+
 
 def fix_slash(path):
     """
@@ -736,6 +781,7 @@ def fix_slash(path):
     if not is_posix():
         path = path.replace("\\", "/")
     return path
+
 
 def can_run_c_extension(name=None):
     """
@@ -754,6 +800,7 @@ def can_run_c_extension(name=None):
             return True
         except ImportError:
             return False
+
     def can_run_cmfcc():
         """ Python C extension for computing MFCC """
         try:
@@ -761,6 +808,7 @@ def can_run_c_extension(name=None):
             return True
         except ImportError:
             return False
+
     def can_run_cew():
         """ Python C extension for synthesizing with espeak """
         try:
@@ -777,6 +825,7 @@ def can_run_c_extension(name=None):
         return can_run_cew()
     else:
         return can_run_cdtw() and can_run_cmfcc() and can_run_cew()
+
 
 def run_c_extension_with_fallback(
         log_function,
@@ -826,6 +875,7 @@ def run_c_extension_with_fallback(
         raise RuntimeError(u"Both the C extension and the pure Python code failed. (Wrong arguments? Input too big?)")
     return result
 
+
 def file_can_be_read(path):
     """
     Return ``True`` if the file at the given ``path`` can be read.
@@ -844,6 +894,7 @@ def file_can_be_read(path):
     except (IOError, OSError):
         pass
     return False
+
 
 def file_can_be_written(path):
     """
@@ -868,6 +919,7 @@ def file_can_be_written(path):
         pass
     return False
 
+
 def directory_exists(path):
     """
     Return ``True`` if the given ``path`` string
@@ -880,6 +932,7 @@ def directory_exists(path):
         return False
     return True
 
+
 def file_exists(path):
     """
     Return ``True`` if the given ``path`` string
@@ -891,6 +944,7 @@ def file_exists(path):
     if (path is None) or (not os.path.isfile(path)):
         return False
     return True
+
 
 def file_size(path):
     """
@@ -905,6 +959,7 @@ def file_size(path):
     except OSError:
         return -1
 
+
 def delete_directory(path):
     """
     Safely delete a directory.
@@ -916,6 +971,7 @@ def delete_directory(path):
             shutil.rmtree(path)
         except:
             pass
+
 
 def delete_file(handler, path):
     """
@@ -934,6 +990,7 @@ def delete_file(handler, path):
             os.remove(path)
         except:
             pass
+
 
 def relative_path(path, from_file):
     """
@@ -964,6 +1021,7 @@ def relative_path(path, from_file):
     abs_path_cwd = os.getcwd()
     return os.path.relpath(abs_path_target, start=abs_path_cwd)
 
+
 def absolute_path(path, from_file):
     """
     Return the absolute path of a file or directory, specified
@@ -990,6 +1048,7 @@ def absolute_path(path, from_file):
     target = os.path.join(current_directory, path)
     return os.path.abspath(target)
 
+
 def read_file_bytes(input_file_path):
     """
     Read the file at the given file path
@@ -1007,6 +1066,7 @@ def read_file_bytes(input_file_path):
         pass
     return contents
 
+
 def human_readable_number(number, suffix=""):
     """
     Format the given number into a human-readable string.
@@ -1023,6 +1083,7 @@ def human_readable_number(number, suffix=""):
         number /= 1024.0
     return "%.1f%s%s" % (number, "Y", suffix)
 
+
 def is_unicode(string):
     """
     Return ``True`` if the given string is a sequence of Unicode code points.
@@ -1034,6 +1095,7 @@ def is_unicode(string):
         return isinstance(string, unicode)
     return isinstance(string, str)
 
+
 def is_bytes(string):
     """
     Return ``True`` if the given string is a sequence of bytes.
@@ -1044,6 +1106,7 @@ def is_bytes(string):
     if PY2:
         return isinstance(string, str)
     return isinstance(string, bytes)
+
 
 def is_utf8_encoded(bstring):
     """
@@ -1060,6 +1123,7 @@ def is_utf8_encoded(bstring):
         pass
     return False
 
+
 def safe_str(string):
     """
     Safely return the given Unicode string
@@ -1075,6 +1139,7 @@ def safe_str(string):
         return string.encode("utf-8")
     return string
 
+
 def safe_unichr(codepoint):
     """
     Safely return a Unicode string of length one,
@@ -1086,6 +1151,7 @@ def safe_unichr(codepoint):
     if PY2:
         return unichr(codepoint)
     return chr(codepoint)
+
 
 def safe_unicode(string):
     """
@@ -1100,6 +1166,7 @@ def safe_unicode(string):
         return string.decode("utf-8")
     return string
 
+
 def safe_bytes(string):
     """
     Safely convert the given string to a bytes string.
@@ -1112,6 +1179,7 @@ def safe_bytes(string):
     if is_unicode(string):
         return string.encode("utf-8")
     return string
+
 
 def safe_unicode_stdin(string):
     """
@@ -1136,6 +1204,7 @@ def safe_unicode_stdin(string):
             return string.decode("utf-8")
     return string
 
+
 def object_to_unicode(obj):
     """
     Return a sequence of Unicode code points from the given object.
@@ -1146,6 +1215,7 @@ def object_to_unicode(obj):
     if PY2:
         return unicode(obj)
     return str(obj)
+
 
 def object_to_bytes(obj):
     """
@@ -1158,6 +1228,7 @@ def object_to_bytes(obj):
         return str(obj)
     return bytes(obj, encoding="utf-8")
 
+
 def bundle_directory():
     """
     Return the absolute path of the bundle directory
@@ -1168,6 +1239,3 @@ def bundle_directory():
     if FROZEN:
         return sys._MEIPASS
     return None
-
-
-

@@ -1,6 +1,26 @@
 #!/usr/bin/env python
 # coding=utf-8
 
+# aeneas is a Python/C library and a set of tools
+# to automagically synchronize audio and text (aka forced alignment)
+#
+# Copyright (C) 2012-2013, Alberto Pettarin (www.albertopettarin.it)
+# Copyright (C) 2013-2015, ReadBeyond Srl   (www.readbeyond.it)
+# Copyright (C) 2015-2016, Alberto Pettarin (www.albertopettarin.it)
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU Affero General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU Affero General Public License for more details.
+#
+# You should have received a copy of the GNU Affero General Public License
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
 """
 A generic rooted, ordered, levelled tree.
 
@@ -13,16 +33,6 @@ from __future__ import print_function
 from aeneas.logger import Loggable
 import aeneas.globalfunctions as gf
 
-__author__ = "Alberto Pettarin"
-__copyright__ = """
-    Copyright 2012-2013, Alberto Pettarin (www.albertopettarin.it)
-    Copyright 2013-2015, ReadBeyond Srl   (www.readbeyond.it)
-    Copyright 2015-2016, Alberto Pettarin (www.albertopettarin.it)
-    """
-__license__ = "GNU AGPL v3"
-__version__ = "1.5.1"
-__email__ = "aeneas@readbeyond.it"
-__status__ = "Production"
 
 class Tree(Loggable):
     """
@@ -78,6 +88,7 @@ class Tree(Loggable):
         :rtype: variant
         """
         return self.__value
+
     @value.setter
     def value(self, value):
         """
@@ -149,6 +160,7 @@ class Tree(Loggable):
         :rtype: :class:`~aeneas.tree.Tree`
         """
         return self.__parent
+
     @parent.setter
     def parent(self, parent):
         """
@@ -227,7 +239,7 @@ class Tree(Loggable):
         """
         if index < 0:
             index = index + len(self)
-        self.__children = self.__children[0:index] + self.__children[index+1:]
+        self.__children = self.__children[0:index] + self.__children[(index + 1):]
 
     def remove_children(self, reset_parent=True):
         """
@@ -467,7 +479,7 @@ class Tree(Loggable):
                 self.log_exc(u"level_indices contains an element not int", None, True, TypeError)
         prev_levels = self.levels
         level_indices = set(level_indices)
-        if not 0 in level_indices:
+        if 0 not in level_indices:
             level_indices.add(0)
         level_indices = level_indices & set(range(self.height))
         level_indices = sorted(level_indices)[::-1]
@@ -479,8 +491,5 @@ class Tree(Loggable):
         for i in range(len(level_indices) - 1):
             l = level_indices[i]
             for node in prev_levels[l]:
-                parent_node = node.ancestor(l - level_indices[i+1])
+                parent_node = node.ancestor(l - level_indices[i + 1])
                 parent_node.add_child(node)
-
-
-
