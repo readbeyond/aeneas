@@ -65,7 +65,8 @@ class ESPEAKTTSWrapper(BaseTTSWrapper):
 
     in the ``rconf`` object.
 
-    See :class:`~aeneas.ttswrappers.base.Base` for the available functions.
+    See :class:`~aeneas.ttswrappers.basettswrapper.BaseTTSWrapper`
+    for the available functions.
     Below are listed the languages supported by this wrapper.
 
     :param rconf: a runtime configuration
@@ -629,7 +630,7 @@ class ESPEAKTTSWrapper(BaseTTSWrapper):
     }
     DEFAULT_LANGUAGE = ENG
 
-    OUTPUT_MONO_WAVE = True
+    OUTPUT_AUDIO_FORMAT = ("pcm_s16le", 1, 22050)
 
     TAG = u"EspeakTTSWrapper"
 

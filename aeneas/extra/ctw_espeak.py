@@ -32,7 +32,7 @@ from aeneas.language import Language
 from aeneas.ttswrappers.basettswrapper import BaseTTSWrapper
 
 
-class CustomTTSWrapper(TTSWrapper):
+class CustomTTSWrapper(BaseTTSWrapper):
     """
     A wrapper for the ``espeak`` TTS engine,
     to illustrate the use of custom TTS wrapper
@@ -91,9 +91,9 @@ class CustomTTSWrapper(TTSWrapper):
     DEFAULT_LANGUAGE = ENG
 
     #
-    # NOTE eSpeak always outputs to PCM16 mono WAVE (RIFF)
+    # NOTE eSpeak always outputs to PCM16 mono WAVE (RIFF) at 22050 Hz
     #
-    OUTPUT_MONO_WAVE = True
+    OUTPUT_AUDIO_FORMAT = ("pcm_s16le", 1, 22050)
 
     def __init__(self, rconf=None, logger=None):
         #

@@ -29,10 +29,9 @@ Compile the Python C Extension for synthesizing text with eSpeak.
 
 from __future__ import absolute_import
 from __future__ import print_function
+from setuptools import Extension
+from setuptools import setup
 import sys
-
-from distutils.core import Extension
-from distutils.core import setup
 
 
 CMODULE = Extension(
@@ -49,9 +48,7 @@ CMODULE = Extension(
 setup(
     name="cew",
     version="1.6.0",
-    description="""
-    Python C Extension for synthesizing text with eSpeak.
-    """,
+    description="Python C Extension for synthesizing text with eSpeak.",
     ext_modules=[CMODULE]
 )
 

@@ -1,6 +1,7 @@
 # aeneas Tests 
 
-This Python module contains the ``unittest`` tests for ``aeneas`` and ``aeneas.tools``.
+This Python package contains the ``unittest`` tests
+for ``aeneas`` and ``aeneas.tools``.
 
 The tests are (roughly) divided by source file.
 

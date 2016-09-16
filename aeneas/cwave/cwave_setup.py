@@ -29,12 +29,11 @@ Compile the Python C extension for reading WAVE files.
 
 from __future__ import absolute_import
 from __future__ import print_function
-import sys
-
-from distutils.core import Extension
-from distutils.core import setup
 from numpy import get_include
 from numpy.distutils import misc_util
+from setuptools import Extension
+from setuptools import setup
+import sys
 
 CMODULE = Extension(
     name="cwave",
@@ -51,9 +50,7 @@ CMODULE = Extension(
 setup(
     name="cwave",
     version="1.6.0",
-    description="""
-    Python C Extension for for reading WAVE files.
-    """,
+    description="Python C Extension for for reading WAVE files.",
     ext_modules=[CMODULE],
     include_dirs=[misc_util.get_numpy_include_dirs()]
 )

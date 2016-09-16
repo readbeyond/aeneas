@@ -285,12 +285,12 @@ before the all-in-one installer was available (July 2016).
 
 #### Manual Procedure Step 1: Create a parent folder for the installation
 
-Create a parent folder to contain the different programs and modules needed to run **aeneas**:
+Create a parent folder to contain the different programs and packages needed to run **aeneas**:
 
 1. Open Windows Explorer and navigate to the root of the `C:` drive.
 2. Create a new folder and name it `sync`.
 
-You will install the various programs and modules as subfolders of `C:\sync`,
+You will install the various programs and packages as subfolders of `C:\sync`,
 e.g. `C:\sync\eSpeak`, `C:\sync\FFmpeg`, `C:\sync\aeneas-1.5.0.3`, etc.
 
 #### Manual Procedure Step 2: Install eSpeak
@@ -351,7 +351,7 @@ If all is well, you should see some information about the FFmpeg program.
 #### Manual Procedure Step 4: Install Miniconda (Python 2.7.x)
 
 **Python** is the programming language that **aeneas** is written in, popular for writing scientific applications.
-**Miniconda** is a package manager which will make it easier to install Python and the required Python modules.
+**Miniconda** is a package manager which will make it easier to install Python and the required Python packages.
 
 1. Go to [http://conda.pydata.org/miniconda.html](http://conda.pydata.org/miniconda.html) .
 2. Download the Python 2.7.x release of Miniconda for Windows, either 64-bit or 32-bit depending on your system.
@@ -369,12 +369,12 @@ If the Python version displayed is version 3, it means that you already have Pyt
 Uninstall Python 3 if you do not need it.
 Otherwise, edit your system path so that Python 2.7 is found first.
 
-#### Manual Procedure Step 5: Install Python modules
+#### Manual Procedure Step 5: Install Python packages
 
-There are three Python modules required by **aeneas** to run:
+There are three Python packages required by **aeneas** to run:
 `BeautifulSoup4`, `lxml`, and `NumPy`.
 
-To install these modules, open a Windows command prompt and execute the following:
+To install these packages, open a Windows command prompt and execute the following:
 
 ```
 conda install setuptools -y --no-deps
@@ -467,7 +467,7 @@ If all is well, you should get an output similar to the following:
 
 Do not worry if you see warnings about UTF-8 input and output encoding.
 
-If one of the tests fails, it is often because a program or module
+If one of the tests fails, it is often because a program or package
 has not been added correctly to the system path (i.e., Python, eSpeak or FFmpeg).
 
 Congratulations, you completed the installation of **aeneas**!

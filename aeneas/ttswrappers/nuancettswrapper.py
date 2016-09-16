@@ -270,7 +270,7 @@ class NuanceTTSWrapper(BaseTTSWrapper):
     }
     DEFAULT_LANGUAGE = ENG_GBR
 
-    OUTPUT_MONO_WAVE = True
+    OUTPUT_AUDIO_FORMAT = ("pcm_s16le", 1, 16000)
 
     # Nuance TTS API specific
     END_POINT = "NMDPTTSCmdServlet/tts"

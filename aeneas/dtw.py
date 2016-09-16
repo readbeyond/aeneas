@@ -228,8 +228,16 @@ class DTWAligner(Loggable):
         self.log([u"Fragments:        %d", len(synt_anchors)])
         self.log([u"Path length:      %d", len(real_indices)])
         # synt_anchors as in seconds, convert them in MFCC indices
+        # see also issue #102
         mws = self.rconf.mws
-        anchor_indices = numpy.array([int(a[0] / mws) for a in synt_anchors])
+        sample_rate = self.rconf.sample_rate
+        samples_per_mws = mws * sample_rate
+        if int(samples_per_mws) == samples_per_mws:
+            anchor_indices = numpy.array([int(a[0] / mws) for a in synt_anchors])
+        else:
+            self.log_warn(u"The number of samples in each window shift is not an integer, time drift might occur.")
+            # NOTE this is not elegant, but it saves the day for the user
+            anchor_indices = numpy.array([(int(a[0] * sample_rate / mws) / sample_rate) for a in synt_anchors])
         #
         # right side sets the split point at the very beginning of "next" fragment
         #

@@ -1,6 +1,6 @@
 # aeneas Tools 
 
-This Python module (directory) contains the command line (CLI) tools for ``aeneas``.
+This Python package contains the command line (CLI) tools for ``aeneas``.
 
 Each tool, contained in a separate Python source file,
 extends the abstract class ``AbstractCLIProgram``

@@ -120,7 +120,7 @@ class FESTIVALTTSWrapper(BaseTTSWrapper):
         RUS: u"(language_russian)",
     }
 
-    OUTPUT_MONO_WAVE = True
+    OUTPUT_AUDIO_FORMAT = ("pcm_s16le", 1, 16000)
 
     TAG = u"FESTIVALTTSWrapper"
 

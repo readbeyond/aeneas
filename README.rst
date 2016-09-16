@@ -74,7 +74,7 @@ System Requirements
    later (Linux, OS X)
 3. `FFmpeg <https://www.ffmpeg.org/>`__
 4. `eSpeak <http://espeak.sourceforge.net/>`__
-5. Python modules ``BeautifulSoup4``, ``lxml``, and ``numpy``
+5. Python packages ``BeautifulSoup4``, ``lxml``, and ``numpy``
 6. Python C headers to compile the Python C extensions (optional but
    strongly recommended)
 7. A shell supporting UTF-8 (optional but strongly recommended)

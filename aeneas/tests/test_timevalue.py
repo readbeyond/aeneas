@@ -161,6 +161,31 @@ class TestTimeValue(unittest.TestCase):
         self.check_numpy(n1 + tv1, n2)
         self.check_numpy(n1 * tv1, n3)
 
+    def test_product_is_integer(self):
+        for m, s, e in [
+            ("0.001", 16000, True),
+            ("0.001", 22050, False),
+            ("0.001", 44100, False),
+            ("0.005", 16000, True),
+            ("0.005", 22050, False),
+            ("0.005", 44100, False),
+            ("0.010", 16000, True),
+            ("0.010", 22050, False),
+            ("0.010", 44100, True),
+            ("0.020", 16000, True),
+            ("0.020", 22050, True),
+            ("0.020", 44100, True),
+            ("0.040", 16000, True),
+            ("0.040", 22050, True),
+            ("0.040", 44100, True),
+            ("1.000", 16000, True),
+            ("1.000", 22050, True),
+            ("1.000", 44100, True),
+        ]:
+            prod = TimeValue(m) * s
+            self.assertTrue(isinstance(prod, TimeValue))
+            self.assertEqual(int(prod) == prod, e)
+
 
 if __name__ == '__main__':
     unittest.main()

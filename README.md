@@ -61,7 +61,7 @@ or raw AUD/CSV/SSV/TSV/TXT/XML for further processing.
 2. [Python](https://python.org/) 2.7 (Linux, OS X, Windows) or 3.4 or later (Linux, OS X)
 3. [FFmpeg](https://www.ffmpeg.org/)
 4. [eSpeak](http://espeak.sourceforge.net/)
-5. Python modules `BeautifulSoup4`, `lxml`, and `numpy`
+5. Python packages `BeautifulSoup4`, `lxml`, and `numpy`
 6. Python C headers to compile the Python C extensions (optional but strongly recommended)
 7. A shell supporting UTF-8 (optional but strongly recommended)
 

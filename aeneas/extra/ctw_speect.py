@@ -75,9 +75,9 @@ class CustomTTSWrapper(BaseTTSWrapper):
 
     #
     # NOTE in this example we load a voice producing
-    #      audio data in PCM16 mono WAVE (RIFF) format
+    #      audio data in PCM16 mono WAVE (RIFF) format at 16000 Hz
     #
-    OUTPUT_MONO_WAVE = True
+    OUTPUT_AUDIO_FORMAT = ("pcm_s16le", 1, 16000)
 
     def __init__(self, rconf=None, logger=None):
         super(CustomTTSWrapper, self).__init__(

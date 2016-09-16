@@ -195,8 +195,8 @@ class FFMPEGWrapper(Loggable):
             arguments.extend(["-ss", head_length])
         if process_length is not None:
             arguments.extend(["-t", process_length])
-        if self.rconf[RuntimeConfiguration.FFMPEG_SAMPLE_RATE] in self.FFMPEG_PARAMETERS_MAP:
-            arguments.extend(self.FFMPEG_PARAMETERS_MAP[self.rconf[RuntimeConfiguration.FFMPEG_SAMPLE_RATE]])
+        if self.rconf.sample_rate in self.FFMPEG_PARAMETERS_MAP:
+            arguments.extend(self.FFMPEG_PARAMETERS_MAP[self.rconf.sample_rate])
         else:
             arguments.extend(self.FFMPEG_PARAMETERS_DEFAULT)
         arguments.append(output_file_path)
