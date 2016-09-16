@@ -25,7 +25,8 @@
 Set the aeneas package up.
 """
 
-from setuptools import setup, Extension
+from setuptools import Extension
+from setuptools import setup
 import io
 import os
 import shutil
@@ -56,7 +57,7 @@ __copyright__ = """
 """
 __license__ = "GNU AGPL 3"
 __status__ = "Production"
-__version__ = "1.5.2"
+__version__ = "1.6.0"
 
 
 ##############################################################################

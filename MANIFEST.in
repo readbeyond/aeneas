@@ -7,6 +7,7 @@ recursive-include aeneas/extra *
 prune aeneas/extra/ctw_speect
 recursive-include aeneas/res *
 recursive-include aeneas/tools/res *
+recursive-include aeneas/ttswrappers *
 include aeneas_check_setup.py
 recursive-include bin *
 recursive-include docs *

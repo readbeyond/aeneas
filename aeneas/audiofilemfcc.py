@@ -86,7 +86,7 @@ class AudioFileMFCC(Loggable):
     to avoid creating temporary data or copying data around.
 
     :param string file_path: the path of the PCM16 mono WAVE file, or ``None``
-    :param bool file_path_is_mono_wave: set to ``True`` if the audio file at ``file_path`` is a PCM16 mono WAVE file
+    :param tuple file_format: the format of the audio file, if known in advance: ``(codec, channels, rate)`` or ``None``
     :param mfcc_matrix: the MFCC matrix to be set, or ``None``
     :type  mfcc_matrix: :class:`numpy.ndarray`
     :param audio_file: an audio file, or ``None``
@@ -105,7 +105,7 @@ class AudioFileMFCC(Loggable):
     def __init__(
             self,
             file_path=None,
-            file_path_is_mono_wave=False,
+            file_format=None,
             mfcc_matrix=None,
             audio_file=None,
             rconf=None,
@@ -131,8 +131,8 @@ class AudioFileMFCC(Loggable):
             if self.audio_file is None:
                 audio_file_was_none = True
                 self.audio_file = AudioFile(
-                    self.file_path,
-                    is_mono_wave=file_path_is_mono_wave,
+                    file_path=self.file_path,
+                    file_format=file_format,
                     rconf=self.rconf,
                     logger=self.logger
                 )

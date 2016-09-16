@@ -44,7 +44,7 @@ __copyright__ = """
 """
 __license__ = "GNU AGPL 3"
 __status__ = "Production"
-__version__ = "1.5.2"
+__version__ = "1.6.0"
 
 ANSI_ERROR = u"\033[91m"
 ANSI_OK = u"\033[92m"

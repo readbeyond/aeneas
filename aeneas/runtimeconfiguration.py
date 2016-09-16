@@ -624,6 +624,17 @@ class RuntimeConfiguration(Configuration):
         return new_rconf
 
     @property
+    def sample_rate(self):
+        """
+        Return the value of the
+        :data:`~aeneas.runtimeconfiguration.RuntimeConfiguration.FFMPEG_SAMPLE_RATE`
+        key stored in this configuration object.
+
+        :rtype: int
+        """
+        return self[self.FFMPEG_SAMPLE_RATE]
+
+    @property
     def mws(self):
         """
         Return the value of the

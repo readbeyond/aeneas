@@ -22,44 +22,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 """
-This is the aeneas-cli "hydra" script,
-to be compiled by pyinstaller.
+**aeneas.ttswrappers** contains the wrappers for
+several built-in TTS engines which can be used
+in the synthesis step of the alignment procedure.
 """
-
-from __future__ import absolute_import
-from __future__ import print_function
-import sys
-
-from aeneas.globalfunctions import FROZEN
-from aeneas.tools.hydra import HydraCLI
-
-__author__ = "Alberto Pettarin"
-__email__ = "aeneas@readbeyond.it"
-__copyright__ = """
-    Copyright 2012-2013, Alberto Pettarin (www.albertopettarin.it)
-    Copyright 2013-2015, ReadBeyond Srl   (www.readbeyond.it)
-    Copyright 2015-2016, Alberto Pettarin (www.albertopettarin.it)
-"""
-__license__ = "GNU AGPL 3"
-__status__ = "Production"
-__version__ = "1.6.0"
-
-
-def main():
-    """
-    This is the aeneas-cli "hydra" script,
-    to be compiled by pyinstaller.
-    """
-    if FROZEN:
-        HydraCLI(invoke="aeneas-cli").run(
-            arguments=sys.argv,
-            show_help=False
-        )
-    else:
-        HydraCLI(invoke="pyinstaller-aeneas-cli.py").run(
-            arguments=sys.argv,
-            show_help=False
-        )
-
-if __name__ == '__main__':
-    main()

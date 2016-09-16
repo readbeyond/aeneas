@@ -187,7 +187,7 @@ class ExecuteTask(Loggable):
         try:
             # load audio file, extract MFCCs from real wave, clear audio file
             self._step_begin(u"extract MFCC real wave")
-            real_wave_mfcc = self._extract_mfcc(file_path=self.task.audio_file_path_absolute, file_path_is_mono_wave=False)
+            real_wave_mfcc = self._extract_mfcc(file_path=self.task.audio_file_path_absolute, file_format=None)
             self._step_end()
 
             # compute head and/or tail and set it
@@ -369,11 +369,11 @@ class ExecuteTask(Loggable):
         :rtype: list
         """
         self._step_begin(u"synthesize text", log=log)
-        synt_handler, synt_path, synt_anchors, synt_mono = self._synthesize(text_file)
+        synt_handler, synt_path, synt_anchors, synt_format = self._synthesize(text_file)
         self._step_end(log=log)
 
         self._step_begin(u"extract MFCC synt wave", log=log)
-        synt_wave_mfcc = self._extract_mfcc(file_path=synt_path, file_path_is_mono_wave=synt_mono)
+        synt_wave_mfcc = self._extract_mfcc(file_path=synt_path, file_format=synt_format)
         gf.delete_file(synt_handler, synt_path)
         self._step_end(log=log)
 
@@ -396,7 +396,7 @@ class ExecuteTask(Loggable):
         self._step_begin(u"load audio file")
         audio_file = AudioFile(
             file_path=self.task.audio_file_path_absolute,
-            is_mono_wave=False,
+            file_format=None,                               # forces conversion to PCM16 mono WAVE with proper sample rate
             rconf=self.rconf,
             logger=self.logger
         )
@@ -416,7 +416,7 @@ class ExecuteTask(Loggable):
         audio_file = None
         self._step_end()
 
-    def _extract_mfcc(self, file_path=None, file_path_is_mono_wave=False, audio_file=None):
+    def _extract_mfcc(self, file_path=None, file_format=None, audio_file=None):
         """
         Extract the MFCCs from the given audio file.
 
@@ -424,7 +424,7 @@ class ExecuteTask(Loggable):
         """
         return AudioFileMFCC(
             file_path=file_path,
-            file_path_is_mono_wave=file_path_is_mono_wave,
+            file_format=file_format,
             audio_file=audio_file,
             rconf=self.rconf,
             logger=self.logger
@@ -499,7 +499,7 @@ class ExecuteTask(Loggable):
         handler, path = gf.tmp_file(suffix=u".wav", root=self.rconf[RuntimeConfiguration.TMP_PATH])
         result = synthesizer.synthesize(text_file, path)
         anchors = result[0]
-        return (handler, path, anchors, synthesizer.output_is_mono_wave)
+        return (handler, path, anchors, synthesizer.output_audio_format)
 
     def _align_waves(self, real_wave_mfcc, synt_wave_mfcc, synt_anchors):
         """

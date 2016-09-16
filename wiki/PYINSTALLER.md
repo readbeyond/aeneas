@@ -5,7 +5,7 @@ two [PyInstaller](http://www.pyinstaller.org/) configuration files
 that can be used to compile **aeneas** into an executable
 to be distributed to other users,
 who will not need to install Python,
-Python module dependencies, or the Python C extension compiler.
+Python dependencies, or the Python C extension compiler.
 
 (The end users will still need to install **eSpeak** and **FFmpeg** separately
 before running the compiled **aeneas** executable.

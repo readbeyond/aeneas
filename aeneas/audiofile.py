@@ -115,7 +115,7 @@ class AudioFile(Loggable):
     .. note:: Support for stereo WAVE files might be implemented in a future version
 
     :param string file_path: the path of the audio file
-    :param bool is_mono_wave: set to ``True`` if the audio file is a PCM16 mono WAVE file
+    :param tuple file_format: the format of the audio file, if known in advance: ``(codec, channels, rate)`` or ``None``
     :param rconf: a runtime configuration
     :type  rconf: :class:`~aeneas.runtimeconfiguration.RuntimeConfiguration`
     :param logger: the logger object
@@ -195,11 +195,11 @@ class AudioFile(Loggable):
 
     TAG = u"AudioFile"
 
-    def __init__(self, file_path=None, is_mono_wave=False, rconf=None, logger=None):
+    def __init__(self, file_path=None, file_format=None, rconf=None, logger=None):
         super(AudioFile, self).__init__(rconf=rconf, logger=logger)
         self.file_path = file_path
+        self.file_format = file_format
         self.file_size = None
-        self.is_mono_wave = is_mono_wave
         self.audio_length = None
         self.audio_format = None
         self.audio_sample_rate = None
@@ -211,6 +211,7 @@ class AudioFile(Loggable):
     def __unicode__(self):
         msg = [
             u"File path:         %s" % self.file_path,
+            u"File format:       %s" % self.file_format,
             u"File size (bytes): %s" % gf.safe_int(self.file_size),
             u"Audio length (s):  %s" % gf.safe_float(self.audio_length),
             u"Audio format:      %s" % self.audio_format,
@@ -375,13 +376,14 @@ class AudioFile(Loggable):
         """
         Load the audio samples from file into memory.
 
-        If ``self.is_mono_wave`` is ``False``,
+        If ``self.file_format`` is ``None`` or it is not
+        ``("pcm_s16le", 1, self.rconf.sample_rate)``,
         the file will be first converted
         to a temporary PCM16 mono WAVE file.
         Audio data will be read from this temporary file,
         which will be then deleted from disk immediately.
 
-        If ``self.is_mono_wave`` is ``True``,
+        Otherwise,
         the audio data will be read directly
         from the given file,
         which will not be deleted from disk.
@@ -396,13 +398,16 @@ class AudioFile(Loggable):
         if not gf.file_can_be_read(self.file_path):
             self.log_exc(u"File '%s' cannot be read" % (self.file_path), None, True, OSError)
 
-        # convert file to PCM16 mono WAVE
-        if self.is_mono_wave:
-            self.log(u"is_mono_wave=True => reading self.file_path directly")
-            tmp_handler = None
-            tmp_file_path = self.file_path
-        else:
-            self.log(u"is_mono_wave=False => converting self.file_path")
+        # determine if we need to convert the audio file
+        convert_audio_file = (
+            (self.file_format is None) or
+            (self.file_format != ("pcm_s16le", 1, self.rconf.sample_rate))
+        )
+
+        # convert the audio file if needed
+        if convert_audio_file:
+            # convert file to PCM16 mono WAVE with correct sample rate
+            self.log(u"self.file_format is None or not good => converting self.file_path")
             tmp_handler, tmp_file_path = gf.tmp_file(suffix=u".wav", root=self.rconf[RuntimeConfiguration.TMP_PATH])
             self.log([u"Temporary PCM16 mono WAVE file: '%s'", tmp_file_path])
             try:
@@ -416,6 +421,11 @@ class AudioFile(Loggable):
             except OSError:
                 gf.delete_file(tmp_handler, tmp_file_path)
                 self.log_exc(u"Audio file format not supported by ffmpeg", None, True, AudioFileUnsupportedFormatError)
+        else:
+            # read the file directly
+            self.log(u"self.file_format is good => reading self.file_path directly")
+            tmp_handler = None
+            tmp_file_path = self.file_path
 
         # TODO allow calling C extension cwave to read samples faster
         try:
@@ -431,9 +441,10 @@ class AudioFile(Loggable):
         except ValueError:
             self.log_exc(u"Audio format not supported by scipywavread", None, True, AudioFileUnsupportedFormatError)
 
-        if not self.is_mono_wave:
+        # if we converted the audio file, delete the temporary converted audio file
+        if convert_audio_file:
             gf.delete_file(tmp_handler, tmp_file_path)
-            self.log([u"Deleted temporary PCM16 mono WAVE file: '%s'", tmp_file_path])
+            self.log([u"Deleted temporary audio file: '%s'", tmp_file_path])
 
         self._update_length()
         self.log([u"Sample length:  %.3f", self.audio_length])

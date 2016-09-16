@@ -1,15 +1,27 @@
 Changelog
 =========
 
-v1.5.2 (2016-09-??)
+v1.6.0 (2016-09-??)
 -------------------
 
+#. Fixed bug #102 by checking that the audio file produced by the TTS engine is mono WAVE and has correct sample rate (slightly slower but safe)
+#. Created ``aeneas.ttswrappers`` subpackage
+#. Renamed ``aeneas.ttswrapper`` to ``aeneas.ttswrappers.basettswrapper``, and ``TTSWrapper`` to ``BaseTTSWrapper``
+#. Renamed ``aeneas.espeakwrapper`` to ``aeneas.ttswrappers.espeakttswrapper``, and ``ESPEAKWrapper`` to ``ESPEAKTTSWrapper``
+#. Renamed ``aeneas.festivalwrapper`` to ``aeneas.ttswrappers.festivalttswrapper``, and ``FESTIVALWrapper`` to ``FESTIVALTTSWrapper``
+#. Renamed ``aeneas.nuancettsapiwrapper`` to ``aeneas.ttswrappers.nuancettswrapper``, and ``NuanceTTSAPIWrapper`` to ``NuanceTTSWrapper``
+#. Modified the value for using the Nuance TTS API from ``nuancettsapi`` to ``nuance`` in ``aeneas.synthesizer.SYNTHESIZER``
+#. Now each TTS wrapper must declare the format (codec, channels, sample rate) of its output
+#. Updated tests and documentation accordingly
 #. Moved package metadata from ``setup.py`` into ``setupmeta.py``
 #. Added AGPL header to all source files
 #. Removed metadata from all source files, except those directly facing the user
-#. PEP8 compliance (except for E501) for all Python files
-#. Added ``wiki/CODESTYLE.md`` explaining how to check the code style using pep8
-#. Using Sphinx theme from readthedocs.org
+#. PEP 8 compliance for all Python files (except for E501 "line too long")
+#. Added ``wiki/CONTRIBUTING.md`` explaining the contribution rules (branch policy, code style, etc.)
+#. Using Sphinx theme from readthedocs.org if available
+#. Updated documentation
+#. Updated dependencies: BeautifulSoup4>=4.5.1 and lxml>=3.6.4 (see discussion in #93)
+#. Several minor code improvements
 
 v1.5.1 (2016-07-25)
 -------------------

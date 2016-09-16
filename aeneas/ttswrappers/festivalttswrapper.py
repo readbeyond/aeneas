@@ -24,7 +24,8 @@
 """
 This module contains the following classes:
 
-* :class:`~aeneas.festivalwrapper.FESTIVALWrapper`, a wrapper for the ``Festival`` TTS engine.
+* :class:`~aeneas.ttswrappers.festivalttswrapper.FESTIVALTTSWrapper`,
+  a wrapper for the ``Festival`` TTS engine.
 """
 
 from __future__ import absolute_import
@@ -32,10 +33,10 @@ from __future__ import print_function
 
 from aeneas.language import Language
 from aeneas.runtimeconfiguration import RuntimeConfiguration
-from aeneas.ttswrapper import TTSWrapper
+from aeneas.ttswrappers.basettswrapper import BaseTTSWrapper
 
 
-class FESTIVALWrapper(TTSWrapper):
+class FESTIVALTTSWrapper(BaseTTSWrapper):
     """
     A wrapper for the ``Festival`` TTS engine.
 
@@ -52,7 +53,8 @@ class FESTIVALWrapper(TTSWrapper):
 
     in the ``RuntimeConfiguration`` object.
 
-    See :class:`~aeneas.ttswrapper.TTSWrapper` for the available functions.
+    See :class:`~aeneas.ttswrappers.basettswrapper.BaseTTSWrapper`
+    for the available functions.
     Below are listed the languages supported by this wrapper.
 
     :param rconf: a runtime configuration
@@ -118,12 +120,12 @@ class FESTIVALWrapper(TTSWrapper):
         RUS: u"(language_russian)",
     }
 
-    OUTPUT_MONO_WAVE = True
+    OUTPUT_AUDIO_FORMAT = ("pcm_s16le", 1, 16000)
 
-    TAG = u"FESTIVALWrapper"
+    TAG = u"FESTIVALTTSWrapper"
 
     def __init__(self, rconf=None, logger=None):
-        super(FESTIVALWrapper, self).__init__(
+        super(FESTIVALTTSWrapper, self).__init__(
             has_subprocess_call=True,
             has_c_extension_call=False,
             has_python_call=False,
@@ -132,10 +134,10 @@ class FESTIVALWrapper(TTSWrapper):
         )
         self.set_subprocess_arguments([
             self.rconf[RuntimeConfiguration.TTS_PATH],
-            TTSWrapper.CLI_PARAMETER_VOICE_CODE_FUNCTION,
+            self.CLI_PARAMETER_VOICE_CODE_FUNCTION,
             u"-o",
-            TTSWrapper.CLI_PARAMETER_WAVE_PATH,
-            TTSWrapper.CLI_PARAMETER_TEXT_STDIN
+            self.CLI_PARAMETER_WAVE_PATH,
+            self.CLI_PARAMETER_TEXT_STDIN
         ])
 
     def _voice_code_to_subprocess(self, voice_code):

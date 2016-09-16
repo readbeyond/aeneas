@@ -170,14 +170,14 @@ class Diagnostics(object):
         """
         try:
             from aeneas.tools.convert_syncmap import ConvertSyncMapCLI
-            # disabling this check, as it contains optional dependency pafy
+            # disabling this check, as it requires the optional dependency pafy
             # COMMENTED from aeneas.tools.download import DownloadCLI
             from aeneas.tools.execute_job import ExecuteJobCLI
             from aeneas.tools.execute_task import ExecuteTaskCLI
             from aeneas.tools.extract_mfcc import ExtractMFCCCLI
             from aeneas.tools.ffmpeg_wrapper import FFMPEGWrapperCLI
             from aeneas.tools.ffprobe_wrapper import FFPROBEWrapperCLI
-            # disabling this check, as it contains optional dependency Pillow
+            # disabling this check, as it requires the optional dependency Pillow
             # COMMENTED from aeneas.tools.plot_waveform import PlotWaveformCLI
             from aeneas.tools.read_audio import ReadAudioCLI
             from aeneas.tools.read_text import ReadTextCLI

@@ -24,7 +24,8 @@
 """
 This module contains the following classes:
 
-* :class:`~aeneas.espeakwrapper.ESPEAKWrapper`, a wrapper for the ``eSpeak`` TTS engine.
+* :class:`~aeneas.ttswrappers.espeakttswrapper.ESPEAKTTSWrapper`,
+  a wrapper for the ``eSpeak`` TTS engine.
 """
 
 from __future__ import absolute_import
@@ -33,13 +34,13 @@ from __future__ import print_function
 from aeneas.language import Language
 from aeneas.runtimeconfiguration import RuntimeConfiguration
 from aeneas.timevalue import TimeValue
-from aeneas.ttswrapper import TTSWrapper
+from aeneas.ttswrappers.basettswrapper import BaseTTSWrapper
 import aeneas.globalfunctions as gf
 
 
-class ESPEAKWrapper(TTSWrapper):
+class ESPEAKTTSWrapper(BaseTTSWrapper):
     """
-    A wrapper for the ``espeak`` TTS engine.
+    A wrapper for the ``eSpeak`` TTS engine.
 
     This wrapper is the default TTS engine for ``aeneas``.
 
@@ -64,7 +65,8 @@ class ESPEAKWrapper(TTSWrapper):
 
     in the ``rconf`` object.
 
-    See :class:`~aeneas.ttswrapper.TTSWrapper` for the available functions.
+    See :class:`~aeneas.ttswrappers.basettswrapper.BaseTTSWrapper`
+    for the available functions.
     Below are listed the languages supported by this wrapper.
 
     :param rconf: a runtime configuration
@@ -628,12 +630,12 @@ class ESPEAKWrapper(TTSWrapper):
     }
     DEFAULT_LANGUAGE = ENG
 
-    OUTPUT_MONO_WAVE = True
+    OUTPUT_AUDIO_FORMAT = ("pcm_s16le", 1, 22050)
 
-    TAG = u"ESPEAKWrapper"
+    TAG = u"EspeakTTSWrapper"
 
     def __init__(self, rconf=None, logger=None):
-        super(ESPEAKWrapper, self).__init__(
+        super(ESPEAKTTSWrapper, self).__init__(
             has_subprocess_call=True,
             has_c_extension_call=True,
             has_python_call=False,
@@ -643,10 +645,10 @@ class ESPEAKWrapper(TTSWrapper):
         self.set_subprocess_arguments([
             self.rconf[RuntimeConfiguration.TTS_PATH],
             u"-v",
-            TTSWrapper.CLI_PARAMETER_VOICE_CODE_STRING,
+            self.CLI_PARAMETER_VOICE_CODE_STRING,
             u"-w",
-            TTSWrapper.CLI_PARAMETER_WAVE_PATH,
-            TTSWrapper.CLI_PARAMETER_TEXT_STDIN
+            self.CLI_PARAMETER_WAVE_PATH,
+            self.CLI_PARAMETER_TEXT_STDIN
         ])
 
     def _synthesize_multiple_c_extension(self, text_file, output_file_path, quit_after=None, backwards=False):
