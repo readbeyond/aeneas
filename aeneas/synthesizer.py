@@ -33,12 +33,12 @@ This module contains the following classes:
 
 from __future__ import absolute_import
 from __future__ import print_function
-from aeneas.espeakwrapper import ESPEAKWrapper
-from aeneas.festivalwrapper import FESTIVALWrapper
 from aeneas.logger import Loggable
-from aeneas.nuancettsapiwrapper import NuanceTTSAPIWrapper
 from aeneas.runtimeconfiguration import RuntimeConfiguration
 from aeneas.textfile import TextFile
+from aeneas.ttswrappers.espeakttswrapper import ESPEAKTTSWrapper
+from aeneas.ttswrappers.festivalttswrapper import FESTIVALTTSWrapper
+from aeneas.ttswrappers.nuancettswrapper import NuanceTTSWrapper
 import aeneas.globalfunctions as gf
 
 
@@ -66,10 +66,10 @@ class Synthesizer(Loggable):
     FESTIVAL = "festival"
     """ Select Festival wrapper """
 
-    NUANCETTSAPI = "nuancettsapi"
+    NUANCE = "nuance"
     """ Select Nuance TTS API wrapper """
 
-    ALLOWED_VALUES = [CUSTOM, ESPEAK, FESTIVAL, NUANCETTSAPI]
+    ALLOWED_VALUES = [CUSTOM, ESPEAK, FESTIVAL, NUANCE]
     """ List of all the allowed values """
 
     TAG = u"Synthesizer"
@@ -104,17 +104,17 @@ class Synthesizer(Loggable):
                 self.log_exc(u"Unable to load custom TTS wrapper", exc, True, OSError)
         elif self.rconf[RuntimeConfiguration.TTS] == self.FESTIVAL:
             self.log(u"TTS engine: Festival")
-            self.tts_engine = FESTIVALWrapper(rconf=self.rconf, logger=self.logger)
-        elif self.rconf[RuntimeConfiguration.TTS] == self.NUANCETTSAPI:
+            self.tts_engine = FESTIVALTTSWrapper(rconf=self.rconf, logger=self.logger)
+        elif self.rconf[RuntimeConfiguration.TTS] == self.NUANCE:
             try:
                 import requests
             except ImportError as exc:
                 self.log_exc(u"Unable to import requests for Nuance TTS API wrapper", exc, True, ImportError)
             self.log(u"TTS engine: Nuance TTS API")
-            self.tts_engine = NuanceTTSAPIWrapper(rconf=self.rconf, logger=self.logger)
+            self.tts_engine = NuanceTTSWrapper(rconf=self.rconf, logger=self.logger)
         else:
             self.log(u"TTS engine: eSpeak")
-            self.tts_engine = ESPEAKWrapper(rconf=self.rconf, logger=self.logger)
+            self.tts_engine = ESPEAKTTSWrapper(rconf=self.rconf, logger=self.logger)
         self.log(u"Selecting TTS engine... done")
 
     def output_is_mono_wave(self):

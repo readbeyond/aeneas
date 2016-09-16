@@ -24,7 +24,8 @@
 """
 This module contains the following classes:
 
-* :class:`~aeneas.nuancettsapiwrapper.NuanceTTSAPIWrapper`, a wrapper for the Nuance TTS API engine.
+* :class:`~aeneas.ttswrappers.nuancettswrapper.NuanceTTSWrapper`,
+  a wrapper for the Nuance TTS API engine.
 
 .. note:: This module requires Python module ``requests`` (``pip install requests``).
 
@@ -46,11 +47,11 @@ from aeneas.audiofile import AudioFile
 from aeneas.language import Language
 from aeneas.runtimeconfiguration import RuntimeConfiguration
 from aeneas.timevalue import TimeValue
-from aeneas.ttswrapper import TTSWrapper
+from aeneas.ttswrappers.basettswrapper import BaseTTSWrapper
 import aeneas.globalfunctions as gf
 
 
-class NuanceTTSAPIWrapper(TTSWrapper):
+class NuanceTTSWrapper(BaseTTSWrapper):
     """
     A wrapper for the Nuance Developers TTS API.
 
@@ -67,7 +68,8 @@ class NuanceTTSAPIWrapper(TTSWrapper):
 
     in the ``rconf`` object, substituting your Nuance Developer API ID and Key.
 
-    See :class:`~aeneas.ttswrapper.TTSWrapper` for the available functions.
+    See :class:`~aeneas.ttswrappers.basettswrapper.BaseTTSWrapper`
+    for the available functions.
     Below are listed the languages supported by this wrapper.
 
     :param rconf: a runtime configuration
@@ -280,10 +282,10 @@ class NuanceTTSAPIWrapper(TTSWrapper):
     URL = "https://tts.nuancemobility.net"
     """ Nuance TTS API URL """
 
-    TAG = u"NuanceTTSAPIWrapper"
+    TAG = u"NuanceTTSWrapper"
 
     def __init__(self, rconf=None, logger=None):
-        super(NuanceTTSAPIWrapper, self).__init__(
+        super(NuanceTTSWrapper, self).__init__(
             has_subprocess_call=False,
             has_c_extension_call=False,
             has_python_call=True,

@@ -50,7 +50,7 @@ CMODULE = Extension(
 
 setup(
     name="cdtw",
-    version="1.5.2",
+    version="1.6.0",
     description="""
     Python C Extension for computing the DTW as fast as your bare metal allows.
     """,

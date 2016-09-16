@@ -36,11 +36,11 @@ import speect.audio_riff
 from aeneas.audiofile import AudioFile
 from aeneas.language import Language
 from aeneas.timevalue import TimeValue
-from aeneas.ttswrapper import TTSWrapper
+from aeneas.ttswrappers.basettswrapper import BaseTTSWrapper
 import aeneas.globalfunctions as gf
 
 
-class CustomTTSWrapper(TTSWrapper):
+class CustomTTSWrapper(BaseTTSWrapper):
     """
     A wrapper for the ``speect`` TTS engine.
 

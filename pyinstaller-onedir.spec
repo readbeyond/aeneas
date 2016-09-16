@@ -9,7 +9,7 @@
 #"""
 #__license__ = "GNU AGPL 3"
 #__status__ = "Production"
-#__version__ = "1.5.2"
+#__version__ = "1.6.0"
 
 datas = [
     # required

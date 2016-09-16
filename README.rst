@@ -4,7 +4,7 @@ aeneas
 **aeneas** is a Python/C library and a set of tools to automagically
 synchronize audio and text (aka forced alignment).
 
--  Version: 1.5.2.0
+-  Version: 1.6.0.0
 -  Date: 2016-09-??
 -  Developed by: `ReadBeyond <http://www.readbeyond.it/>`__
 -  Lead Developer: `Alberto Pettarin <http://www.albertopettarin.it/>`__
@@ -333,31 +333,18 @@ Feel free to `get in touch <mailto:aeneas@readbeyond.it>`__.
 Contributing
 ~~~~~~~~~~~~
 
-If you think you found a bug, please use the `GitHub issue
-tracker <https://github.com/readbeyond/aeneas/issues>`__ to file a bug
-report.
+If you think you found a bug or you have a feature request, please use
+the `GitHub issue
+tracker <https://github.com/readbeyond/aeneas/issues>`__ to submit it.
 
-If you are able to contribute code directly, that is awesome! I will be
-glad to merge it! Just a few rules, to make life easier for both you and
-me:
+If you want to ask a question about using **aeneas**, your best option
+consists in sending an email to the `mailing
+list <https://groups.google.com/d/forum/aeneas-forced-alignment>`__.
 
-1. Please do not work on the ``master`` branch. Instead, create a new
-   branch on your GitHub repo by cheking out the ``devel`` branch. Open
-   a pull request from your branch on your repo to the ``devel`` branch
-   on this GitHub repo.
-
-2. Please make your code consistent with the existing code base style
-   (see the `Code Style
-   Guide <https://github.com/readbeyond/aeneas/blob/master/wiki/CODESTYLE.md>`__
-   ), and test your contributed code against the unit tests before
-   opening the pull request.
-
-3. Ideally, add some unit tests for the code you are submitting, either
-   adding them to the existing unit tests or creating a new file in
-   ``aeneas/tests/``.
-
-4. **Please note that, by opening a pull request, you automatically
-   agree to apply the AGPL v3 license to the code you contribute.**
+Finally, code contributions are welcome! Please refer to the `Code
+Contribution
+Guide <https://github.com/readbeyond/aeneas/blob/master/wiki/CONTRIBUTING.md>`__)
+for details about the branch policies and the code style to follow.
 
 Acknowledgments
 ---------------

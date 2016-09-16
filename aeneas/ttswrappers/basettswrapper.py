@@ -24,7 +24,8 @@
 """
 This module contains the following classes:
 
-* :class:`~aeneas.ttswrapper.TTSWrapper`, an abstract wrapper for a TTS engine.
+* :class:`~aeneas.ttswrappers.basettswrapper.BaseTTSWrapper`,
+  an abstract wrapper for a TTS engine.
 """
 
 from __future__ import absolute_import
@@ -40,7 +41,7 @@ from aeneas.timevalue import TimeValue
 import aeneas.globalfunctions as gf
 
 
-class TTSWrapper(Loggable):
+class BaseTTSWrapper(Loggable):
     """
     An abstract wrapper for a TTS engine.
 
@@ -140,7 +141,7 @@ class TTSWrapper(Loggable):
     by the TTS engine they wrap.
     """
 
-    TAG = u"TTSWrapper"
+    TAG = u"BaseTTSWrapper"
 
     def __init__(
             self,
@@ -152,7 +153,7 @@ class TTSWrapper(Loggable):
     ):
         if (not has_subprocess_call) and (not has_c_extension_call) and (not has_python_call):
             raise ValueError(u"You must implement at least one call method: subprocess, C extension, or Python")
-        super(TTSWrapper, self).__init__(rconf=rconf, logger=logger)
+        super(BaseTTSWrapper, self).__init__(rconf=rconf, logger=logger)
         self.has_subprocess_call = has_subprocess_call
         self.has_c_extension_call = has_c_extension_call
         self.has_python_call = has_python_call

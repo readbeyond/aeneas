@@ -125,7 +125,7 @@ Only ``numpy`` is actually needed, as it is heavily used for the alignment compu
 
 The other two dependencies (``lxml`` and ``BeautifulSoup``) are needed
 only if you use XML-like input or output formats.
-However, since they are popular Python modules, to avoid complex import testing,
+However, since they are popular Python packages, to avoid complex import testing,
 they are listed as requirements as they are imported
 module-wise where they are used.
 
@@ -309,10 +309,10 @@ Miscellanea
 
 
 
-Module ``aeneas``
-~~~~~~~~~~~~~~~~~
+Package ``aeneas``
+~~~~~~~~~~~~~~~~~~
 
-The main ``aeneas`` module contains several subpackages:
+The main ``aeneas`` package contains several subpackages:
 
 * :mod:`aeneas.cdtw` (Python C extension)
 * :mod:`aeneas.cew` (Python C extension)
@@ -321,6 +321,7 @@ The main ``aeneas`` module contains several subpackages:
 * :mod:`aeneas.extra`
 * :mod:`aeneas.tests`
 * :mod:`aeneas.tools`
+* :mod:`aeneas.ttswrappers`
 
 and the following modules:
 
@@ -337,10 +338,8 @@ and the following modules:
     diagnostics
     downloader
     dtw
-    espeakwrapper
     executejob
     executetask
-    festivalwrapper
     ffmpegwrapper
     ffprobewrapper
     globalconstants
@@ -351,7 +350,6 @@ and the following modules:
     language
     logger
     mfcc
-    nuancettsapiwrapper
     plotter
     runtimeconfiguration
     sd
@@ -360,16 +358,15 @@ and the following modules:
     task
     textfile
     timevalue
-    ttswrapper
     vad
     validator
 
 
 
-Module ``aeneas.extra``
-~~~~~~~~~~~~~~~~~~~~~~~
+Package ``aeneas.extra``
+~~~~~~~~~~~~~~~~~~~~~~~~
 
-The ``aeneas.extra`` module contains some extra Python source files
+The ``aeneas.extra`` package contains some extra Python source files
 which provide **experimental** and **not officially supported** functions,
 mainly custom, not built-in TTS engine wrappers.
 
@@ -378,24 +375,22 @@ have a look at the ``aeneas/extra/ctw_espeak.py`` source file,
 which is heavily commented and should be easy to modify for your own TTS engine.
 
 
+Package ``aeneas.tests``
+~~~~~~~~~~~~~~~~~~~~~~~~
 
-Module ``aeneas.tests``
-~~~~~~~~~~~~~~~~~~~~~~~
-
-The ``aeneas.tests`` module contains the **unit test** files for ``aeneas``.
+The ``aeneas.tests`` package contains the **unit test** files for ``aeneas``.
 
 Resources needed to run the tests,
 for example audio and text files,
 are located in the ``aeneas/tests/res/`` directory.
 
-
-
 .. _libtutorial_tools:
 
-Module ``aeneas.tools``
-~~~~~~~~~~~~~~~~~~~~~~~
 
-The ``aeneas.tools`` module contains the built-in command line tools for ``aeneas``.
+Package ``aeneas.tools``
+~~~~~~~~~~~~~~~~~~~~~~~~
+
+The ``aeneas.tools`` package contains the built-in command line tools for ``aeneas``.
 
 The two main tools are:
 
@@ -404,7 +399,7 @@ The two main tools are:
 
 which are described in the :ref:`clitutorial`.
 
-Moreover, the ``aeneas.tools`` module also contains the following programs,
+Moreover, the ``aeneas.tools`` package also contains the following programs,
 useful for debugging or converting between different file formats:
 
 * ``aeneas.tools.convert_syncmap``: convert a sync map from a format to another
@@ -427,9 +422,25 @@ Resources needed to run the live examples,
 for example audio and text files,
 are located in the ``aeneas/tools/res/`` directory.
 
-The module also contains the ``aeneas.tools.hydra`` script,
+The package also contains the ``aeneas.tools.hydra`` script,
 which can run any of the tools listed above.
 Run it without arguments to get its manual.
+
+
+Package ``aeneas.ttswrappers``
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+The ``aeneas.ttswrappers`` package contains the wrappers for
+several built-in **TTS engines** which can be used
+in the synthesis step of the alignment procedure.
+
+.. toctree::
+    :maxdepth: 3
+
+    basettswrapper
+    espeakttswrapper
+    festivalttswrapper
+    nuancettswrapper
 
 
 

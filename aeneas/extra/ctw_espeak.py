@@ -29,7 +29,7 @@ from __future__ import absolute_import
 from __future__ import print_function
 
 from aeneas.language import Language
-from aeneas.ttswrapper import TTSWrapper
+from aeneas.ttswrappers.basettswrapper import BaseTTSWrapper
 
 
 class CustomTTSWrapper(TTSWrapper):
@@ -136,24 +136,24 @@ class CustomTTSWrapper(TTSWrapper):
         #      introduced by the "-v" switch.
         #
         self.set_subprocess_arguments([
-            u"/usr/bin/espeak",                          # path of espeak executable; you can use just "espeak" if it is in your PATH
-            u"-v",                                       # append "-v"
-            TTSWrapper.CLI_PARAMETER_VOICE_CODE_STRING,  # it will be replaced by the actual voice code
-            u"-w",                                       # append "-w"
-            TTSWrapper.CLI_PARAMETER_WAVE_PATH,          # it will be replaced by the actual output file path
-            TTSWrapper.CLI_PARAMETER_TEXT_STDIN          # text is read from stdin
+            u"/usr/bin/espeak",                     # path of espeak executable; you can use just "espeak" if it is in your PATH
+            u"-v",                                  # append "-v"
+            self.CLI_PARAMETER_VOICE_CODE_STRING,   # it will be replaced by the actual voice code
+            u"-w",                                  # append "-w"
+            self.CLI_PARAMETER_WAVE_PATH,           # it will be replaced by the actual output file path
+            self.CLI_PARAMETER_TEXT_STDIN           # text is read from stdin
         ])
         #
         # NOTE if your TTS engine only reads text from a file
-        #      you can use the TTSWrapper.CLI_PARAMETER_TEXT_PATH placeholder.
+        #      you can use the BaseTTSWrapper.CLI_PARAMETER_TEXT_PATH placeholder.
         #
         # NOTE if your TTS engine only writes audio data to stdout
-        #      you can use the TTSWrapper.CLI_PARAMETER_WAVE_STDOUT placeholder.
+        #      you can use the BaseTTSWrapper.CLI_PARAMETER_WAVE_STDOUT placeholder.
         #
         # NOTE if your TTS engine needs a more complex parameter
         #      for selecting the voice, e.g. Festival needs '-eval "(language_italian)"',
         #      you can implement a _voice_code_to_subprocess() function
-        #      and use the TTSWrapper.CLI_PARAMETER_VOICE_CODE_FUNCTION placeholder
-        #      instead of the TTSWrapper.CLI_PARAMETER_VOICE_CODE_STRING placeholder.
-        #      See the aeneas/festivalwrapper.py file for an example.
+        #      and use the BaseTTSWrapper.CLI_PARAMETER_VOICE_CODE_FUNCTION placeholder
+        #      instead of the BaseTTSWrapper.CLI_PARAMETER_VOICE_CODE_STRING placeholder.
+        #      See the aeneas/ttswrappers/festivalttswrapper.py file for an example.
         #

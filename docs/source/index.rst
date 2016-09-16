@@ -51,7 +51,7 @@ Usage
 -----
 
 **aeneas** can be used via the **built-in command line tools**,
-or as a **Python module** inside third-party code.
+or as a **Python package** inside third-party code.
 
 (If you do not plan to write Python code,
 just proceed to the next section describing
@@ -182,8 +182,8 @@ To learn more, please continue with the :ref:`clitutorial`.
 
 
 
-Using aeneas As A Python Module
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Using aeneas As A Python Package
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Please consult the :ref:`libtutorial`.
 

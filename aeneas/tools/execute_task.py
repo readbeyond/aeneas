@@ -33,12 +33,9 @@ import sys
 from aeneas.adjustboundaryalgorithm import AdjustBoundaryAlgorithm
 from aeneas.audiofile import AudioFile
 from aeneas.downloader import Downloader
-from aeneas.espeakwrapper import ESPEAKWrapper
 from aeneas.executetask import ExecuteTask
-from aeneas.festivalwrapper import FESTIVALWrapper
 from aeneas.idsortingalgorithm import IDSortingAlgorithm
 from aeneas.language import Language
-from aeneas.nuancettsapiwrapper import NuanceTTSAPIWrapper
 from aeneas.runtimeconfiguration import RuntimeConfiguration
 from aeneas.syncmap import SyncMapFormat
 from aeneas.syncmap import SyncMapHeadTailFormat
@@ -47,6 +44,9 @@ from aeneas.textfile import TextFileFormat
 from aeneas.timevalue import Decimal
 from aeneas.timevalue import TimeValue
 from aeneas.tools.abstract_cli_program import AbstractCLIProgram
+from aeneas.ttswrappers.espeakttswrapper import ESPEAKTTSWrapper
+from aeneas.ttswrappers.festivalttswrapper import FESTIVALTTSWrapper
+from aeneas.ttswrappers.nuancettswrapper import NuanceTTSWrapper
 from aeneas.validator import Validator
 import aeneas.globalconstants as gc
 import aeneas.globalfunctions as gf
@@ -356,9 +356,9 @@ class ExecuteTaskCLI(AbstractCLIProgram):
     ]
 
     VALUES = {
-        "espeak": sorted(ESPEAKWrapper.LANGUAGE_TO_VOICE_CODE.keys()),
-        "festival": sorted(FESTIVALWrapper.LANGUAGE_TO_VOICE_CODE.keys()),
-        "nuancettsapi": sorted(NuanceTTSAPIWrapper.LANGUAGE_TO_VOICE_CODE.keys()),
+        "espeak": sorted(ESPEAKTTSWrapper.LANGUAGE_TO_VOICE_CODE.keys()),
+        "festival": sorted(FESTIVALTTSWrapper.LANGUAGE_TO_VOICE_CODE.keys()),
+        "nuancettsapi": sorted(NuanceTTSWrapper.LANGUAGE_TO_VOICE_CODE.keys()),
         "task_language": Language.ALLOWED_VALUES,
         "is_text_type": TextFileFormat.ALLOWED_VALUES,
         "is_text_unparsed_id_sort": IDSortingAlgorithm.ALLOWED_VALUES,

@@ -36,7 +36,7 @@ __copyright__ = """
 """
 __license__ = "GNU AGPL 3"
 __status__ = "Production"
-__version__ = "1.5.2"
+__version__ = "1.6.0"
 
 
 ##############################################################################
@@ -47,7 +47,7 @@ __version__ = "1.5.2"
 
 # package version
 # NOTE: generate a new one for each PyPI upload, otherwise it will fail
-PKG_VERSION = "1.5.2.0"
+PKG_VERSION = "1.6.0.0"
 
 # required packages to install
 # NOTE: always use exact version numbers
@@ -92,7 +92,8 @@ PKG_PACKAGES = [
     "aeneas.cmfcc",
     "aeneas.cwave",
     "aeneas.extra",
-    "aeneas.tools"
+    "aeneas.tools",
+    "aeneas.ttswrappers"
 ]
 
 # data files to be distributed
@@ -128,6 +129,9 @@ PKG_PACKAGE_DATA = {
     ],
     "aeneas.tools": [
         "res/*",
+        "*.md"
+    ],
+    "aeneas.ttswrappers": [
         "*.md"
     ]
 }
@@ -202,14 +206,18 @@ PKG_KEYWORDS = [
     "audio/text alignment",
     "dynamic time warping",
     "espeak",
+    "festival",
     "ffmpeg",
     "ffprobe",
     "forced alignment",
     "media overlay",
     "rb_smil_emulator",
+    "speech to text",
     "subtitles",
     "sync",
     "synchronization",
+    "text to speech",
+    "tts"
 ]
 
 # PyPI classifiers

@@ -6,7 +6,8 @@ aeneas Built-in Command Line Tools Tutorial
 This tutorial explains how to process tasks and jobs with
 the command line tools ``aeneas.tools.execute_task`` and ``aeneas.tools.execute_job``.
 
-(If you are interested in using ``aeneas`` as a Python module,
+(If you are interested in using ``aeneas``
+as a Python package in your own application,
 please consult the :ref:`libtutorial`.)
 
 Processing Tasks
@@ -384,13 +385,13 @@ Examples:
 
 #. use the Nuance TTS API instead of eSpeak::
 
-    python -m aeneas.tools.execute_task --example-json -r="tts=nuancettsapi|nuance_tts_api_id=YOUR_NUANCE_API_ID|nuance_tts_api_key=YOUR_NUANCE_API_KEY"
+    python -m aeneas.tools.execute_task --example-json -r="tts=nuance|nuance_tts_api_id=YOUR_NUANCE_API_ID|nuance_tts_api_key=YOUR_NUANCE_API_KEY"
 
 #. use the Festival TTS, via the ``text2wave`` executable, instead of eSpeak::
 
     python -m aeneas.tools.execute_task --example-json -r="tts=festival|tts_path=text2wave"
 
-#. use a custom TTS wrapper::
+#. use a custom TTS wrapper located at ``/path/to/your/wrapper.py`` (see the ``aeneas/extra/`` directory for examples)::
 
     python -m aeneas.tools.execute_task --example-json -r="tts=custom|tts_path=/path/to/your/wrapper.py"
 

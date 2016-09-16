@@ -52,7 +52,7 @@ CMODULE = Extension(
 
 setup(
     name="cmfcc",
-    version="1.5.2",
+    version="1.6.0",
     description="""
     Python C Extension for computing the MFCCs as fast as your bare metal allows.
     """,

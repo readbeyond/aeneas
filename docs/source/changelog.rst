@@ -1,15 +1,23 @@
 Changelog
 =========
 
-v1.5.2 (2016-09-??)
+v1.6.0 (2016-09-??)
 -------------------
 
+#. Created ``aeneas.ttswrappers`` subpackage
+#. Renamed ``aeneas.ttswrapper`` to ``aeneas.ttswrappers.basettswrapper``, and ``TTSWrapper`` to ``BaseTTSWrapper``
+#. Renamed ``aeneas.espeakwrapper`` to ``aeneas.ttswrappers.espeakttswrapper``, and ``ESPEAKWrapper`` to ``ESPEAKTTSWrapper``
+#. Renamed ``aeneas.festivalwrapper`` to ``aeneas.ttswrappers.festivalttswrapper``, and ``FESTIVALWrapper`` to ``FESTIVALTTSWrapper``
+#. Renamed ``aeneas.nuancettsapiwrapper`` to ``aeneas.ttswrappers.nuancettswrapper``, and ``NuanceTTSAPIWrapper`` to ``NuanceTTSWrapper``
+#. Modified the value for using the Nuance TTS API from ``nuancettsapi`` to ``nuance`` in ``aeneas.synthesizer.SYNTHESIZER``
+#. Updated tests and documentation accordingly
 #. Moved package metadata from ``setup.py`` into ``setupmeta.py``
 #. Added AGPL header to all source files
 #. Removed metadata from all source files, except those directly facing the user
-#. PEP8 compliance (except for E501) for all Python files
-#. Added ``wiki/CODESTYLE.md`` explaining how to check the code style using pep8
+#. PEP 8 compliance for all Python files (except for E501 "line too long")
+#. Added ``wiki/CODESTYLE.md`` explaining how to check the code style using ``pep8``
 #. Using Sphinx theme from readthedocs.org
+#. Updated documentation
 
 v1.5.1 (2016-07-25)
 -------------------

@@ -22,38 +22,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 """
-Compile the Python C Extension for synthesizing text with eSpeak.
-
-.. versionadded:: 1.3.0
+**aeneas.ttswrappers** contains the wrappers for
+several built-in TTS engines which can be used
+in the synthesis step of the alignment procedure.
 """
-
-from __future__ import absolute_import
-from __future__ import print_function
-import sys
-
-from distutils.core import Extension
-from distutils.core import setup
-
-
-CMODULE = Extension(
-    name="cew",
-    sources=[
-        "cew_py.c",
-        "cew_func.c"
-    ],
-    libraries=[
-        "espeak"
-    ]
-)
-
-setup(
-    name="cew",
-    version="1.6.0",
-    description="""
-    Python C Extension for synthesizing text with eSpeak.
-    """,
-    ext_modules=[CMODULE]
-)
-
-print("\n[INFO] Module cew successfully compiled\n")
-sys.exit(0)
