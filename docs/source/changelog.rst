@@ -4,7 +4,7 @@ Changelog
 v1.6.0 (2016-09-??)
 -------------------
 
-#. Fixed bug #102 by checking that the audio file produced by the TTS engine is mono WAVE and has correct sample rate (slightly slower but safe)
+#. Fixed bug #102 by checking that the audio file produced by the TTS engine is mono WAVE and has correct sample rate: slightly slower but safe
 #. Created ``aeneas.ttswrappers`` subpackage
 #. Renamed ``aeneas.ttswrapper`` to ``aeneas.ttswrappers.basettswrapper``, and ``TTSWrapper`` to ``BaseTTSWrapper``
 #. Renamed ``aeneas.espeakwrapper`` to ``aeneas.ttswrappers.espeakttswrapper``, and ``ESPEAKWrapper`` to ``ESPEAKTTSWrapper``
@@ -12,6 +12,7 @@ v1.6.0 (2016-09-??)
 #. Renamed ``aeneas.nuancettsapiwrapper`` to ``aeneas.ttswrappers.nuancettswrapper``, and ``NuanceTTSAPIWrapper`` to ``NuanceTTSWrapper``
 #. Modified the value for using the Nuance TTS API from ``nuancettsapi`` to ``nuance`` in ``aeneas.synthesizer.SYNTHESIZER``
 #. Now each TTS wrapper must declare the format (codec, channels, sample rate) of its output
+#. Changed the constructor of ``BaseTTSWrapper`` and derived classes, moving call method flags from constructor parameters to class fields
 #. Updated tests and documentation accordingly
 #. Moved package metadata from ``setup.py`` into ``setupmeta.py``
 #. Added AGPL header to all source files

@@ -312,7 +312,7 @@ your best option consists in sending an email to the
 
 Finally, code contributions are welcome!
 Please refer to the
-[Code Contribution Guide](https://github.com/readbeyond/aeneas/blob/master/wiki/CONTRIBUTING.md))
+[Code Contribution Guide](https://github.com/readbeyond/aeneas/blob/master/wiki/CONTRIBUTING.md)
 for details about the branch policies and the code style to follow.
 
 

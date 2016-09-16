@@ -272,6 +272,8 @@ class NuanceTTSWrapper(BaseTTSWrapper):
 
     OUTPUT_AUDIO_FORMAT = ("pcm_s16le", 1, 16000)
 
+    HAS_PYTHON_CALL = True
+
     # Nuance TTS API specific
     END_POINT = "NMDPTTSCmdServlet/tts"
     """ Nuance TTS API end point """
@@ -285,107 +287,9 @@ class NuanceTTSWrapper(BaseTTSWrapper):
     TAG = u"NuanceTTSWrapper"
 
     def __init__(self, rconf=None, logger=None):
-        super(NuanceTTSWrapper, self).__init__(
-            has_subprocess_call=False,
-            has_c_extension_call=False,
-            has_python_call=True,
-            rconf=rconf,
-            logger=logger)
+        super(NuanceTTSWrapper, self).__init__(rconf=rconf, logger=logger)
 
-    def _synthesize_multiple_python(self, text_file, output_file_path, quit_after=None, backwards=False):
-        """
-        Synthesize multiple text fragments, via Python call.
-
-        Return a tuple (anchors, total_time, num_chars).
-
-        :rtype: (bool, (list, TimeValue, int))
-        """
-        #
-        # generating wave data for each fragment,
-        # and concatenating them together
-        #
-        self.log(u"Calling TTS engine via Python...")
-        try:
-            # open output file
-            output_file = AudioFile(rconf=self.rconf, logger=self.logger)
-            output_file.audio_format = "pcm16"
-            output_file.audio_channels = 1
-            output_file.audio_sample_rate = self.SAMPLE_RATE
-
-            # create output
-            anchors = []
-            current_time = TimeValue("0.000")
-            num = 0
-            num_chars = 0
-            fragments = text_file.fragments
-            if backwards:
-                fragments = fragments[::-1]
-            for fragment in fragments:
-                # language to voice code
-                voice_code = self._language_to_voice_code(fragment.language)
-                # synthesize and get the duration of the output file
-                self.log([u"Synthesizing fragment %d", num])
-                duration, sr_nu, enc_nu, data = self._synthesize_single_helper(
-                    text=(fragment.filtered_text + u" "),
-                    voice_code=voice_code
-                )
-                # store for later output
-                anchors.append([current_time, fragment.identifier, fragment.text])
-                # increase the character counter
-                num_chars += fragment.characters
-                # append new data
-                self.log([u"Fragment %d starts at: %.3f", num, current_time])
-                if duration > 0:
-                    self.log([u"Fragment %d duration: %.3f", num, duration])
-                    current_time += duration
-                    # if backwards, we append the data reversed
-                    output_file.add_samples(data, reverse=backwards)
-                else:
-                    self.log([u"Fragment %d has zero duration", num])
-                # increment fragment counter
-                num += 1
-                # check if we must stop synthesizing because we have enough audio
-                if (quit_after is not None) and (current_time > quit_after):
-                    self.log([u"Quitting after reached duration %.3f", current_time])
-                    break
-
-            # if backwards, we need to reverse the audio samples again
-            if backwards:
-                output_file.reverse()
-
-            # write output file
-            self.log([u"Writing audio file '%s'", output_file_path])
-            output_file.write(file_path=output_file_path)
-        except Exception as exc:
-            self.log_exc(u"Unexpected exception while calling TTS engine via Python", exc, None, type(exc))
-            return (False, None)
-
-        # return output
-        # NOTE anchors do not make sense if backwards
-        self.log([u"Returning %d time anchors", len(anchors)])
-        self.log([u"Current time %.3f", current_time])
-        self.log([u"Synthesized %d characters", num_chars])
-        self.log(u"Calling TTS engine via Python... done")
-        return (True, (anchors, current_time, num_chars))
-
-    def _synthesize_single_python(self, text, voice_code, output_file_path):
-        """
-        Synthesize a single text fragment via Python call.
-
-        :rtype: tuple (result, (duration, sample_rate, encoding, data))
-        """
-        self.log(u"Synthesizing using Python call...")
-        data = self._synthesize_single_helper(text, voice_code, output_file_path)
-        return (True, data)
-
-    def _synthesize_single_helper(self, text, voice_code, output_file_path=None):
-        """
-        This is an helper function to synthesize a single text fragment via Python call.
-
-        The caller can choose whether the output file should be written to disk or not.
-
-        :rtype: tuple (result, (duration, sample_rate, encoding, data))
-        """
+    def _synthesize_single_python_helper(self, text, voice_code, output_file_path=None):
         self.log(u"Importing requests...")
         import requests
         self.log(u"Importing requests... done")
@@ -442,8 +346,10 @@ class NuanceTTSWrapper(BaseTTSWrapper):
             self.log_exc(u"All HTTP POST requests returned status code != 200", None, True, ValueError)
 
         # save to file if requested
-        if output_file_path is not None:
-            self.log(u"Saving to file...")
+        if output_file_path is None:
+            self.log(u"output_file_path is None => not saving to file")
+        else:
+            self.log(u"output_file_path is not None => saving to file...")
             import wave
             output_file = wave.open(output_file_path, "wb")
             output_file.setframerate(self.SAMPLE_RATE)  # sample rate
@@ -451,7 +357,7 @@ class NuanceTTSWrapper(BaseTTSWrapper):
             output_file.setsampwidth(2)                 # 16 bit/sample, i.e. 2 bytes/sample
             output_file.writeframes(response.content)
             output_file.close()
-            self.log(u"Saving to file... done")
+            self.log(u"output_file_path is not None => saving to file... done")
 
         # get length and data
         audio_sample_rate = self.SAMPLE_RATE
@@ -464,4 +370,4 @@ class NuanceTTSWrapper(BaseTTSWrapper):
         audio_samples = numpy.fromstring(response.content, dtype=numpy.int16).astype("float64") / 32768
 
         # return data
-        return (audio_length, audio_sample_rate, audio_format, audio_samples)
+        return (True, (audio_length, audio_sample_rate, audio_format, audio_samples))

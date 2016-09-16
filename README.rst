@@ -343,7 +343,7 @@ list <https://groups.google.com/d/forum/aeneas-forced-alignment>`__.
 
 Finally, code contributions are welcome! Please refer to the `Code
 Contribution
-Guide <https://github.com/readbeyond/aeneas/blob/master/wiki/CONTRIBUTING.md>`__)
+Guide <https://github.com/readbeyond/aeneas/blob/master/wiki/CONTRIBUTING.md>`__
 for details about the branch policies and the code style to follow.
 
 Acknowledgments

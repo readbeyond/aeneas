@@ -632,16 +632,14 @@ class ESPEAKTTSWrapper(BaseTTSWrapper):
 
     OUTPUT_AUDIO_FORMAT = ("pcm_s16le", 1, 22050)
 
+    HAS_SUBPROCESS_CALL = True
+
+    HAS_C_EXTENSION_CALL = True
+
     TAG = u"EspeakTTSWrapper"
 
     def __init__(self, rconf=None, logger=None):
-        super(ESPEAKTTSWrapper, self).__init__(
-            has_subprocess_call=True,
-            has_c_extension_call=True,
-            has_python_call=False,
-            rconf=rconf,
-            logger=logger
-        )
+        super(ESPEAKTTSWrapper, self).__init__(rconf=rconf, logger=logger)
         self.set_subprocess_arguments([
             self.rconf[RuntimeConfiguration.TTS_PATH],
             u"-v",

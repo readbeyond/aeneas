@@ -122,16 +122,12 @@ class FESTIVALTTSWrapper(BaseTTSWrapper):
 
     OUTPUT_AUDIO_FORMAT = ("pcm_s16le", 1, 16000)
 
+    HAS_SUBPROCESS_CALL = True
+
     TAG = u"FESTIVALTTSWrapper"
 
     def __init__(self, rconf=None, logger=None):
-        super(FESTIVALTTSWrapper, self).__init__(
-            has_subprocess_call=True,
-            has_c_extension_call=False,
-            has_python_call=False,
-            rconf=rconf,
-            logger=logger
-        )
+        super(FESTIVALTTSWrapper, self).__init__(rconf=rconf, logger=logger)
         self.set_subprocess_arguments([
             self.rconf[RuntimeConfiguration.TTS_PATH],
             self.CLI_PARAMETER_VOICE_CODE_FUNCTION,
