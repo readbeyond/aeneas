@@ -248,7 +248,7 @@ class BaseTTSWrapper(Loggable):
                             one of the text fragments is not a Unicode string
         :raises: ValueError: if ``self.rconf[RuntimeConfiguration.ALLOW_UNLISTED_LANGUAGES]`` is ``False``
                              and a fragment has a language code not supported by the TTS engine, or
-                             if ``text_file`` has no fragments
+                             if ``text_file`` has no fragments or all its fragments are empty
         :raises: OSError: if output file cannot be written to ``output_file_path``
         :raises: RuntimeError: if both the C extension and
                                the pure Python code did not succeed.
@@ -257,6 +257,8 @@ class BaseTTSWrapper(Loggable):
             self.log_exc(u"text_file is None", None, True, TypeError)
         if len(text_file) < 1:
             self.log_exc(u"The text file has no fragments", None, True, ValueError)
+        if text_file.chars == 0:
+            self.log_exc(u"All fragments in the text file are empty", None, True, ValueError)
         if not self.rconf[RuntimeConfiguration.ALLOW_UNLISTED_LANGUAGES]:
             for fragment in text_file.fragments:
                 if fragment.language not in self.LANGUAGE_TO_VOICE_CODE:
@@ -362,8 +364,8 @@ class BaseTTSWrapper(Loggable):
         if self.HAS_PYTHON_CALL:
             self.log(u"Calling TTS engine via Python")
             try:
-                result = self._synthesize_single_python(text, voice_code, output_file_path)
-                return result[0]
+                (result, (duration, sr_nu, enc_nu, samples_nu)) = self._synthesize_single_python(text, voice_code, output_file_path)
+                return duration
             except Exception as exc:
                 self.log_exc(u"An unexpected error occurred while calling _synthesize_single_python", exc, False, None)
 
@@ -371,7 +373,12 @@ class BaseTTSWrapper(Loggable):
         self.log(u"Calling TTS engine via C extension or subprocess")
         c_extension_function = self._synthesize_single_c_extension if self.HAS_C_EXTENSION_CALL else None
         subprocess_function = self._synthesize_single_subprocess if self.HAS_SUBPROCESS_CALL else None
-        result = gf.run_c_extension_with_fallback(
+        #
+        # NOTE result_tuple might be
+        #      (duration, ) if coming from C extension or
+        #      (duration, sr, enc, samples) if coming from subprocess
+        #
+        result_tuple = gf.run_c_extension_with_fallback(
             self.log,
             "cew",
             c_extension_function,
@@ -379,7 +386,7 @@ class BaseTTSWrapper(Loggable):
             (text, voice_code, output_file_path),
             rconf=self.rconf
         )
-        return result[0]
+        return result_tuple[0]
 
     def _synthesize_multiple_python(self, text_file, output_file_path, quit_after=None, backwards=False):
         """
@@ -430,13 +437,13 @@ class BaseTTSWrapper(Loggable):
         :rtype: tuple (result, (duration, sample_rate, encoding, data))
         """
         self.log(u"Synthesizing single via a Python call...")
-        data = self._synthesize_single_python_helper(
+        ret = self._synthesize_single_python_helper(
             text=text,
             voice_code=voice_code,
             output_file_path=output_file_path
         )
         self.log(u"Synthesizing single via a Python call... done")
-        return (True, data)
+        return ret
 
     def _synthesize_single_c_extension(self, text, voice_code, output_file_path):
         """
@@ -481,6 +488,16 @@ class BaseTTSWrapper(Loggable):
 
         :rtype: tuple (result, (duration, sample_rate, encoding, data))
         """
+        # return zero if text is the empty string
+        if len(text) == 0:
+            #
+            # NOTE sample_rate, encoding, data do not matter
+            #      if the duration is 0.000 => set them to None
+            #
+            self.log(u"len(text) is zero: returning 0.000")
+            return (True, (TimeValue("0.000"), None, None, None))
+
+        # create a temporary output file if needed
         synt_tmp_file = (output_file_path is None)
         if synt_tmp_file:
             self.log(u"Synthesizer helper called with output_file_path=None => creating temporary output file")

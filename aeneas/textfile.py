@@ -278,18 +278,6 @@ class TextFragment(object):
         return gf.safe_str(self.__unicode__())
 
     @property
-    def chars(self):
-        """
-        Return the number of characters of the text fragment,
-        not including the line separators.
-
-        :rtype: int
-        """
-        if self.lines is None:
-            return 0
-        return sum([len(line) for line in self.lines])
-
-    @property
     def identifier(self):
         """
         The identifier of the text fragment.
@@ -351,11 +339,24 @@ class TextFragment(object):
     @property
     def characters(self):
         """
-        The number of characters in this text fragment.
+        The number of characters in this text fragment,
+        including line separators, if any.
 
         :rtype: int
         """
         return len(self.text)
+
+    @property
+    def chars(self):
+        """
+        Return the number of characters of the text fragment,
+        not including the line separators.
+
+        :rtype: int
+        """
+        if self.lines is None:
+            return 0
+        return sum([len(line) for line in self.lines])
 
     @property
     def filtered_text(self):
@@ -459,16 +460,6 @@ class TextFile(Loggable):
         return children
 
     @property
-    def chars(self):
-        """
-        Return the number of characters of the text file,
-        not counting line or fragment separators.
-
-        :rtype: int
-        """
-        return sum([fragment.chars for fragment in self.fragments])
-
-    @property
     def file_path(self):
         """
         The path of the text file.
@@ -512,6 +503,16 @@ class TextFile(Loggable):
         if (parameters is not None) and (not isinstance(parameters, dict)):
             self.log_exc(u"parameters is not an instance of dict", None, True, TypeError)
         self.__parameters = parameters
+
+    @property
+    def chars(self):
+        """
+        Return the number of characters of the text file,
+        not counting line or fragment separators.
+
+        :rtype: int
+        """
+        return sum([fragment.chars for fragment in self.fragments])
 
     @property
     def characters(self):

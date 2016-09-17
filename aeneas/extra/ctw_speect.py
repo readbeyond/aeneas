@@ -94,6 +94,25 @@ class CustomTTSWrapper(BaseTTSWrapper):
         voice_code,
         output_file_path=None
     ):
+        """
+        This is an helper function to synthesize a single text fragment via a Python call.
+
+        If ``output_file_path`` is ``None``,
+        the audio data will not persist to file at the end of the method.
+
+        :rtype: tuple (result, (duration, sample_rate, encoding, data))
+        """
+        # return zero if text is the empty string
+        if len(text) == 0:
+            #
+            # NOTE values of sample_rate, encoding, data
+            #      do not matter if the duration is 0.000,
+            #      so set them to None instead of the more precise:
+            #      return (True, (TimeValue("0.000"), 16000, "pcm_s16le", numpy.array([])))
+            #
+            self.log(u"len(text) is zero: returning 0.000")
+            return (True, (TimeValue("0.000"), None, None, None))
+
         #
         # NOTE in this example, we assume that the Speect voice data files
         #      are located in the same directory of this .py source file

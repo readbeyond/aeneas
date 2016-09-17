@@ -82,7 +82,7 @@ class TestFESTIVALTTSWrapper(unittest.TestCase):
     def tfl(self, frags):
         tfl = TextFile()
         for language, lines in frags:
-            tfl.add_fragment(TextFragment(language=language, lines=lines, filtered_lines=lines), as_last=True)
+            tfl.add_fragment(TextFragment(language=language, lines=lines, filtered_lines=lines))
         return tfl
 
     def test_multiple_tfl_none(self):
@@ -108,37 +108,36 @@ class TestFESTIVALTTSWrapper(unittest.TestCase):
         tfl = self.tfl([(FESTIVALTTSWrapper.ENG, [u"Ausführliche"])])
         self.synthesize_multiple(tfl)
 
-    # TODO disabling this test, festival does not handle empty text
-    # COMMENTED def test_multiple_empty(self):
-    # COMMENTED   tfl = self.tfl([(FESTIVALTTSWrapper.ENG, [u""])])
-    # COMMENTED   self.synthesize_multiple(tfl)
+    def test_multiple_empty(self):
+        tfl = self.tfl([(FESTIVALTTSWrapper.ENG, [u""])])
+        with self.assertRaises(ValueError):
+            self.synthesize_multiple(tfl)
 
-    # TODO disabling this test, festival does not handle empty text
-    # COMMENTED def test_multiple_empty_multiline(self):
-    # COMMENTED     tfl = self.tfl([(FESTIVALTTSWrapper.ENG, [u"", u"", u""])])
-    # COMMENTED     self.synthesize_multiple(tfl)
+    def test_multiple_empty_multiline(self):
+        tfl = self.tfl([(FESTIVALTTSWrapper.ENG, [u"", u"", u""])])
+        with self.assertRaises(ValueError):
+            self.synthesize_multiple(tfl)
 
-    # TODO disabling this test, festival does not handle empty text
-    # COMMENTED def test_multiple_empty_fragments(self):
-    # COMMENTED     tfl = self.tfl([
-    # COMMENTED         (FESTIVALTTSWrapper.ENG, [u""]),
-    # COMMENTED         (FESTIVALTTSWrapper.ENG, [u""]),
-    # COMMENTED         (FESTIVALTTSWrapper.ENG, [u""]),
-    # COMMENTED     ])
-    # COMMENTED     self.synthesize_multiple(tfl)
+    def test_multiple_empty_fragments(self):
+        tfl = self.tfl([
+            (FESTIVALTTSWrapper.ENG, [u""]),
+            (FESTIVALTTSWrapper.ENG, [u""]),
+            (FESTIVALTTSWrapper.ENG, [u""]),
+        ])
+        with self.assertRaises(ValueError):
+            self.synthesize_multiple(tfl)
 
     def test_multiple_empty_mixed(self):
         tfl = self.tfl([(FESTIVALTTSWrapper.ENG, [u"Word", u"", u"Word"])])
         self.synthesize_multiple(tfl)
 
-    # TODO disabling this test, festival does not handle empty text
-    # COMMENTED def test_multiple_empty_mixed_fragments(self):
-    # COMMENTED     tfl = self.tfl([
-    # COMMENTED         (FESTIVALTTSWrapper.ENG, [u"Word"]),
-    # COMMENTED         (FESTIVALTTSWrapper.ENG, [u""]),
-    # COMMENTED         (FESTIVALTTSWrapper.ENG, [u"Word"]),
-    # COMMENTED     ])
-    # COMMENTED     self.synthesize_multiple(tfl)
+    def test_multiple_empty_mixed_fragments(self):
+        tfl = self.tfl([
+            (FESTIVALTTSWrapper.ENG, [u"Word"]),
+            (FESTIVALTTSWrapper.ENG, [u""]),
+            (FESTIVALTTSWrapper.ENG, [u"Word"]),
+        ])
+        self.synthesize_multiple(tfl)
 
     def test_multiple_invalid_language(self):
         tfl = self.tfl([("zzzz", [u"Word"])])

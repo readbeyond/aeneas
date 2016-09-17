@@ -53,9 +53,9 @@ class TestESPEAKTTSWrapper(unittest.TestCase):
             except (OSError, TypeError, UnicodeDecodeError, ValueError) as exc:
                 gf.delete_file(handler, output_file_path)
                 raise exc
-        for p1 in [True, False]:
-            for p2 in [True, False]:
-                inner(p1, p2)
+        for c_ext in [True, False]:
+            for cew_sub in [True, False]:
+                inner(c_ext, cew_sub)
 
     def synthesize_multiple(self, text_file, ofp=None, quit_after=None, backwards=False, zero_length=False):
         def inner(c_ext, cew_subprocess):
@@ -83,9 +83,9 @@ class TestESPEAKTTSWrapper(unittest.TestCase):
             except (OSError, TypeError, UnicodeDecodeError, ValueError) as exc:
                 gf.delete_file(handler, output_file_path)
                 raise exc
-        for a in [True, False]:
-            for b in [True, False]:
-                inner(a, b)
+        for c_ext in [True, False]:
+            for cew_sub in [True, False]:
+                inner(c_ext, cew_sub)
 
     def tfl(self, frags):
         tfl = TextFile()
@@ -118,11 +118,13 @@ class TestESPEAKTTSWrapper(unittest.TestCase):
 
     def test_multiple_empty(self):
         tfl = self.tfl([(ESPEAKTTSWrapper.ENG, [u""])])
-        self.synthesize_multiple(tfl)
+        with self.assertRaises(ValueError):
+            self.synthesize_multiple(tfl)
 
     def test_multiple_empty_multiline(self):
         tfl = self.tfl([(ESPEAKTTSWrapper.ENG, [u"", u"", u""])])
-        self.synthesize_multiple(tfl)
+        with self.assertRaises(ValueError):
+            self.synthesize_multiple(tfl)
 
     def test_multiple_empty_fragments(self):
         tfl = self.tfl([
@@ -130,7 +132,8 @@ class TestESPEAKTTSWrapper(unittest.TestCase):
             (ESPEAKTTSWrapper.ENG, [u""]),
             (ESPEAKTTSWrapper.ENG, [u""]),
         ])
-        self.synthesize_multiple(tfl)
+        with self.assertRaises(ValueError):
+            self.synthesize_multiple(tfl)
 
     def test_multiple_empty_mixed(self):
         tfl = self.tfl([(ESPEAKTTSWrapper.ENG, [u"Word", u"", u"Word"])])
@@ -141,26 +144,6 @@ class TestESPEAKTTSWrapper(unittest.TestCase):
             (ESPEAKTTSWrapper.ENG, [u"Word"]),
             (ESPEAKTTSWrapper.ENG, [u""]),
             (ESPEAKTTSWrapper.ENG, [u"Word"]),
-        ])
-        self.synthesize_multiple(tfl)
-
-    def test_multiple_replace_language(self):
-        tfl = self.tfl([(ESPEAKTTSWrapper.UKR, [u"Временами Сашке хотелось перестать делать то"])])
-        self.synthesize_multiple(tfl)
-
-    def test_multiple_replace_language_mixed(self):
-        tfl = self.tfl([
-            (ESPEAKTTSWrapper.UKR, [u"Word"]),
-            (ESPEAKTTSWrapper.UKR, [u"Временами Сашке хотелось перестать делать то"]),
-            (ESPEAKTTSWrapper.UKR, [u"Word"])
-        ])
-        self.synthesize_multiple(tfl)
-
-    def test_multiple_replace_language_mixed_fragments(self):
-        tfl = self.tfl([
-            (ESPEAKTTSWrapper.ENG, [u"Word"]),
-            (ESPEAKTTSWrapper.UKR, [u"Временами Сашке хотелось перестать делать то"]),
-            (ESPEAKTTSWrapper.ENG, [u"Word"])
         ])
         self.synthesize_multiple(tfl)
 
@@ -201,12 +184,32 @@ class TestESPEAKTTSWrapper(unittest.TestCase):
     def test_single_variation_language(self):
         self.synthesize_single(u"Word", ESPEAKTTSWrapper.ENG_GBR)
 
-    def test_single_replace_language(self):
-        self.synthesize_single(u"Временами Сашке хотелось перестать делать то", ESPEAKTTSWrapper.UKR)
-
     def test_single_invalid_language(self):
         with self.assertRaises(ValueError):
             self.synthesize_single(u"Word", "zzzz")
+
+    def test_single_replace_language(self):
+        self.synthesize_single(u"Временами Сашке хотелось перестать делать то", ESPEAKTTSWrapper.UKR)
+
+    def test_multiple_replace_language(self):
+        tfl = self.tfl([(ESPEAKTTSWrapper.UKR, [u"Временами Сашке хотелось перестать делать то"])])
+        self.synthesize_multiple(tfl)
+
+    def test_multiple_replace_language_mixed(self):
+        tfl = self.tfl([
+            (ESPEAKTTSWrapper.UKR, [u"Word"]),
+            (ESPEAKTTSWrapper.UKR, [u"Временами Сашке хотелось перестать делать то"]),
+            (ESPEAKTTSWrapper.UKR, [u"Word"])
+        ])
+        self.synthesize_multiple(tfl)
+
+    def test_multiple_replace_language_mixed_fragments(self):
+        tfl = self.tfl([
+            (ESPEAKTTSWrapper.ENG, [u"Word"]),
+            (ESPEAKTTSWrapper.UKR, [u"Временами Сашке хотелось перестать делать то"]),
+            (ESPEAKTTSWrapper.ENG, [u"Word"])
+        ])
+        self.synthesize_multiple(tfl)
 
 
 if __name__ == '__main__':

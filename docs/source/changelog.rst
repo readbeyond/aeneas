@@ -13,7 +13,9 @@ v1.6.0 (2016-09-??)
 #. Modified the value for using the Nuance TTS API from ``nuancettsapi`` to ``nuance`` in ``aeneas.synthesizer.SYNTHESIZER``
 #. Now each TTS wrapper must declare the format (codec, channels, sample rate) of its output
 #. Changed the constructor of ``BaseTTSWrapper`` and derived classes, moving call method flags from constructor parameters to class fields
-#. Updated tests and documentation accordingly
+#. Added check when synthesizing multiple: at least one fragment should be not empty
+#. Simplified writing custom TTS wrappers by providing the "mutiple generic" method in ``BaseTTSWrapper``
+#. Updated tests and documentation according to the above changes in TTS wrappers
 #. Moved package metadata from ``setup.py`` into ``setupmeta.py``
 #. Added AGPL header to all source files
 #. Removed metadata from all source files, except those directly facing the user
