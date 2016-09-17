@@ -228,11 +228,11 @@ which explains how to use the built-in command line tools.
 * Arbitrary text fragment granularity (single word, subphrase, phrase, paragraph, etc.)
 * Input audio file formats: all those readable by `ffmpeg`
 * Output sync map formats: AUD, CSV, EAF, JSON, SMIL, SRT, SSV, SUB, TSV, TTML, TXT, VTT, XML
-* Confirmed working on languages: ARA, BUL, CAT, CYM, CES, DAN, DEU, ELL, ENG, EPO, EST, FAS, FIN, FRA, GLE, GRC, HRV, HUN, ISL, ITA, JPN, LAT, LAV, LIT, NLD, NOR, RON, RUS, POL, POR, SLK, SPA, SRP, SWA, SWE, TUR, UKR
+* Confirmed working on 37 languages: ARA, BUL, CAT, CYM, CES, DAN, DEU, ELL, ENG, EPO, EST, FAS, FIN, FRA, GLE, GRC, HRV, HUN, ISL, ITA, JPN, LAT, LAV, LIT, NLD, NOR, RON, RUS, POL, POR, SLK, SPA, SRP, SWA, SWE, TUR, UKR
 * MFCC and DTW computed via Python C extensions to reduce the processing time
-* Several built-in TTS engine wrappers: eSpeak (default, FLOSS), Festival (FLOSS), Nuance TTS API (commercial)
+* Several built-in TTS engine wrappers: eSpeak (default), eSpeak-ng, Festival, Nuance TTS API
 * Default TTS (eSpeak) called via a Python C extension for fast audio synthesis
-* A custom, user-provided TTS engine Python wrapper can be used instead of the built-in ones (included example for speect)
+* Possibility of running a custom, user-provided TTS engine Python wrapper (e.g., included example for speect)
 * Batch processing of multiple audio/text pairs
 * Download audio from a YouTube video
 * In multilevel mode, recursive alignment from paragraph to sentence to word level

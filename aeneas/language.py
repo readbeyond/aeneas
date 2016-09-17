@@ -50,11 +50,23 @@ class Language(object):
     AFR = "afr"
     """ Afrikaans """
 
+    AMH = "amh"
+    """ Amharic """
+
     ARA = "ara"
     """ Arabic """
 
     ARG = "arg"
     """ Aragonese """
+
+    ASM = "asm"
+    """ Assamese """
+
+    AZE = "aze"
+    """ Azerbaijani """
+
+    BEN = "ben"
+    """ Bengali """
 
     BOS = "bos"
     """ Bosnian """
@@ -104,6 +116,9 @@ class Language(object):
     FRA = "fra"
     """ French """
 
+    GLA = "gla"
+    """ Scottish Gaelic """
+
     GLE = "gle"
     """ Irish """
 
@@ -112,6 +127,12 @@ class Language(object):
 
     GRC = "grc"
     """ Greek (Ancient) """
+
+    GRN = "grn"
+    """ Guarani """
+
+    GUJ = "guj"
+    """ Gujarati """
 
     HEB = "heb"
     """ Hebrew """
@@ -128,6 +149,9 @@ class Language(object):
     HYE = "hye"
     """ Armenian """
 
+    INA = "ina"
+    """ Interlingua """
+
     IND = "ind"
     """ Indonesian """
 
@@ -143,11 +167,17 @@ class Language(object):
     JPN = "jpn"
     """ Japanese """
 
+    KAL = "kal"
+    """ Greenlandic """
+
     KAN = "kan"
     """ Kannada """
 
     KAT = "kat"
     """ Georgian """
+
+    KIR = "kir"
+    """ Kirghiz """
 
     KOR = "kor"
     """ Korean """
@@ -170,11 +200,23 @@ class Language(object):
     MAL = "mal"
     """ Malayalam """
 
+    MAR = "mar"
+    """ Marathi """
+
     MKD = "mkd"
     """ Macedonian """
 
+    MLT = "mlt"
+    """ Maltese """
+
     MSA = "msa"
     """ Malay """
+
+    MYA = "mya"
+    """ Burmese """
+
+    NAH = "nah"
+    """ Nahuatl """
 
     NEP = "nep"
     """ Nepali """
@@ -185,8 +227,17 @@ class Language(object):
     NOR = "nor"
     """ Norwegian """
 
+    ORI = "ori"
+    """ Oriya """
+
+    ORM = "orm"
+    """ Oromo """
+
     PAN = "pan"
     """ Panjabi """
+
+    PAP = "pap"
+    """ Papiamento """
 
     POL = "pol"
     """ Polish """
@@ -200,8 +251,14 @@ class Language(object):
     RUS = "rus"
     """ Russian """
 
+    SIN = "sin"
+    """ Sinhala """
+
     SLK = "slk"
     """ Slovak """
+
+    SLV = "slv"
+    """ Slovenian """
 
     SPA = "spa"
     """ Spanish """
@@ -221,14 +278,26 @@ class Language(object):
     TAM = "tam"
     """ Tamil """
 
+    TAT = "tat"
+    """ Tatar """
+
+    TEL = "tel"
+    """ Telugu """
+
     THA = "tha"
     """ Thai """
+
+    TSN = "tsn"
+    """ Tswana """
 
     TUR = "tur"
     """ Turkish """
 
     UKR = "ukr"
     """ Ukrainian """
+
+    URD = "urd"
+    """ Urdu """
 
     VIE = "vie"
     """ Vietnamese """
@@ -241,8 +310,12 @@ class Language(object):
 
     ALLOWED_VALUES = [
         AFR,
+        AMH,
         ARA,
         ARG,
+        ASM,
+        AZE,
+        BEN,
         BOS,
         BUL,
         CAT,
@@ -262,18 +335,23 @@ class Language(object):
         GLE,
         GLG,
         GRC,
+        GRN,
+        GUJ,
         HEB,
         HIN,
         HRV,
         HUN,
         HYE,
+        INA,
         IND,
         ISL,
         ITA,
         JBO,
         JPN,
+        KAL,
         KAN,
         KAT,
+        KIR,
         KOR,
         KUR,
         LAT,
@@ -281,26 +359,39 @@ class Language(object):
         LFN,
         LIT,
         MAL,
+        MAR,
         MKD,
+        MLT,
         MSA,
+        MYA,
+        NAH,
         NEP,
         NLD,
         NOR,
+        ORI,
+        ORM,
         PAN,
+        PAP,
         POL,
         POR,
         RON,
         RUS,
+        SIN,
         SLK,
+        SLV,
         SPA,
         SQI,
         SRP,
         SWA,
         SWE,
         TAM,
+        TAT,
+        TEL,
         THA,
+        TSN,
         TUR,
         UKR,
+        URD,
         VIE,
         YUE,
         ZHO,

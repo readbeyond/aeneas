@@ -120,6 +120,8 @@ class FESTIVALTTSWrapper(BaseTTSWrapper):
         RUS: u"(language_russian)",
     }
 
+    DEFAULT_TTS_PATH = "text2wave"
+
     OUTPUT_AUDIO_FORMAT = ("pcm_s16le", 1, 16000)
 
     HAS_SUBPROCESS_CALL = True
@@ -129,7 +131,7 @@ class FESTIVALTTSWrapper(BaseTTSWrapper):
     def __init__(self, rconf=None, logger=None):
         super(FESTIVALTTSWrapper, self).__init__(rconf=rconf, logger=logger)
         self.set_subprocess_arguments([
-            self.rconf[RuntimeConfiguration.TTS_PATH],
+            self.tts_path,
             self.CLI_PARAMETER_VOICE_CODE_FUNCTION,
             u"-o",
             self.CLI_PARAMETER_WAVE_PATH,

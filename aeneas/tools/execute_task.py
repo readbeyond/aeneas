@@ -45,6 +45,7 @@ from aeneas.timevalue import Decimal
 from aeneas.timevalue import TimeValue
 from aeneas.tools.abstract_cli_program import AbstractCLIProgram
 from aeneas.ttswrappers.espeakttswrapper import ESPEAKTTSWrapper
+from aeneas.ttswrappers.espeakngttswrapper import ESPEAKNGTTSWrapper
 from aeneas.ttswrappers.festivalttswrapper import FESTIVALTTSWrapper
 from aeneas.ttswrappers.nuancettswrapper import NuanceTTSWrapper
 from aeneas.validator import Validator
@@ -132,7 +133,7 @@ class ExecuteTaskCLI(AbstractCLIProgram):
             u"text": gf.relative_path("res/plain.txt", __file__),
             u"config": u"task_language=eng-GBR|is_text_type=plain|os_task_file_format=tsv",
             u"syncmap": "output/sonnet.festival.tsv",
-            u"options": u"-r=\"tts=festival|tts_path=text2wave\"",
+            u"options": u"-r=\"tts=festival\"",
             u"show": False
         },
         u"--example-flatten-12": {
@@ -357,6 +358,7 @@ class ExecuteTaskCLI(AbstractCLIProgram):
 
     VALUES = {
         "espeak": sorted(ESPEAKTTSWrapper.LANGUAGE_TO_VOICE_CODE.keys()),
+        "espeakng": sorted(ESPEAKNGTTSWrapper.LANGUAGE_TO_VOICE_CODE.keys()),
         "festival": sorted(FESTIVALTTSWrapper.LANGUAGE_TO_VOICE_CODE.keys()),
         "nuance": sorted(NuanceTTSWrapper.LANGUAGE_TO_VOICE_CODE.keys()),
         "task_language": Language.ALLOWED_VALUES,
@@ -452,7 +454,6 @@ class ExecuteTaskCLI(AbstractCLIProgram):
                         self.rconf[RuntimeConfiguration.TTS_PATH] = self.CTW_SPEECT
                     elif key == u"--example-festival":
                         self.rconf[RuntimeConfiguration.TTS] = "festival"
-                        self.rconf[RuntimeConfiguration.TTS_PATH] = "text2wave"
                     elif key == u"--example-mws":
                         self.rconf[RuntimeConfiguration.MFCC_WINDOW_LENGTH] = "1.500"
                         self.rconf[RuntimeConfiguration.MFCC_WINDOW_SHIFT] = "0.500"

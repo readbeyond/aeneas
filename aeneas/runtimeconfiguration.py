@@ -450,6 +450,14 @@ class RuntimeConfiguration(Configuration):
     which will use the built-in eSpeak TTS wrapper.
 
     Specify the value
+    :data:`~aeneas.synthesizer.Synthesizer.ESPEAKNG` (``espeakng``)
+    to use the eSpeak-ng TTS wrapper;
+    you might need to provide the ``espeak-ng`` or ``/full/path/to/your/espeak-ng`` value
+    to the
+    :data:`~aeneas.runtimeconfiguration.RuntimeConfiguration.TTS_PATH`
+    parameter.
+
+    Specify the value
     :data:`~aeneas.synthesizer.Synthesizer.FESTIVAL` (``festival``)
     to use the built-in Festival TTS wrapper;
     you might need to provide the ``text2wave`` or ``/full/path/to/your/text2wave`` value
@@ -485,10 +493,12 @@ class RuntimeConfiguration(Configuration):
     (see the ``aeneas/extra`` directory for examples).
 
     You might need to use a full path,
-    like ``/path/to/your/tts`` or
+    like ``/path/to/your/ttsengine`` or
     ``/path/to/your/ttswrapper.py``.
 
-    Default: ``espeak``.
+    Default: ``None``, implying to use the default path
+    defined by each TTS wrapper, if it calls the TTS engine
+    via ``subprocess`` (otherwise it does not matter).
 
     .. versionadded:: 1.5.0
     """
@@ -596,7 +606,7 @@ class RuntimeConfiguration(Configuration):
         (TMP_PATH, (None, None, [])),
 
         (TTS, ("espeak", None, [])),
-        (TTS_PATH, ("espeak", None, [])),               # or a full path like "/usr/bin/espeak"
+        (TTS_PATH, (None, None, [])),                   # "espeak" or "/usr/bin/espeak"
         (TTS_VOICE_CODE, (None, None, [])),
 
         (VAD_EXTEND_SPEECH_INTERVAL_AFTER, ("0.000", TimeValue, [])),

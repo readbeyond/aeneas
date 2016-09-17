@@ -12,10 +12,12 @@ v1.6.0 (2016-09-??)
 #. Renamed ``aeneas.nuancettsapiwrapper`` to ``aeneas.ttswrappers.nuancettswrapper``, and ``NuanceTTSAPIWrapper`` to ``NuanceTTSWrapper``
 #. Modified the value for using the Nuance TTS API from ``nuancettsapi`` to ``nuance`` in ``aeneas.synthesizer.SYNTHESIZER``
 #. Now each TTS wrapper must declare the format (codec, channels, sample rate) of its output
+#. Now each TTS wrapper can declare the default path for the TTS engine executable, using ``DEFAULT_TTS_PATH``
 #. Changed the constructor of ``BaseTTSWrapper`` and derived classes, moving call method flags from constructor parameters to class fields
 #. Added check when synthesizing multiple: at least one fragment should be not empty
 #. Simplified writing custom TTS wrappers by providing the "mutiple generic" method in ``BaseTTSWrapper``
 #. Removed ``synthesize_single()`` function in all TTS wrappers and in ``cew``
+#. Added wrapper for eSpeak-ng (subprocess only)
 #. Updated tests and documentation according to the above changes in TTS wrappers
 #. Moved package metadata from ``setup.py`` into ``setupmeta.py``
 #. Added AGPL header to all source files

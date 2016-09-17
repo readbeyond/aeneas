@@ -139,6 +139,13 @@ class BaseTTSWrapper(Loggable):
     by the TTS engine they wrap.
     """
 
+    DEFAULT_TTS_PATH = None
+    """
+    The default path for this TTS engine,
+    when called via ``subprocess``,
+    otherwise set it to ``None``.
+    """
+
     HAS_SUBPROCESS_CALL = False
     """
     If ``True``, the TTS wrapper can invoke the TTS engine
@@ -163,6 +170,11 @@ class BaseTTSWrapper(Loggable):
         if not (self.HAS_SUBPROCESS_CALL or self.HAS_C_EXTENSION_CALL or self.HAS_PYTHON_CALL):
             raise ValueError(u"You must implement at least one call method: subprocess, C extension, or Python")
         super(BaseTTSWrapper, self).__init__(rconf=rconf, logger=logger)
+        self.tts_path = self.rconf[RuntimeConfiguration.TTS_PATH]
+        if self.tts_path is None:
+            self.log(u"No tts_path specified in rconf, setting default")
+            self.tts_path = self.DEFAULT_TTS_PATH
+        self.log([u"self.tts_path is %s", self.tts_path])
         self.subprocess_arguments = []
         self.log([u"Has subprocess call?  %s", self.HAS_SUBPROCESS_CALL])
         self.log([u"Has C extension call? %s", self.HAS_C_EXTENSION_CALL])

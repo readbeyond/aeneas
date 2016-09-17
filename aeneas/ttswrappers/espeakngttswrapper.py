@@ -24,8 +24,8 @@
 """
 This module contains the following classes:
 
-* :class:`~aeneas.ttswrappers.espeakttswrapper.ESPEAKTTSWrapper`,
-  a wrapper for the ``eSpeak`` TTS engine.
+* :class:`~aeneas.ttswrappers.espeakngttswrapper.ESPEAKNGTTSWrapper`,
+  a wrapper for the ``eSpeak-ng`` TTS engine.
 """
 
 from __future__ import absolute_import
@@ -38,30 +38,23 @@ from aeneas.ttswrappers.basettswrapper import BaseTTSWrapper
 import aeneas.globalfunctions as gf
 
 
-class ESPEAKTTSWrapper(BaseTTSWrapper):
+class ESPEAKNGTTSWrapper(BaseTTSWrapper):
     """
-    A wrapper for the ``eSpeak`` TTS engine.
-
-    This wrapper is the default TTS engine for ``aeneas``.
+    A wrapper for the ``eSpeak-ng`` TTS engine.
 
     This wrapper supports calling the TTS engine
-    via ``subprocess`` or via Python C extension.
+    via ``subprocess``.
+
+    Future support for calling via Python C extension
+    is planned.
 
     In abstract terms, it performs one or more calls like ::
 
-        $ espeak -v voice_code -w /tmp/output_file.wav < text
+        $ espeak-ng -v voice_code -w /tmp/output_file.wav < text
 
     To specify the path of the TTS executable, use ::
 
-        "tts=espeak|tts_path=/path/to/espeak"
-
-    in the ``rconf`` object.
-
-    To run the ``cew`` Python C extension
-    in a separate process via
-    :class:`~aeneas.cewsubprocess.CEWSubprocess`, use ::
-
-        "cew_subprocess_enabled=True|cew_subprocess_path=/path/to/python"
+        "tts=espeakng|tts_path=/path/to/espeak-ng"
 
     in the ``rconf`` object.
 
@@ -78,8 +71,20 @@ class ESPEAKTTSWrapper(BaseTTSWrapper):
     AFR = Language.AFR
     """ Afrikaans (not tested) """
 
+    AMH = Language.AMH
+    """ Amharic (not tested) """
+
     ARG = Language.ARG
     """ Aragonese (not tested) """
+
+    ASM = Language.ASM
+    """ Assamese (not tested) """
+
+    AZE = Language.AZE
+    """ Azerbaijani (not tested) """
+
+    BEN = Language.BEN
+    """ Bengali (not tested) """
 
     BOS = Language.BOS
     """ Bosnian (not tested) """
@@ -117,6 +122,9 @@ class ESPEAKTTSWrapper(BaseTTSWrapper):
     EST = Language.EST
     """ Estonian """
 
+    EUS = "eus"
+    """ Basque (not tested) """
+
     FAS = Language.FAS
     """ Persian """
 
@@ -126,11 +134,20 @@ class ESPEAKTTSWrapper(BaseTTSWrapper):
     FRA = Language.FRA
     """ French """
 
+    GLA = Language.GLA
+    """ Scottish Gaelic (not tested) """
+
     GLE = Language.GLE
     """ Irish """
 
     GRC = Language.GRC
     """ Greek (Ancient) """
+
+    GRN = Language.GRN
+    """ Guarani (not tested) """
+
+    GUJ = Language.GUJ
+    """ Gujarati (not tested) """
 
     HIN = Language.HIN
     """ Hindi (not tested) """
@@ -144,6 +161,9 @@ class ESPEAKTTSWrapper(BaseTTSWrapper):
     HYE = Language.HYE
     """ Armenian (not tested) """
 
+    INA = Language.INA
+    """ Interlingua (not tested) """
+
     IND = Language.IND
     """ Indonesian (not tested) """
 
@@ -156,11 +176,17 @@ class ESPEAKTTSWrapper(BaseTTSWrapper):
     JBO = Language.JBO
     """ Lojban (not tested) """
 
+    KAL = Language.KAL
+    """ Greenlandic (not tested) """
+
     KAN = Language.KAN
     """ Kannada (not tested) """
 
     KAT = Language.KAT
     """ Georgian (not tested) """
+
+    KIR = Language.KIR
+    """ Kirghiz (not tested) """
 
     KUR = Language.KUR
     """ Kurdish (not tested) """
@@ -180,11 +206,23 @@ class ESPEAKTTSWrapper(BaseTTSWrapper):
     MAL = Language.MAL
     """ Malayalam (not tested) """
 
+    MAR = Language.MAR
+    """ Marathi (not tested) """
+
     MKD = Language.MKD
     """ Macedonian (not tested) """
 
+    MLT = Language.MLT
+    """ Maltese (not tested) """
+
     MSA = Language.MSA
     """ Malay (not tested) """
+
+    MYA = Language.MYA
+    """ Burmese (not tested) """
+
+    NAH = Language.NAH
+    """ Nahuatl (not tested) """
 
     NEP = Language.NEP
     """ Nepali (not tested) """
@@ -195,8 +233,17 @@ class ESPEAKTTSWrapper(BaseTTSWrapper):
     NOR = Language.NOR
     """ Norwegian """
 
+    ORI = Language.ORI
+    """ Oriya (not tested) """
+
+    ORM = Language.ORM
+    """ Oromo (not tested) """
+
     PAN = Language.PAN
     """ Panjabi (not tested) """
+
+    PAP = Language.PAP
+    """ Papiamento (not tested) """
 
     POL = Language.POL
     """ Polish """
@@ -210,8 +257,14 @@ class ESPEAKTTSWrapper(BaseTTSWrapper):
     RUS = Language.RUS
     """ Russian """
 
+    SIN = Language.SIN
+    """ Sinhala (not tested) """
+
     SLK = Language.SLK
     """ Slovak """
+
+    SLV = Language.SLV
+    """ Slovenian (not tested) """
 
     SPA = Language.SPA
     """ Spanish """
@@ -231,11 +284,23 @@ class ESPEAKTTSWrapper(BaseTTSWrapper):
     TAM = Language.TAM
     """ Tamil (not tested) """
 
+    TAT = Language.TAT
+    """ Tatar (not tested) """
+
+    TEL = Language.TEL
+    """ Telugu (not tested) """
+
+    TSN = Language.TSN
+    """ Tswana (not tested) """
+
     TUR = Language.TUR
     """ Turkish """
 
     UKR = Language.UKR
     """ Ukrainian """
+
+    URD = Language.URD
+    """ Urdu (not tested) """
 
     VIE = Language.VIE
     """ Vietnamese (not tested) """
@@ -276,8 +341,20 @@ class ESPEAKTTSWrapper(BaseTTSWrapper):
     AN = "an"
     """ Aragonese (not tested) """
 
+    AM = "am"
+    """ Amharic (not tested) """
+
+    AS = "as"
+    """ Assamese (not tested) """
+
+    AZ = "az"
+    """ Azerbaijani (not tested) """
+
     BG = "bg"
     """ Bulgarian """
+
+    BN = "bn"
+    """ Bengali (not tested) """
 
     BS = "bs"
     """ Bosnian (not tested) """
@@ -306,22 +383,22 @@ class ESPEAKTTSWrapper(BaseTTSWrapper):
     EN_GB = "en-gb"
     """ English (GB) """
 
-    EN_SC = "en-sc"
+    EN_GB_SCOTLAND = "en-gb-scotland"
     """ English (Scotland) (not tested) """
 
-    EN_UK_NORTH = "en-uk-north"
+    EN_GB_X_GBCLAN = "en-gb-x-gbclan"
     """ English (Northern) (not tested) """
 
-    EN_UK_RP = "en-uk-rp"
-    """ English (Received Pronunciation) (not tested) """
-
-    EN_UK_WMIDS = "en-uk-wmids"
+    EN_GB_X_GBCWMD = "en-gb-x-gbcwmd"
     """ English (Midlands) (not tested) """
+
+    EN_GB_X_RP = "en-gb-x-rp"
+    """ English (Received Pronunciation) (not tested) """
 
     EN_US = "en-us"
     """ English (USA) """
 
-    EN_WI = "en-wi"
+    EN_029 = "en-029"
     """ English (West Indies) (not tested) """
 
     EO = "eo"
@@ -330,16 +407,19 @@ class ESPEAKTTSWrapper(BaseTTSWrapper):
     ES = "es"
     """ Spanish (Castillan) """
 
-    ES_LA = "es-la"
+    ES_419 = "es-419"
     """ Spanish (Latin America) (not tested) """
 
     ET = "et"
     """ Estonian """
 
+    EU = "eu"
+    """ Basque (not tested) """
+
     FA = "fa"
     """ Persian """
 
-    FA_PIN = "fa-pin"
+    FA_LATN = "fa-Latn"
     """ Persian (Pinglish) """
 
     FI = "fi"
@@ -357,9 +437,18 @@ class ESPEAKTTSWrapper(BaseTTSWrapper):
     GA = "ga"
     """ Irish """
 
+    GD = "gd"
+    """ Scottish Gaelic (not tested) """
+
+    GN = "gn"
+    """ Guarani (not tested) """
+
     # NOTE already defined
     # COMMENTED GRC = "grc"
     # COMMENTED """ Greek (Ancient) """
+
+    GU = "gu"
+    """ Gujarati (not tested) """
 
     HI = "hi"
     """ Hindi (not tested) """
@@ -373,8 +462,11 @@ class ESPEAKTTSWrapper(BaseTTSWrapper):
     HY = "hy"
     """ Armenian (not tested) """
 
-    HY_WEST = "hy-west"
+    HY_AREVMDA = "hy-arevmda"
     """ Armenian (West) (not tested) """
+
+    IA = "ia"
+    """ Interlingua (not tested) """
 
     ID = "id"
     """ Indonesian (not tested) """
@@ -392,11 +484,17 @@ class ESPEAKTTSWrapper(BaseTTSWrapper):
     KA = "ka"
     """ Georgian (not tested) """
 
+    KL = "kl"
+    """ Greenlandic (not tested) """
+
     KN = "kn"
     """ Kannada (not tested) """
 
     KU = "ku"
     """ Kurdish (not tested) """
+
+    KY = "ky"
+    """ Kirghiz (not tested) """
 
     LA = "la"
     """ Latin """
@@ -417,8 +515,20 @@ class ESPEAKTTSWrapper(BaseTTSWrapper):
     ML = "ml"
     """ Malayalam (not tested) """
 
+    MR = "mr"
+    """ Marathi (not tested) """
+
     MS = "ms"
     """ Malay (not tested) """
+
+    MT = "mt"
+    """ Maltese (not tested) """
+
+    MY = "my"
+    """ Burmese (not tested) """
+
+    NCI = "nci"
+    """ Nahuatl (not tested) """
 
     NE = "ne"
     """ Nepali (not tested) """
@@ -428,6 +538,12 @@ class ESPEAKTTSWrapper(BaseTTSWrapper):
 
     NO = "no"
     """ Norwegian """
+
+    OM = "om"
+    """ Oromo (not tested) """
+
+    OR = "or"
+    """ Oriya (not tested) """
 
     PA = "pa"
     """ Panjabi (not tested) """
@@ -450,11 +566,17 @@ class ESPEAKTTSWrapper(BaseTTSWrapper):
     RU = "ru"
     """ Russian """
 
-    SQ = "sq"
-    """ Albanian (not tested) """
+    SI = "si"
+    """ Sinhala (not tested) """
 
     SK = "sk"
     """ Slovak """
+
+    SL = "sl"
+    """ Slovenian (not tested) """
+
+    SQ = "sq"
+    """ Albanian (not tested) """
 
     SR = "sr"
     """ Serbian """
@@ -468,19 +590,31 @@ class ESPEAKTTSWrapper(BaseTTSWrapper):
     TA = "ta"
     """ Tamil (not tested) """
 
+    TE = "te"
+    """ Telugu (not tested) """
+
+    TN = "tn"
+    """ Tswana (not tested) """
+
     TR = "tr"
     """ Turkish """
+
+    TT = "tt"
+    """ Tatar (not tested) """
 
     UK = "uk"
     """ Ukrainian """
 
+    UR = "ur"
+    """ Urdu (not tested) """
+
     VI = "vi"
     """ Vietnamese (not tested) """
 
-    VI_HUE = "vi-hue"
+    VI_VN_X_CENTRAL = "vi-vn-x-central"
     """ Vietnamese (hue) (not tested) """
 
-    VI_SGN = "vi-sgn"
+    VI_VN_X_SOUTH = "vi-vn-x-south"
     """ Vietnamese (sgn) (not tested) """
 
     ZH = "zh"
@@ -491,8 +625,12 @@ class ESPEAKTTSWrapper(BaseTTSWrapper):
 
     LANGUAGE_TO_VOICE_CODE = {
         AF: "af",
+        AM: "am",
         AN: "an",
+        AS: "as",
+        AZ: "az",
         BG: "bg",
+        BN: "bn",
         BS: "bs",
         CA: "ca",
         CS: "cs",
@@ -501,69 +639,93 @@ class ESPEAKTTSWrapper(BaseTTSWrapper):
         DE: "de",
         EL: "el",
         EN: "en",
+        EN_029: "en-029",
         EN_GB: "en-gb",
-        EN_SC: "en-sc",
-        EN_UK_NORTH: "en-uk-north",
-        EN_UK_RP: "en-uk-rp",
-        EN_UK_WMIDS: "en-uk-wmids",
+        EN_GB_SCOTLAND: "en-gb-scotland",
+        EN_GB_X_GBCLAN: "en-gb-x-gbclan",
+        EN_GB_X_GBCWMD: "en-gb-x-gbcwmd",
+        EN_GB_X_RP: "en-gb-x-rp",
         EN_US: "en-us",
-        EN_WI: "en-wi",
         EO: "eo",
         ES: "es",
-        ES_LA: "es-la",
+        ES_419: "es-419",
         ET: "et",
+        EU: "eu",
         FA: "fa",
-        FA_PIN: "fa-pin",
+        FA_LATN: "fa-Latn",
         FI: "fi",
         FR: "fr",
         FR_BE: "fr-be",
         FR_FR: "fr-fr",
         GA: "ga",
+        GD: "gd",
         # COMMENTED GRC: "grc",
+        GN: "gn",
+        GU: "gu",
         HI: "hi",
         HR: "hr",
         HU: "hu",
         HY: "hy",
-        HY_WEST: "hy-west",
+        HY_AREVMDA: "hy-arevmda",
+        IA: "ia",
         ID: "id",
         IS: "is",
         IT: "it",
         # COMMENTED JBO: "jbo",
         KA: "ka",
+        KL: "kl",
         KN: "kn",
         KU: "ku",
+        KY: "ky",
         LA: "la",
         # COMMENTED LFN: "lfn",
         LT: "lt",
         LV: "lv",
         MK: "mk",
         ML: "ml",
+        MR: "mr",
         MS: "ms",
+        MT: "mt",
+        MY: "my",
+        NCI: "nci",
         NE: "ne",
         NL: "nl",
         NO: "no",
+        OM: "om",
+        OR: "or",
         PA: "pa",
+        # COMMENTED PAP: "pap",
         PL: "pl",
         PT: "pt",
         PT_BR: "pt-br",
         PT_PT: "pt-pt",
         RO: "ro",
         RU: "ru",
-        SQ: "sq",
+        SI: "si",
         SK: "sk",
+        SL: "sl",
+        SQ: "sq",
         SR: "sr",
         SV: "sv",
         SW: "sw",
         TA: "ta",
+        TE: "te",
+        TN: "tn",
         TR: "tr",
+        TT: "tt",
         UK: "ru",   # NOTE mocking support for Ukrainian with Russian voice
+        UR: "ur",
         VI: "vi",
-        VI_HUE: "vi-hue",
-        VI_SGN: "vi-sgn",
+        VI_VN_X_CENTRAL: "vi-vn-x-central",
+        VI_VN_X_SOUTH: "vi-vn-x-south",
         ZH: "zh",
         ZH_YUE: "zh-yue",
         AFR: "af",
+        AMH: "am",
         ARG: "an",
+        ASM: "as",
+        AZE: "az",
+        BEN: "bn",
         BOS: "bs",
         BUL: "bg",
         CAT: "ca",
@@ -579,48 +741,67 @@ class ESPEAKTTSWrapper(BaseTTSWrapper):
         FAS: "fa",
         FIN: "fi",
         FRA: "fr",
+        GLA: "gd",
         GLE: "ga",
         GRC: "grc",
+        GRN: "gn",
+        GUJ: "gu",
         HIN: "hi",
         HRV: "hr",
         HUN: "hu",
         HYE: "hy",
+        INA: "ia",
         IND: "id",
         ISL: "is",
         ITA: "it",
         JBO: "jbo",
+        KAL: "kl",
         KAN: "kn",
         KAT: "ka",
+        KIR: "ky",
         KUR: "ku",
         LAT: "la",
         LAV: "lv",
         LFN: "lfn",
         LIT: "lt",
         MAL: "ml",
+        MAR: "mr",
         MKD: "mk",
+        MLT: "mt",
         MSA: "ms",
+        MYA: "my",
+        NAH: "nci",
         NEP: "ne",
         NLD: "nl",
         NOR: "no",
+        ORI: "or",
+        ORM: "om",
         PAN: "pa",
+        PAP: "pap",
         POL: "pl",
         POR: "pt",
         RON: "ro",
         RUS: "ru",
+        SIN: "si",
         SLK: "sk",
+        SLV: "sl",
         SPA: "es",
         SQI: "sq",
         SRP: "sr",
         SWA: "sw",
         SWE: "sv",
         TAM: "ta",
+        TAT: "tt",
+        TEL: "te",
+        TSN: "tn",
         TUR: "tr",
         UKR: "ru",  # NOTE mocking support for Ukrainian with Russian voice
+        URD: "ur",
         VIE: "vi",
         YUE: "zh-yue",
         ZHO: "zh",
         ENG_GBR: "en-gb",
-        ENG_SCT: "en-sc",
+        ENG_SCT: "en-gb-scotland",
         ENG_USA: "en-us",
         SPA_ESP: "es-es",
         FRA_BEL: "fr-be",
@@ -630,18 +811,16 @@ class ESPEAKTTSWrapper(BaseTTSWrapper):
     }
     DEFAULT_LANGUAGE = ENG
 
-    DEFAULT_TTS_PATH = "espeak"
+    DEFAULT_TTS_PATH = "espeak-ng"
 
     OUTPUT_AUDIO_FORMAT = ("pcm_s16le", 1, 22050)
 
     HAS_SUBPROCESS_CALL = True
 
-    HAS_C_EXTENSION_CALL = True
-
-    TAG = u"EspeakTTSWrapper"
+    TAG = u"ESPEAKNGTTSWrapper"
 
     def __init__(self, rconf=None, logger=None):
-        super(ESPEAKTTSWrapper, self).__init__(rconf=rconf, logger=logger)
+        super(ESPEAKNGTTSWrapper, self).__init__(rconf=rconf, logger=logger)
         self.set_subprocess_arguments([
             self.tts_path,
             u"-v",
@@ -650,115 +829,3 @@ class ESPEAKTTSWrapper(BaseTTSWrapper):
             self.CLI_PARAMETER_WAVE_PATH,
             self.CLI_PARAMETER_TEXT_STDIN
         ])
-
-    def _synthesize_multiple_c_extension(self, text_file, output_file_path, quit_after=None, backwards=False):
-        """
-        Synthesize multiple text fragments, using the cew extension.
-
-        Return a tuple (anchors, total_time, num_chars).
-
-        :rtype: (bool, (list, :class:`~aeneas.timevalue.TimeValue`, int))
-        """
-        self.log(u"Synthesizing using C extension...")
-
-        # convert parameters from Python values to C values
-        try:
-            c_quit_after = float(quit_after)
-        except TypeError:
-            c_quit_after = 0.0
-        c_backwards = 0
-        if backwards:
-            c_backwards = 1
-        self.log([u"output_file_path: %s", output_file_path])
-        self.log([u"c_quit_after:     %.3f", c_quit_after])
-        self.log([u"c_backwards:      %d", c_backwards])
-        self.log(u"Preparing u_text...")
-        u_text = []
-        fragments = text_file.fragments
-        for fragment in fragments:
-            f_lang = fragment.language
-            f_text = fragment.filtered_text
-            if f_lang is None:
-                f_lang = self.DEFAULT_LANGUAGE
-            f_voice_code = self._language_to_voice_code(f_lang)
-            if f_text is None:
-                f_text = u""
-            u_text.append((f_voice_code, f_text))
-        self.log(u"Preparing u_text... done")
-
-        # call C extension
-        sr = None
-        sf = None
-        intervals = None
-        if self.rconf[RuntimeConfiguration.CEW_SUBPROCESS_ENABLED]:
-            self.log(u"Using cewsubprocess to call aeneas.cew")
-            try:
-                self.log(u"Importing aeneas.cewsubprocess...")
-                from aeneas.cewsubprocess import CEWSubprocess
-                self.log(u"Importing aeneas.cewsubprocess... done")
-                self.log(u"Calling aeneas.cewsubprocess...")
-                cewsub = CEWSubprocess(rconf=self.rconf, logger=self.logger)
-                sr, sf, intervals = cewsub.synthesize_multiple(output_file_path, c_quit_after, c_backwards, u_text)
-                self.log(u"Calling aeneas.cewsubprocess... done")
-            except Exception as exc:
-                self.log_exc(u"An unexpected error occurred while running cewsubprocess", exc, False, None)
-                # NOTE not critical, try calling aeneas.cew directly
-                # COMMENTED return (False, None)
-
-        if sr is None:
-            self.log(u"Preparing c_text...")
-            if gf.PY2:
-                # Python 2 => pass byte strings
-                c_text = [(gf.safe_bytes(t[0]), gf.safe_bytes(t[1])) for t in u_text]
-            else:
-                # Python 3 => pass Unicode strings
-                c_text = [(gf.safe_unicode(t[0]), gf.safe_unicode(t[1])) for t in u_text]
-            self.log(u"Preparing c_text... done")
-
-            self.log(u"Calling aeneas.cew directly")
-            try:
-                self.log(u"Importing aeneas.cew...")
-                import aeneas.cew.cew
-                self.log(u"Importing aeneas.cew... done")
-                self.log(u"Calling aeneas.cew...")
-                sr, sf, intervals = aeneas.cew.cew.synthesize_multiple(
-                    output_file_path,
-                    c_quit_after,
-                    c_backwards,
-                    c_text
-                )
-                self.log(u"Calling aeneas.cew... done")
-            except Exception as exc:
-                self.log_exc(u"An unexpected error occurred while running cew", exc, False, None)
-                return (False, None)
-
-        self.log([u"sr: %d", sr])
-        self.log([u"sf: %d", sf])
-
-        # create output
-        anchors = []
-        current_time = TimeValue("0.000")
-        num_chars = 0
-        if backwards:
-            fragments = fragments[::-1]
-        for i in range(sf):
-            # get the correct fragment
-            fragment = fragments[i]
-            # store for later output
-            anchors.append([
-                TimeValue(intervals[i][0]),
-                fragment.identifier,
-                fragment.filtered_text
-            ])
-            # increase the character counter
-            num_chars += fragment.characters
-            # update current_time
-            current_time = TimeValue(intervals[i][1])
-
-        # return output
-        # NOTE anchors do not make sense if backwards == True
-        self.log([u"Returning %d time anchors", len(anchors)])
-        self.log([u"Current time %.3f", current_time])
-        self.log([u"Synthesized %d characters", num_chars])
-        self.log(u"Synthesizing using C extension... done")
-        return (True, (anchors, current_time, num_chars))
