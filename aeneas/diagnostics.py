@@ -136,11 +136,11 @@ class Diagnostics(object):
         :rtype: bool
         """
         try:
-            from aeneas.espeakwrapper import ESPEAKWrapper
+            from aeneas.ttswrappers.espeakttswrapper import ESPEAKTTSWrapper
             text = u"From fairest creatures we desire increase,"
             language = u"eng"
             handler, output_file_path = gf.tmp_file(suffix=u".wav")
-            espeak = ESPEAKWrapper()
+            espeak = ESPEAKTTSWrapper()
             result = espeak.synthesize_single(
                 text,
                 language,

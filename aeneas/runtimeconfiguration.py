@@ -458,7 +458,7 @@ class RuntimeConfiguration(Configuration):
     parameter.
 
     Specify the value
-    :data:`~aeneas.synthesizer.Synthesizer.NUANCETTSAPI` (``nuancettsapi``)
+    :data:`~aeneas.synthesizer.Synthesizer.NUANCE` (``nuance``)
     to use the built-in Nuance TTS API wrapper;
     you will need to provide your Nuance Developer API ID and API Key using the
     :data:`~aeneas.runtimeconfiguration.RuntimeConfiguration.NUANCE_TTS_API_ID`

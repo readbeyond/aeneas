@@ -40,9 +40,9 @@ class Language(object):
     Consult the documentation of your TTS engine wrapper to
     see the list of languages supported by it:
 
-    * :class:`~aeneas.espeakwrapper.ESPEAKWrapper` (default TTS)
-    * :class:`~aeneas.festivalwrapper.FESTIVALWrapper`
-    * :class:`~aeneas.nuancettsapiwrapper.NuanceTTSAPIWrapper`
+    * :class:`~aeneas.ttswrappers.espeakttswrapper.ESPEAKTTSWrapper` (default TTS)
+    * :class:`~aeneas.ttswrappers.festivalttswrapper.FESTIVALTTSWrapper`
+    * :class:`~aeneas.ttswrappers.nuancettswrapper.NuanceTTSWrapper`
 
     Each language is indicated by its ISO 639-3 language code.
     """
