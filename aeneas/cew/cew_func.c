@@ -239,37 +239,6 @@ int _initialize_synthesizer(char const *output_file_path) {
     return CEW_SUCCESS;
 }
 
-// synthesize a single text fragment
-int _synthesize_single(
-        const char *output_file_path,
-        int *sample_rate_ret,
-        struct FRAGMENT_INFO *fragment_ret
-    ) {
-
-    // open output wave file
-    if (_initialize_synthesizer(output_file_path) != CEW_SUCCESS) {
-        return CEW_FAILURE;
-    }
-
-    // set voice code
-    if (_set_voice_code((*fragment_ret).voice_code) != CEW_SUCCESS) {
-        return CEW_FAILURE;
-    }
-
-    // synthesize text
-    *sample_rate_ret = sample_rate;
-    (*fragment_ret).begin = current_time;
-    if (_synthesize_string((*fragment_ret).text) != CEW_SUCCESS) {
-        return CEW_FAILURE;
-    }
-    (*fragment_ret).end = current_time;
-
-    // close output wave file
-    _terminate_synthesis();
-
-    return CEW_SUCCESS;
-}
-
 // synthesize multiple fragments
 int _synthesize_multiple(
         const char *output_file_path,

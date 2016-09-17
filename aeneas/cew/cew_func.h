@@ -35,22 +35,6 @@ struct FRAGMENT_INFO {
 };
 
 /*
-    Synthesize a single text fragment,
-    described by the FRAGMENT_INFO fragment_ret,
-    creating a WAVE file at output_file_path.
-
-    The sample rate of the output WAVE file is stored
-    in sample_rate_ret, and the begin and end times
-    are stored in the begin and end attributes of
-    fragment_ret.
-*/
-int _synthesize_single(
-    const char *output_file_path,
-    int *sample_rate_ret, // int because the espeak lib returns it as such
-    struct FRAGMENT_INFO *fragment_ret
-);
-
-/*
     Synthesize multiple text fragments,
     described by the FRAGMENT_INFO fragments_ret array,
     creating a WAVE file at output_file_path.

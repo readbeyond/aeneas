@@ -32,27 +32,6 @@ import aeneas.globalfunctions as gf
 
 class TestFESTIVALTTSWrapper(unittest.TestCase):
 
-    def synthesize_single(self, text, language, ofp=None, zero_length=False):
-        if ofp is None:
-            handler, output_file_path = gf.tmp_file(suffix=".wav")
-        else:
-            handler = None
-            output_file_path = ofp
-        try:
-            rconf = RuntimeConfiguration()
-            rconf[RuntimeConfiguration.TTS] = u"festival"
-            rconf[RuntimeConfiguration.TTS_PATH] = u"text2wave"
-            tts_engine = FESTIVALTTSWrapper(rconf=rconf)
-            result = tts_engine.synthesize_single(text, language, output_file_path)
-            gf.delete_file(handler, output_file_path)
-            if zero_length:
-                self.assertEqual(result, 0)
-            else:
-                self.assertGreater(result, 0)
-        except (OSError, TypeError, UnicodeDecodeError, ValueError) as exc:
-            gf.delete_file(handler, output_file_path)
-            raise exc
-
     def synthesize_multiple(self, text_file, ofp=None, quit_after=None, backwards=False, zero_length=False):
         if ofp is None:
             handler, output_file_path = gf.tmp_file(suffix=".wav")
@@ -147,38 +126,6 @@ class TestFESTIVALTTSWrapper(unittest.TestCase):
     def test_multiple_variation_language(self):
         tfl = self.tfl([(FESTIVALTTSWrapper.ENG_GBR, [u"Word"])])
         self.synthesize_multiple(tfl)
-
-    def test_single_none(self):
-        with self.assertRaises(TypeError):
-            self.synthesize_single(None, FESTIVALTTSWrapper.ENG)
-
-    def test_single_invalid_output_path(self):
-        with self.assertRaises(OSError):
-            self.synthesize_single(u"word", FESTIVALTTSWrapper.ENG, ofp="x/y/z/not_existing.wav")
-
-    def test_single_empty_string(self):
-        self.synthesize_single(u"", FESTIVALTTSWrapper.ENG, zero_length=True)
-
-    def test_single_text_str_ascii(self):
-        with self.assertRaises(TypeError):
-            self.synthesize_single(b"Word", FESTIVALTTSWrapper.ENG)
-
-    def test_single_text_str_unicode(self):
-        with self.assertRaises(TypeError):
-            self.synthesize_single(b"Ausf\xc3\xbchrliche", FESTIVALTTSWrapper.ENG)
-
-    def test_single_text_unicode_ascii(self):
-        self.synthesize_single(u"Word", FESTIVALTTSWrapper.ENG)
-
-    def test_single_text_unicode_unicode(self):
-        self.synthesize_single(u"Ausführliche", FESTIVALTTSWrapper.ENG)
-
-    def test_single_variation_language(self):
-        self.synthesize_single(u"Word", FESTIVALTTSWrapper.ENG_GBR)
-
-    def test_single_invalid_language(self):
-        with self.assertRaises(ValueError):
-            self.synthesize_single(u"Word", "zzzz")
 
 
 if __name__ == '__main__':

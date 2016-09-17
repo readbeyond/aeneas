@@ -30,18 +30,14 @@ echo "Run 1"
 echo ""
 
 echo "Run 2"
-./cew_driver en "Hello World" /tmp/out.wav single
+./cew_driver en "Hello|World|My|Dear|Friend" /tmp/out.wav 0.0 0
 echo ""
 
 echo "Run 3"
-./cew_driver en "Hello|World|My|Dear|Friend" /tmp/out.wav multi 0.0 0
+./cew_driver en "Hello|World|My|Dear|Friend" /tmp/out.wav 0.0 1
 echo ""
 
 echo "Run 4"
-./cew_driver en "Hello|World|My|Dear|Friend" /tmp/out.wav multi 0.0 1
-echo ""
-
-echo "Run 4"
-./cew_driver en "Hello|World|My|Dear|Friend" /tmp/out.wav multi 2.0 1
+./cew_driver en "Hello|World|My|Dear|Friend" /tmp/out.wav 2.0 1
 echo ""
 

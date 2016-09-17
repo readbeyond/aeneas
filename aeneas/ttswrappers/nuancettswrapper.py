@@ -64,7 +64,7 @@ class NuanceTTSWrapper(BaseTTSWrapper):
 
     To use this TTS engine, specify ::
 
-        "tts=nuancettsapi|nuance_tts_api_id=...|nuance_tts_api_key=..."
+        "tts=nuance|nuance_tts_api_id=...|nuance_tts_api_key=..."
 
     in the ``rconf`` object, substituting your Nuance Developer API ID and Key.
 

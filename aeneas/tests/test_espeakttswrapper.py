@@ -32,31 +32,6 @@ import aeneas.globalfunctions as gf
 
 class TestESPEAKTTSWrapper(unittest.TestCase):
 
-    def synthesize_single(self, text, language, ofp=None, zero_length=False):
-        def inner(c_ext, cew_subprocess):
-            if ofp is None:
-                handler, output_file_path = gf.tmp_file(suffix=".wav")
-            else:
-                handler = None
-                output_file_path = ofp
-            try:
-                rconf = RuntimeConfiguration()
-                rconf[RuntimeConfiguration.C_EXTENSIONS] = c_ext
-                rconf[RuntimeConfiguration.CEW_SUBPROCESS_ENABLED] = cew_subprocess
-                tts_engine = ESPEAKTTSWrapper(rconf=rconf)
-                result = tts_engine.synthesize_single(text, language, output_file_path)
-                gf.delete_file(handler, output_file_path)
-                if zero_length:
-                    self.assertEqual(result, 0)
-                else:
-                    self.assertGreater(result, 0)
-            except (OSError, TypeError, UnicodeDecodeError, ValueError) as exc:
-                gf.delete_file(handler, output_file_path)
-                raise exc
-        for c_ext in [True, False]:
-            for cew_sub in [True, False]:
-                inner(c_ext, cew_sub)
-
     def synthesize_multiple(self, text_file, ofp=None, quit_after=None, backwards=False, zero_length=False):
         def inner(c_ext, cew_subprocess):
             if ofp is None:
@@ -155,41 +130,6 @@ class TestESPEAKTTSWrapper(unittest.TestCase):
     def test_multiple_variation_language(self):
         tfl = self.tfl([(ESPEAKTTSWrapper.ENG_GBR, [u"Word"])])
         self.synthesize_multiple(tfl)
-
-    def test_single_none(self):
-        with self.assertRaises(TypeError):
-            self.synthesize_single(None, ESPEAKTTSWrapper.ENG)
-
-    def test_single_invalid_output_path(self):
-        with self.assertRaises(OSError):
-            self.synthesize_single(u"word", ESPEAKTTSWrapper.ENG, ofp="x/y/z/not_existing.wav")
-
-    def test_single_empty_string(self):
-        self.synthesize_single(u"", ESPEAKTTSWrapper.ENG, zero_length=True)
-
-    def test_single_text_str_ascii(self):
-        with self.assertRaises(TypeError):
-            self.synthesize_single(b"Word", ESPEAKTTSWrapper.ENG)
-
-    def test_single_text_str_unicode(self):
-        with self.assertRaises(TypeError):
-            self.synthesize_single(b"Ausf\xc3\xbchrliche", ESPEAKTTSWrapper.DEU)
-
-    def test_single_text_unicode_ascii(self):
-        self.synthesize_single(u"Word", ESPEAKTTSWrapper.ENG)
-
-    def test_single_text_unicode_unicode(self):
-        self.synthesize_single(u"Ausführliche", ESPEAKTTSWrapper.DEU)
-
-    def test_single_variation_language(self):
-        self.synthesize_single(u"Word", ESPEAKTTSWrapper.ENG_GBR)
-
-    def test_single_invalid_language(self):
-        with self.assertRaises(ValueError):
-            self.synthesize_single(u"Word", "zzzz")
-
-    def test_single_replace_language(self):
-        self.synthesize_single(u"Временами Сашке хотелось перестать делать то", ESPEAKTTSWrapper.UKR)
 
     def test_multiple_replace_language(self):
         tfl = self.tfl([(ESPEAKTTSWrapper.UKR, [u"Временами Сашке хотелось перестать делать то"])])

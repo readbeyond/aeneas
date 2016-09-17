@@ -136,20 +136,17 @@ class Diagnostics(object):
         :rtype: bool
         """
         try:
+            from aeneas.textfile import TextFile
+            from aeneas.textfile import TextFragment
             from aeneas.ttswrappers.espeakttswrapper import ESPEAKTTSWrapper
             text = u"From fairest creatures we desire increase,"
-            language = u"eng"
+            text_file = TextFile()
+            text_file.add_fragment(TextFragment(language=u"eng", lines=[text], filtered_lines=[text]))
             handler, output_file_path = gf.tmp_file(suffix=u".wav")
-            espeak = ESPEAKTTSWrapper()
-            result = espeak.synthesize_single(
-                text,
-                language,
-                output_file_path
-            )
+            ESPEAKTTSWrapper().synthesize_multiple(text_file, output_file_path)
             gf.delete_file(handler, output_file_path)
-            if result:
-                gf.print_success(u"espeak         OK")
-                return False
+            gf.print_success(u"espeak         OK")
+            return False
         except:
             pass
         gf.print_error(u"espeak         ERROR")

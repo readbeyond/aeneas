@@ -358,7 +358,7 @@ class ExecuteTaskCLI(AbstractCLIProgram):
     VALUES = {
         "espeak": sorted(ESPEAKTTSWrapper.LANGUAGE_TO_VOICE_CODE.keys()),
         "festival": sorted(FESTIVALTTSWrapper.LANGUAGE_TO_VOICE_CODE.keys()),
-        "nuancettsapi": sorted(NuanceTTSWrapper.LANGUAGE_TO_VOICE_CODE.keys()),
+        "nuance": sorted(NuanceTTSWrapper.LANGUAGE_TO_VOICE_CODE.keys()),
         "task_language": Language.ALLOWED_VALUES,
         "is_text_type": TextFileFormat.ALLOWED_VALUES,
         "is_text_unparsed_id_sort": IDSortingAlgorithm.ALLOWED_VALUES,

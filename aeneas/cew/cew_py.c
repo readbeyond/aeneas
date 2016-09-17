@@ -33,31 +33,6 @@ Python C Extension for synthesizing text with eSpeak
 #include "speak_lib.h"
 #include "cew_func.h"
 
-static PyObject *synthesize_single(PyObject *self, PyObject *args) {
-    PyObject *tuple;
-    char const *output_file_path;
-    struct FRAGMENT_INFO ret;
-    int sample_rate; // int because espeak lib returns it as such
-
-    // s = string
-    if (!PyArg_ParseTuple(args, "sss", &output_file_path, &ret.voice_code, &ret.text)) {
-        PyErr_SetString(PyExc_ValueError, "Error while parsing the arguments");
-        return NULL;
-    }
-
-    if (_synthesize_single(output_file_path, &sample_rate, &ret) != 0) {
-        PyErr_SetString(PyExc_ValueError, "Error while synthesizing text");
-        return NULL;
-    }
-
-    // build the tuple to be returned
-    tuple = PyTuple_New(3);
-    PyTuple_SetItem(tuple, 0, Py_BuildValue("i", sample_rate));
-    PyTuple_SetItem(tuple, 1, Py_BuildValue("f", ret.begin));
-    PyTuple_SetItem(tuple, 2, Py_BuildValue("f", ret.end));
-    return tuple;
-}
-
 static PyObject *synthesize_multiple(PyObject *self, PyObject *args) {
     PyObject *tuple;
     PyObject *anchors;
@@ -155,16 +130,6 @@ static PyObject *synthesize_multiple(PyObject *self, PyObject *args) {
 }
 
 static PyMethodDef cew_methods[] = {
-    {
-        "synthesize_single",
-        synthesize_single,
-        METH_VARARGS,
-        "Synthesize a single text fragment with eSpeak\n"
-        ":param string output_file_path: the path of the WAVE file to be created\n"
-        ":param string voice_code: the voice code of the language to be used\n"
-        ":param string text: the text to be synthesized\n"
-        ":rtype: tuple (sample_rate, begin, end)"
-    },
     {
         "synthesize_multiple",
         synthesize_multiple,

@@ -24,24 +24,7 @@
 """
 aeneas.cew is a Python C extension to synthesize text with eSpeak.
 
-The functions provided by this module are:
-
-.. function:: cew.synthesize_single(output_file_path, voice_code, text)
-
-    Synthesize a single text fragment into a single WAVE file.
-
-    The returned tuple ``(sr, begin, end)`` contains
-    the sample rate and the begin and end time values
-    of the output WAVE file.
-
-    Note that ``begin`` is always ``0.0``, while ``end`` is equal to the
-    duration of the synthesized WAVE file, in seconds.
-
-    :param string output_file_path: the path of the WAVE file to be created, UTF-8 encoded
-    :param string voice_code: the eSpeak voice code (e.g., ``en``, ``en-gb``, ``it``, etc.)
-    :param string text: the text to be synthesized, UTF-8 encoded
-    :rtype: tuple
-
+The only function provided by this module is:
 
 .. function:: cew.synthesize_multiple(output_file_path, quit_after, backwards, text)
 

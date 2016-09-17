@@ -304,90 +304,6 @@ class BaseTTSWrapper(Loggable):
             rconf=self.rconf
         )
 
-    def synthesize_single(self, text, language, output_file_path):
-        """
-        Create a mono WAVE audio file containing the synthesized text.
-
-        The ``text`` must be a Unicode string encodable with UTF-8.
-
-        Return the duration of the synthesized audio file, in seconds.
-
-        Concrete subclasses can (but they are not required to) implement one
-        of the following private functions:
-
-            1. ``_synthesize_single_python()``
-            2. ``_synthesize_single_c_extension()``
-            3. ``_synthesize_single_subprocess()``
-
-        :param string text: the text to synthesize
-        :param language: the language to use
-        :type  language: :class:`~aeneas.language.Language`
-        :param string output_file_path: the path of the output audio file
-        :rtype: :class:`~aeneas.timevalue.TimeValue`
-        :raises: TypeError: if ``text`` is ``None`` or it is not a Unicode string
-        :raises: ValueError: if ``self.rconf[RuntimeConfiguration.ALLOW_UNLISTED_LANGUAGES]`` is ``False``
-                             and ``language`` is not supported by the TTS engine
-        :raises: OSError: if output file cannot be written to ``output_file_path``
-        :raises: RuntimeError: if both the C extension and
-                               the pure Python code did not succeed.
-        """
-        # check that text_file is not None
-        if text is None:
-            self.log_exc(u"text is None", None, True, TypeError)
-
-        # check that text has unicode type
-        if not gf.is_unicode(text):
-            self.log_exc(u"text is not a Unicode string", None, True, TypeError)
-
-        # check that output_file_path can be written
-        if not gf.file_can_be_written(output_file_path):
-            self.log_exc(u"Cannot write to output file '%s'" % (output_file_path), None, True, OSError)
-
-        # check that the requested language is listed in language.py
-        if (language not in self.LANGUAGE_TO_VOICE_CODE) and (not self.rconf[RuntimeConfiguration.ALLOW_UNLISTED_LANGUAGES]):
-            self.log_exc(u"Language '%s' is not supported by the selected TTS engine" % (language), None, True, ValueError)
-
-        self.log([u"Synthesizing text: '%s'", text])
-        self.log([u"Synthesizing language: '%s'", language])
-        self.log([u"Synthesizing to file: '%s'", output_file_path])
-
-        # return zero if text is the empty string
-        if len(text) == 0:
-            self.log(u"len(text) is zero: returning 0.000")
-            return TimeValue("0.000")
-
-        # language to voice code
-        voice_code = self._language_to_voice_code(language)
-        self.log([u"Using voice code: '%s'", voice_code])
-
-        # first, call Python function _synthesize_single_python() if available
-        if self.HAS_PYTHON_CALL:
-            self.log(u"Calling TTS engine via Python")
-            try:
-                (result, (duration, sr_nu, enc_nu, samples_nu)) = self._synthesize_single_python(text, voice_code, output_file_path)
-                return duration
-            except Exception as exc:
-                self.log_exc(u"An unexpected error occurred while calling _synthesize_single_python", exc, False, None)
-
-        # call _synthesize_single_c_extension() or _synthesize_single_subprocess()
-        self.log(u"Calling TTS engine via C extension or subprocess")
-        c_extension_function = self._synthesize_single_c_extension if self.HAS_C_EXTENSION_CALL else None
-        subprocess_function = self._synthesize_single_subprocess if self.HAS_SUBPROCESS_CALL else None
-        #
-        # NOTE result_tuple might be
-        #      (duration, ) if coming from C extension or
-        #      (duration, sr, enc, samples) if coming from subprocess
-        #
-        result_tuple = gf.run_c_extension_with_fallback(
-            self.log,
-            "cew",
-            c_extension_function,
-            subprocess_function,
-            (text, voice_code, output_file_path),
-            rconf=self.rconf
-        )
-        return result_tuple[0]
-
     def _synthesize_multiple_python(self, text_file, output_file_path, quit_after=None, backwards=False):
         """
         Synthesize multiple fragments via a Python call.
@@ -405,13 +321,35 @@ class BaseTTSWrapper(Loggable):
         self.log(u"Synthesizing multiple via a Python call... done")
         return ret
 
+    def _synthesize_single_python_helper(self, text, voice_code, output_file_path=None):
+        """
+        This is an helper function to synthesize a single text fragment via a Python call.
+
+        If ``output_file_path`` is ``None``,
+        the audio data will not persist to file at the end of the method.
+
+        :rtype: tuple (result, (duration, sample_rate, encoding, data))
+        """
+        raise NotImplementedError(u"This function must be implemented in concrete subclasses supporting Python call")
+
     def _synthesize_multiple_c_extension(self, text_file, output_file_path, quit_after=None, backwards=False):
         """
         Synthesize multiple fragments via a Python C extension.
 
         :rtype: tuple (result, (anchors, current_time, num_chars))
         """
-        raise NotImplementedError(u"This function must be implemented in concrete subclasses")
+        raise NotImplementedError(u"This function must be implemented in concrete subclasses supporting C extension call")
+
+    def _synthesize_single_c_extension_helper(self, text, voice_code, output_file_path=None):
+        """
+        This is an helper function to synthesize a single text fragment via a Python C extension.
+
+        If ``output_file_path`` is ``None``,
+        the audio data will not persist to file at the end of the method.
+
+        :rtype: tuple (result, (duration, sample_rate, encoding, data))
+        """
+        raise NotImplementedError(u"This function might be implemented in concrete subclasses supporting C extension call")
 
     def _synthesize_multiple_subprocess(self, text_file, output_file_path, quit_after=None, backwards=False):
         """
@@ -429,55 +367,6 @@ class BaseTTSWrapper(Loggable):
         )
         self.log(u"Synthesizing multiple via subprocess... done")
         return ret
-
-    def _synthesize_single_python(self, text, voice_code, output_file_path):
-        """
-        Synthesize a single text fragment via a Python call.
-
-        :rtype: tuple (result, (duration, sample_rate, encoding, data))
-        """
-        self.log(u"Synthesizing single via a Python call...")
-        ret = self._synthesize_single_python_helper(
-            text=text,
-            voice_code=voice_code,
-            output_file_path=output_file_path
-        )
-        self.log(u"Synthesizing single via a Python call... done")
-        return ret
-
-    def _synthesize_single_c_extension(self, text, voice_code, output_file_path):
-        """
-        Synthesize a single text fragment via a Python C extension.
-
-        :rtype: tuple (result, (duration, sample_rate, encoding, samples))
-        """
-        raise NotImplementedError(u"This function must be implemented in concrete subclasses")
-
-    def _synthesize_single_subprocess(self, text, voice_code, output_file_path):
-        """
-        Synthesize a single text fragment via ``subprocess``.
-
-        :rtype: tuple (result, (duration, sample_rate, encoding, samples))
-        """
-        self.log(u"Synthesizing single via subprocess...")
-        ret = self._synthesize_single_subprocess_helper(
-            text=text,
-            voice_code=voice_code,
-            output_file_path=output_file_path
-        )
-        self.log(u"Synthesizing single via subprocess... done")
-        return ret
-
-    def _synthesize_single_python_helper(self, text, voice_code, output_file_path=None):
-        """
-        This is an helper function to synthesize a single text fragment via a Python call.
-
-        If ``output_file_path`` is ``None``,
-        the audio data will not persist to file at the end of the method.
-
-        :rtype: tuple (result, (duration, sample_rate, encoding, data))
-        """
-        raise NotImplementedError(u"This function must be implemented in concrete subclasses")
 
     def _synthesize_single_subprocess_helper(self, text, voice_code, output_file_path=None):
         """

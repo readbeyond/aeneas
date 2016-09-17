@@ -15,6 +15,7 @@ v1.6.0 (2016-09-??)
 #. Changed the constructor of ``BaseTTSWrapper`` and derived classes, moving call method flags from constructor parameters to class fields
 #. Added check when synthesizing multiple: at least one fragment should be not empty
 #. Simplified writing custom TTS wrappers by providing the "mutiple generic" method in ``BaseTTSWrapper``
+#. Removed ``synthesize_single()`` function in all TTS wrappers and in ``cew``
 #. Updated tests and documentation according to the above changes in TTS wrappers
 #. Moved package metadata from ``setup.py`` into ``setupmeta.py``
 #. Added AGPL header to all source files
