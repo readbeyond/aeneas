@@ -199,6 +199,15 @@ class ExecuteTaskCLI(AbstractCLIProgram):
             u"options": u"",
             u"show": True
         },
+        u"--example-multilevel-tts": {
+            u"description": u"input: multilevel plain text (mplain), different TTS engines, output: JSON",
+            u"audio": AUDIO_FILE,
+            u"text": gf.relative_path("res/mplain.txt", __file__),
+            u"config": u"task_language=eng|is_text_type=mplain|os_task_file_format=json",
+            u"syncmap": "output/sonnet.mplain.json",
+            u"options": u"-r=\"tts_l1=festival|tts_l2=festival|tts_l3=espeak\"",
+            u"show": False
+        },
         u"--example-munparsed-json": {
             u"description": u"input: multilevel unparsed text (munparsed), output: JSON",
             u"audio": AUDIO_FILE,
@@ -358,7 +367,7 @@ class ExecuteTaskCLI(AbstractCLIProgram):
 
     VALUES = {
         "espeak": sorted(ESPEAKTTSWrapper.LANGUAGE_TO_VOICE_CODE.keys()),
-        "espeakng": sorted(ESPEAKNGTTSWrapper.LANGUAGE_TO_VOICE_CODE.keys()),
+        "espeak-ng": sorted(ESPEAKNGTTSWrapper.LANGUAGE_TO_VOICE_CODE.keys()),
         "festival": sorted(FESTIVALTTSWrapper.LANGUAGE_TO_VOICE_CODE.keys()),
         "nuance": sorted(NuanceTTSWrapper.LANGUAGE_TO_VOICE_CODE.keys()),
         "task_language": Language.ALLOWED_VALUES,
@@ -457,6 +466,10 @@ class ExecuteTaskCLI(AbstractCLIProgram):
                     elif key == u"--example-mws":
                         self.rconf[RuntimeConfiguration.MFCC_WINDOW_LENGTH] = "1.500"
                         self.rconf[RuntimeConfiguration.MFCC_WINDOW_SHIFT] = "0.500"
+                    elif key == u"--example-multilevel-tts":
+                        self.rconf[RuntimeConfiguration.TTS_L1] = "festival"
+                        self.rconf[RuntimeConfiguration.TTS_L2] = "festival"
+                        self.rconf[RuntimeConfiguration.TTS_L3] = "espeak"
                     elif key == u"--example-faster-rate":
                         print_faster_rate = True
                     elif key == u"--example-no-zero":

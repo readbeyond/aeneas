@@ -66,7 +66,8 @@ class NuanceTTSWrapper(BaseTTSWrapper):
 
         "tts=nuance|nuance_tts_api_id=...|nuance_tts_api_key=..."
 
-    in the ``rconf`` object, substituting your Nuance Developer API ID and Key.
+    in the ``RuntimeConfiguration`` object,
+    substituting your Nuance Developer API ID and Key.
 
     See :class:`~aeneas.ttswrappers.basettswrapper.BaseTTSWrapper`
     for the available functions.
@@ -279,7 +280,7 @@ class NuanceTTSWrapper(BaseTTSWrapper):
     """ Nuance TTS API end point """
 
     SAMPLE_RATE = 16000
-    """ Synthesize 16kHz PCM16 """
+    """ Synthesize 16kHz PCM16 mono """
 
     URL = "https://tts.nuancemobility.net"
     """ Nuance TTS API URL """

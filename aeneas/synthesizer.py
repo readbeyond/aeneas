@@ -64,7 +64,7 @@ class Synthesizer(Loggable):
     ESPEAK = "espeak"
     """ Select eSpeak wrapper """
 
-    ESPEAKNG = "espeakng"
+    ESPEAKNG = "espeak-ng"
     """ Select eSpeak-ng wrapper """
 
     FESTIVAL = "festival"

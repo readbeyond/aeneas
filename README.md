@@ -236,6 +236,7 @@ which explains how to use the built-in command line tools.
 * Batch processing of multiple audio/text pairs
 * Download audio from a YouTube video
 * In multilevel mode, recursive alignment from paragraph to sentence to word level
+* In multilevel mode, time resolution and/or TTS engine can be specified for each level independently
 * Robust against misspelled/mispronounced words, local rearrangements of words, background noise/sporadic spikes
 * Adjustable splitting times, including a max character/second constraint for CC applications
 * Automated detection of audio head/tail

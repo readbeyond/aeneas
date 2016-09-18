@@ -41,6 +41,7 @@ class Language(object):
     see the list of languages supported by it:
 
     * :class:`~aeneas.ttswrappers.espeakttswrapper.ESPEAKTTSWrapper` (default TTS)
+    * :class:`~aeneas.ttswrappers.espeakngttswrapper.ESPEAKNGTTSWrapper`
     * :class:`~aeneas.ttswrappers.festivalttswrapper.FESTIVALTTSWrapper`
     * :class:`~aeneas.ttswrappers.nuancettswrapper.NuanceTTSWrapper`
 

@@ -254,7 +254,7 @@ class BaseTTSWrapper(Loggable):
         :param quit_after: stop synthesizing as soon as
                                  reaching this many seconds
         :type quit_after: :class:`~aeneas.timevalue.TimeValue`
-        :param bool backwards: if > 0, synthese from the end of the text file
+        :param bool backwards: if > 0, synthesize from the end of the text file
         :rtype: tuple (anchors, total_time, num_chars)
         :raises: TypeError: if ``text_file`` is ``None`` or
                             one of the text fragments is not a Unicode string

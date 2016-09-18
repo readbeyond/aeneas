@@ -51,11 +51,15 @@ class ESPEAKTTSWrapper(BaseTTSWrapper):
 
         $ espeak -v voice_code -w /tmp/output_file.wav < text
 
-    To specify the path of the TTS executable, use ::
+    To use this TTS engine, specify ::
+
+        "tts=espeak"
+
+    in the ``RuntimeConfiguration`` object.
+    (You can omit this, since eSpeak is the default TTS engine.)
+    To execute from a non-default location: ::
 
         "tts=espeak|tts_path=/path/to/espeak"
-
-    in the ``rconf`` object.
 
     To run the ``cew`` Python C extension
     in a separate process via
@@ -638,7 +642,7 @@ class ESPEAKTTSWrapper(BaseTTSWrapper):
 
     HAS_C_EXTENSION_CALL = True
 
-    TAG = u"EspeakTTSWrapper"
+    TAG = u"ESPEAKTTSWrapper"
 
     def __init__(self, rconf=None, logger=None):
         super(ESPEAKTTSWrapper, self).__init__(rconf=rconf, logger=logger)

@@ -49,9 +49,12 @@ class FESTIVALTTSWrapper(BaseTTSWrapper):
 
     To use this TTS engine, specify ::
 
-        "tts=festival|tts_path=/path/to/wave2text"
+        "tts=festival"
 
     in the ``RuntimeConfiguration`` object.
+    To execute from a non-default location: ::
+
+        "tts=festival|tts_path=/path/to/wave2text"
 
     See :class:`~aeneas.ttswrappers.basettswrapper.BaseTTSWrapper`
     for the available functions.

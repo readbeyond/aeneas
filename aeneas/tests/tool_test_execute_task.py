@@ -423,6 +423,11 @@ class TestExecuteTaskCLI(unittest.TestCase):
             ("", "--example-mplain-smil")
         ], 0)
 
+    def test_example_multilevel_tts(self):
+        self.execute([
+            ("", "--example-multilevel-tts")
+        ], 0)
+
     def test_example_munparsed_json(self):
         self.execute([
             ("", "--example-munparsed-json")

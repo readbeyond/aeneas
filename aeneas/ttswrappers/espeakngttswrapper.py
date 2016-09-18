@@ -52,11 +52,14 @@ class ESPEAKNGTTSWrapper(BaseTTSWrapper):
 
         $ espeak-ng -v voice_code -w /tmp/output_file.wav < text
 
-    To specify the path of the TTS executable, use ::
+    To use this TTS engine, specify ::
 
-        "tts=espeakng|tts_path=/path/to/espeak-ng"
+        "tts=espeak-ng"
 
-    in the ``rconf`` object.
+    in the ``RuntimeConfiguration`` object.
+    To execute from a non-default location: ::
+
+        "tts=espeak-ng|tts_path=/path/to/espeak-ng"
 
     See :class:`~aeneas.ttswrappers.basettswrapper.BaseTTSWrapper`
     for the available functions.
