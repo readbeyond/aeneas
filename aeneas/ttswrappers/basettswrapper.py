@@ -68,17 +68,11 @@ class BaseTTSWrapper(Loggable):
         2. Python C extension
         3. TTS executable via ``subprocess``
 
-    :param bool has_subprocess_call: a subclass sets this to ``True`` to indicate
-                                     that the TTS can be called via ``subprocess``
-    :param bool has_c_extension_call: a subclass sets this to ``True`` to indicate
-                                      that the TTS can be called via a Python C extension
-    :param bool has_python_call: a subclass sets this to ``True`` to indicate
-                                 that the TTS can be called via Python code
     :param rconf: a runtime configuration
     :type  rconf: :class:`~aeneas.runtimeconfiguration.RuntimeConfiguration`
     :param logger: the logger object
     :type  logger: :class:`~aeneas.logger.Logger`
-    :raises: ValueError: if all the call arguments are ``False``
+    :raises: ValueError: if none of the call methods is available
     """
 
     CLI_PARAMETER_TEXT_PATH = "TEXT_PATH"
@@ -145,26 +139,46 @@ class BaseTTSWrapper(Loggable):
     by the TTS engine they wrap.
     """
 
+    DEFAULT_TTS_PATH = None
+    """
+    The default path for this TTS engine,
+    when called via ``subprocess``,
+    otherwise set it to ``None``.
+    """
+
+    HAS_SUBPROCESS_CALL = False
+    """
+    If ``True``, the TTS wrapper can invoke the TTS engine
+    via ``subprocess``.
+    """
+
+    HAS_C_EXTENSION_CALL = False
+    """
+    If ``True``, the TTS wrapper can invoke the TTS engine
+    via a C extension call.
+    """
+
+    HAS_PYTHON_CALL = False
+    """
+    If ``True``, the TTS wrapper can invoke the TTS engine
+    via a direct Python call.
+    """
+
     TAG = u"BaseTTSWrapper"
 
-    def __init__(
-            self,
-            has_subprocess_call=True,
-            has_c_extension_call=False,
-            has_python_call=False,
-            rconf=None,
-            logger=None
-    ):
-        if (not has_subprocess_call) and (not has_c_extension_call) and (not has_python_call):
+    def __init__(self, rconf=None, logger=None):
+        if not (self.HAS_SUBPROCESS_CALL or self.HAS_C_EXTENSION_CALL or self.HAS_PYTHON_CALL):
             raise ValueError(u"You must implement at least one call method: subprocess, C extension, or Python")
         super(BaseTTSWrapper, self).__init__(rconf=rconf, logger=logger)
-        self.has_subprocess_call = has_subprocess_call
-        self.has_c_extension_call = has_c_extension_call
-        self.has_python_call = has_python_call
+        self.tts_path = self.rconf[RuntimeConfiguration.TTS_PATH]
+        if self.tts_path is None:
+            self.log(u"No tts_path specified in rconf, setting default")
+            self.tts_path = self.DEFAULT_TTS_PATH
+        self.log([u"self.tts_path is %s", self.tts_path])
         self.subprocess_arguments = []
-        self.log([u"Has subprocess call?  %s", self.has_subprocess_call])
-        self.log([u"Has C extension call? %s", self.has_c_extension_call])
-        self.log([u"Has Python call?      %s", self.has_python_call])
+        self.log([u"Has subprocess call?  %s", self.HAS_SUBPROCESS_CALL])
+        self.log([u"Has C extension call? %s", self.HAS_C_EXTENSION_CALL])
+        self.log([u"Has Python call?      %s", self.HAS_PYTHON_CALL])
 
     def _language_to_voice_code(self, language):
         """
@@ -240,13 +254,13 @@ class BaseTTSWrapper(Loggable):
         :param quit_after: stop synthesizing as soon as
                                  reaching this many seconds
         :type quit_after: :class:`~aeneas.timevalue.TimeValue`
-        :param bool backwards: if > 0, synthese from the end of the text file
+        :param bool backwards: if > 0, synthesize from the end of the text file
         :rtype: tuple (anchors, total_time, num_chars)
         :raises: TypeError: if ``text_file`` is ``None`` or
                             one of the text fragments is not a Unicode string
         :raises: ValueError: if ``self.rconf[RuntimeConfiguration.ALLOW_UNLISTED_LANGUAGES]`` is ``False``
                              and a fragment has a language code not supported by the TTS engine, or
-                             if ``text_file`` has no fragments
+                             if ``text_file`` has no fragments or all its fragments are empty
         :raises: OSError: if output file cannot be written to ``output_file_path``
         :raises: RuntimeError: if both the C extension and
                                the pure Python code did not succeed.
@@ -255,6 +269,8 @@ class BaseTTSWrapper(Loggable):
             self.log_exc(u"text_file is None", None, True, TypeError)
         if len(text_file) < 1:
             self.log_exc(u"The text file has no fragments", None, True, ValueError)
+        if text_file.chars == 0:
+            self.log_exc(u"All fragments in the text file are empty", None, True, ValueError)
         if not self.rconf[RuntimeConfiguration.ALLOW_UNLISTED_LANGUAGES]:
             for fragment in text_file.fragments:
                 if fragment.language not in self.LANGUAGE_TO_VOICE_CODE:
@@ -275,7 +291,7 @@ class BaseTTSWrapper(Loggable):
             self.log_exc(u"Cannot write to output file '%s'" % (output_file_path), None, True, OSError)
 
         # first, call Python function _synthesize_multiple_python() if available
-        if self.has_python_call:
+        if self.HAS_PYTHON_CALL:
             self.log(u"Calling TTS engine via Python")
             try:
                 computed, result = self._synthesize_multiple_python(text_file, output_file_path, quit_after, backwards)
@@ -289,8 +305,8 @@ class BaseTTSWrapper(Loggable):
 
         # call _synthesize_multiple_c_extension() or _synthesize_multiple_subprocess()
         self.log(u"Calling TTS engine via C extension or subprocess")
-        c_extension_function = self._synthesize_multiple_c_extension if self.has_c_extension_call else None
-        subprocess_function = self._synthesize_multiple_subprocess if self.has_subprocess_call else None
+        c_extension_function = self._synthesize_multiple_c_extension if self.HAS_C_EXTENSION_CALL else None
+        subprocess_function = self._synthesize_multiple_subprocess if self.HAS_SUBPROCESS_CALL else None
         return gf.run_c_extension_with_fallback(
             self.log,
             "cew",
@@ -306,7 +322,27 @@ class BaseTTSWrapper(Loggable):
 
         :rtype: tuple (result, (anchors, current_time, num_chars))
         """
-        raise NotImplementedError(u"This function must be implemented in concrete subclasses")
+        self.log(u"Synthesizing multiple via a Python call...")
+        ret = self._synthesize_multiple_generic(
+            helper_function=self._synthesize_single_python_helper,
+            text_file=text_file,
+            output_file_path=output_file_path,
+            quit_after=quit_after,
+            backwards=backwards
+        )
+        self.log(u"Synthesizing multiple via a Python call... done")
+        return ret
+
+    def _synthesize_single_python_helper(self, text, voice_code, output_file_path=None):
+        """
+        This is an helper function to synthesize a single text fragment via a Python call.
+
+        If ``output_file_path`` is ``None``,
+        the audio data will not persist to file at the end of the method.
+
+        :rtype: tuple (result, (duration, sample_rate, encoding, data))
+        """
+        raise NotImplementedError(u"This function must be implemented in concrete subclasses supporting Python call")
 
     def _synthesize_multiple_c_extension(self, text_file, output_file_path, quit_after=None, backwards=False):
         """
@@ -314,7 +350,18 @@ class BaseTTSWrapper(Loggable):
 
         :rtype: tuple (result, (anchors, current_time, num_chars))
         """
-        raise NotImplementedError(u"This function must be implemented in concrete subclasses")
+        raise NotImplementedError(u"This function must be implemented in concrete subclasses supporting C extension call")
+
+    def _synthesize_single_c_extension_helper(self, text, voice_code, output_file_path=None):
+        """
+        This is an helper function to synthesize a single text fragment via a Python C extension.
+
+        If ``output_file_path`` is ``None``,
+        the audio data will not persist to file at the end of the method.
+
+        :rtype: tuple (result, (duration, sample_rate, encoding, data))
+        """
+        raise NotImplementedError(u"This function might be implemented in concrete subclasses supporting C extension call")
 
     def _synthesize_multiple_subprocess(self, text_file, output_file_path, quit_after=None, backwards=False):
         """
@@ -322,205 +369,42 @@ class BaseTTSWrapper(Loggable):
 
         :rtype: tuple (result, (anchors, current_time, num_chars))
         """
-        def synthesize_and_clean(text, voice_code):
-            """
-            Synthesize a single fragment via subprocess,
-            and immediately remove the temporary file.
+        self.log(u"Synthesizing multiple via subprocess...")
+        ret = self._synthesize_multiple_generic(
+            helper_function=self._synthesize_single_subprocess_helper,
+            text_file=text_file,
+            output_file_path=output_file_path,
+            quit_after=quit_after,
+            backwards=backwards
+        )
+        self.log(u"Synthesizing multiple via subprocess... done")
+        return ret
 
-            :rtype: tuple (duration, sample_rate, encoding, samples)
-            """
-            self.log(u"Synthesizing text...")
-            handler, tmp_destination = gf.tmp_file(suffix=u".wav", root=self.rconf[RuntimeConfiguration.TMP_PATH])
-            result, data = self._synthesize_single_subprocess(
-                text=(text + u" "),
-                voice_code=voice_code,
-                output_file_path=tmp_destination
-            )
-            self.log([u"Removing temporary file '%s'", tmp_destination])
-            gf.delete_file(handler, tmp_destination)
-            self.log(u"Synthesizing text... done")
-            return data
-
-        self.log(u"Calling TTS engine via subprocess...")
-
-        try:
-            # get sample rate and encoding
-            du_nu, sample_rate, encoding, da_nu = synthesize_and_clean(
-                text=u"Dummy text to get sample_rate",
-                voice_code=self._language_to_voice_code(self.DEFAULT_LANGUAGE)
-            )
-
-            # open output file
-            output_file = AudioFile(rconf=self.rconf, logger=self.logger)
-            output_file.audio_format = encoding
-            output_file.audio_channels = 1
-            output_file.audio_sample_rate = sample_rate
-
-            # create output
-            anchors = []
-            current_time = TimeValue("0.000")
-            num = 0
-            num_chars = 0
-            fragments = text_file.fragments
-            if backwards:
-                fragments = fragments[::-1]
-            for fragment in fragments:
-                # language to voice code
-                voice_code = self._language_to_voice_code(fragment.language)
-                # synthesize and get the duration of the output file
-                self.log([u"Synthesizing fragment %d", num])
-                duration, sr_nu, enc_nu, samples = synthesize_and_clean(
-                    text=fragment.filtered_text,
-                    voice_code=voice_code
-                )
-                # store for later output
-                anchors.append([current_time, fragment.identifier, fragment.text])
-                # increase the character counter
-                num_chars += fragment.characters
-                # concatenate new samples
-                self.log([u"Fragment %d starts at: %.3f", num, current_time])
-                if duration > 0:
-                    self.log([u"Fragment %d duration: %.3f", num, duration])
-                    current_time += duration
-                    output_file.add_samples(samples, reverse=backwards)
-                else:
-                    self.log([u"Fragment %d has zero duration", num])
-                # increment fragment counter
-                num += 1
-                # check if we must stop synthesizing because we have enough audio
-                if (quit_after is not None) and (current_time > quit_after):
-                    self.log([u"Quitting after reached duration %.3f", current_time])
-                    break
-
-            # minimize memory
-            self.log(u"Minimizing memory...")
-            output_file.minimize_memory()
-            self.log(u"Minimizing memory... done")
-
-            # if backwards, we need to reverse the audio samples again
-            if backwards:
-                self.log(u"Reversing audio samples...")
-                output_file.reverse()
-                self.log(u"Reversing audio samples... done")
-
-            # write output file
-            self.log([u"Writing audio file '%s'", output_file_path])
-            output_file.write(file_path=output_file_path)
-        except Exception as exc:
-            self.log_exc(u"An unexpected error occurred while calling TTS engine via subprocess", exc, False, None)
-            return (False, None)
-
-        # return output
-        if backwards:
-            self.log_warn(u"Please note that anchor time values do not make sense since backwards=True")
-        self.log([u"Returning %d time anchors", len(anchors)])
-        self.log([u"Current time %.3f", current_time])
-        self.log([u"Synthesized %d characters", num_chars])
-        self.log(u"Calling TTS engine via subprocess... done")
-        return (True, (anchors, current_time, num_chars))
-
-    def synthesize_single(self, text, language, output_file_path):
+    def _synthesize_single_subprocess_helper(self, text, voice_code, output_file_path=None):
         """
-        Create a mono WAVE audio file containing the synthesized text.
+        This is an helper function to synthesize a single text fragment via ``subprocess``.
 
-        The ``text`` must be a Unicode string encodable with UTF-8.
+        If ``output_file_path`` is ``None``,
+        the audio data will not persist to file at the end of the method.
 
-        Return the duration of the synthesized audio file, in seconds.
-
-        Concrete subclasses can (but they are not required to) implement one
-        of the following private functions:
-
-            1. ``_synthesize_single_python()``
-            2. ``_synthesize_single_c_extension()``
-            3. ``_synthesize_single_subprocess()``
-
-        :param string text: the text to synthesize
-        :param language: the language to use
-        :type  language: :class:`~aeneas.language.Language`
-        :param string output_file_path: the path of the output audio file
-        :rtype: :class:`~aeneas.timevalue.TimeValue`
-        :raises: TypeError: if ``text`` is ``None`` or it is not a Unicode string
-        :raises: ValueError: if ``self.rconf[RuntimeConfiguration.ALLOW_UNLISTED_LANGUAGES]`` is ``False``
-                             and ``language`` is not supported by the TTS engine
-        :raises: OSError: if output file cannot be written to ``output_file_path``
-        :raises: RuntimeError: if both the C extension and
-                               the pure Python code did not succeed.
+        :rtype: tuple (result, (duration, sample_rate, encoding, data))
         """
-        # check that text_file is not None
-        if text is None:
-            self.log_exc(u"text is None", None, True, TypeError)
-
-        # check that text has unicode type
-        if not gf.is_unicode(text):
-            self.log_exc(u"text is not a Unicode string", None, True, TypeError)
-
-        # check that output_file_path can be written
-        if not gf.file_can_be_written(output_file_path):
-            self.log_exc(u"Cannot write to output file '%s'" % (output_file_path), None, True, OSError)
-
-        # check that the requested language is listed in language.py
-        if (language not in self.LANGUAGE_TO_VOICE_CODE) and (not self.rconf[RuntimeConfiguration.ALLOW_UNLISTED_LANGUAGES]):
-            self.log_exc(u"Language '%s' is not supported by the selected TTS engine" % (language), None, True, ValueError)
-
-        self.log([u"Synthesizing text: '%s'", text])
-        self.log([u"Synthesizing language: '%s'", language])
-        self.log([u"Synthesizing to file: '%s'", output_file_path])
-
         # return zero if text is the empty string
         if len(text) == 0:
+            #
+            # NOTE sample_rate, encoding, data do not matter
+            #      if the duration is 0.000 => set them to None
+            #
             self.log(u"len(text) is zero: returning 0.000")
-            return TimeValue("0.000")
+            return (True, (TimeValue("0.000"), None, None, None))
 
-        # language to voice code
-        voice_code = self._language_to_voice_code(language)
-        self.log([u"Using voice code: '%s'", voice_code])
+        # create a temporary output file if needed
+        synt_tmp_file = (output_file_path is None)
+        if synt_tmp_file:
+            self.log(u"Synthesizer helper called with output_file_path=None => creating temporary output file")
+            output_file_handler, output_file_path = gf.tmp_file(suffix=u".wav", root=self.rconf[RuntimeConfiguration.TMP_PATH])
+            self.log([u"Temporary output file path is '%s'", output_file_path])
 
-        # first, call Python function _synthesize_single_python() if available
-        if self.has_python_call:
-            self.log(u"Calling TTS engine via Python")
-            try:
-                result = self._synthesize_single_python(text, voice_code, output_file_path)
-                return result[0]
-            except Exception as exc:
-                self.log_exc(u"An unexpected error occurred while calling _synthesize_single_python", exc, False, None)
-
-        # call _synthesize_single_c_extension() or _synthesize_single_subprocess()
-        self.log(u"Calling TTS engine via C extension or subprocess")
-        c_extension_function = self._synthesize_single_c_extension if self.has_c_extension_call else None
-        subprocess_function = self._synthesize_single_subprocess if self.has_subprocess_call else None
-        result = gf.run_c_extension_with_fallback(
-            self.log,
-            "cew",
-            c_extension_function,
-            subprocess_function,
-            (text, voice_code, output_file_path),
-            rconf=self.rconf
-        )
-        return result[0]
-
-    def _synthesize_single_python(self, text, voice_code, output_file_path):
-        """
-        Synthesize a single text fragment via a Python call.
-
-        :rtype: tuple (result, (duration, sample_rate, encoding, samples))
-        """
-        raise NotImplementedError(u"This function must be implemented in concrete subclasses")
-
-    def _synthesize_single_c_extension(self, text, voice_code, output_file_path):
-        """
-        Synthesize a single text fragment via a Python C extension.
-
-        :rtype: tuple (result, (duration, sample_rate, encoding, samples))
-        """
-        raise NotImplementedError(u"This function must be implemented in concrete subclasses")
-
-    def _synthesize_single_subprocess(self, text, voice_code, output_file_path):
-        """
-        Synthesize a single text fragment via ``subprocess``.
-
-        :rtype: tuple (result, (duration, sample_rate, encoding, samples))
-        """
-        self.log(u"Synthesizing using pure Python...")
         try:
             # if the TTS engine reads text from file,
             # write the text into a temporary file
@@ -607,9 +491,9 @@ class BaseTTSWrapper(Loggable):
             self.log_exc(u"Output file '%s' cannot be read" % (output_file_path), None, True, None)
             return (False, None)
 
-        # return the duration of the output file
         try:
-            # if we know the TTS outputs to PCM16 mono WAVE,
+            # if we know the TTS outputs to PCM16 mono WAVE
+            # with the correct sample rate,
             # we can read samples directly from it,
             # without an intermediate conversion through ffmpeg
             audio_file = AudioFile(
@@ -620,8 +504,8 @@ class BaseTTSWrapper(Loggable):
             )
             audio_file.read_samples_from_file()
             self.log([u"Duration of '%s': %f", output_file_path, audio_file.audio_length])
-            self.log(u"Synthesizing using pure Python... done")
-            return (True, (
+            self.log(u"Synthesizing single via subprocess... done")
+            ret = (True, (
                 audio_file.audio_length,
                 audio_file.audio_sample_rate,
                 audio_file.audio_format,
@@ -629,4 +513,105 @@ class BaseTTSWrapper(Loggable):
             ))
         except (AudioFileUnsupportedFormatError, OSError) as exc:
             self.log_exc(u"An unexpected error occurred while trying to read the sythesized audio file", exc, True, None)
+            ret = (False, None)
+
+        # if the output file was temporary, remove it
+        if synt_tmp_file:
+            self.log([u"Removing temporary output file path '%s'", output_file_path])
+            gf.delete_file(output_file_handler, output_file_path)
+
+        # return the duration of the output file
+        return ret
+
+    def _synthesize_multiple_generic(self, helper_function, text_file, output_file_path, quit_after=None, backwards=False):
+        """
+        Synthesize multiple fragments, generic function.
+
+        The ``helper_function`` is a function that takes parameters
+        ``(text, voice_code, output_file_path)``
+        and returns a tuple
+        ``(result, (audio_length, audio_sample_rate, audio_format, audio_samples))``.
+
+        :rtype: tuple (result, (anchors, current_time, num_chars))
+        """
+        self.log(u"Calling TTS engine using multiple generic function...")
+
+        try:
+            # get sample rate and encoding
+            self.log(u"Determining codec and sample rate with dummy text...")
+            (result, (du_nu, sample_rate, encoding, da_nu)) = helper_function(
+                text=u"Dummy text to get sample_rate",
+                voice_code=self._language_to_voice_code(self.DEFAULT_LANGUAGE),
+                output_file_path=None
+            )
+            self.log(u"Determining codec and sample rate with dummy text... done")
+
+            # open output file
+            output_file = AudioFile(rconf=self.rconf, logger=self.logger)
+            output_file.audio_format = encoding
+            output_file.audio_channels = 1
+            output_file.audio_sample_rate = sample_rate
+
+            # create output
+            anchors = []
+            current_time = TimeValue("0.000")
+            num = 0
+            num_chars = 0
+            fragments = text_file.fragments
+            if backwards:
+                fragments = fragments[::-1]
+            for fragment in fragments:
+                # language to voice code
+                voice_code = self._language_to_voice_code(fragment.language)
+                # synthesize and get the duration of the output file
+                self.log([u"Synthesizing fragment %d", num])
+                (result, (duration, sr_nu, enc_nu, samples)) = helper_function(
+                    text=fragment.filtered_text,
+                    voice_code=voice_code,
+                    output_file_path=None
+                )
+                # store for later output
+                anchors.append([current_time, fragment.identifier, fragment.text])
+                # increase the character counter
+                num_chars += fragment.characters
+                # concatenate new samples
+                self.log([u"Fragment %d starts at: %.3f", num, current_time])
+                if duration > 0:
+                    self.log([u"Fragment %d duration: %.3f", num, duration])
+                    current_time += duration
+                    output_file.add_samples(samples, reverse=backwards)
+                else:
+                    self.log([u"Fragment %d has zero duration", num])
+                # increment fragment counter
+                num += 1
+                # check if we must stop synthesizing because we have enough audio
+                if (quit_after is not None) and (current_time > quit_after):
+                    self.log([u"Quitting after reached duration %.3f", current_time])
+                    break
+
+            # minimize memory
+            self.log(u"Minimizing memory...")
+            output_file.minimize_memory()
+            self.log(u"Minimizing memory... done")
+
+            # if backwards, we need to reverse the audio samples again
+            if backwards:
+                self.log(u"Reversing audio samples...")
+                output_file.reverse()
+                self.log(u"Reversing audio samples... done")
+
+            # write output file
+            self.log([u"Writing audio file '%s'", output_file_path])
+            output_file.write(file_path=output_file_path)
+        except Exception as exc:
+            self.log_exc(u"An unexpected error occurred while calling TTS engine using multiple generic function", exc, False, None)
             return (False, None)
+
+        # return output
+        if backwards:
+            self.log_warn(u"Please note that anchor time values do not make sense since backwards=True")
+        self.log([u"Returning %d time anchors", len(anchors)])
+        self.log([u"Current time %.3f", current_time])
+        self.log([u"Synthesized %d characters", num_chars])
+        self.log(u"Calling TTS engine using multiple generic function... done")
+        return (True, (anchors, current_time, num_chars))

@@ -28,22 +28,6 @@ import aeneas.globalfunctions as gf
 
 class TestCEW(unittest.TestCase):
 
-    def test_cew_synthesize_single(self):
-        handler, output_file_path = gf.tmp_file(suffix=".wav")
-        try:
-            import aeneas.cew.cew
-            sr, begin, end = aeneas.cew.cew.synthesize_single(
-                output_file_path,
-                u"en",                      # NOTE cew requires the actual eSpeak voice code
-                u"Dummy"
-            )
-            self.assertEqual(sr, 22050)
-            self.assertEqual(begin, 0)
-            self.assertGreater(end, 0)
-        except ImportError:
-            pass
-        gf.delete_file(handler, output_file_path)
-
     def test_cew_synthesize_multiple(self):
         handler, output_file_path = gf.tmp_file(suffix=".wav")
         try:

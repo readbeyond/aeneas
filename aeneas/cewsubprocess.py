@@ -68,26 +68,6 @@ class CEWSubprocess(Loggable):
 
     TAG = u"CEWSubprocess"
 
-    def synthesize_single(self, audio_file_path, voice_code, text):
-        """
-        Create a ``wav`` audio file containing the synthesized text.
-
-        The ``text`` must be a unicode string encodable with UTF-8,
-        otherwise ``espeak`` might fail.
-
-        Return the duration of the synthesized audio file, in seconds.
-
-        :param string audio_file_path: the path of the output audio file
-        :param string voice_code: the code of the voice to use
-        :param string text: the text to synthesize
-        :rtype: :class:`~aeneas.timevalue.TimeValue`
-        """
-        u_text = [(voice_code, text)]
-        sr, sf, intervals = self.synthesize_multiple(audio_file_path, 0, 0, u_text)
-        if len(intervals) > 0:
-            return intervals[0][1]
-        return None
-
     def synthesize_multiple(self, audio_file_path, c_quit_after, c_backwards, u_text):
         """
         Synthesize the text contained in the given fragment list

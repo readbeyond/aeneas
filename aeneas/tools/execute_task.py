@@ -45,6 +45,7 @@ from aeneas.timevalue import Decimal
 from aeneas.timevalue import TimeValue
 from aeneas.tools.abstract_cli_program import AbstractCLIProgram
 from aeneas.ttswrappers.espeakttswrapper import ESPEAKTTSWrapper
+from aeneas.ttswrappers.espeakngttswrapper import ESPEAKNGTTSWrapper
 from aeneas.ttswrappers.festivalttswrapper import FESTIVALTTSWrapper
 from aeneas.ttswrappers.nuancettswrapper import NuanceTTSWrapper
 from aeneas.validator import Validator
@@ -132,7 +133,7 @@ class ExecuteTaskCLI(AbstractCLIProgram):
             u"text": gf.relative_path("res/plain.txt", __file__),
             u"config": u"task_language=eng-GBR|is_text_type=plain|os_task_file_format=tsv",
             u"syncmap": "output/sonnet.festival.tsv",
-            u"options": u"-r=\"tts=festival|tts_path=text2wave\"",
+            u"options": u"-r=\"tts=festival\"",
             u"show": False
         },
         u"--example-flatten-12": {
@@ -197,6 +198,15 @@ class ExecuteTaskCLI(AbstractCLIProgram):
             u"syncmap": "output/sonnet.mplain.smil",
             u"options": u"",
             u"show": True
+        },
+        u"--example-multilevel-tts": {
+            u"description": u"input: multilevel plain text (mplain), different TTS engines, output: JSON",
+            u"audio": AUDIO_FILE,
+            u"text": gf.relative_path("res/mplain.txt", __file__),
+            u"config": u"task_language=eng|is_text_type=mplain|os_task_file_format=json",
+            u"syncmap": "output/sonnet.mplain.json",
+            u"options": u"-r=\"tts_l1=festival|tts_l2=festival|tts_l3=espeak\"",
+            u"show": False
         },
         u"--example-munparsed-json": {
             u"description": u"input: multilevel unparsed text (munparsed), output: JSON",
@@ -357,8 +367,9 @@ class ExecuteTaskCLI(AbstractCLIProgram):
 
     VALUES = {
         "espeak": sorted(ESPEAKTTSWrapper.LANGUAGE_TO_VOICE_CODE.keys()),
+        "espeak-ng": sorted(ESPEAKNGTTSWrapper.LANGUAGE_TO_VOICE_CODE.keys()),
         "festival": sorted(FESTIVALTTSWrapper.LANGUAGE_TO_VOICE_CODE.keys()),
-        "nuancettsapi": sorted(NuanceTTSWrapper.LANGUAGE_TO_VOICE_CODE.keys()),
+        "nuance": sorted(NuanceTTSWrapper.LANGUAGE_TO_VOICE_CODE.keys()),
         "task_language": Language.ALLOWED_VALUES,
         "is_text_type": TextFileFormat.ALLOWED_VALUES,
         "is_text_unparsed_id_sort": IDSortingAlgorithm.ALLOWED_VALUES,
@@ -452,10 +463,13 @@ class ExecuteTaskCLI(AbstractCLIProgram):
                         self.rconf[RuntimeConfiguration.TTS_PATH] = self.CTW_SPEECT
                     elif key == u"--example-festival":
                         self.rconf[RuntimeConfiguration.TTS] = "festival"
-                        self.rconf[RuntimeConfiguration.TTS_PATH] = "text2wave"
                     elif key == u"--example-mws":
                         self.rconf[RuntimeConfiguration.MFCC_WINDOW_LENGTH] = "1.500"
                         self.rconf[RuntimeConfiguration.MFCC_WINDOW_SHIFT] = "0.500"
+                    elif key == u"--example-multilevel-tts":
+                        self.rconf[RuntimeConfiguration.TTS_L1] = "festival"
+                        self.rconf[RuntimeConfiguration.TTS_L2] = "festival"
+                        self.rconf[RuntimeConfiguration.TTS_L3] = "espeak"
                     elif key == u"--example-faster-rate":
                         print_faster_rate = True
                     elif key == u"--example-no-zero":

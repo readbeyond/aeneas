@@ -383,13 +383,25 @@ Examples:
 
     python -m aeneas.tools.execute_task --example-json -r="mfcc_window_length=0.150|mfcc_window_shift=0.050"
 
+#. use the eSpeak-ng TTS, via the ``espeak-ng`` executable available on ``$PATH``, instead of eSpeak::
+
+    python -m aeneas.tools.execute_task --example-json -r="tts=espeak-ng"
+
+#. use the eSpeak-ng TTS, via the ``espeak-ng`` executable at a custom location, instead of eSpeak::
+
+    python -m aeneas.tools.execute_task --example-json -r="tts=espeak-ng|tts_path=/path/to/espeak-ng"
+
+#. use the Festival TTS, via the ``text2wave`` executable available on ``$PATH``, instead of eSpeak::
+
+    python -m aeneas.tools.execute_task --example-json -r="tts=festival"
+
+#. use the Festival TTS, via the ``text2wave`` executable at a custom location, instead of eSpeak::
+
+    python -m aeneas.tools.execute_task --example-json -r="tts=festival|tts_path=/path/to/text2wave"
+
 #. use the Nuance TTS API instead of eSpeak::
 
     python -m aeneas.tools.execute_task --example-json -r="tts=nuance|nuance_tts_api_id=YOUR_NUANCE_API_ID|nuance_tts_api_key=YOUR_NUANCE_API_KEY"
-
-#. use the Festival TTS, via the ``text2wave`` executable, instead of eSpeak::
-
-    python -m aeneas.tools.execute_task --example-json -r="tts=festival|tts_path=text2wave"
 
 #. use a custom TTS wrapper located at ``/path/to/your/wrapper.py`` (see the ``aeneas/extra/`` directory for examples)::
 
@@ -417,6 +429,8 @@ Miscellanea
    a rate of more than ``14`` character/s,
    using the :data:`~aeneas.adjustboundaryalgorithm.AdjustBoundaryAlgorithm.RATE` algorithm
 #. ``--example-sd``: detect the audio head/tail, each at most ``10.000`` seconds long
+#. ``--example-multilevel-tts``: use different TTS engines for different levels
+   (``mplain`` multilevel input text)
 
 Processing Jobs
 ~~~~~~~~~~~~~~~

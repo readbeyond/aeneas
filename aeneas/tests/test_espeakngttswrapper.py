@@ -1,4 +1,5 @@
-#!/bin/bash
+#!/usr/bin/env python
+# coding=utf-8
 
 # aeneas is a Python/C library and a set of tools
 # to automagically synchronize audio and text (aka forced alignment)
@@ -20,24 +21,20 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-if [ ! -e cew_driver ]
-then
-    bash 000_compile_driver.sh
-fi
+import unittest
 
-echo "Run 1"
-./cew_driver
-echo ""
+from aeneas.tests.base_ttswrapper import BaseTTSWrapper
+from aeneas.ttswrappers.espeakngttswrapper import ESPEAKNGTTSWrapper
 
-echo "Run 2"
-./cew_driver en "Hello|World|My|Dear|Friend" /tmp/out.wav 0.0 0
-echo ""
 
-echo "Run 3"
-./cew_driver en "Hello|World|My|Dear|Friend" /tmp/out.wav 0.0 1
-echo ""
+class TestESPEAKNGTTSWrapper(BaseTTSWrapper):
 
-echo "Run 4"
-./cew_driver en "Hello|World|My|Dear|Friend" /tmp/out.wav 2.0 1
-echo ""
+    TTS = u"espeak-ng"
+    TTS_PATH = u"/usr/bin/espeak-ng"
+    TTS_CLASS = ESPEAKNGTTSWrapper
+    TTS_LANGUAGE = ESPEAKNGTTSWrapper.ENG
+    TTS_LANGUAGE_VARIATION = ESPEAKNGTTSWrapper.ENG_GBR
 
+
+if __name__ == '__main__':
+    unittest.main()

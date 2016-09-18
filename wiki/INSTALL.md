@@ -22,7 +22,12 @@ in that case, just keep in mind:
   which require extra dependencies.
   These extra tools are not installed by default:
   if you want to install them,
-  use `pip install aeneas[full]` instead of `pip install aeneas`.
+  use `pip install aeneas[full]` instead of `pip install aeneas`;
+* you can disable compiling Python C extensions by setting one or more
+  of the following environment variables:
+  ``AENEAS_WITH_CDTW=False``,
+  ``AENEAS_WITH_CEW=False``, or
+  ``AENEAS_WITH_CMFCC=False``.
 
 Below you can find detailed procedures for each operating system.
 

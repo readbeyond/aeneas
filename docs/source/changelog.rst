@@ -4,7 +4,7 @@ Changelog
 v1.6.0 (2016-09-??)
 -------------------
 
-#. Fixed bug #102 by checking that the audio file produced by the TTS engine is mono WAVE and has correct sample rate (slightly slower but safe)
+#. Fixed bug #102 by checking that the audio file produced by the TTS engine is mono WAVE and has correct sample rate: slightly slower but safe
 #. Created ``aeneas.ttswrappers`` subpackage
 #. Renamed ``aeneas.ttswrapper`` to ``aeneas.ttswrappers.basettswrapper``, and ``TTSWrapper`` to ``BaseTTSWrapper``
 #. Renamed ``aeneas.espeakwrapper`` to ``aeneas.ttswrappers.espeakttswrapper``, and ``ESPEAKWrapper`` to ``ESPEAKTTSWrapper``
@@ -12,15 +12,22 @@ v1.6.0 (2016-09-??)
 #. Renamed ``aeneas.nuancettsapiwrapper`` to ``aeneas.ttswrappers.nuancettswrapper``, and ``NuanceTTSAPIWrapper`` to ``NuanceTTSWrapper``
 #. Modified the value for using the Nuance TTS API from ``nuancettsapi`` to ``nuance`` in ``aeneas.synthesizer.SYNTHESIZER``
 #. Now each TTS wrapper must declare the format (codec, channels, sample rate) of its output
-#. Updated tests and documentation accordingly
+#. Now each TTS wrapper can declare the default path for the TTS engine executable, using ``DEFAULT_TTS_PATH``
+#. Changed the constructor of ``BaseTTSWrapper`` and derived classes, moving call method flags from constructor parameters to class fields
+#. Added check when synthesizing multiple: at least one fragment should be not empty
+#. Simplified writing custom TTS wrappers by providing the "mutiple generic" method in ``BaseTTSWrapper``
+#. Removed ``synthesize_single()`` function in all TTS wrappers and in ``cew``
+#. When working on multilevel sync, user can specify a different TTS for each level
+#. Added wrapper for eSpeak-ng (subprocess only)
+#. Unified unit tests for eSpeak, eSpeak-ng, and Festival
 #. Moved package metadata from ``setup.py`` into ``setupmeta.py``
 #. Added AGPL header to all source files
-#. Removed metadata from all source files, except those directly facing the user
+#. Removed metadata (e.g., version) from all source files, except those directly facing the user
 #. PEP 8 compliance for all Python files (except for E501 "line too long")
 #. Added ``wiki/CONTRIBUTING.md`` explaining the contribution rules (branch policy, code style, etc.)
 #. Using Sphinx theme from readthedocs.org if available
-#. Updated documentation
 #. Updated dependencies: BeautifulSoup4>=4.5.1 and lxml>=3.6.4 (see discussion in #93)
+#. Updated documentation
 #. Several minor code improvements
 
 v1.5.1 (2016-07-25)

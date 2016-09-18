@@ -171,6 +171,8 @@ TRUE_VALUES = [
 # check whether the user set additional parameters using environment variables
 # NOTE by the book this should be done by subclassing the setuptools Distribution object
 #      but for now using environment variables is good enough
+WITHOUT_CDTW = os.getenv("AENEAS_WITH_CDTW", "True") not in TRUE_VALUES
+WITHOUT_CMFCC = os.getenv("AENEAS_WITH_CMFCC", "True") not in TRUE_VALUES
 WITHOUT_CEW = os.getenv("AENEAS_WITH_CEW", "True") not in TRUE_VALUES
 FORCE_CEW = os.getenv("AENEAS_FORCE_CEW", "False") in TRUE_VALUES
 
@@ -247,48 +249,67 @@ EXTENSION_CMFCC = Extension(
 # )
 
 # append or ignore cew extension as requested
-EXTENSIONS = [
-    EXTENSION_CDTW,
-    EXTENSION_CMFCC,
-    # EXTENSION_CWAVE
-]
+EXTENSIONS = []
+
+if WITHOUT_CDTW:
+    print("[INFO] ************************************************************")
+    print("[INFO] The user specified AENEAS_WITH_CDTW=False: not building cdtw")
+    print("[INFO] ************************************************************")
+    print("[INFO] ")
+else:
+    EXTENSIONS.append(EXTENSION_CDTW)
+
+if WITHOUT_CMFCC:
+    print("[INFO] **************************************************************")
+    print("[INFO] The user specified AENEAS_WITH_CMFCC=False: not building cmfcc")
+    print("[INFO] **************************************************************")
+    print("[INFO] ")
+else:
+    EXTENSIONS.append(EXTENSION_CMFCC)
+
 if WITHOUT_CEW:
     print("[INFO] **********************************************************")
     print("[INFO] The user specified AENEAS_WITH_CEW=False: not building cew")
     print("[INFO] **********************************************************")
+    print("[INFO] ")
 elif FORCE_CEW:
-    print("[INFO] *******************************************************************************************")
-    print("[INFO] The user specified AENEAS_FORCE_CEW=True: attempting to build cew without performing checks")
-    print("[INFO] *******************************************************************************************")
+    print("[INFO] *************************************************************************************")
+    print("[INFO] The user specified AENEAS_FORCE_CEW=True: attempting to build cew without checking OS")
+    print("[INFO] *************************************************************************************")
+    print("[INFO] ")
     EXTENSIONS.append(EXTENSION_CEW)
 else:
     if IS_LINUX:
         EXTENSIONS.append(EXTENSION_CEW)
     elif IS_OSX:
-        print("[INFO] *************************************************************************************")
-        print("[INFO] Compiling C extension cew on Mac OS X is experimental.")
+        print("[INFO] *********************************************************************************")
+        print("[INFO] Compiling the C extension cew on Mac OS X is experimental.")
         print("[INFO] ")
         print("[INFO] Before installing aeneas with cew, you must run:")
         print("[INFO] $ brew update && brew upgrade --cleanup espeak")
         print("[INFO] to run the new brew formula installing libespeak, the library version of espeak.")
         print("[INFO] ")
-        print("[INFO] If you experience problems, disable cew compilation specifying AENEAS_WITH_CEW=False.")
+        print("[INFO] If you experience problems, disable cew compilation by specifying")
+        print("[INFO] the environment variable AENEAS_WITH_CEW=False .")
         print("[INFO] Please see the aeneas installation documentation for details.")
-        print("[INFO] *************************************************************************************")
+        print("[INFO] ********************************************************************************")
+        print("[INFO] ")
         EXTENSIONS.append(EXTENSION_CEW)
     elif IS_WINDOWS:
-        print("[INFO] *************************************************************************************")
-        print("[INFO] Compiling C extension cew on Windows is experimental.")
+        print("[INFO] *****************************************************************")
+        print("[INFO] Compiling the C extension cew on Windows is experimental.")
         print("[INFO] ")
-        print("[INFO] If you experience problems, disable cew compilation specifying AENEAS_WITH_CEW=False.")
+        print("[INFO] If you experience problems, disable cew compilation by specifying")
+        print("[INFO] the environment variable AENEAS_WITH_CEW=False .")
         print("[INFO] Please see the aeneas installation documentation for details.")
-        print("[INFO] *************************************************************************************")
+        print("[INFO] *****************************************************************")
+        print("[INFO] ")
         if prepare_cew_for_windows():
             EXTENSIONS.append(EXTENSION_CEW)
         else:
-            print("[WARN] Unable to complete C extension cew setup, not compiling it.")
+            print("[WARN] Unable to complete the setup for C extension cew, not building it.")
     else:
-        print("[INFO] Extension cew is not available for your OS")
+        print("[INFO] The C extension cew is not available for your OS.")
 
 # now we are ready to call setup()
 setup(

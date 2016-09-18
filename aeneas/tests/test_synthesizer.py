@@ -50,9 +50,9 @@ class TestSynthesizer(unittest.TestCase):
             self.assertEqual(len(result[0]), expected)
             if expected2 is not None:
                 self.assertAlmostEqual(result[1], expected2, places=0)
-        for p1 in [True, False]:
-            for p2 in [True, False]:
-                inner(p1, p2)
+        for c_ext in [True, False]:
+            for cew_subprocess in [True, False]:
+                inner(c_ext, cew_subprocess)
 
     def test_synthesize_none(self):
         synth = Synthesizer()

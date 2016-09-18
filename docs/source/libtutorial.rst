@@ -118,8 +118,8 @@ Dependencies
 ------------
 
 * ``numpy`` (v1.9 or later)
-* ``lxml`` (v3.6.0)
-* ``BeautifulSoup`` (v4.4.1)
+* ``lxml`` (v3.6.4 or later)
+* ``BeautifulSoup`` (v4.5.1 or later)
 
 Only ``numpy`` is actually needed, as it is heavily used for the alignment computation.
 
@@ -132,7 +132,7 @@ module-wise where they are used.
 Depending on what ``aeneas`` classes you want to use,
 you might need to install the following optional dependencies:
 
-* ``requests`` (for using :class:`~aeneas.nuancettsapiwrapper.NuanceTTSAPIWrapper`)
+* ``requests`` (for using :class:`~aeneas.ttswrappers.nuancettswrapper.NuanceTTSWrapper`)
 * ``Pillow`` (for using :mod:`~aeneas.plotter`)
 * ``youtube-dl`` and ``pafy`` (for using :class:`~aeneas.downloader.Downloader`)
 
@@ -439,6 +439,7 @@ in the synthesis step of the alignment procedure.
 
     basettswrapper
     espeakttswrapper
+    espeakngttswrapper
     festivalttswrapper
     nuancettswrapper
 

@@ -57,8 +57,6 @@ class CustomTTSWrapper(BaseTTSWrapper):
     :type  logger: :class:`~aeneas.logger.Logger`
     """
 
-    TAG = u"CustomTTSWrapper"
-
     #
     # NOTE create aliases for the language codes
     #      supported by this TTS: in this example,
@@ -95,30 +93,28 @@ class CustomTTSWrapper(BaseTTSWrapper):
     #
     OUTPUT_AUDIO_FORMAT = ("pcm_s16le", 1, 22050)
 
+    #
+    # NOTE calling eSpeak via subprocess
+    #
+    HAS_SUBPROCESS_CALL = True
+
+    TAG = u"CustomTTSWrapperESPEAK"
+
     def __init__(self, rconf=None, logger=None):
         #
         # NOTE custom TTS wrappers must be implemented
         #      in a class named CustomTTSWrapper
         #      otherwise the Synthesizer will not work
         #
-        # NOTE this custom TTS wrapper implements
-        #      only the subprocess call method
-        #      hence we set the following init parameters
-        #
-        super(CustomTTSWrapper, self).__init__(
-            has_subprocess_call=True,
-            has_c_extension_call=False,
-            has_python_call=False,
-            rconf=rconf,
-            logger=logger
-        )
+        super(CustomTTSWrapper, self).__init__(rconf=rconf, logger=logger)
         #
         # NOTE this example is minimal, as we implement only
         #      the subprocess call method
         #      hence, all we need to do is to specify
         #      how to map the command line arguments of the TTS engine
         #
-        # NOTE if our TTS engine was callable via Python or a Python C extension,
+        # NOTE if our TTS engine was callable via Python
+        #      or a Python C extension,
         #      we would have needed to write a _synthesize_multiple_python()
         #      or a _synthesize_multiple_c_extension() function,
         #      with the same I/O interface of
@@ -127,7 +123,7 @@ class CustomTTSWrapper(BaseTTSWrapper):
         # NOTE on a command line, you will use eSpeak
         #      to synthesize some text to a WAVE file as follows:
         #
-        #      $ echo "text to be synthesized" | espeak -v en -w output_file.wav
+        #      $ echo "text to synthesize" | espeak -v en -w output_file.wav
         #
         #      Observe that text is read from stdin, while the audio data
         #      is written to a file specified by a given output path,
@@ -136,7 +132,7 @@ class CustomTTSWrapper(BaseTTSWrapper):
         #      introduced by the "-v" switch.
         #
         self.set_subprocess_arguments([
-            u"/usr/bin/espeak",                     # path of espeak executable; you can use just "espeak" if it is in your PATH
+            u"/usr/bin/espeak",                     # path of espeak executable or just "espeak" if it is in your PATH
             u"-v",                                  # append "-v"
             self.CLI_PARAMETER_VOICE_CODE_STRING,   # it will be replaced by the actual voice code
             u"-w",                                  # append "-w"
@@ -145,15 +141,21 @@ class CustomTTSWrapper(BaseTTSWrapper):
         ])
         #
         # NOTE if your TTS engine only reads text from a file
-        #      you can use the BaseTTSWrapper.CLI_PARAMETER_TEXT_PATH placeholder.
+        #      you can use the
+        #      BaseTTSWrapper.CLI_PARAMETER_TEXT_PATH placeholder.
         #
         # NOTE if your TTS engine only writes audio data to stdout
-        #      you can use the BaseTTSWrapper.CLI_PARAMETER_WAVE_STDOUT placeholder.
+        #      you can use the
+        #      BaseTTSWrapper.CLI_PARAMETER_WAVE_STDOUT placeholder.
         #
         # NOTE if your TTS engine needs a more complex parameter
-        #      for selecting the voice, e.g. Festival needs '-eval "(language_italian)"',
+        #      for selecting the voice, e.g. Festival needs
+        #      '-eval "(language_italian)"',
         #      you can implement a _voice_code_to_subprocess() function
-        #      and use the BaseTTSWrapper.CLI_PARAMETER_VOICE_CODE_FUNCTION placeholder
-        #      instead of the BaseTTSWrapper.CLI_PARAMETER_VOICE_CODE_STRING placeholder.
-        #      See the aeneas/ttswrappers/festivalttswrapper.py file for an example.
+        #      and use the
+        #      BaseTTSWrapper.CLI_PARAMETER_VOICE_CODE_FUNCTION placeholder
+        #      instead of the
+        #      BaseTTSWrapper.CLI_PARAMETER_VOICE_CODE_STRING placeholder.
+        #      See the aeneas/ttswrappers/festivalttswrapper.py file
+        #      for an example.
         #

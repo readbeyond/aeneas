@@ -37,6 +37,7 @@ from aeneas.logger import Loggable
 from aeneas.runtimeconfiguration import RuntimeConfiguration
 from aeneas.textfile import TextFile
 from aeneas.ttswrappers.espeakttswrapper import ESPEAKTTSWrapper
+from aeneas.ttswrappers.espeakngttswrapper import ESPEAKNGTTSWrapper
 from aeneas.ttswrappers.festivalttswrapper import FESTIVALTTSWrapper
 from aeneas.ttswrappers.nuancettswrapper import NuanceTTSWrapper
 import aeneas.globalfunctions as gf
@@ -63,13 +64,16 @@ class Synthesizer(Loggable):
     ESPEAK = "espeak"
     """ Select eSpeak wrapper """
 
+    ESPEAKNG = "espeak-ng"
+    """ Select eSpeak-ng wrapper """
+
     FESTIVAL = "festival"
     """ Select Festival wrapper """
 
     NUANCE = "nuance"
     """ Select Nuance TTS API wrapper """
 
-    ALLOWED_VALUES = [CUSTOM, ESPEAK, FESTIVAL, NUANCE]
+    ALLOWED_VALUES = [CUSTOM, ESPEAK, ESPEAKNG, FESTIVAL, NUANCE]
     """ List of all the allowed values """
 
     TAG = u"Synthesizer"
@@ -84,9 +88,12 @@ class Synthesizer(Loggable):
         Select the TTS engine to be used by looking at the rconf object.
         """
         self.log(u"Selecting TTS engine...")
-        if self.rconf[RuntimeConfiguration.TTS] == self.CUSTOM:
+        requested_tts_engine = self.rconf[RuntimeConfiguration.TTS]
+        if requested_tts_engine == self.CUSTOM:
             self.log(u"TTS engine: custom")
             tts_path = self.rconf[RuntimeConfiguration.TTS_PATH]
+            if tts_path is None:
+                self.log_exc(u"You must specify a value for tts_path", None, True, ValueError)
             if not gf.file_can_be_read(tts_path):
                 self.log_exc(u"Cannot read tts_path", None, True, OSError)
             try:
@@ -102,16 +109,19 @@ class Synthesizer(Loggable):
                 self.log(u"Creating CustomTTSWrapper instance... done")
             except Exception as exc:
                 self.log_exc(u"Unable to load custom TTS wrapper", exc, True, OSError)
-        elif self.rconf[RuntimeConfiguration.TTS] == self.FESTIVAL:
+        elif requested_tts_engine == self.FESTIVAL:
             self.log(u"TTS engine: Festival")
             self.tts_engine = FESTIVALTTSWrapper(rconf=self.rconf, logger=self.logger)
-        elif self.rconf[RuntimeConfiguration.TTS] == self.NUANCE:
+        elif requested_tts_engine == self.NUANCE:
             try:
                 import requests
             except ImportError as exc:
                 self.log_exc(u"Unable to import requests for Nuance TTS API wrapper", exc, True, ImportError)
             self.log(u"TTS engine: Nuance TTS API")
             self.tts_engine = NuanceTTSWrapper(rconf=self.rconf, logger=self.logger)
+        elif requested_tts_engine == self.ESPEAKNG:
+            self.log(u"TTS engine: eSpeak-ng")
+            self.tts_engine = ESPEAKNGTTSWrapper(rconf=self.rconf, logger=self.logger)
         else:
             self.log(u"TTS engine: eSpeak")
             self.tts_engine = ESPEAKTTSWrapper(rconf=self.rconf, logger=self.logger)

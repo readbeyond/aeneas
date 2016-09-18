@@ -450,6 +450,14 @@ class RuntimeConfiguration(Configuration):
     which will use the built-in eSpeak TTS wrapper.
 
     Specify the value
+    :data:`~aeneas.synthesizer.Synthesizer.ESPEAKNG` (``espeak-ng``)
+    to use the eSpeak-ng TTS wrapper;
+    you might need to provide the ``espeak-ng`` or ``/full/path/to/your/espeak-ng`` value
+    to the
+    :data:`~aeneas.runtimeconfiguration.RuntimeConfiguration.TTS_PATH`
+    parameter.
+
+    Specify the value
     :data:`~aeneas.synthesizer.Synthesizer.FESTIVAL` (``festival``)
     to use the built-in Festival TTS wrapper;
     you might need to provide the ``text2wave`` or ``/full/path/to/your/text2wave`` value
@@ -458,7 +466,7 @@ class RuntimeConfiguration(Configuration):
     parameter.
 
     Specify the value
-    :data:`~aeneas.synthesizer.Synthesizer.NUANCETTSAPI` (``nuancettsapi``)
+    :data:`~aeneas.synthesizer.Synthesizer.NUANCE` (``nuance``)
     to use the built-in Nuance TTS API wrapper;
     you will need to provide your Nuance Developer API ID and API Key using the
     :data:`~aeneas.runtimeconfiguration.RuntimeConfiguration.NUANCE_TTS_API_ID`
@@ -485,10 +493,12 @@ class RuntimeConfiguration(Configuration):
     (see the ``aeneas/extra`` directory for examples).
 
     You might need to use a full path,
-    like ``/path/to/your/tts`` or
+    like ``/path/to/your/ttsengine`` or
     ``/path/to/your/ttswrapper.py``.
 
-    Default: ``espeak``.
+    Default: ``None``, implying to use the default path
+    defined by each TTS wrapper, if it calls the TTS engine
+    via ``subprocess`` (otherwise it does not matter).
 
     .. versionadded:: 1.5.0
     """
@@ -500,6 +510,90 @@ class RuntimeConfiguration(Configuration):
     associated with the language of your text.
 
     .. versionadded:: 1.5.0
+    """
+
+    TTS_L1 = "tts_l1"
+    """
+    The TTS engine to use for synthesizing text
+    at level 1 (paragraph).
+
+    See also :data:`~aeneas.runtimeconfiguration.RuntimeConfiguration.TTS`.
+
+    Default: ``espeak``.
+
+    .. versionadded:: 1.6.0
+    """
+
+    TTS_PATH_L1 = "tts_path_l1"
+    """
+    Path to the TTS engine executable to use for synthesizing text
+    at level 1 (paragraph).
+
+    See also :data:`~aeneas.runtimeconfiguration.RuntimeConfiguration.TTS_PATH`.
+
+    Default: ``None``.
+
+    .. versionadded:: 1.6.0
+    """
+
+    TTS_L2 = "tts_l2"
+    """
+    The TTS engine to use for synthesizing text
+    at level 2 (sentence).
+
+    See also :data:`~aeneas.runtimeconfiguration.RuntimeConfiguration.TTS`.
+
+    Default: ``espeak``.
+
+    .. versionadded:: 1.6.0
+    """
+
+    TTS_PATH_L2 = "tts_path_l2"
+    """
+    Path to the TTS engine executable to use for synthesizing text
+    at level 2 (sentence).
+
+    See also :data:`~aeneas.runtimeconfiguration.RuntimeConfiguration.TTS_PATH`.
+
+    Default: ``None``.
+
+    .. versionadded:: 1.6.0
+    """
+
+    TTS_L3 = "tts_l3"
+    """
+    The TTS engine to use for synthesizing text
+    at level 3 (word).
+
+    See also :data:`~aeneas.runtimeconfiguration.RuntimeConfiguration.TTS`.
+
+    Default: ``espeak``.
+
+    .. versionadded:: 1.6.0
+    """
+
+    TTS_PATH_L3 = "tts_path_l3"
+    """
+    Path to the TTS engine executable to use for synthesizing text
+    at level 3 (word).
+
+    See also :data:`~aeneas.runtimeconfiguration.RuntimeConfiguration.TTS_PATH`.
+
+    Default: ``None``.
+
+    .. versionadded:: 1.6.0
+    """
+
+    TTS_GRANULARITY_MAP = {
+        1: (TTS_L1, TTS_PATH_L1),
+        2: (TTS_L2, TTS_PATH_L2),
+        3: (TTS_L3, TTS_PATH_L3),
+    }
+    """
+    Map level numbers to ``TTS_*``
+    and ``TTS_PATH_*`` keys.
+
+    .. versionadded:: 1.6.0
     """
 
     VAD_EXTEND_SPEECH_INTERVAL_AFTER = "vad_extend_speech_after"
@@ -596,8 +690,15 @@ class RuntimeConfiguration(Configuration):
         (TMP_PATH, (None, None, [])),
 
         (TTS, ("espeak", None, [])),
-        (TTS_PATH, ("espeak", None, [])),               # or a full path like "/usr/bin/espeak"
+        (TTS_PATH, (None, None, [])),                   # None (= default) or "espeak" or "/usr/bin/espeak"
         (TTS_VOICE_CODE, (None, None, [])),
+
+        (TTS_L1, ("espeak", None, [])),
+        (TTS_PATH_L1, (None, None, [])),                # None (= default) or "espeak" or "/usr/bin/espeak"
+        (TTS_L2, ("espeak", None, [])),
+        (TTS_PATH_L2, (None, None, [])),                # None (= default) or "espeak" or "/usr/bin/espeak"
+        (TTS_L3, ("espeak", None, [])),
+        (TTS_PATH_L3, (None, None, [])),                # None (= default) or "espeak" or "/usr/bin/espeak"
 
         (VAD_EXTEND_SPEECH_INTERVAL_AFTER, ("0.000", TimeValue, [])),
         (VAD_EXTEND_SPEECH_INTERVAL_BEFORE, ("0.000", TimeValue, [])),
@@ -656,6 +757,28 @@ class RuntimeConfiguration(Configuration):
         """
         return self[self.MFCC_WINDOW_LENGTH]
 
+    @property
+    def tts(self):
+        """
+        Return the value of the
+        :data:`~aeneas.runtimeconfiguration.RuntimeConfiguration.TTS`
+        key stored in this configuration object.
+
+        :rtype: str
+        """
+        return self[self.TTS]
+
+    @property
+    def tts_path(self):
+        """
+        Return the value of the
+        :data:`~aeneas.runtimeconfiguration.RuntimeConfiguration.TTS_PATH`
+        key stored in this configuration object.
+
+        :rtype: str
+        """
+        return self[self.TTS_PATH]
+
     def set_granularity(self, level):
         """
         Set the values for
@@ -676,3 +799,24 @@ class RuntimeConfiguration(Configuration):
             length_key, shift_key = self.MFCC_GRANULARITY_MAP[level]
             self[self.MFCC_WINDOW_LENGTH] = self[length_key]
             self[self.MFCC_WINDOW_SHIFT] = self[shift_key]
+
+    def set_tts(self, level):
+        """
+        Set the values for
+        :data:`~aeneas.runtimeconfiguration.RuntimeConfiguration.TTS`
+        and
+        :data:`~aeneas.runtimeconfiguration.RuntimeConfiguration.TTS_PATH`
+        matching the given granularity level.
+
+        Currently supported levels:
+
+        * ``1`` (paragraph)
+        * ``2`` (sentence)
+        * ``3`` (word)
+
+        :param int level: the desired granularity level
+        """
+        if level in self.TTS_GRANULARITY_MAP.keys():
+            tts_key, tts_path_key = self.TTS_GRANULARITY_MAP[level]
+            self[self.TTS] = self[tts_key]
+            self[self.TTS_PATH] = self[tts_path_key]
