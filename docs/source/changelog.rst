@@ -18,9 +18,10 @@ v1.6.0 (2016-09-??)
 #. Simplified writing custom TTS wrappers by providing the "mutiple generic" method in ``BaseTTSWrapper``
 #. Removed ``synthesize_single()`` function in all TTS wrappers and in ``cew``
 #. When working on multilevel sync, user can specify a different TTS for each level
-#. Added an optional TTS caching mechanism to reduce subprocess/API calls to the TTS engine
+#. Added an optional TTS caching mechanism to reduce subprocess/API calls to the TTS engine (closes #87)
 #. Added wrapper for eSpeak-ng (subprocess only)
 #. Unified unit tests for eSpeak, eSpeak-ng, and Festival
+#. Python C extension compilation can be disabled in setup.py via env vars
 #. Moved package metadata from ``setup.py`` into ``setupmeta.py``
 #. Added AGPL header to all source files
 #. Removed metadata (e.g., version) from all source files, except those directly facing the user
