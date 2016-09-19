@@ -282,6 +282,36 @@ class TestAudioFileMFCC(unittest.TestCase):
         self.assertEqual(audiofile.middle_length, 500)
         self.assertEqual(audiofile.tail_length, 831)
 
+    def test_set_head_bad1(self):
+        audiofile = self.load(self.AUDIO_FILE_WAVE)
+        with self.assertRaises(TypeError):
+            audiofile.set_head_middle_tail(head_length=0.000)
+
+    def test_set_head_bad2(self):
+        audiofile = self.load(self.AUDIO_FILE_WAVE)
+        with self.assertRaises(ValueError):
+            audiofile.set_head_middle_tail(head_length=TimeValue("1000.000"))
+
+    def test_set_middle_bad1(self):
+        audiofile = self.load(self.AUDIO_FILE_WAVE)
+        with self.assertRaises(TypeError):
+            audiofile.set_head_middle_tail(middle_length=0.000)
+
+    def test_set_middle_bad2(self):
+        audiofile = self.load(self.AUDIO_FILE_WAVE)
+        with self.assertRaises(ValueError):
+            audiofile.set_head_middle_tail(middle_length=TimeValue("1000.000"))
+
+    def test_set_tail_bad1(self):
+        audiofile = self.load(self.AUDIO_FILE_WAVE)
+        with self.assertRaises(TypeError):
+            audiofile.set_head_middle_tail(tail_length=0.000)
+
+    def test_set_tail_bad2(self):
+        audiofile = self.load(self.AUDIO_FILE_WAVE)
+        with self.assertRaises(ValueError):
+            audiofile.set_head_middle_tail(tail_length=TimeValue("1000.000"))
+
     def test_inside_nonspeech(self):
         audiofile = self.load(self.AUDIO_FILE_WAVE)
         audiofile.run_vad()

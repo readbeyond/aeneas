@@ -325,6 +325,15 @@ class ExecuteTaskCLI(AbstractCLIProgram):
             u"options": u"",
             u"show": True
         },
+        u"--example-words-festival-cache": {
+            u"description": u"input: single word granularity plain text, output: AUD, tts engine: Festival, TTS cache on",
+            u"audio": AUDIO_FILE,
+            u"text": gf.relative_path("res/words.txt", __file__),
+            u"config": u"task_language=eng|is_text_type=plain|os_task_file_format=aud",
+            u"syncmap": "output/sonnet.words.aud",
+            u"options": u"-r=\"tts=festival|tts_cache=True\"",
+            u"show": False
+        },
         u"--example-youtube": {
             u"description": u"input: audio from YouTube, output: TXT",
             u"audio": "https://www.youtube.com/watch?v=rU4a7AA8wM0",
@@ -479,6 +488,9 @@ class ExecuteTaskCLI(AbstractCLIProgram):
                         self.rconf[RuntimeConfiguration.TTS_L1] = "festival"
                         self.rconf[RuntimeConfiguration.TTS_L2] = "festival"
                         self.rconf[RuntimeConfiguration.TTS_L3] = "espeak"
+                    elif key == u"--example-words-festival-cache":
+                        self.rconf[RuntimeConfiguration.TTS] = "festival"
+                        self.rconf[RuntimeConfiguration.TTS_CACHE] = True
                     elif key == u"--example-faster-rate":
                         print_faster_rate = True
                     elif key == u"--example-no-zero":
