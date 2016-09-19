@@ -24,6 +24,8 @@
 """
 This module contains the following classes:
 
+* :class:`~aeneas.ttswrappers.basettswrapper.TTSCache`,
+  a TTS cache;
 * :class:`~aeneas.ttswrappers.basettswrapper.BaseTTSWrapper`,
   an abstract wrapper for a TTS engine.
 """
@@ -39,6 +41,100 @@ from aeneas.logger import Loggable
 from aeneas.runtimeconfiguration import RuntimeConfiguration
 from aeneas.timevalue import TimeValue
 import aeneas.globalfunctions as gf
+
+
+class TTSCache(Loggable):
+    """
+    A TTS cache, that is,
+    a dictionary whose keys are pairs
+    ``(fragment_language, fragment_text)``
+    and whose values are pairs
+    ``(file_handler, file_path)``.
+
+    An item in the cache means that the text of the key
+    has been synthesized to the file
+    located at the path of the corresponding value.
+
+    Note that it is not enough to store
+    the string of the text as the key,
+    since the same text might be pronounced in a different language.
+
+    Also note that the values also store the file handler,
+    since we might want to close it explicitly
+    before removing the file from disk.
+
+    :param rconf: a runtime configuration
+    :type  rconf: :class:`~aeneas.runtimeconfiguration.RuntimeConfiguration`
+    :param logger: the logger object
+    :type  logger: :class:`~aeneas.logger.Logger`
+    """
+
+    TAG = u"TTSCache"
+
+    def __init__(self, rconf=None, logger=None):
+        super(TTSCache, self).__init__(rconf=rconf, logger=logger)
+        self._initialize_cache()
+
+    def _initialize_cache(self):
+        self.cache = dict()
+        self.log(u"Cache initialized")
+
+    def __len__(self):
+        return len(self.cache)
+
+    def keys(self):
+        """
+        Return the sorted list of keys currently in the cache.
+
+        :rtype: list of tuples ``(language, text)``
+        """
+        return sorted(list(self.cache.keys()))
+
+    def is_cached(self, fragment_info):
+        """
+        Return ``True`` if the given ``(language, text)`` key
+        is present in the cache, or ``False`` otherwise.
+
+        :rtype: bool
+        """
+        return fragment_info in self.cache
+
+    def add(self, fragment_info, file_info):
+        """
+        Add the given ``(key, value)`` pair to the cache.
+
+        :param fragment_info: the text key
+        :type  fragment_info: tuple of str ``(language, text)``
+        :param file_info: the path value
+        :type  file_info: tuple ``(handler, path)``
+        :raises: ValueError if the key is already present in the cache
+        """
+        if self.is_cached(fragment_info):
+            raise ValueError(u"Attempt to add text already cached")
+        self.cache[fragment_info] = file_info
+
+    def get(self, fragment_info):
+        """
+        Get the value associated with the given key.
+
+        :param fragment_info: the text key
+        :type  fragment_info: tuple of str ``(language, text)``
+        :raises: KeyError if the key is not present in the cache
+        """
+        if not self.is_cached(fragment_info):
+            raise KeyError(u"Attempt to get text not cached")
+        return self.cache[fragment_info]
+
+    def clear(self):
+        """
+        Clear the cache and remove all the files from disk.
+        """
+        self.log(u"Clearing cache...")
+        for file_handler, file_info in self.cache.values():
+            self.log([u"  Removing file '%s'", file_info])
+            gf.delete_file(file_handler, file_info)
+        self._initialize_cache()
+        self.log(u"Clearing cache... done")
 
 
 class BaseTTSWrapper(Loggable):
@@ -72,7 +168,7 @@ class BaseTTSWrapper(Loggable):
     :type  rconf: :class:`~aeneas.runtimeconfiguration.RuntimeConfiguration`
     :param logger: the logger object
     :type  logger: :class:`~aeneas.logger.Logger`
-    :raises: ValueError: if none of the call methods is available
+    :raises: NotImplementedError: if none of the call methods is available
     """
 
     CLI_PARAMETER_TEXT_PATH = "TEXT_PATH"
@@ -168,17 +264,20 @@ class BaseTTSWrapper(Loggable):
 
     def __init__(self, rconf=None, logger=None):
         if not (self.HAS_SUBPROCESS_CALL or self.HAS_C_EXTENSION_CALL or self.HAS_PYTHON_CALL):
-            raise ValueError(u"You must implement at least one call method: subprocess, C extension, or Python")
+            raise NotImplementedError(u"You must implement at least one call method: subprocess, C extension, or Python")
         super(BaseTTSWrapper, self).__init__(rconf=rconf, logger=logger)
+        self.subprocess_arguments = []
         self.tts_path = self.rconf[RuntimeConfiguration.TTS_PATH]
         if self.tts_path is None:
-            self.log(u"No tts_path specified in rconf, setting default")
+            self.log(u"No tts_path specified in rconf, setting default TTS path")
             self.tts_path = self.DEFAULT_TTS_PATH
-        self.log([u"self.tts_path is %s", self.tts_path])
-        self.subprocess_arguments = []
-        self.log([u"Has subprocess call?  %s", self.HAS_SUBPROCESS_CALL])
-        self.log([u"Has C extension call? %s", self.HAS_C_EXTENSION_CALL])
-        self.log([u"Has Python call?      %s", self.HAS_PYTHON_CALL])
+        self.use_cache = self.rconf[RuntimeConfiguration.TTS_CACHE]
+        self.cache = TTSCache(rconf=rconf, logger=logger) if self.use_cache else None
+        self.log([u"TTS path is             %s", self.tts_path])
+        self.log([u"TTS cache?              %s", self.use_cache])
+        self.log([u"Has Python      call?   %s", self.HAS_PYTHON_CALL])
+        self.log([u"Has C extension call?   %s", self.HAS_C_EXTENSION_CALL])
+        self.log([u"Has subprocess  call?   %s", self.HAS_SUBPROCESS_CALL])
 
     def _language_to_voice_code(self, language):
         """
@@ -211,6 +310,16 @@ class BaseTTSWrapper(Loggable):
         used when calling the TTS via subprocess.
         """
         return []
+
+    def clear_cache(self):
+        """
+        Clear the TTS cache, removing all cache files from disk.
+
+        .. versionadded:: 1.6.0
+        """
+        if self.use_cache:
+            self.log(u"Requested to clear TTS cache")
+            self.cache.clear()
 
     def set_subprocess_arguments(self, subprocess_arguments):
         """
@@ -333,14 +442,18 @@ class BaseTTSWrapper(Loggable):
         self.log(u"Synthesizing multiple via a Python call... done")
         return ret
 
-    def _synthesize_single_python_helper(self, text, voice_code, output_file_path=None):
+    def _synthesize_single_python_helper(self, text, voice_code, output_file_path=None, return_audio_data=True):
         """
         This is an helper function to synthesize a single text fragment via a Python call.
 
         If ``output_file_path`` is ``None``,
         the audio data will not persist to file at the end of the method.
 
-        :rtype: tuple (result, (duration, sample_rate, encoding, data))
+        If ``return_audio_data`` is ``True``,
+        return the audio data at the end of the function call;
+        if ``False``, just return ``(True, None)`` in case of success.
+
+        :rtype: tuple (result, (duration, sample_rate, encoding, data)) or (result, None)
         """
         raise NotImplementedError(u"This function must be implemented in concrete subclasses supporting Python call")
 
@@ -380,14 +493,18 @@ class BaseTTSWrapper(Loggable):
         self.log(u"Synthesizing multiple via subprocess... done")
         return ret
 
-    def _synthesize_single_subprocess_helper(self, text, voice_code, output_file_path=None):
+    def _synthesize_single_subprocess_helper(self, text, voice_code, output_file_path=None, return_audio_data=True):
         """
         This is an helper function to synthesize a single text fragment via ``subprocess``.
 
         If ``output_file_path`` is ``None``,
         the audio data will not persist to file at the end of the method.
 
-        :rtype: tuple (result, (duration, sample_rate, encoding, data))
+        If ``return_audio_data`` is ``True``,
+        return the audio data at the end of the function call;
+        if ``False``, just return ``(True, None)`` in case of success.
+
+        :rtype: tuple (result, (duration, sample_rate, encoding, data)) or (result, None)
         """
         # return zero if text is the empty string
         if len(text) == 0:
@@ -491,37 +608,47 @@ class BaseTTSWrapper(Loggable):
             self.log_exc(u"Output file '%s' cannot be read" % (output_file_path), None, True, None)
             return (False, None)
 
-        try:
-            # if we know the TTS outputs to PCM16 mono WAVE
-            # with the correct sample rate,
-            # we can read samples directly from it,
-            # without an intermediate conversion through ffmpeg
-            audio_file = AudioFile(
-                file_path=output_file_path,
-                file_format=self.OUTPUT_AUDIO_FORMAT,
-                rconf=self.rconf,
-                logger=self.logger
-            )
-            audio_file.read_samples_from_file()
-            self.log([u"Duration of '%s': %f", output_file_path, audio_file.audio_length])
-            self.log(u"Synthesizing single via subprocess... done")
-            ret = (True, (
-                audio_file.audio_length,
-                audio_file.audio_sample_rate,
-                audio_file.audio_format,
-                audio_file.audio_samples
-            ))
-        except (AudioFileUnsupportedFormatError, OSError) as exc:
-            self.log_exc(u"An unexpected error occurred while trying to read the sythesized audio file", exc, True, None)
-            ret = (False, None)
+        # read audio data
+        ret = self._read_audio_data(output_file_path) if return_audio_data else (True, None)
 
         # if the output file was temporary, remove it
         if synt_tmp_file:
             self.log([u"Removing temporary output file path '%s'", output_file_path])
             gf.delete_file(output_file_handler, output_file_path)
 
-        # return the duration of the output file
+        # return audio data or (True, None)
         return ret
+
+    def _read_audio_data(self, file_path):
+        """
+        Read audio data from file.
+
+        :rtype: tuple (True, (duration, sample_rate, encoding, data)) or (False, None) on exception
+        """
+        try:
+            self.log(u"Reading audio data...")
+            # if we know the TTS outputs to PCM16 mono WAVE
+            # with the correct sample rate,
+            # we can read samples directly from it,
+            # without an intermediate conversion through ffmpeg
+            audio_file = AudioFile(
+                file_path=file_path,
+                file_format=self.OUTPUT_AUDIO_FORMAT,
+                rconf=self.rconf,
+                logger=self.logger
+            )
+            audio_file.read_samples_from_file()
+            self.log([u"Duration of '%s': %f", file_path, audio_file.audio_length])
+            self.log(u"Reading audio data... done")
+            return (True, (
+                audio_file.audio_length,
+                audio_file.audio_sample_rate,
+                audio_file.audio_format,
+                audio_file.audio_samples
+            ))
+        except (AudioFileUnsupportedFormatError, OSError) as exc:
+            self.log_exc(u"An unexpected error occurred while reading audio data", exc, True, None)
+            return (False, None)
 
     def _synthesize_multiple_generic(self, helper_function, text_file, output_file_path, quit_after=None, backwards=False):
         """
@@ -536,76 +663,74 @@ class BaseTTSWrapper(Loggable):
         """
         self.log(u"Calling TTS engine using multiple generic function...")
 
-        try:
-            # get sample rate and encoding
-            self.log(u"Determining codec and sample rate with dummy text...")
-            (result, (du_nu, sample_rate, encoding, da_nu)) = helper_function(
-                text=u"Dummy text to get sample_rate",
-                voice_code=self._language_to_voice_code(self.DEFAULT_LANGUAGE),
-                output_file_path=None
-            )
-            self.log(u"Determining codec and sample rate with dummy text... done")
-
-            # open output file
-            output_file = AudioFile(rconf=self.rconf, logger=self.logger)
-            output_file.audio_format = encoding
-            output_file.audio_channels = 1
-            output_file.audio_sample_rate = sample_rate
-
-            # create output
-            anchors = []
-            current_time = TimeValue("0.000")
-            num = 0
-            num_chars = 0
-            fragments = text_file.fragments
-            if backwards:
-                fragments = fragments[::-1]
-            for fragment in fragments:
-                # language to voice code
-                voice_code = self._language_to_voice_code(fragment.language)
-                # synthesize and get the duration of the output file
-                self.log([u"Synthesizing fragment %d", num])
-                (result, (duration, sr_nu, enc_nu, samples)) = helper_function(
-                    text=fragment.filtered_text,
-                    voice_code=voice_code,
-                    output_file_path=None
-                )
-                # store for later output
-                anchors.append([current_time, fragment.identifier, fragment.text])
-                # increase the character counter
-                num_chars += fragment.characters
-                # concatenate new samples
-                self.log([u"Fragment %d starts at: %.3f", num, current_time])
-                if duration > 0:
-                    self.log([u"Fragment %d duration: %.3f", num, duration])
-                    current_time += duration
-                    output_file.add_samples(samples, reverse=backwards)
-                else:
-                    self.log([u"Fragment %d has zero duration", num])
-                # increment fragment counter
-                num += 1
-                # check if we must stop synthesizing because we have enough audio
-                if (quit_after is not None) and (current_time > quit_after):
-                    self.log([u"Quitting after reached duration %.3f", current_time])
-                    break
-
-            # minimize memory
-            self.log(u"Minimizing memory...")
-            output_file.minimize_memory()
-            self.log(u"Minimizing memory... done")
-
-            # if backwards, we need to reverse the audio samples again
-            if backwards:
-                self.log(u"Reversing audio samples...")
-                output_file.reverse()
-                self.log(u"Reversing audio samples... done")
-
-            # write output file
-            self.log([u"Writing audio file '%s'", output_file_path])
-            output_file.write(file_path=output_file_path)
-        except Exception as exc:
-            self.log_exc(u"An unexpected error occurred while calling TTS engine using multiple generic function", exc, False, None)
+        # get sample rate and encoding
+        self.log(u"Determining codec and sample rate with dummy text...")
+        succeeded, data = helper_function(
+            text=u"Dummy text to get sample_rate",
+            voice_code=self._language_to_voice_code(self.DEFAULT_LANGUAGE),
+            output_file_path=None
+        )
+        if not succeeded:
+            self.log_crit(u"An unexpected error occurred in helper_function")
             return (False, None)
+        du_nu, sample_rate, encoding, da_nu = data
+        self.log(u"Determining codec and sample rate with dummy text... done")
+
+        # open output file
+        output_file = AudioFile(rconf=self.rconf, logger=self.logger)
+        output_file.audio_format = encoding
+        output_file.audio_channels = 1
+        output_file.audio_sample_rate = sample_rate
+
+        # create output
+        anchors = []
+        current_time = TimeValue("0.000")
+        num_chars = 0
+        fragments = text_file.fragments
+        if backwards:
+            fragments = fragments[::-1]
+        loop_function = self._loop_use_cache if self.use_cache else self._loop_no_cache
+        for num, fragment in enumerate(fragments):
+            succeeded, data = loop_function(
+                helper_function=helper_function,
+                num=num,
+                fragment=fragment
+            )
+            if not succeeded:
+                self.log_crit(u"An unexpected error occurred in loop_function")
+                return (False, None)
+            duration, sr_nu, enc_nu, samples = data
+            # store for later output
+            anchors.append([current_time, fragment.identifier, fragment.text])
+            # increase the character counter
+            num_chars += fragment.characters
+            # concatenate new samples
+            self.log([u"Fragment %d starts at: %.3f", num, current_time])
+            if duration > 0:
+                self.log([u"Fragment %d duration: %.3f", num, duration])
+                current_time += duration
+                output_file.add_samples(samples, reverse=backwards)
+            else:
+                self.log([u"Fragment %d has zero duration", num])
+            # check if we must stop synthesizing because we have enough audio
+            if (quit_after is not None) and (current_time > quit_after):
+                self.log([u"Quitting after reached duration %.3f", current_time])
+                break
+
+        # minimize memory
+        self.log(u"Minimizing memory...")
+        output_file.minimize_memory()
+        self.log(u"Minimizing memory... done")
+
+        # if backwards, we need to reverse the audio samples again
+        if backwards:
+            self.log(u"Reversing audio samples...")
+            output_file.reverse()
+            self.log(u"Reversing audio samples... done")
+
+        # write output file
+        self.log([u"Writing audio file '%s'", output_file_path])
+        output_file.write(file_path=output_file_path)
 
         # return output
         if backwards:
@@ -615,3 +740,65 @@ class BaseTTSWrapper(Loggable):
         self.log([u"Synthesized %d characters", num_chars])
         self.log(u"Calling TTS engine using multiple generic function... done")
         return (True, (anchors, current_time, num_chars))
+
+    def _loop_no_cache(self, helper_function, num, fragment):
+        """ Synthesize all fragments without using the cache """
+        self.log([u"Examining fragment %d (no cache)...", num])
+        # synthesize and get the duration of the output file
+        voice_code = self._language_to_voice_code(fragment.language)
+        self.log(u"Calling helper function")
+        succeeded, data = helper_function(
+            text=fragment.filtered_text,
+            voice_code=voice_code,
+            output_file_path=None,
+            return_audio_data=True
+        )
+        # check output
+        if not succeeded:
+            self.log_crit(u"An unexpected error occurred in helper_function")
+            return (False, None)
+        self.log([u"Examining fragment %d (no cache)... done", num])
+        return (True, data)
+
+    def _loop_use_cache(self, helper_function, num, fragment):
+        """ Synthesize all fragments using the cache """
+        self.log([u"Examining fragment %d (cache)...", num])
+        fragment_info = (fragment.language, fragment.filtered_text)
+        if self.cache.is_cached(fragment_info):
+            self.log(u"Fragment cached: retrieving audio data from cache")
+
+            # read data from file, whose path is in the cache
+            file_handler, file_path = self.cache.get(fragment_info)
+            self.log([u"Reading cached fragment at '%s'...", file_path])
+            succeeded, data = self._read_audio_data(file_path)
+            if not succeeded:
+                self.log_crit(u"An unexpected error occurred while reading cached audio file")
+                return (False, None)
+            self.log([u"Reading cached fragment at '%s'... done", file_path])
+        else:
+            self.log(u"Fragment not cached: synthesizing and caching")
+
+            # creating destination file
+            file_info = gf.tmp_file(suffix=u".cache.wav", root=self.rconf[RuntimeConfiguration.TMP_PATH])
+            file_handler, file_path = file_info
+            self.log([u"Synthesizing fragment to '%s'...", file_path])
+
+            # synthesize and get the duration of the output file
+            voice_code = self._language_to_voice_code(fragment.language)
+            self.log(u"Calling helper function")
+            succeeded, data = helper_function(
+                text=fragment.filtered_text,
+                voice_code=voice_code,
+                output_file_path=file_path,
+                return_audio_data=True
+            )
+            # check output
+            if not succeeded:
+                self.log_crit(u"An unexpected error occurred in helper_function")
+                return (False, None)
+            self.log([u"Synthesizing fragment to '%s'... done", file_path])
+            self.cache.add(fragment_info, file_info)
+            self.log(u"Added fragment to cache")
+
+        self.log([u"Examining fragment %d (cache)... done", num])
+        return (True, data)

@@ -23,11 +23,11 @@
 
 import unittest
 
-from aeneas.tests.base_ttswrapper import BaseTTSWrapper
+from aeneas.tests.base_ttswrapper import TestBaseTTSWrapper
 from aeneas.ttswrappers.festivalttswrapper import FESTIVALTTSWrapper
 
 
-class TestFESTIVALTTSWrapper(BaseTTSWrapper):
+class TestFESTIVALTTSWrapper(TestBaseTTSWrapper):
 
     TTS = u"festival"
     TTS_PATH = u"/usr/bin/text2wave"

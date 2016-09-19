@@ -140,6 +140,15 @@ class Synthesizer(Loggable):
             return self.tts_engine.OUTPUT_AUDIO_FORMAT
         return None
 
+    def clear_cache(self):
+        """
+        Clear the TTS cache, removing all cache files from disk.
+
+        .. versionadded:: 1.6.0
+        """
+        if self.tts_engine is not None:
+            self.tts_engine.clear_cache()
+
     def synthesize(
             self,
             text_file,
@@ -163,6 +172,7 @@ class Synthesizer(Loggable):
         :raises: TypeError: if ``text_file`` is ``None`` or not an instance of ``TextFile``
         :raises: OSError: if ``audio_file_path`` cannot be written
         :raises: OSError: if ``tts=custom`` in the RuntimeConfiguration and ``tts_path`` cannot be read
+        :raises: ValueError: if the TTS engine has not been set yet
         """
         if text_file is None:
             self.log_exc(u"text_file is None", None, True, TypeError)

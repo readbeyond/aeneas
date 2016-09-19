@@ -231,6 +231,9 @@ class TextFileFormat(object):
 
     """
 
+    MULTILEVEL_VALUES = [MPLAIN, MUNPARSED]
+    """ List of all multilevel formats """
+
     ALLOWED_VALUES = [MPLAIN, MUNPARSED, PARSED, PLAIN, SUBTITLES, UNPARSED]
     """ List of all the allowed values """
 

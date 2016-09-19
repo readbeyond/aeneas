@@ -625,6 +625,8 @@ class AudioFileMFCC(Loggable):
         :type  tail_length: :class:`~aeneas.timevalue.TimeValue`
         :raises: TypeError: if one of the arguments is not ``None``
                             or :class:`~aeneas.timevalue.TimeValue`
+        :raises: ValueError: if one of the arguments is greater
+                             than the length of the audio file
         """
         for variable, name in [
             (head_length, "head_length"),
@@ -633,6 +635,8 @@ class AudioFileMFCC(Loggable):
         ]:
             if (variable is not None) and (not isinstance(variable, TimeValue)):
                 raise TypeError(u"%s is not None or TimeValue" % name)
+            if (variable is not None) and (variable > self.audio_length):
+                raise ValueError(u"%s is greater than the length of the audio file" % name)
         self.log(u"Setting head middle tail...")
         mws = self.rconf.mws
         self.log([u"Before: 0 %d %d %d", self.middle_begin, self.middle_end, self.all_length])

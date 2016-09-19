@@ -23,11 +23,11 @@
 
 import unittest
 
-from aeneas.tests.base_ttswrapper import BaseTTSWrapper
+from aeneas.tests.base_ttswrapper import TestBaseTTSWrapper
 from aeneas.ttswrappers.espeakngttswrapper import ESPEAKNGTTSWrapper
 
 
-class TestESPEAKNGTTSWrapper(BaseTTSWrapper):
+class TestESPEAKNGTTSWrapper(TestBaseTTSWrapper):
 
     TTS = u"espeak-ng"
     TTS_PATH = u"/usr/bin/espeak-ng"
