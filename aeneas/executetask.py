@@ -503,6 +503,8 @@ class ExecuteTask(Loggable):
         handler, path = gf.tmp_file(suffix=u".wav", root=self.rconf[RuntimeConfiguration.TMP_PATH])
         result = synthesizer.synthesize(text_file, path)
         anchors = result[0]
+        # TODO move this out
+        synthesizer.clear_cache()
         return (handler, path, anchors, synthesizer.output_audio_format)
 
     def _align_waves(self, real_wave_mfcc, synt_wave_mfcc, synt_anchors):

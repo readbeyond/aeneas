@@ -486,6 +486,26 @@ class RuntimeConfiguration(Configuration):
     .. versionadded:: 1.5.0
     """
 
+    TTS_CACHE = "tts_cache"
+    """
+    If set to ``True``, synthesize each distinct text fragment
+    only once, caching the resulting audio data as a file on disk.
+
+    The cache files will be removed after the synthesis is compled.
+
+    This option is useful when calling TTS engines via subprocess
+    on text files with many identical fragments,
+    for example when aligning at word-level granularity.
+
+    Enabling this option will create the cache files in
+    :data:`~aeneas.runtimeconfiguration.RuntimeConfiguration.TMP_PATH`,
+    so make sure that that path has enough free space.
+
+    Default: ``False``.
+
+    .. versionadded:: 1.6.0
+    """
+
     TTS_PATH = "tts_path"
     """
     Path to the TTS engine executable
@@ -692,6 +712,7 @@ class RuntimeConfiguration(Configuration):
         (TTS, ("espeak", None, [])),
         (TTS_PATH, (None, None, [])),                   # None (= default) or "espeak" or "/usr/bin/espeak"
         (TTS_VOICE_CODE, (None, None, [])),
+        (TTS_CACHE, (False, bool, [])),
 
         (TTS_L1, ("espeak", None, [])),
         (TTS_PATH_L1, (None, None, [])),                # None (= default) or "espeak" or "/usr/bin/espeak"

@@ -92,7 +92,8 @@ class CustomTTSWrapper(BaseTTSWrapper):
         self,
         text,
         voice_code,
-        output_file_path=None
+        output_file_path=None,
+        return_audio_data=True
     ):
         """
         This is an helper function to synthesize a single text fragment via a Python call.
@@ -135,11 +136,17 @@ class CustomTTSWrapper(BaseTTSWrapper):
             self.log(u"output_file_path is None => not saving to file")
         else:
             self.log(u"output_file_path is not None => saving to file...")
-            # apparently, save_riff needs the path to be a byte string
+            # NOTE apparently, save_riff needs the path to be a byte string
             audio.save_riff(gf.safe_str(output_file_path))
             self.log(u"output_file_path is not None => saving to file... done")
 
+        # return immediately if returning audio data is not needed
+        if not return_audio_data:
+            self.log(u"return_audio_data is True => return immediately")
+            return (True, None)
+
         # get length and data using speect Python API
+        self.log(u"return_audio_data is True => read and return audio data")
         waveform = audio.get_audio_waveform()
         audio_sample_rate = int(waveform["samplerate"])
         audio_length = TimeValue(audio.num_samples() / audio_sample_rate)
@@ -148,8 +155,6 @@ class CustomTTSWrapper(BaseTTSWrapper):
             waveform["samples"],
             dtype=numpy.int16
         ).astype("float64") / 32768
-
-        # return data
         return (True, (
             audio_length,
             audio_sample_rate,
