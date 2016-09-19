@@ -54,6 +54,10 @@ class TestSynthesizer(unittest.TestCase):
             for cew_subprocess in [True, False]:
                 inner(c_ext, cew_subprocess)
 
+    def test_clear_cache(self):
+        synth = Synthesizer()
+        synth.clear_cache()
+
     def test_synthesize_none(self):
         synth = Synthesizer()
         with self.assertRaises(TypeError):

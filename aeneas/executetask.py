@@ -90,6 +90,7 @@ class ExecuteTask(Loggable):
         self.step_label = u""
         self.step_begin_time = None
         self.step_total = 0.000
+        self.synthesizer = None
         if task is not None:
             self.load_task(self.task)
 
@@ -175,7 +176,7 @@ class ExecuteTask(Loggable):
         # execute
         self.step_index = 1
         self.step_total = 0.000
-        if self.task.text_file.file_format in [TextFileFormat.MPLAIN, TextFileFormat.MUNPARSED]:
+        if self.task.text_file.file_format in TextFileFormat.MULTILEVEL_VALUES:
             self._execute_multi_level_task()
         else:
             self._execute_single_level_task()
@@ -197,7 +198,9 @@ class ExecuteTask(Loggable):
             self._step_end()
 
             # compute a time map alignment
+            self._set_synthesizer()
             time_map = self._execute_inner(real_wave_mfcc, self.task.text_file, adjust_boundaries=True, log=True)
+            self._clear_cache_synthesizer()
 
             # convert time_map to tree and create syncmap and add it to task
             self._step_begin(u"create sync map")
@@ -270,7 +273,8 @@ class ExecuteTask(Loggable):
             aba = [None, True, True, False]
             for i in range(1, len(level_rconfs)):
                 self._step_begin(u"compute alignment level %d" % i)
-                text_files, sync_roots = self._execute_level(i, level_rconfs[i], level_mfccs[i], text_files, sync_roots, aht[i], aba[i])
+                self.rconf = level_rconfs[i]
+                text_files, sync_roots = self._execute_level(i, level_mfccs[i], text_files, sync_roots, aht[i], aba[i])
                 self._step_end()
 
             self._step_begin(u"select levels")
@@ -291,7 +295,7 @@ class ExecuteTask(Loggable):
         except Exception as exc:
             self._step_failure(exc)
 
-    def _execute_level(self, level, rconf, audio_file_mfcc, text_files, sync_roots, add_head_tail, adjust_boundaries):
+    def _execute_level(self, level, audio_file_mfcc, text_files, sync_roots, add_head_tail, adjust_boundaries):
         """
         Compute the alignment for all the nodes in the given level.
 
@@ -300,8 +304,6 @@ class ExecuteTask(Loggable):
         on the next level.
 
         :param int level: the level
-        :param rconf: the runtime configuration for this level
-        :type  rconf: :class:`~aeneas.runtimeconfiguration.RuntimeConfiguration`
         :param audio_file_mfcc: the audio MFCC representation for this level
         :type  audio_file_mfcc: :class:`~aeneas.audiofilemfcc.AudioFileMFCC`
         :param list text_files: a list of :class:`~aeneas.textfile.TextFile` objects,
@@ -313,14 +315,13 @@ class ExecuteTask(Loggable):
         :param bool adjust_boundaries: if ``True``, execute the adjust boundary algorithm
         :rtype: (list, list)
         """
-        self.rconf = rconf
-        i = 0
+        self._set_synthesizer()
         next_level_text_files = []
         next_level_sync_roots = []
-        for text_file in text_files:
-            self.log([u"Text level %d, fragment %d", level, i])
+        for text_file_index, text_file in enumerate(text_files):
+            self.log([u"Text level %d, fragment %d", level, text_file_index])
             self.log([u"  Len:   %d", len(text_file)])
-            sync_root = sync_roots[i]
+            sync_root = sync_roots[text_file_index]
             if (level > 1) and (len(text_file) == 1):
                 self.log(u"  Level > 1 and only one child => returning trivial timemap")
                 time_map = [
@@ -349,7 +350,7 @@ class ExecuteTask(Loggable):
                 # we must not pass them to the next level
                 src = src[1:-1]
             next_level_sync_roots.extend(src)
-            i += 1
+        self._clear_cache_synthesizer()
         return (next_level_text_files, next_level_sync_roots)
 
     def _execute_inner(self, audio_file_mfcc, text_file, adjust_boundaries=True, log=True):
@@ -398,9 +399,11 @@ class ExecuteTask(Loggable):
         :rtype: :class:`~aeneas.audiofile.AudioFile`
         """
         self._step_begin(u"load audio file")
+        # NOTE file_format=None forces conversion to
+        #      PCM16 mono WAVE with proper sample rate
         audio_file = AudioFile(
             file_path=self.task.audio_file_path_absolute,
-            file_format=None,                               # forces conversion to PCM16 mono WAVE with proper sample rate
+            file_format=None,
             rconf=self.rconf,
             logger=self.logger
         )
@@ -481,31 +484,39 @@ class ExecuteTask(Loggable):
         self.log([u"Tail:    %s", gf.safe_float(tail_length, None)])
         return (head_length, process_length, tail_length)
 
+    def _set_synthesizer(self):
+        """ Create synthesizer """
+        self.log(u"Setting synthesizer...")
+        self.synthesizer = Synthesizer(rconf=self.rconf, logger=self.logger)
+        self.log(u"Setting synthesizer... done")
+
+    def _clear_cache_synthesizer(self):
+        """ Clear the cache of the synthesizer """
+        self.log(u"Clearing synthesizer...")
+        self.synthesizer.clear_cache()
+        self.log(u"Clearing synthesizer... done")
+
     def _synthesize(self, text_file):
         """
         Synthesize text into a WAVE file.
 
-        Return:
+        Return a tuple consisting of:
 
-        1. handler of the generated wave file
-        2. path of the generated wave file
+        1. the handler of the generated audio file
+        2. the path of the generated audio file
         3. the list of anchors, that is, a list of floats
            each representing the start time of the corresponding
            text fragment in the generated wave file
            ``[start_1, start_2, ..., start_n]``
-        4. if the synthesizer produced a PCM16 mono WAVE file
+        4. a tuple describing the format of the audio file
 
-        :param synthesizer: the synthesizer to use
-        :type  synthesizer: :class:`~aeneas.synthesizer.Synthesizer`
+        :param text_file: the text to be synthesized
+        :type  text_file: :class:`~aeneas.textfile.TextFile`
         :rtype: tuple (handler, string, list)
         """
-        synthesizer = Synthesizer(rconf=self.rconf, logger=self.logger)
         handler, path = gf.tmp_file(suffix=u".wav", root=self.rconf[RuntimeConfiguration.TMP_PATH])
-        result = synthesizer.synthesize(text_file, path)
-        anchors = result[0]
-        # TODO move this out
-        synthesizer.clear_cache()
-        return (handler, path, anchors, synthesizer.output_audio_format)
+        result = self.synthesizer.synthesize(text_file, path)
+        return (handler, path, result[0], self.synthesizer.output_audio_format)
 
     def _align_waves(self, real_wave_mfcc, synt_wave_mfcc, synt_anchors):
         """

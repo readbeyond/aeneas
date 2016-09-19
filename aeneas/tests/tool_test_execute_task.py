@@ -488,6 +488,11 @@ class TestExecuteTaskCLI(unittest.TestCase):
             ("", "--example-tsv")
         ], 0)
 
+    def test_example_words(self):
+        self.execute([
+            ("", "--example-words")
+        ], 0)
+
     def test_exec_srt_max_audio_length(self):
         self.execute([
             ("in", "../tools/res/audio.mp3"),

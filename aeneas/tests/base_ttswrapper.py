@@ -31,7 +31,7 @@ from aeneas.runtimeconfiguration import RuntimeConfiguration
 import aeneas.globalfunctions as gf
 
 
-class BaseTTSWrapper(unittest.TestCase):
+class TestBaseTTSWrapper(unittest.TestCase):
 
     TTS = u""
     TTS_PATH = u""
@@ -42,9 +42,10 @@ class BaseTTSWrapper(unittest.TestCase):
     MULTIRUN = False
 
     def synthesize(self, text_file, ofp=None, quit_after=None, backwards=False, zero_length=False, expected_exc=None):
-        if (self.TTS_PATH == u"") or (not os.path.exists(self.TTS_PATH)):
+        if (self.TTS == u"") or (self.TTS_PATH == u"") or (not os.path.exists(self.TTS_PATH)):
             return
-        def inner(c_ext, cew_subprocess):
+
+        def inner(c_ext, cew_subprocess, cache):
             if ofp is None:
                 handler, output_file_path = gf.tmp_file(suffix=".wav")
             else:
@@ -56,6 +57,7 @@ class BaseTTSWrapper(unittest.TestCase):
                 rconf[RuntimeConfiguration.TTS_PATH] = self.TTS_PATH
                 rconf[RuntimeConfiguration.C_EXTENSIONS] = c_ext
                 rconf[RuntimeConfiguration.CEW_SUBPROCESS_ENABLED] = cew_subprocess
+                rconf[RuntimeConfiguration.TTS_CACHE] = cache
                 tts_engine = self.TTS_CLASS(rconf=rconf)
                 anchors, total_time, num_chars = tts_engine.synthesize_multiple(
                     text_file,
@@ -64,26 +66,51 @@ class BaseTTSWrapper(unittest.TestCase):
                     backwards
                 )
                 gf.delete_file(handler, output_file_path)
+                if cache:
+                    tts_engine.clear_cache()
                 if zero_length:
                     self.assertEqual(total_time, 0.0)
                 else:
                     self.assertGreater(total_time, 0.0)
             except (OSError, TypeError, UnicodeDecodeError, ValueError) as exc:
                 gf.delete_file(handler, output_file_path)
+                if (cache) and (tts_engine is not None):
+                    tts_engine.clear_cache()
                 with self.assertRaises(expected_exc):
                     raise exc
         if self.MULTIRUN:
             for c_ext in [True, False]:
-                for cew_sub in [True, False]:
-                    inner(c_ext, cew_sub)
+                for cew_subprocess in [True, False]:
+                    for cache in [True, False]:
+                        inner(c_ext, cew_subprocess, cache)
         else:
-            inner(True, False)
+            for cache in [True, False]:
+                inner(True, False, cache)
 
     def tfl(self, frags):
         tfl = TextFile()
         for language, lines in frags:
             tfl.add_fragment(TextFragment(language=language, lines=lines, filtered_lines=lines))
         return tfl
+
+    def test_not_implemented(self):
+        with self.assertRaises(NotImplementedError):
+            tts_engine = BaseTTSWrapper()
+
+    def test_use_cache(self):
+        if self.TTS == u"":
+            return
+        rconf = RuntimeConfiguration()
+        rconf[RuntimeConfiguration.TTS_CACHE] = True
+        tts_engine = self.TTS_CLASS(rconf=rconf)
+        self.assertTrue(tts_engine.use_cache)
+        self.assertIsNotNone(tts_engine.cache)
+
+    def test_clear_cache(self):
+        if self.TTS == u"":
+            return
+        tts_engine = self.TTS_CLASS()
+        tts_engine.clear_cache()
 
     def test_tfl_none(self):
         self.synthesize(None, zero_length=True, expected_exc=TypeError)

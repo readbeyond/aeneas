@@ -23,11 +23,11 @@
 
 import unittest
 
-from aeneas.tests.base_ttswrapper import BaseTTSWrapper
+from aeneas.tests.base_ttswrapper import TestBaseTTSWrapper
 from aeneas.ttswrappers.espeakttswrapper import ESPEAKTTSWrapper
 
 
-class TestESPEAKTTSWrapper(BaseTTSWrapper):
+class TestESPEAKTTSWrapper(TestBaseTTSWrapper):
 
     MULTIRUN = True
     TTS = u"espeak"

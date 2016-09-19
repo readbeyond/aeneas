@@ -24,6 +24,8 @@
 """
 This module contains the following classes:
 
+* :class:`~aeneas.ttswrappers.basettswrapper.TTSCache`,
+  a TTS cache;
 * :class:`~aeneas.ttswrappers.basettswrapper.BaseTTSWrapper`,
   an abstract wrapper for a TTS engine.
 """
@@ -42,6 +44,30 @@ import aeneas.globalfunctions as gf
 
 
 class TTSCache(Loggable):
+    """
+    A TTS cache, that is,
+    a dictionary whose keys are pairs
+    ``(fragment_language, fragment_text)``
+    and whose values are pairs
+    ``(file_handler, file_path)``.
+
+    An item in the cache means that the text of the key
+    has been synthesized to the file
+    located at the path of the corresponding value.
+
+    Note that it is not enough to store
+    the string of the text as the key,
+    since the same text might be pronounced in a different language.
+
+    Also note that the values also store the file handler,
+    since we might want to close it explicitly
+    before removing the file from disk.
+
+    :param rconf: a runtime configuration
+    :type  rconf: :class:`~aeneas.runtimeconfiguration.RuntimeConfiguration`
+    :param logger: the logger object
+    :type  logger: :class:`~aeneas.logger.Logger`
+    """
 
     TAG = u"TTSCache"
 
@@ -57,22 +83,52 @@ class TTSCache(Loggable):
         return len(self.cache)
 
     def keys(self):
+        """
+        Return the sorted list of keys currently in the cache.
+
+        :rtype: list of tuples ``(language, text)``
+        """
         return sorted(list(self.cache.keys()))
 
-    def is_text_cached(self, fragment_info):
+    def is_cached(self, fragment_info):
+        """
+        Return ``True`` if the given ``(language, text)`` key
+        is present in the cache, or ``False`` otherwise.
+
+        :rtype: bool
+        """
         return fragment_info in self.cache
 
     def add(self, fragment_info, file_info):
-        if self.is_text_cached(fragment_info):
+        """
+        Add the given ``(key, value)`` pair to the cache.
+
+        :param fragment_info: the text key
+        :type  fragment_info: tuple of str ``(language, text)``
+        :param file_info: the path value
+        :type  file_info: tuple ``(handler, path)``
+        :raises: ValueError if the key is already present in the cache
+        """
+        if self.is_cached(fragment_info):
             raise ValueError(u"Attempt to add text already cached")
         self.cache[fragment_info] = file_info
 
     def get(self, fragment_info):
-        if not self.is_text_cached(fragment_info):
+        """
+        Get the value associated with the given key.
+
+        :param fragment_info: the text key
+        :type  fragment_info: tuple of str ``(language, text)``
+        :raises: KeyError if the key is not present in the cache
+        """
+        if not self.is_cached(fragment_info):
             raise KeyError(u"Attempt to get text not cached")
         return self.cache[fragment_info]
 
     def clear(self):
+        """
+        Clear the cache and remove all the files from disk.
+        """
         self.log(u"Clearing cache...")
         for file_handler, file_info in self.cache.values():
             self.log([u"  Removing file '%s'", file_info])
@@ -112,7 +168,7 @@ class BaseTTSWrapper(Loggable):
     :type  rconf: :class:`~aeneas.runtimeconfiguration.RuntimeConfiguration`
     :param logger: the logger object
     :type  logger: :class:`~aeneas.logger.Logger`
-    :raises: ValueError: if none of the call methods is available
+    :raises: NotImplementedError: if none of the call methods is available
     """
 
     CLI_PARAMETER_TEXT_PATH = "TEXT_PATH"
@@ -208,7 +264,7 @@ class BaseTTSWrapper(Loggable):
 
     def __init__(self, rconf=None, logger=None):
         if not (self.HAS_SUBPROCESS_CALL or self.HAS_C_EXTENSION_CALL or self.HAS_PYTHON_CALL):
-            raise ValueError(u"You must implement at least one call method: subprocess, C extension, or Python")
+            raise NotImplementedError(u"You must implement at least one call method: subprocess, C extension, or Python")
         super(BaseTTSWrapper, self).__init__(rconf=rconf, logger=logger)
         self.subprocess_arguments = []
         self.tts_path = self.rconf[RuntimeConfiguration.TTS_PATH]
@@ -708,9 +764,10 @@ class BaseTTSWrapper(Loggable):
         """ Synthesize all fragments using the cache """
         self.log([u"Examining fragment %d (cache)...", num])
         fragment_info = (fragment.language, fragment.filtered_text)
-        if self.cache.is_text_cached(fragment_info):
+        if self.cache.is_cached(fragment_info):
             self.log(u"Fragment cached: retrieving audio data from cache")
 
+            # read data from file, whose path is in the cache
             file_handler, file_path = self.cache.get(fragment_info)
             self.log([u"Reading cached fragment at '%s'...", file_path])
             succeeded, data = self._read_audio_data(file_path)
