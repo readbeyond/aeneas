@@ -40,6 +40,7 @@ void _usage(const char *prog) {
     printf("\n");
     printf("Example: %s en \"Hello|World|My|Dear|Friend\" /tmp/out.wav 0.0 0\n", prog);
     printf("         %s en \"Hello|World|My|Dear|Friend\" /tmp/out.wav 0.0 1\n", prog);
+    printf("         %s en \"Hello|World|My|Dear|Friend\" /tmp/out.wav 2.0 0\n", prog);
     printf("         %s en \"Hello|World|My|Dear|Friend\" /tmp/out.wav 2.0 1\n", prog);
     printf("\n");
 }
