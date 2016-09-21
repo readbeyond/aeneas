@@ -20,7 +20,7 @@ v1.6.0 (2016-09-26)
 #. When working on multilevel sync, user can specify a different TTS for each level
 #. Added an optional TTS caching mechanism to reduce subprocess/API calls to the TTS engine (closes #87)
 #. Added wrapper for eSpeak-ng (subprocess only)
-#. Added ``aeneas.cfw`` Python C++ Extension to call ``Festival`` via its C++ API, disabled by default (closes #109)
+#. Added ``cfw`` Python C++ Extension to call ``Festival`` via its C++ API, disabled by default (closes #106)
 #. Unified unit tests for eSpeak, eSpeak-ng, and Festival
 #. Python C extension compilation can be disabled/forced in setup.py via env vars
 #. Added check on head/process/tail length which should not exceed the audio file length (closes #80)

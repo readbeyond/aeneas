@@ -7,28 +7,28 @@ The **recommended options** are:
 * Mac OS X: using the all-in-one installer or via `brew`;
 * Windows: using the all-in-one installer.
 
-Clearly, you can also install **aeneas** from source;
-in that case, just keep in mind:
+You can also install **aeneas** from source, just keep in mind:
 
 * if you want to install **aeneas** system-wise,
   you might need `root` or `Administrator` privileges,
   especially if you are using `pip`.
-  On Linux and Mac OS X, you probably can just use `sudo`:
+  On Linux and Mac OS X, probably you can just use `sudo`:
   for example `sudo pip install aeneas` instead of `pip install aeneas`.
   On Windows, you might need to open a console as Administrator;
 * you can install **aeneas** in a virtual environment
-  created by `virtualenv`;
-* **aeneas** provides a few extra tools (e.g., `download` and `plot_waveform`)
+  created by `virtualenv` or similar;
+* **aeneas** provides a few extra tools
+  (e.g., `download` and `plot_waveform`)
   which require extra dependencies.
   These extra tools are not installed by default:
   if you want to install them,
   use `pip install aeneas[full]` instead of `pip install aeneas`;
-* you can disable compiling Python C extensions by setting one or more
+* you can disable compiling Python C/C++ extensions by setting one or more
   of the following environment variables:
   ``AENEAS_WITH_CDTW=False``,
   ``AENEAS_WITH_CEW=False``, or
   ``AENEAS_WITH_CMFCC=False``;
-* you can enable force compiling Python C extensions by setting one or more
+* you can enable force compiling Python C/C++ extensions by setting one or more
   of the following environment variables:
   ``AENEAS_FORCE_CEW=True`` or
   ``AENEAS_FORCE_CFW=True``.
