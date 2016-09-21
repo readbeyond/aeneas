@@ -175,6 +175,7 @@ WITHOUT_CDTW = os.getenv("AENEAS_WITH_CDTW", "True") not in TRUE_VALUES
 WITHOUT_CMFCC = os.getenv("AENEAS_WITH_CMFCC", "True") not in TRUE_VALUES
 WITHOUT_CEW = os.getenv("AENEAS_WITH_CEW", "True") not in TRUE_VALUES
 FORCE_CEW = os.getenv("AENEAS_FORCE_CEW", "False") in TRUE_VALUES
+FORCE_CFW = os.getenv("AENEAS_FORCE_CFW", "False") in TRUE_VALUES
 
 
 ##############################################################################
@@ -214,16 +215,6 @@ EXTENSION_CDTW = Extension(
         get_include()
     ]
 )
-EXTENSION_CEW = Extension(
-    name="aeneas.cew.cew",
-    sources=[
-        "aeneas/cew/cew_py.c",
-        "aeneas/cew/cew_func.c"
-    ],
-    libraries=[
-        "espeak"
-    ]
-)
 EXTENSION_CMFCC = Extension(
     name="aeneas.cmfcc.cmfcc",
     sources=[
@@ -234,6 +225,33 @@ EXTENSION_CMFCC = Extension(
     ],
     include_dirs=[
         get_include()
+    ]
+)
+EXTENSION_CEW = Extension(
+    name="aeneas.cew.cew",
+    sources=[
+        "aeneas/cew/cew_py.c",
+        "aeneas/cew/cew_func.c"
+    ],
+    libraries=[
+        "espeak"
+    ]
+)
+EXTENSION_CFW = Extension(
+    name="aeneas.cfw.cfw",
+    sources=[
+        "aeneas/cfw/cfw_py.cc",
+        "aeneas/cfw/cfw_func.cc"
+    ],
+    include_dirs=[
+        "aeneas/cfw/festival",
+        "aeneas/cfw/speech_tools"
+    ],
+    libraries=[
+        "Festival",
+        "estools",
+        "estbase",
+        "eststring",
     ]
 )
 # cwave is ready, but currently not used
@@ -273,9 +291,9 @@ if WITHOUT_CEW:
     print("[INFO] **********************************************************")
     print("[INFO] ")
 elif FORCE_CEW:
-    print("[INFO] *************************************************************************************")
-    print("[INFO] The user specified AENEAS_FORCE_CEW=True: attempting to build cew without checking OS")
-    print("[INFO] *************************************************************************************")
+    print("[INFO] ********************************************************************************")
+    print("[INFO] The user specified AENEAS_FORCE_CEW=True: attempting to build cew without checks")
+    print("[INFO] ********************************************************************************")
     print("[INFO] ")
     EXTENSIONS.append(EXTENSION_CEW)
 else:
@@ -310,6 +328,13 @@ else:
             print("[WARN] Unable to complete the setup for C extension cew, not building it.")
     else:
         print("[INFO] The C extension cew is not available for your OS.")
+
+if FORCE_CFW:
+    print("[INFO] ********************************************************************************")
+    print("[INFO] The user specified AENEAS_FORCE_CFW=True: attempting to build cfw without checks")
+    print("[INFO] ********************************************************************************")
+    print("[INFO] ")
+    EXTENSIONS.append(EXTENSION_CFW)
 
 # now we are ready to call setup()
 setup(

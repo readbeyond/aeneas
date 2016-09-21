@@ -260,6 +260,13 @@ class BaseTTSWrapper(Loggable):
     via a direct Python call.
     """
 
+    C_EXTENSION_NAME = ""
+    """
+    If the TTS wrapper can invoke the TTS engine
+    via a C extension call,
+    set here the name of the corresponding Python C/C++ extension.
+    """
+
     TAG = u"BaseTTSWrapper"
 
     def __init__(self, rconf=None, logger=None):
@@ -418,7 +425,7 @@ class BaseTTSWrapper(Loggable):
         subprocess_function = self._synthesize_multiple_subprocess if self.HAS_SUBPROCESS_CALL else None
         return gf.run_c_extension_with_fallback(
             self.log,
-            "cew",
+            self.C_EXTENSION_NAME,
             c_extension_function,
             subprocess_function,
             (text_file, output_file_path, quit_after, backwards),

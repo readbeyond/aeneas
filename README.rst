@@ -5,7 +5,7 @@ aeneas
 synchronize audio and text (aka forced alignment).
 
 -  Version: 1.6.0.0
--  Date: 2016-09-??
+-  Date: 2016-09-26
 -  Developed by: `ReadBeyond <http://www.readbeyond.it/>`__
 -  Lead Developer: `Alberto Pettarin <http://www.albertopettarin.it/>`__
 -  License: the GNU Affero General Public License Version 3 (AGPL v3)
@@ -75,7 +75,7 @@ System Requirements
 3. `FFmpeg <https://www.ffmpeg.org/>`__
 4. `eSpeak <http://espeak.sourceforge.net/>`__
 5. Python packages ``BeautifulSoup4``, ``lxml``, and ``numpy``
-6. Python C headers to compile the Python C extensions (optional but
+6. Python headers to compile the Python C/C++ extensions (optional but
    strongly recommended)
 7. A shell supporting UTF-8 (optional but strongly recommended)
 

@@ -1,0 +1,251 @@
+  		  EDINBURGH SPEECH TOOLS LIBRARY
+                     VERSION 2.4 December 2014
+
+Principal authors: Alan W Black, Paul Taylor, Richard Caley, 
+                   Simon King, Rob Clark and Korin Richmond
+
+Centre for Speech Technology
+University of Edinburgh
+Informatics Forum
+10 Crichton Street 
+Edinburgh EH8 9AB, UK
+http://www.cstr.ed.ac.uk/projects/speech_tools
+
+Although this is a considered stable release, there are still a number
+of known parts are missing or incomplete.
+
+------------------------------------------------------------------------
+
+The Edinburgh speech tools system is a library of C++ classes, functions
+and utility programs that are frequently used in speech software. The
+system compiles to a single unix library .a file which can be linked
+with software. At present, C++ classes for several useful speech and
+language classes have been written, along with audio software and some
+basic signal processing software.
+
+========================================================================
+
+
+            Edinburgh Speech Tools Library version 2.4
+              Centre for Speech Technology Research                
+                   University of Edinburgh, UK                     
+                    Copyright (c) 1994-2014
+                      All Rights Reserved.                         
+                                                                   
+Permission is hereby granted, free of charge, to use and distribute  
+this software and its documentation without restriction, including   
+without limitation the rights to use, copy, modify, merge, publish,  
+distribute, sublicense, and/or sell copies of this work, and to      
+permit persons to whom this work is furnished to do so, subject to   
+the following conditions:                                            
+ 1. The code must retain the above copyright notice, this list of    
+    conditions and the following disclaimer.                         
+ 2. Any modifications must be clearly marked as such.                
+ 3. Original authors' names are not deleted.                         
+ 4. The authors' names are not used to endorse or promote products   
+    derived from this software without specific prior written        
+    permission.                                                      
+                                                                     
+THE UNIVERSITY OF EDINBURGH AND THE CONTRIBUTORS TO THIS WORK        
+DISCLAIM ALL WARRANTIES WITH REGARD TO THIS SOFTWARE, INCLUDING      
+ALL IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS, IN NO EVENT   
+SHALL THE UNIVERSITY OF EDINBURGH NOR THE CONTRIBUTORS BE LIABLE     
+FOR ANY SPECIAL, INDIRECT OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES    
+WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN   
+AN ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION,          
+ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF       
+THIS SOFTWARE.                                                       
+
+========================================================================
+
+The following c++ programs are available:
+
+	na_play: generic playback program for use with net_audio and CSTR ao.
+
+	ch_wave: Waveform file conversion program.
+
+	ch_lab: label file conversion program.
+
+	ch_track: Track file conversion program.
+
+        wagon: a CART tree build and test program
+
+        And others
+
+The following C++ sub-libraries are available
+
+	audio:	C++ audio functions for Network Audio system, Suns
+                Linux and FreeBSD
+
+	speech_class:	C++ speech classes, including waveform and track.
+
+	ling_class:	C++ linguistic classes.
+	
+	sigpr:	Signal processing
+
+	utils: Various utilities.	
+
+
+COPYING
+------------------------------------------------------------------------
+
+Some files in the distribution do not fall under the above copyright.
+However none have any commercial restrictions, and no files fall under
+the GPL.  Specifically files that have different licences are as
+follows:
+
+grammar/wfst/wfst_train.cc
+        Copyright Carnegie Mellon University (under the same
+        open licences as much of the rest of the code).
+siod/ 
+include/siod*.h
+lib/siod/siod.scm
+        Apart from some new functionality under our licence the SIOD
+        files fall under the licence given in siod/slib.cc copyright
+        Paradigm Associates.  This code has been substantially modified
+        by us though our changes are under that licence.
+
+        editline.c editline.h el_complete.c el_sysunix.c el_unix.h
+        are copyright 1992 Simmule Turner and Rich Salz under the
+        "BSD like" licence in siod/editline.c  Again substantial 
+        changes have been made by us which continue to be under that
+        licence
+
+rxp/    
+include/rxp/
+        Is Copyright Richard Tobin.  We have a specific version of RXP
+        which allows free (including non-commercial) use.
+
+base_class/raveconv.cc
+        Is copyright 1992, 1995 by Markus Mummert
+
+base_class/string/reg*.{c,cc}
+        Copyright (c) 1986 by University of Toronto.
+
+base_class/string/EST_strcasecmp.c
+   Copyright (c) 1987, 1993
+ 	The Regents of the University of California.  All rights reserved.
+
+   The standard BSD licence
+
+
+ACKNOWLEDGEMENTS
+------------------------------------------------------------------------
+
+Most of the software was written by Paul Taylor, Alan W Black, Simon
+King, Richard Caley, Rob Clark and Korin Richmond. Additional
+contributions have been made by the following people.  Slightly
+different licence agreements accompany these pieces of code, so it is
+important that the various agreements be properly understood.
+
+Tony Robinson: some signal processing code.
+Markus Mummert: sample rate converter (rateconv.cc).
+Craig Reese and Joe Campbell: ulaw conversion code.
+Paul Bagshaw: pitch tracker.
+Theo Veenker: IRIX audio support.
+Stan Chen: AIX support
+Paradigm Assoc. and George Carrett: For Scheme In One Defun
+Simmule Turner and Rich Salz: for editline
+Henry Spencer: for regex code
+The Regents of the University of California: some string comparison code
+Richard Tobin: RXP, XML parser.
+Arthur Toth: Windows server code
+Pierre Lorenzon <devel@pollock-nageoire.net> gcc-4.7 patches
+Sergio Oller: for making the documentation work again
+
+INSTALLATION
+************
+
+see INSTALL file for details
+
+FILE/DIRECTORY STRUCTURE
+------------------------------------------------------------------------
+
+The main directory contains minimal wrap-around main() functions
+which compile to form executables which use the algorithms in the
+speech tools. All these main() functions really do is to read
+command line options and read and write files, the algorithms
+themselves are completely contained within the libraries.
+
+The directory structure is as follows:
+
+config: 
+        shared make rules and configuration make rules
+
+speech_class:
+	general speech class files, including waveforms, contours etc.
+
+ling_class:
+	general linguistic class files, including a stream-based architecture.
+
+sigpr:
+	signal processing code.
+
+doc:
+	basic documentation, generates html, info and postscript
+
+include:
+	class and general header files.
+
+lib:	
+	where the .a files are kept
+
+main:
+	Directory containing main files which compile to executables.
+
+
+DOCUMENTATION
+------------------------------------------------------------------------
+
+There are two sources of documentation.
+
+Man pages exist for the more important stand-alone programs. These are
+found in the main directory.
+
+The library documentation has substantiall improved in this version
+using an integrated DOC++, JADE and docbook combination. Classes are
+described at the overview, theorectical, practical and code level.
+The build process for the documentation is still dependent on some
+more obscure packages so it is recommended that you take the
+pre-built documentation.  Or access it on-line through
+   http://www.cstr.ed.ac.uk/projects/speech_tools
+
+The library documentation is in texinfo format which can be converted
+into GNU info HTML and postscript, see Makefile in doc/
+
+Note the documentation is not up to date. We are in the process of moving the documentation to Doxygen.
+
+BUGS/COMMENTS ETC
+------------------------------------------------------------------------
+
+Substantial parts of this release are considered mature and should be
+relatively free of bugs, however there are newer parts which have not
+been rigourously tested yet.  If you find any bugs, please send a bug
+report to speechtools@cstr.ed.ac.uk. Any useful comments will also be
+appreciated. See also the bugs file in the doc directory.
+
+If you have some software that you think could be integrated into the
+speechtools system, please contact us at
+speechtools@cstr.ed.ac.uk. The whole point of writing and releasing
+code such as this is to prevent duplication of effort, and therefore
+we would appreciate greatly any code which will add to the usefulness
+of the system. Signal processing routines are particularly welcome.
+
+
+======================================================================
+ADDITIONAL SOFTWARE
+======================================================================
+
+CSTR supplies a number of different speech technology systems
+including speech synthesis systems and (in the future) a recognition
+system.  To find out more information checkout http://www.cstr.ed.ac.uk/
+
+
+
+
+
+
+
+
+
+

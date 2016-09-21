@@ -1,7 +1,7 @@
 Changelog
 =========
 
-v1.6.0 (2016-09-??)
+v1.6.0 (2016-09-26)
 -------------------
 
 #. Fixed bug #102 by checking that the audio file produced by the TTS engine is mono WAVE and has correct sample rate: slightly slower but safe
@@ -20,8 +20,9 @@ v1.6.0 (2016-09-??)
 #. When working on multilevel sync, user can specify a different TTS for each level
 #. Added an optional TTS caching mechanism to reduce subprocess/API calls to the TTS engine (closes #87)
 #. Added wrapper for eSpeak-ng (subprocess only)
+#. Added ``aeneas.cfw`` Python C++ Extension to call ``Festival`` via its C++ API, disabled by default (closes #109)
 #. Unified unit tests for eSpeak, eSpeak-ng, and Festival
-#. Python C extension compilation can be disabled in setup.py via env vars
+#. Python C extension compilation can be disabled/forced in setup.py via env vars
 #. Added check on head/process/tail length which should not exceed the audio file length (closes #80)
 #. Moved package metadata from ``setup.py`` into ``setupmeta.py``
 #. Added AGPL header to all source files
@@ -31,7 +32,7 @@ v1.6.0 (2016-09-??)
 #. Using Sphinx theme from readthedocs.org if available
 #. Updated dependencies: BeautifulSoup4>=4.5.1 and lxml>=3.6.4 (see discussion in #93)
 #. Updated documentation
-#. Several minor code improvements
+#. Several other minor code improvements
 
 v1.5.1 (2016-07-25)
 -------------------
@@ -254,7 +255,7 @@ v1.1.1 (2015-08-23)
 -------------------
 
 #. Added ``compile_c_extensions.bat`` and directions for Windows users (courtesy of Richard Margetts)
-#. Added warning to ``aeneas.tools.*`` when running without Python C Extensions compiled
+#. Added warning to ``aeneas.tools.*`` when running without Python C extensions compiled
 #. Improved ``README.md``
 
 v1.1.0 (2015-08-21)

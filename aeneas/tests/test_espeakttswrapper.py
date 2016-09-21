@@ -29,7 +29,6 @@ from aeneas.ttswrappers.espeakttswrapper import ESPEAKTTSWrapper
 
 class TestESPEAKTTSWrapper(TestBaseTTSWrapper):
 
-    MULTIRUN = True
     TTS = u"espeak"
     TTS_PATH = u"/usr/bin/espeak"
     TTS_CLASS = ESPEAKTTSWrapper

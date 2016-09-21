@@ -131,7 +131,7 @@ class ExecuteTaskCLI(AbstractCLIProgram):
             u"description": u"input: plain text, output: TSV, tts engine: Festival",
             u"audio": AUDIO_FILE,
             u"text": gf.relative_path("res/plain.txt", __file__),
-            u"config": u"task_language=eng-GBR|is_text_type=plain|os_task_file_format=tsv",
+            u"config": u"task_language=eng|is_text_type=plain|os_task_file_format=tsv",
             u"syncmap": "output/sonnet.festival.tsv",
             u"options": u"-r=\"tts=festival\"",
             u"show": False

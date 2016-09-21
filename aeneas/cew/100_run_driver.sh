@@ -38,6 +38,10 @@ echo "Run 3"
 echo ""
 
 echo "Run 4"
+./cew_driver en "Hello|World|My|Dear|Friend" /tmp/out.wav 2.0 0
+echo ""
+
+echo "Run 5"
 ./cew_driver en "Hello|World|My|Dear|Friend" /tmp/out.wav 2.0 1
 echo ""
 

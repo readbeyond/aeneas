@@ -39,7 +39,6 @@ class TestBaseTTSWrapper(unittest.TestCase):
     TTS_CLASS = BaseTTSWrapper
     TTS_LANGUAGE = u"eng"
     TTS_LANGUAGE_VARIATION = None
-    MULTIRUN = False
 
     def synthesize(self, text_file, ofp=None, quit_after=None, backwards=False, zero_length=False, expected_exc=None):
         if (self.TTS == u"") or (self.TTS_PATH == u"") or (not os.path.exists(self.TTS_PATH)):
@@ -78,14 +77,18 @@ class TestBaseTTSWrapper(unittest.TestCase):
                     tts_engine.clear_cache()
                 with self.assertRaises(expected_exc):
                     raise exc
-        if self.MULTIRUN:
+        if self.TTS == "espeak":
             for c_ext in [True, False]:
                 for cew_subprocess in [True, False]:
                     for cache in [True, False]:
-                        inner(c_ext, cew_subprocess, cache)
+                        inner(c_ext=c_ext, cew_subprocess=cew_subprocess, cache=cache)
+        elif self.TTS == "festival":
+            for c_ext in [True, False]:
+                for cache in [True, False]:
+                    inner(c_ext=c_ext, cew_subprocess=False, cache=cache)
         else:
             for cache in [True, False]:
-                inner(True, False, cache)
+                inner(c_ext=True, cew_subprocess=False, cache=cache)
 
     def tfl(self, frags):
         tfl = TextFile()

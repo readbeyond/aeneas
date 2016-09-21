@@ -126,8 +126,7 @@ Only ``numpy`` is actually needed, as it is heavily used for the alignment compu
 The other two dependencies (``lxml`` and ``BeautifulSoup``) are needed
 only if you use XML-like input or output formats.
 However, since they are popular Python packages, to avoid complex import testing,
-they are listed as requirements as they are imported
-module-wise where they are used.
+they are listed as requirements.
 
 Depending on what ``aeneas`` classes you want to use,
 you might need to install the following optional dependencies:
@@ -138,8 +137,8 @@ you might need to install the following optional dependencies:
 
 
 
-Speeding Critical Sections Up: Python C Extensions
---------------------------------------------------
+Speeding Critical Sections Up: Python C/C++ Extensions
+------------------------------------------------------
 
 Forced alignment is a computationally demanding task,
 both CPU-intensive and memory-intensive.
@@ -147,10 +146,10 @@ Aligning a dozen minutes of audio might require an hour
 if done with pure Python code.
 
 Hence, critical sections of the alignment code are written
-as Python C extensions, that is, C code that receives input
+as Python C/C++ extensions, that is, C/C++ code that receives input
 from Python code, performs the heavy computation,
 and returns results to the Python code.
-The rule of thumb is that the C code only perform
+The rule of thumb is that the C/C++ code only perform
 "computation-like", low-level functions,
 while "house-keeping", high-level functions
 are done in Python land.
@@ -159,23 +158,25 @@ With this approach, aligning a dozen minutes of audio
 requires only few seconds, and even aligning hours of audio
 can be done in few minutes.
 The drawback is that your environment must be able to compile
-Python C extensions. If you install ``aeneas`` via ``PyPI``
+Python C/C++ extensions. If you install ``aeneas`` via ``PyPI``
 (e.g., ``pip install aeneas``), the compilation step is done automatically for you.
-Note that, due to the Python C extension compile and setup mechanism,
+Note that, due to the Python C/C++ extension compile and setup mechanism,
 you must install ``numpy`` before installing ``aeneas``.
 
-The Python C extensions included in ``aeneas`` are:
+The Python C/C++ extensions included in ``aeneas`` are:
 
 .. toctree::
     :maxdepth: 3
 
     cdtw
     cew
+    cfw
     cmfcc
     cwave
 
 * :mod:`aeneas.cdtw`, for computing the DTW;
 * :mod:`aeneas.cew`, for synthesizing text via the ``eSpeak`` C API;
+* :mod:`aeneas.cfw`, for synthesizing text via the ``Festival`` C++ API;
 * :mod:`aeneas.cmfcc`, for computing a MFCC representation of a WAVE (RIFF) audio file;
 * :mod:`aeneas.cwave`, for reading WAVE (RIFF) audio files.
 
@@ -190,6 +191,17 @@ The Python C extensions included in ``aeneas`` are:
     is only 2-3 times slower than :mod:`aeneas.cew`.
     Unless you work with thousands of text fragments,
     the performance difference is negligible.
+
+.. note::
+
+    Currently :mod:`aeneas.cfw` is experimental and disabled by default.
+    Probably it works only on Linux.
+    To compile it, make sure you have installed
+    the ``Festival`` and ``speech_tools`` libraries
+    (e.g., install the ``festival-dev`` package on DEB-based OSes) and
+    set the environment variable
+    ``AENEAS_FORCE_CFW=True``
+    before running ``pip`` or ``python setup.py``.
 
 .. note::
     
@@ -316,6 +328,7 @@ The main ``aeneas`` package contains several subpackages:
 
 * :mod:`aeneas.cdtw` (Python C extension)
 * :mod:`aeneas.cew` (Python C extension)
+* :mod:`aeneas.cfw` (Python C++ extension)
 * :mod:`aeneas.cmfcc` (Python C extension)
 * :mod:`aeneas.cwave` (Python C extension)
 * :mod:`aeneas.extra`

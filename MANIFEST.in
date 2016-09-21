@@ -1,5 +1,6 @@
 recursive-include aeneas/cdtw *
 recursive-include aeneas/cew *
+recursive-include aeneas/cfw *
 recursive-include aeneas/cint *
 recursive-include aeneas/cmfcc *
 recursive-include aeneas/cwave *
