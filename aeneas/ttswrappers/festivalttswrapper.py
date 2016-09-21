@@ -33,7 +33,9 @@ from __future__ import print_function
 
 from aeneas.language import Language
 from aeneas.runtimeconfiguration import RuntimeConfiguration
+from aeneas.timevalue import TimeValue
 from aeneas.ttswrappers.basettswrapper import BaseTTSWrapper
+import aeneas.globalfunctions as gf
 
 
 class FESTIVALTTSWrapper(BaseTTSWrapper):
@@ -41,7 +43,9 @@ class FESTIVALTTSWrapper(BaseTTSWrapper):
     A wrapper for the ``Festival`` TTS engine.
 
     This wrapper supports calling the TTS engine
-    via ``subprocess`` only.
+    via ``subprocess`` or via Python C extension.
+
+    .. note:: The latter call method is experimental and probably works only on Linux at the moment.
 
     In abstract terms, it performs one or more calls like ::
 
@@ -129,6 +133,10 @@ class FESTIVALTTSWrapper(BaseTTSWrapper):
 
     HAS_SUBPROCESS_CALL = True
 
+    HAS_C_EXTENSION_CALL = True
+
+    C_EXTENSION_NAME = "cfw"
+
     TAG = u"FESTIVALTTSWrapper"
 
     def __init__(self, rconf=None, logger=None):
@@ -143,3 +151,100 @@ class FESTIVALTTSWrapper(BaseTTSWrapper):
 
     def _voice_code_to_subprocess(self, voice_code):
         return [u"-eval", self.VOICE_CODE_TO_SUBPROCESS[voice_code]]
+
+    def _synthesize_multiple_c_extension(self, text_file, output_file_path, quit_after=None, backwards=False):
+        """
+        Synthesize multiple text fragments, using the cfw extension.
+
+        Return a tuple (anchors, total_time, num_chars).
+
+        :rtype: (bool, (list, :class:`~aeneas.timevalue.TimeValue`, int))
+        """
+        self.log(u"Synthesizing using C extension...")
+
+        # convert parameters from Python values to C values
+        try:
+            c_quit_after = float(quit_after)
+        except TypeError:
+            c_quit_after = 0.0
+        c_backwards = 0
+        if backwards:
+            c_backwards = 1
+        self.log([u"output_file_path: %s", output_file_path])
+        self.log([u"c_quit_after:     %.3f", c_quit_after])
+        self.log([u"c_backwards:      %d", c_backwards])
+        self.log(u"Preparing u_text...")
+        u_text = []
+        fragments = text_file.fragments
+        for fragment in fragments:
+            f_lang = fragment.language
+            f_text = fragment.filtered_text
+            if f_lang is None:
+                f_lang = self.DEFAULT_LANGUAGE
+            f_voice_code = self.VOICE_CODE_TO_SUBPROCESS[self._language_to_voice_code(f_lang)]
+            if f_text is None:
+                f_text = u""
+            u_text.append((f_voice_code, f_text))
+        self.log(u"Preparing u_text... done")
+
+        # call C extension
+        sr = None
+        sf = None
+        intervals = None
+
+        self.log(u"Preparing c_text...")
+        if gf.PY2:
+            # Python 2 => pass byte strings
+            c_text = [(gf.safe_bytes(t[0]), gf.safe_bytes(t[1])) for t in u_text]
+        else:
+            # Python 3 => pass Unicode strings
+            c_text = [(gf.safe_unicode(t[0]), gf.safe_unicode(t[1])) for t in u_text]
+        self.log(u"Preparing c_text... done")
+
+        self.log(u"Calling aeneas.cfw directly")
+        try:
+            self.log(u"Importing aeneas.cfw...")
+            import aeneas.cfw.cfw
+            self.log(u"Importing aeneas.cfw... done")
+            self.log(u"Calling aeneas.cfw...")
+            sr, sf, intervals = aeneas.cfw.cfw.synthesize_multiple(
+                output_file_path,
+                c_quit_after,
+                c_backwards,
+                c_text
+            )
+            self.log(u"Calling aeneas.cfw... done")
+        except Exception as exc:
+            self.log_exc(u"An unexpected error occurred while running cfw", exc, False, None)
+            return (False, None)
+
+        self.log([u"sr: %d", sr])
+        self.log([u"sf: %d", sf])
+
+        # create output
+        anchors = []
+        current_time = TimeValue("0.000")
+        num_chars = 0
+        if backwards:
+            fragments = fragments[::-1]
+        for i in range(sf):
+            # get the correct fragment
+            fragment = fragments[i]
+            # store for later output
+            anchors.append([
+                TimeValue(intervals[i][0]),
+                fragment.identifier,
+                fragment.filtered_text
+            ])
+            # increase the character counter
+            num_chars += fragment.characters
+            # update current_time
+            current_time = TimeValue(intervals[i][1])
+
+        # return output
+        # NOTE anchors do not make sense if backwards == True
+        self.log([u"Returning %d time anchors", len(anchors)])
+        self.log([u"Current time %.3f", current_time])
+        self.log([u"Synthesized %d characters", num_chars])
+        self.log(u"Synthesizing using C extension... done")
+        return (True, (anchors, current_time, num_chars))

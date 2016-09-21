@@ -54,3 +54,8 @@ custom TTS support, and more
 with cew C extension support for Mac OS X,
 and installers for Mac OS X and Windows
 
+**September 2016**: release of v1.6.0,
+with refactored TTS engine wrappers,
+added TTS cache, and
+experimental cfw C++ extension for Festival.
+

@@ -642,6 +642,8 @@ class ESPEAKTTSWrapper(BaseTTSWrapper):
 
     HAS_C_EXTENSION_CALL = True
 
+    C_EXTENSION_NAME = "cew"
+
     TAG = u"ESPEAKTTSWrapper"
 
     def __init__(self, rconf=None, logger=None):

@@ -89,6 +89,7 @@ PKG_PACKAGES = [
     "aeneas",
     "aeneas.cdtw",
     "aeneas.cew",
+    "aeneas.cfw",
     "aeneas.cmfcc",
     "aeneas.cwave",
     "aeneas.extra",
@@ -113,6 +114,11 @@ PKG_PACKAGE_DATA = {
         "*.h",
         "*.md",
         "*.dll"
+    ],
+    "aeneas.cew": [
+        "*.cc",
+        "*.h",
+        "*.md"
     ],
     "aeneas.cmfcc": [
         "*.c",

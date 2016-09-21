@@ -363,11 +363,11 @@ Examples:
 
     python -m aeneas.tools.execute_task --example-json -r="allow_unlisted_languages=True"
 
-#. disable the Python C extensions, running the pure Python code::
+#. disable the Python C/C++ extensions, running the pure Python code::
 
     python -m aeneas.tools.execute_task --example-json -r="c_extensions=False"
 
-#. disable only the ``cew`` Python C extension, while ``cdtw`` and ``cmfcc`` will still run (if compiled)::
+#. disable only the ``cew`` Python C/C++ extension, while ``cdtw`` and ``cmfcc`` will still run (if compiled)::
 
     python -m aeneas.tools.execute_task --example-json -r="cew=False"
 

@@ -810,9 +810,17 @@ def can_run_c_extension(name=None):
             return False
 
     def can_run_cew():
-        """ Python C extension for synthesizing with espeak """
+        """ Python C extension for synthesizing with eSpeak """
         try:
             import aeneas.cew.cew
+            return True
+        except ImportError:
+            return False
+
+    def can_run_cfw():
+        """ Python C extension for synthesizing with Festival """
+        try:
+            import aeneas.cfw.cfw
             return True
         except ImportError:
             return False
@@ -823,7 +831,10 @@ def can_run_c_extension(name=None):
         return can_run_cmfcc()
     elif name == "cew":
         return can_run_cew()
+    elif name == "cfw":
+        return can_run_cfw()
     else:
+        # NOTE cfw is still experimental!
         return can_run_cdtw() and can_run_cmfcc() and can_run_cew()
 
 
@@ -854,17 +865,19 @@ def run_c_extension_with_fallback(
     computed = False
     if not rconf[u"c_extensions"]:
         log_function(u"C extensions disabled")
+    elif extension not in rconf:
+        log_function([u"C extension '%s' not recognized", extension])
     elif not rconf[extension]:
-        log_function([u"C extension %s disabled", extension])
+        log_function([u"C extension '%s' disabled", extension])
     else:
-        log_function([u"C extension %s enabled", extension])
+        log_function([u"C extension '%s' enabled", extension])
         if c_function is None:
             log_function(u"C function is None")
         elif can_run_c_extension(extension):
-            log_function([u"C extension %s enabled and it can be loaded", extension])
+            log_function([u"C extension '%s' enabled and it can be loaded", extension])
             computed, result = c_function(*args)
         else:
-            log_function([u"C extension %s enabled but it cannot be loaded", extension])
+            log_function([u"C extension '%s' enabled but it cannot be loaded", extension])
     if not computed:
         if py_function is None:
             log_function(u"Python function is None")

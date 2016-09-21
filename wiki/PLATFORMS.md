@@ -4,6 +4,7 @@
 
 | OS             | 32/64 bit | Python 2.7 | Python 3.4/3.5  |
 |----------------|-----------|------------|-----------------|
+| Arch           | 64        | Yes        | Yes             |
 | Debian         | 64        | Yes        | Yes             |
 | Debian         | 32        | Yes        | Yes             |
 | Ubuntu         | 64        | Yes        | Yes             |
@@ -22,11 +23,16 @@
 | Windows 10     | 64        | Yes (1)    | Yes (1, 2)      |
 
 **Notes**
+
 (1) The ``cew`` Python C extension to speed up text synthesis
 is available on Linux, Mac OS X, and Windows 32 bit at the moment.
+
 (2) On Windows and Python 3.4/3.5, compiling the Python C extensions
 is quite complex; however, running **aeneas** in pure Python mode
 has been confirmed to work.
+
+(*) The ``cfw`` Python C++ extension to speed up text synthesis
+with Festival is experimental and probably it only works on Linux.
 
 Do you need official support for another OS?
 Consider **sponsoring** this project!

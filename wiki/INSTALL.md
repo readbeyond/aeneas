@@ -27,7 +27,11 @@ in that case, just keep in mind:
   of the following environment variables:
   ``AENEAS_WITH_CDTW=False``,
   ``AENEAS_WITH_CEW=False``, or
-  ``AENEAS_WITH_CMFCC=False``.
+  ``AENEAS_WITH_CMFCC=False``;
+* you can enable force compiling Python C extensions by setting one or more
+  of the following environment variables:
+  ``AENEAS_FORCE_CEW=True`` or
+  ``AENEAS_FORCE_CFW=True``.
 
 Below you can find detailed procedures for each operating system.
 

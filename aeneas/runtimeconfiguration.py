@@ -95,6 +95,16 @@ class RuntimeConfiguration(Configuration):
     .. versionadded:: 1.5.1
     """
 
+    CFW = "cfw"
+    """
+    If ``True`` and Python C extension ``cfw`` is available, use it.
+    Otherwise, use pure Python code.
+
+    Default: ``True``.
+
+    .. versionadded:: 1.6.0
+    """
+
     CEW_SUBPROCESS_ENABLED = "cew_subprocess_enabled"
     """
     If ``True``, calls to ``aeneas.cew`` will be done via ``subprocess``.
@@ -668,6 +678,7 @@ class RuntimeConfiguration(Configuration):
         (C_EXTENSIONS, (True, bool, [])),
         (CDTW, (True, bool, [])),
         (CEW, (True, bool, [])),
+        (CFW, (True, bool, [])),
         (CMFCC, (True, bool, [])),
 
         (CEW_SUBPROCESS_ENABLED, (False, bool, [])),
