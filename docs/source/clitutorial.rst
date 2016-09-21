@@ -99,11 +99,13 @@ If you execute the program without arguments,
 it will print the following help message:
 
 .. literalinclude:: _static/execute_task_help.txt
+    :language: text
 
 If you pass the ``--help`` argument,
 it will print a slightly more verbose version:
 
 .. literalinclude:: _static/execute_task_help_arg.txt
+    :language: text
 
 Showing And Running Built-In Examples
 -------------------------------------
@@ -113,12 +115,14 @@ enabling the user to run live examples.
 To list them, pass the ``--examples`` switch:
 
 .. literalinclude:: _static/execute_task_examples.txt
+    :language: text
 
 Similarly, the ``--examples-all`` switch prints a list
 of more than twenty built-in examples,
 covering more specific input/output/parameter combinations.
 
 .. literalinclude:: _static/execute_task_examples_all.txt
+    :language: text
 
 Running a built-in example can help learning quickly all the options/parameters
 available in ``aeneas``.
@@ -126,6 +130,7 @@ available in ``aeneas``.
 For example, passing the ``--example-json`` switch will produce:
 
 .. literalinclude:: _static/execute_task_example_json.txt
+    :language: text
 
 .. warning::
 
@@ -138,6 +143,7 @@ will print the command line arguments they shortcut.
 Therefore, the example above is essentially equivalent to:
 
 .. literalinclude:: _static/execute_task_example_json_2.txt
+    :language: text
 
 .. note::
 
@@ -154,10 +160,12 @@ In both cases, a new file ``output/sonnet.json`` is created,
 containing the sync map in JSON format:
 
 .. literalinclude:: _static/execute_task_example_json_output.txt
+    :language: json
 
 for the input file:
 
 .. literalinclude:: _static/execute_task_example_json_input.txt
+    :language: text
 
 Verbose Output And Logging To File
 ----------------------------------
@@ -165,6 +173,7 @@ Verbose Output And Logging To File
 If you want more verbose output, you can pass the ``-v`` or ``--verbose`` switch:
 
 .. literalinclude:: _static/execute_task_example_json_verbose.txt
+    :language: text
 
 There is also a ``-vv`` or ``--very-verbose`` switch
 to increase the verbosity of the output.
@@ -173,13 +182,14 @@ Sometimes it is easier to dump the log to file, and then inspect it
 with a text editor. To do so, just specify the ``-l`` switch:
 
 .. literalinclude:: _static/execute_task_example_json_log.txt
+    :language: text
 
 The path of the log file will be printed.
 By default, the log file will be created in the temporary directory of your OS.
 If you want your log file to be created at a specific path,
 use ``--log=/path/to/your.log`` instead of ``-l``.
 
-Finally, you can specify both ``-v``/``-vv`` and ``-l``/``--log``.
+Note that you can specify both ``-v``/``-vv`` and ``-l``/``--log``.
 
 Input Text Formats
 ------------------
@@ -188,28 +198,34 @@ Input Text Formats
 :class:`~aeneas.textfile.TextFileFormat`:
 
 #. :data:`~aeneas.textfile.TextFileFormat.PLAIN`,
-   one fragment per line::
+   one fragment per line
+   (example: ``--example-json``):
+
+   .. code-block:: text
     
     Text of the first fragment
     Text of the second fragment
     Text of the third fragment
    
-   Example: run ``--example-json``.
-
 #. :data:`~aeneas.textfile.TextFileFormat.PARSED`,
-   one fragment per line, starting with an explicit identifier::
+   one fragment per line, starting with an explicit identifier
+   (example: ``--example-tsv``):
+    
+   .. code-block:: text
     
     f001|Text of the first fragment
     f002|Text of the second fragment
     f003|Text of the third fragment
    
-   Example: run ``--example-tsv``.
 
 #. :data:`~aeneas.textfile.TextFileFormat.SUBTITLES`,
    fragments separated by a blank line, each fragment
    might span multiple lines. This format is suitable
-   for creating subtitle sync map files::
+   for creating subtitle sync map files
+   (example: ``--example-srt``):
 
+   .. code-block:: text
+    
     Fragment on a single row
 
     Fragment on two rows
@@ -220,22 +236,23 @@ Input Text Formats
     Another fragment
     on two rows
 
-   Example: run ``--example-srt``.
-
 #. :data:`~aeneas.textfile.TextFileFormat.UNPARSED`,
    XML file from which text fragments will be extracted
-   by matching ``id`` and/or ``class`` attributes:
+   by matching ``id`` and/or ``class`` attributes
+   (example: ``--example-smil``):
 
    .. literalinclude:: _static/unparsed.xhtml
-
-   Example: run ``--example-smil``.
+    :language: xml
 
 #. :data:`~aeneas.textfile.TextFileFormat.MPLAIN`,
    the multilevel equivalent to PLAIN,
    with paragraphs separated by a blank line,
    one sentence per line,
-   and words separated by blank spaces::
+   and words separated by blank spaces
+   (example: ``--example-mplain-json``):
 
+   .. code-block:: text
+    
     First sentence of Paragraph One.
     Second sentence of Paragraph One.
 
@@ -245,14 +262,12 @@ Input Text Formats
     Second sentence of Paragraph Three.
     Third sentence of Paragraph Three.
 
-   Example: run ``--example-mplain-json``.
-
 #. :data:`~aeneas.textfile.TextFileFormat.MUNPARSED`,
-   the multilevel equivalent to UNPARSED:
+   the multilevel equivalent to UNPARSED
+   (example: ``--example-munparsed-json``):
 
    .. literalinclude:: _static/munparsed.xhtml
-
-   Example: run ``--example-munparsed-json``.
+    :language: xml
 
 If you use :data:`~aeneas.textfile.TextFileFormat.UNPARSED` files,
 you need to provide the following additional parameters:
@@ -264,12 +279,18 @@ you need to provide the following additional parameters:
   to specify how extracted elements should be sorted, based on their ``id`` attributes.
 
 .. literalinclude:: _static/execute_task_example_smil.txt
+    :language: text
 
 .. note::
     Even if you only specify the
     :data:`~aeneas.globalconstants.PPN_TASK_IS_TEXT_UNPARSED_CLASS_REGEX`
     regex, your XML elements still need to have ``id`` attributes.
     This is required for e.g. SMIL output to make sense.
+    (Although the EPUB 3 Media Overlays specification allows you
+    to specify an EPUB CFI instead of an ``id`` value,
+    it is recommended to use ``id`` values
+    for maximum reading system compatibility,
+    and hence ``aeneas`` only outputs SMIL files with ``id`` references.)
 
 Similarly, for :data:`~aeneas.textfile.TextFileFormat.MUNPARSED` files
 you need to provide the following additional parameters:
@@ -279,6 +300,45 @@ you need to provide the following additional parameters:
 * :data:`~aeneas.globalconstants.PPN_TASK_IS_TEXT_MUNPARSED_L3_ID_REGEX`.
 
 .. literalinclude:: _static/execute_task_example_munparsed.txt
+    :language: text
+
+.. note::
+    If you are interested in synchronizing at **word granularity**,
+    it is highly suggested to use a **multilevel text format**,
+    even if you are going to use only the timings for the finer granularity.
+
+    (If you do not want the output sync map file to contain
+    the multilevel tree hierarchy for the timings,
+    you might "flatten" the output sync map file,
+    retaining only the word-level timings,
+    by using the configuration parameter
+    :data:`~aeneas.globalconstants.PPN_TASK_OS_FILE_LEVELS`
+    with value ``3``).
+
+    There are two main reasons for this suggestion:
+
+    1. the computation should be faster, and
+    2. likely, the timings will be more accurate.
+
+    Starting with ``aeneas`` v1.5.1,
+    you can specify different MFCC parameters for each level, see:
+
+    * :data:`~aeneas.runtimeconfiguration.RuntimeConfiguration.MFCC_WINDOW_LENGTH_L1`,
+    * :data:`~aeneas.runtimeconfiguration.RuntimeConfiguration.MFCC_WINDOW_SHIFT_L1`,
+    * :data:`~aeneas.runtimeconfiguration.RuntimeConfiguration.MFCC_WINDOW_LENGTH_L2`,
+    * :data:`~aeneas.runtimeconfiguration.RuntimeConfiguration.MFCC_WINDOW_SHIFT_L2`,
+    * :data:`~aeneas.runtimeconfiguration.RuntimeConfiguration.MFCC_WINDOW_LENGTH_L3`,
+    * :data:`~aeneas.runtimeconfiguration.RuntimeConfiguration.MFCC_WINDOW_SHIFT_L3`.
+    
+    Starting with ``aeneas`` v1.6.0,
+    you can also specify a different TTS engine for each level, see:
+
+    * :data:`~aeneas.runtimeconfiguration.RuntimeConfiguration.TTS_L1`,
+    * :data:`~aeneas.runtimeconfiguration.RuntimeConfiguration.TTS_L2`,
+    * :data:`~aeneas.runtimeconfiguration.RuntimeConfiguration.TTS_L3`.
+    
+    The ``aeneas`` mailing list contains some interesting threads
+    about using aeneas for word-level synchronization.
 
 Output Sync Map Formats
 -----------------------
@@ -299,6 +359,7 @@ requires:
 Example:
 
 .. literalinclude:: _static/execute_task_example_smil.txt
+    :language: text
 
 Listing Parameter Names And Values
 ----------------------------------
@@ -309,12 +370,14 @@ You can use the ``--list-parameters`` switch to print
 the list of parameter names that you can use in the configuration string.
 
 .. literalinclude:: _static/execute_task_list_parameters.txt
+    :language: text
 
 For parameters that accept a restricted set of values,
 you can list the allowed values with ``--list-values=PARAM``.
 For example:
 
 .. literalinclude:: _static/execute_task_list_values.txt
+    :language: text
 
 Downloading Audio From YouTube
 ------------------------------
@@ -324,10 +387,11 @@ Instead of the audio file path, you provide the YouTube URL,
 and add the ``-y`` switch at the end:
 
 .. literalinclude:: _static/execute_task_youtube.txt
+    :language: text
 
 .. warning::
 
-    This feature is experimental,
+    The download feature is experimental,
     and it might be unavailable in the future,
     for example if YouTube disables API access
     to audio/video contents.
@@ -357,63 +421,92 @@ providing a suitable configuration string as its value.
 
 The available paramenter names are listed in
 :class:`~aeneas.runtimeconfiguration.RuntimeConfiguration`.
+
 Examples:
 
-#. disable checks on the language codes::
+#. disable checks on the language codes:
 
-    python -m aeneas.tools.execute_task --example-json -r="allow_unlisted_languages=True"
+    .. code-block:: text
 
-#. disable the Python C/C++ extensions, running the pure Python code::
+        python -m aeneas.tools.execute_task --example-json -r="allow_unlisted_languages=True"
 
-    python -m aeneas.tools.execute_task --example-json -r="c_extensions=False"
+#. disable the Python C/C++ extensions, running the pure Python code:
 
-#. disable only the ``cew`` Python C/C++ extension, while ``cdtw`` and ``cmfcc`` will still run (if compiled)::
+    .. code-block:: text
 
-    python -m aeneas.tools.execute_task --example-json -r="cew=False"
+        python -m aeneas.tools.execute_task --example-json -r="c_extensions=False"
 
-#. set the DTW margin to ``10.000`` seconds::
+#. disable only the ``cew`` Python C/C++ extension, while ``cdtw`` and ``cmfcc`` will still run (if compiled):
 
-    python -m aeneas.tools.execute_task --example-json -r="dtw_margin=10"
+    .. code-block:: text
 
-#. specify the path to the ``ffprobe`` and ``ffmpeg`` executables::
+        python -m aeneas.tools.execute_task --example-json -r="cew=False"
 
-    python -m aeneas.tools.execute_task --example-json -r="ffmpeg_path=/path/to/my/ffmpeg|ffprobe_path=/path/to/my/ffprobe"
+#. set the DTW margin to ``10.000`` seconds:
 
-#. set the time resolution of the aligner to ``0.050`` seconds::
+    .. code-block:: text
 
-    python -m aeneas.tools.execute_task --example-json -r="mfcc_window_length=0.150|mfcc_window_shift=0.050"
+        python -m aeneas.tools.execute_task --example-json -r="dtw_margin=10"
 
-#. use the eSpeak-ng TTS, via the ``espeak-ng`` executable available on ``$PATH``, instead of eSpeak::
+#. specify the path to the ``ffprobe`` and ``ffmpeg`` executables:
 
-    python -m aeneas.tools.execute_task --example-json -r="tts=espeak-ng"
+    .. code-block:: text
 
-#. use the eSpeak-ng TTS, via the ``espeak-ng`` executable at a custom location, instead of eSpeak::
+        python -m aeneas.tools.execute_task --example-json -r="ffmpeg_path=/path/to/my/ffmpeg|ffprobe_path=/path/to/my/ffprobe"
 
-    python -m aeneas.tools.execute_task --example-json -r="tts=espeak-ng|tts_path=/path/to/espeak-ng"
+#. set the time resolution of the aligner to ``0.050`` seconds:
 
-#. use the Festival TTS, via the ``text2wave`` executable available on ``$PATH``, instead of eSpeak::
+    .. code-block:: text
 
-    python -m aeneas.tools.execute_task --example-json -r="tts=festival"
+        python -m aeneas.tools.execute_task --example-json -r="mfcc_window_length=0.150|mfcc_window_shift=0.050"
 
-#. use the Festival TTS, via the ``text2wave`` executable at a custom location, instead of eSpeak::
+#. use the eSpeak-ng TTS, via the ``espeak-ng`` executable available on ``$PATH``, instead of eSpeak:
 
-    python -m aeneas.tools.execute_task --example-json -r="tts=festival|tts_path=/path/to/text2wave"
+    .. code-block:: text
+
+        python -m aeneas.tools.execute_task --example-json -r="tts=espeak-ng"
+
+#. use the eSpeak-ng TTS, via the ``espeak-ng`` executable at a custom location, instead of eSpeak:
+
+    .. code-block:: text
+
+        python -m aeneas.tools.execute_task --example-json -r="tts=espeak-ng|tts_path=/path/to/espeak-ng"
+
+#. use the Festival TTS, via the ``text2wave`` executable available on ``$PATH``, instead of eSpeak:
+
+    .. code-block:: text
+
+        python -m aeneas.tools.execute_task --example-json -r="tts=festival"
+
+#. use the Festival TTS, via the ``text2wave`` executable at a custom location, instead of eSpeak:
+
+    .. code-block:: text
+
+        python -m aeneas.tools.execute_task --example-json -r="tts=festival|tts_path=/path/to/text2wave"
 
 #. use the Nuance TTS API instead of eSpeak::
 
-    python -m aeneas.tools.execute_task --example-json -r="tts=nuance|nuance_tts_api_id=YOUR_NUANCE_API_ID|nuance_tts_api_key=YOUR_NUANCE_API_KEY"
+    .. code-block:: text
 
-#. use a custom TTS wrapper located at ``/path/to/your/wrapper.py`` (see the ``aeneas/extra/`` directory for examples)::
+        python -m aeneas.tools.execute_task --example-json -r="tts=nuance|nuance_tts_api_id=YOUR_NUANCE_API_ID|nuance_tts_api_key=YOUR_NUANCE_API_KEY"
 
-    python -m aeneas.tools.execute_task --example-json -r="tts=custom|tts_path=/path/to/your/wrapper.py"
+#. use a custom TTS wrapper located at ``/path/to/your/wrapper.py`` (see the ``aeneas/extra/`` directory for examples):
 
-#. set the temporary directory::
+    .. code-block:: text
 
-    python -m aeneas.tools.execute_task --example-json -r="tmp_path=/path/to/tmp/"
+        python -m aeneas.tools.execute_task --example-json -r="tts=custom|tts_path=/path/to/your/wrapper.py"
 
-#. allow processing tasks with arbitrarily long audio::
+#. set the temporary directory:
 
-    python -m aeneas.tools.execute_task --example-json -r="task_max_audio_length=0"
+    .. code-block:: text
+
+        python -m aeneas.tools.execute_task --example-json -r="tmp_path=/path/to/tmp/"
+
+#. allow processing tasks with arbitrarily long audio:
+
+    .. code-block:: text
+
+        python -m aeneas.tools.execute_task --example-json -r="task_max_audio_length=0"
 
 Miscellanea
 -----------
@@ -452,7 +545,9 @@ you might want to create a Job:
       containing the output sync map files.
 
     Example: ``/home/rb/job.zip``, containing the following files,
-    corresponding to three Tasks::
+    corresponding to three Tasks:
+
+    .. code-block:: text
 
         .
         ├── config.txt
@@ -477,17 +572,21 @@ have the same meaning for ``aeneas.tools.execute_job``
 as described above. For example, the help message reads:
 
 .. literalinclude:: _static/execute_job_help.txt
+    :language: text
 
 Currently ``aeneas.tools.execute_job`` does not have
 built-in examples shortcuts (``--example-*``),
 but you can run a built-in example:
 
 .. literalinclude:: _static/execute_job_example.txt
+    :language: text
 
 TXT Config File (``config.txt``)
 --------------------------------
 
-A ZIP container with the following files::
+A ZIP container with the following files:
+
+.. code-block:: text
 
     .
     ├── config.txt
@@ -506,7 +605,9 @@ where the ``config.txt`` config file reads:
 
 will generate three tasks (``sonnet001``, ``sonnet002`` and ``sonnet003``),
 output a SMIL file for each of them,
-finally compress them in a ZIP file with the following structure::
+finally compress them in a ZIP file with the following structure:
+
+.. code-block:: text
 
     .
     └── OEBPS
@@ -534,11 +635,13 @@ named ``config.xml``.
 The following ``config.xml`` is equivalent to the example above:
 
 .. literalinclude:: _static/execute_job_config_xml_1.txt
+    :language: xml
 
 Now note that ``config.xml`` allows you to bundle together
 Tasks with different languages, output formats, etc.:
 
 .. literalinclude:: _static/execute_job_config_xml_2.txt
+    :language: xml
 
 
 

@@ -13,7 +13,9 @@ thanks to their standard I/O interface.
 
 .. Topic:: Example
 
-    Create a Task and process it, outputting the resulting sync map to file::
+    Create a Task and process it, outputting the resulting sync map to file:
+
+    .. code-block:: python
 
         #!/usr/bin/env python
         # coding=utf-8
@@ -34,7 +36,9 @@ thanks to their standard I/O interface.
         # output sync map to file
         task.output_sync_map_file()
 
-    You can also use :class:`~aeneas.tools.execute_task.ExecuteTaskCLI`::
+    You can also use :class:`~aeneas.tools.execute_task.ExecuteTaskCLI`:
+
+    .. code-block:: python
 
         #!/usr/bin/env python
         # coding=utf-8
@@ -54,7 +58,9 @@ Clearly, you can also manipulate objects programmatically.
 .. Topic:: Example
 
     Create a Task, process it, and print all fragments in the resulting sync map
-    whose duration is less than five seconds::
+    whose duration is less than five seconds:
+
+    .. code-block:: python
 
         #!/usr/bin/env python
         # coding=utf-8
@@ -82,8 +88,10 @@ using the library functions and constants.
 
 .. Topic:: Example
 
-    Create a Task, process it, and print the resulting sync map::
+    Create a Task, process it, and print the resulting sync map:
     
+    .. code-block:: python
+
         #!/usr/bin/env python
         # coding=utf-8
 
@@ -127,6 +135,7 @@ The other two dependencies (``lxml`` and ``BeautifulSoup``) are needed
 only if you use XML-like input or output formats.
 However, since they are popular Python packages, to avoid complex import testing,
 they are listed as requirements.
+This choice might change in the future.
 
 Depending on what ``aeneas`` classes you want to use,
 you might need to install the following optional dependencies:
@@ -160,8 +169,16 @@ can be done in few minutes.
 The drawback is that your environment must be able to compile
 Python C/C++ extensions. If you install ``aeneas`` via ``PyPI``
 (e.g., ``pip install aeneas``), the compilation step is done automatically for you.
-Note that, due to the Python C/C++ extension compile and setup mechanism,
-you must install ``numpy`` before installing ``aeneas``.
+
+.. warning::
+    
+    Due to the Python C/C++ extension compile and setup mechanism,
+    you must install ``numpy`` before installing ``aeneas``,
+    and there is no (sane) way for the ``aeneas`` ``setup.py``
+    to install ``numpy`` before compiling the ``aeneas`` source code.
+    Hence, you really need to (manually) install ``numpy``
+    before installing ``aeneas``.
+    Hopefully this inconvenience will be removed in the future.
 
 The Python C/C++ extensions included in ``aeneas`` are:
 
@@ -201,7 +218,7 @@ The Python C/C++ extensions included in ``aeneas`` are:
     (e.g., install the ``festival-dev`` package on DEB-based OSes) and
     set the environment variable
     ``AENEAS_FORCE_CFW=True``
-    before running ``pip`` or ``python setup.py``.
+    before running ``pip install aeneas`` or ``python setup.py``.
 
 .. note::
     
@@ -231,8 +248,10 @@ and they do not require explicitly passing an ``rconf`` object.
 
 .. Topic:: Example
 
-    Process a task with custom parameters, and log messages::    
+    Process a task with custom parameters, and log messages: 
     
+    .. code-block:: python
+
         # create Logger which logs and tees
         logger = Logger(tee=True)
 
@@ -264,7 +283,9 @@ and then assign it to your Task.
 
 .. Topic:: Example
 
-    Create a TextFile programmatically, and assign it to Task::    
+    Create a TextFile programmatically, and assign it to Task: 
+
+    .. code-block:: python
 
         task = Task()
         textfile = TextFile()
@@ -294,7 +315,7 @@ Miscellanea
   will save you a lot of headaches.
   If you read from files, be sure they are encoded using ``UTF-8``.
 * You can use any audio file format that is supported by ``ffprobe`` and ``ffmpeg``.
-  If unsure, just try them on your audio file on the console:
+  If unsure, just try to play them on your audio file on the console:
   if it works there, it should work inside ``aeneas`` too.
 * Enumeration classes usually have an ``ALLOWED_VALUE`` class member,
   which lists all the allowed values. For example:
