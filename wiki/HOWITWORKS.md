@@ -169,7 +169,7 @@ After this step, we have two new objects:
 2. the `MFCC_S` matrix, of size `(k, m)`,
    containing the MFCC coefficients for the synthesized audio file `S`.
 
-Each column (also called _frame_) of the matrix,
+Each column of the matrix,
 also called _frame_,
 corresponds to a sub-interval of the audio file,
 all with the same length, for example 40 milliseconds.
@@ -209,10 +209,10 @@ the minimum cost path transforming `S` into `R`.
 
 Since computing this algorithm over the full matrix would be too expensive,
 requiring space (memory) and time `Theta(nm)`,
-only a stripe around the main diagonal is computed,
+only a stripe (band) around the main diagonal is computed,
 and the DTW path is constrained to stay inside this stripe.
-The width of the stripe, `d`, is the so-called margin,
-is a parameter that adjusts the tradeoff between
+The width `d` of the stripe, the so-called margin,
+is a parameter adjusting the tradeoff between
 the "quality" of the approximation produced and
 the space/time `Theta(nd)` to produce it.
 
@@ -228,7 +228,7 @@ to make the computation fast enough.
 
 The output of this step is a synt-frame-index-to-real-frame-index map `M2`,
 which associates a column index in `MFCC_R` to each column index in `MFCC_S`.
-In other words, it maps back onto the real time domain the synthesized time domain.
+In other words, it maps the synthesized time domain back onto the real time domain.
 In our example:
 
 ```
@@ -245,7 +245,7 @@ M2 = [
 ]
 ```
 
-Note that, thanks to the implicit frame index to audio time correspondence,
+Thanks to the implicit frame-index-to-audio-time correspondence,
 the `M2` map can be viewed as mapping intervals in the synthesized audio
 into intervals of the real audio:
 
@@ -270,7 +270,7 @@ associates each text fragment `f` to the corresponding interval
 in the real audio file:
 
 ```
-M[f] = [ M2[(M1[f].begin).begin], M2[(M1[f].end).begin] ]
+M[f] = [ M2[(M1[f].begin)].begin, M2[(M1[f].end)].begin ]
 ```
 
 Continuing our example, for the first text fragment we have:
