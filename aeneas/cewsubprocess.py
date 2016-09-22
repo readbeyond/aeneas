@@ -36,7 +36,7 @@ See the following discussions for details:
 #. https://groups.google.com/d/msg/aeneas-forced-alignment/NLbtSRf2_vg/mMHuTQiFEgAJ
 #. https://sourceforge.net/p/espeak/mailman/message/34861696/
 
-.. warning:: This module might be removed in a future version
+.. warning:: This module might be removed in a future version.
 
 .. versionadded:: 1.5.0
 """

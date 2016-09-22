@@ -43,9 +43,11 @@ class FESTIVALTTSWrapper(BaseTTSWrapper):
     A wrapper for the ``Festival`` TTS engine.
 
     This wrapper supports calling the TTS engine
-    via ``subprocess`` or via Python C extension.
+    via ``subprocess`` or via Python C++ extension.
 
-    .. note:: The latter call method is experimental and probably works only on Linux at the moment.
+    .. warning::
+        The C++ extension call is experimental and
+        probably works only on Linux at the moment.
 
     In abstract terms, it performs one or more calls like ::
 

@@ -57,18 +57,20 @@ class RuntimeConfiguration(Configuration):
     otherwise, generate an error if the user attempts
     to use a language not listed.
 
-    Default: ``True``.
+    Default: ``False``.
 
     .. versionadded:: 1.4.1
     """
 
     C_EXTENSIONS = "c_extensions"
     """
-    If ``True`` and Python C extensions are available, use them.
-    Otherwise, use pure Python code.
+    If ``True`` and the Python C/C++ extensions
+    are available, use them.
+    Otherwise, use the pure Python code.
 
     This option is equivalent to
-    setting ``CDTW``, ``CEW``, and ``CMFCC`` to ``True`` at once.
+    setting ``CDTW``, ``CEW``, ``CFW``,
+    and ``CMFCC`` to ``True`` or ``False`` at once.
 
     Default: ``True``.
 
@@ -77,8 +79,9 @@ class RuntimeConfiguration(Configuration):
 
     CDTW = "cdtw"
     """
-    If ``True`` and Python C extension ``cdtw`` is available, use it.
-    Otherwise, use pure Python code.
+    If ``True`` and the Python C extension ``cdtw``
+    is available, use it.
+    Otherwise, use the pure Python code.
 
     Default: ``True``.
 
@@ -87,8 +90,9 @@ class RuntimeConfiguration(Configuration):
 
     CEW = "cew"
     """
-    If ``True`` and Python C extension ``cew`` is available, use it.
-    Otherwise, use pure Python code.
+    If ``True`` and the Python C extension ``cew``
+    is available, use it.
+    Otherwise, use the pure Python code.
 
     Default: ``True``.
 
@@ -97,8 +101,9 @@ class RuntimeConfiguration(Configuration):
 
     CFW = "cfw"
     """
-    If ``True`` and Python C extension ``cfw`` is available, use it.
-    Otherwise, use pure Python code.
+    If ``True`` and the Python C++ extension ``cfw``
+    is available, use it.
+    Otherwise, use the pure Python code.
 
     Default: ``True``.
 
@@ -107,7 +112,10 @@ class RuntimeConfiguration(Configuration):
 
     CEW_SUBPROCESS_ENABLED = "cew_subprocess_enabled"
     """
-    If ``True``, calls to ``aeneas.cew`` will be done via ``subprocess``.
+    If ``True``, calls to ``aeneas.cew``
+    will be done via ``subprocess``, using the
+    :class:`~aeneas.cewsubprocess.CEWSubprocess`
+    helper class.
 
     Default: ``False``.
 
@@ -128,8 +136,9 @@ class RuntimeConfiguration(Configuration):
 
     CMFCC = "cmfcc"
     """
-    If ``True`` and Python C extension ``cmfcc`` is available, use it.
-    Otherwise, use pure Python code.
+    If ``True`` and the Python C extension ``cmfcc``
+    is available, use it.
+    Otherwise, use the pure Python code.
 
     Default: ``True``.
 
@@ -371,6 +380,10 @@ class RuntimeConfiguration(Configuration):
     Important: this feature is experimental, use at your own risk.
     It is recommended not to use this TTS at word-level granularity,
     as it will create many requests, hence it will be expensive.
+    If you still want to use it, you can enable
+    the TTS caching mechanism by setting
+    :data:`~aeneas.runtimeconfiguration.RuntimeConfiguration.TTS_CACHE`
+    to ``True``.
 
     .. versionadded:: 1.5.0
     """
@@ -384,6 +397,10 @@ class RuntimeConfiguration(Configuration):
     Important: this feature is experimental, use at your own risk.
     It is recommended not to use this TTS at word-level granularity,
     as it will create many requests, hence it will be expensive.
+    If you still want to use it, you can enable
+    the TTS caching mechanism by setting
+    :data:`~aeneas.runtimeconfiguration.RuntimeConfiguration.TTS_CACHE`
+    to ``True``.
 
     .. versionadded:: 1.5.0
     """
@@ -458,22 +475,29 @@ class RuntimeConfiguration(Configuration):
     The default value is
     :data:`~aeneas.synthesizer.Synthesizer.ESPEAK` (``espeak``)
     which will use the built-in eSpeak TTS wrapper.
+    You might need to provide a ``/full/path/to/your/espeak`` value
+    to the
+    :data:`~aeneas.runtimeconfiguration.RuntimeConfiguration.TTS_PATH`
+    parameter if the command ``espeak`` is not available in
+    one of the directories listed in your ``PATH`` environment variable.
 
     Specify the value
     :data:`~aeneas.synthesizer.Synthesizer.ESPEAKNG` (``espeak-ng``)
-    to use the eSpeak-ng TTS wrapper;
-    you might need to provide the ``espeak-ng`` or ``/full/path/to/your/espeak-ng`` value
+    to use the eSpeak-ng TTS wrapper.
+    You might need to provide a ``/full/path/to/your/espeak-ng`` value
     to the
     :data:`~aeneas.runtimeconfiguration.RuntimeConfiguration.TTS_PATH`
-    parameter.
+    parameter if the command ``espeak-ng`` is not available in
+    one of the directories listed in your ``PATH`` environment variable.
 
     Specify the value
     :data:`~aeneas.synthesizer.Synthesizer.FESTIVAL` (``festival``)
-    to use the built-in Festival TTS wrapper;
-    you might need to provide the ``text2wave`` or ``/full/path/to/your/text2wave`` value
+    to use the built-in Festival TTS wrapper.
+    You might need to provide a ``/full/path/to/your/text2wave`` value
     to the
     :data:`~aeneas.runtimeconfiguration.RuntimeConfiguration.TTS_PATH`
-    parameter.
+    parameter if the command ``text2wave`` is not available in
+    one of the directories listed in your ``PATH`` environment variable.
 
     Specify the value
     :data:`~aeneas.synthesizer.Synthesizer.NUANCE` (``nuance``)
@@ -503,7 +527,8 @@ class RuntimeConfiguration(Configuration):
 
     The cache files will be removed after the synthesis is compled.
 
-    This option is useful when calling TTS engines via subprocess
+    This option is useful when calling TTS engines,
+    via subprocess or remote APIs,
     on text files with many identical fragments,
     for example when aligning at word-level granularity.
 
@@ -538,6 +563,8 @@ class RuntimeConfiguration(Configuration):
     The code of the TTS voice to use.
     If you specify this value, it will override the default voice code
     associated with the language of your text.
+
+    Default: ``None``.
 
     .. versionadded:: 1.5.0
     """
@@ -672,6 +699,7 @@ class RuntimeConfiguration(Configuration):
 
     # NOTE not using aliases just not to become confused
     #      about external (user rconf) and internal (lib code) key names
+    #      although the functionality might be useful in the future
     FIELDS = [
         (ALLOW_UNLISTED_LANGUAGES, (False, bool, [])),
 
@@ -796,7 +824,7 @@ class RuntimeConfiguration(Configuration):
         :data:`~aeneas.runtimeconfiguration.RuntimeConfiguration.TTS`
         key stored in this configuration object.
 
-        :rtype: str
+        :rtype: string
         """
         return self[self.TTS]
 
@@ -807,7 +835,7 @@ class RuntimeConfiguration(Configuration):
         :data:`~aeneas.runtimeconfiguration.RuntimeConfiguration.TTS_PATH`
         key stored in this configuration object.
 
-        :rtype: str
+        :rtype: string
         """
         return self[self.TTS_PATH]
 
