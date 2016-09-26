@@ -1,6 +1,26 @@
 #!/usr/bin/env python
 # coding=utf-8
 
+# aeneas is a Python/C library and a set of tools
+# to automagically synchronize audio and text (aka forced alignment)
+#
+# Copyright (C) 2012-2013, Alberto Pettarin (www.albertopettarin.it)
+# Copyright (C) 2013-2015, ReadBeyond Srl   (www.readbeyond.it)
+# Copyright (C) 2015-2016, Alberto Pettarin (www.albertopettarin.it)
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU Affero General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU Affero General Public License for more details.
+#
+# You should have received a copy of the GNU Affero General Public License
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
 """
 This module contains the following classes:
 
@@ -28,16 +48,6 @@ from aeneas.logger import Loggable
 from aeneas.runtimeconfiguration import RuntimeConfiguration
 import aeneas.globalfunctions as gf
 
-__author__ = "Alberto Pettarin"
-__copyright__ = """
-    Copyright 2012-2013, Alberto Pettarin (www.albertopettarin.it)
-    Copyright 2013-2015, ReadBeyond Srl   (www.readbeyond.it)
-    Copyright 2015-2016, Alberto Pettarin (www.albertopettarin.it)
-    """
-__license__ = "GNU AGPL v3"
-__version__ = "1.5.1"
-__email__ = "aeneas@readbeyond.it"
-__status__ = "Production"
 
 class PlotterColors(object):
     """
@@ -67,7 +77,6 @@ class PlotterColors(object):
 
     WHITE = (255, 255, 255)
     """ White """
-
 
 
 class Plotter(Loggable):
@@ -168,8 +177,8 @@ class Plotter(Loggable):
         timescale_y = current_y
         if self.timescale is not None:
             # NOTE draw as the last thing
-            #self.log(u"Drawing timescale")
-            #self.timescale.draw_png(image_obj, h_zoom, v_zoom, current_y)
+            # COMMENTED self.log(u"Drawing timescale")
+            # COMMENTED self.timescale.draw_png(image_obj, h_zoom, v_zoom, current_y)
             current_y += self.timescale.height
         for labelset in self.labelsets:
             self.log(u"Drawing labelset")
@@ -180,7 +189,6 @@ class Plotter(Loggable):
             self.timescale.draw_png(image_obj, h_zoom, v_zoom, timescale_y)
         self.log([u"Saving to file '%s'", output_file_path])
         image_obj.save(output_file_path)
-
 
 
 class PlotElement(Loggable):
@@ -242,7 +250,6 @@ class PlotElement(Loggable):
             mult = {"h": 14, "w_digit": 9, "w_space": 2}
         num_chars = len(text)
         return (num_chars * mult["w_digit"] + (num_chars - 1) * mult["w_space"] + 1, mult["h"])
-
 
 
 class PlotTimeScale(PlotElement):
@@ -332,7 +339,6 @@ class PlotTimeScale(PlotElement):
             left_px = begin_px + self.TICK_WIDTH + self.TEXT_MARGIN
             top_px = current_y_px + (v_zoom - self.text_bounding_box(font_height_pt, time_text)[1]) // 2
             draw.text((left_px, top_px), time_text, PlotterColors.BLACK, font=font)
-
 
 
 class PlotLabelset(PlotElement):
@@ -479,7 +485,6 @@ class PlotLabelset(PlotElement):
             draw.text((left_px, top_px), self.label, PlotterColors.BLACK, font=label_font)
 
 
-
 class PlotWaveform(PlotElement):
     """
     An audio file waveform.
@@ -547,19 +552,16 @@ class PlotWaveform(PlotElement):
 
         for i in range(windows):
             x = i * samples_per_pixel
-            pos = numpy.clip(samples[x:x+samples_per_pixel], 0.0, 1.0)
+            pos = numpy.clip(samples[x:(x + samples_per_pixel)], 0.0, 1.0)
             mpos = numpy.max(pos) * half_waveform_px
             if self.fast:
                 # just draw a simple version, mirroring max positive samples
                 draw.line((i, zero_y_px + mpos, i, zero_y_px - mpos), fill=PlotterColors.AUDACITY_DARK_BLUE, width=1)
             else:
                 # draw a better version, taking min and std of positive and negative samples
-                neg = numpy.clip(samples[x:x+samples_per_pixel], -1.0, 0.0)
+                neg = numpy.clip(samples[x:(x + samples_per_pixel)], -1.0, 0.0)
                 spos = numpy.std(pos) * half_waveform_px
                 sneg = numpy.std(neg) * half_waveform_px
                 mneg = numpy.min(neg) * half_waveform_px
                 draw.line((i, zero_y_px - mneg, i, zero_y_px - mpos), fill=PlotterColors.AUDACITY_DARK_BLUE, width=1)
                 draw.line((i, zero_y_px + sneg, i, zero_y_px - spos), fill=PlotterColors.AUDACITY_LIGHT_BLUE, width=1)
-
-
-

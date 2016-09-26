@@ -1,6 +1,26 @@
 #!/usr/bin/env python
 # coding=utf-8
 
+# aeneas is a Python/C library and a set of tools
+# to automagically synchronize audio and text (aka forced alignment)
+#
+# Copyright (C) 2012-2013, Alberto Pettarin (www.albertopettarin.it)
+# Copyright (C) 2013-2015, ReadBeyond Srl   (www.readbeyond.it)
+# Copyright (C) 2015-2016, Alberto Pettarin (www.albertopettarin.it)
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU Affero General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU Affero General Public License for more details.
+#
+# You should have received a copy of the GNU Affero General Public License
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
 """
 Plot a waveform and labels to file.
 """
@@ -15,16 +35,6 @@ from aeneas.syncmap import SyncMapFormat
 from aeneas.tools.abstract_cli_program import AbstractCLIProgram
 import aeneas.globalfunctions as gf
 
-__author__ = "Alberto Pettarin"
-__copyright__ = """
-    Copyright 2012-2013, Alberto Pettarin (www.albertopettarin.it)
-    Copyright 2013-2015, ReadBeyond Srl   (www.readbeyond.it)
-    Copyright 2015-2016, Alberto Pettarin (www.albertopettarin.it)
-    """
-__license__ = "GNU AGPL 3"
-__version__ = "1.5.1"
-__email__ = "aeneas@readbeyond.it"
-__status__ = "Production"
 
 class PlotWaveformCLI(AbstractCLIProgram):
     """
@@ -106,7 +116,7 @@ class PlotWaveformCLI(AbstractCLIProgram):
             # add labelsets, if any
             for i in range(len(self.actual_arguments)):
                 if (self.actual_arguments[i] == "-i") and (i + 1 < len(self.actual_arguments)):
-                    label_file_path = self.actual_arguments[i+1]
+                    label_file_path = self.actual_arguments[i + 1]
                     extension = gf.file_extension(label_file_path)
                     if extension == "vad":
                         labelset = self._read_syncmap_file(label_file_path, SyncMapFormat.TSV, False)
@@ -152,7 +162,6 @@ class PlotWaveformCLI(AbstractCLIProgram):
         return [(f.begin, f.end, f.text_fragment.identifier) for f in syncmap.fragments]
 
 
-
 def main():
     """
     Execute program.
@@ -161,6 +170,3 @@ def main():
 
 if __name__ == '__main__':
     main()
-
-
-

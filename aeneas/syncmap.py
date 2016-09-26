@@ -1,6 +1,26 @@
 #!/usr/bin/env python
 # coding=utf-8
 
+# aeneas is a Python/C library and a set of tools
+# to automagically synchronize audio and text (aka forced alignment)
+#
+# Copyright (C) 2012-2013, Alberto Pettarin (www.albertopettarin.it)
+# Copyright (C) 2013-2015, ReadBeyond Srl   (www.readbeyond.it)
+# Copyright (C) 2015-2016, Alberto Pettarin (www.albertopettarin.it)
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU Affero General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU Affero General Public License for more details.
+#
+# You should have received a copy of the GNU Affero General Public License
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
 """
 A synchronization map, or sync map,
 is a map from text fragments to time intervals.
@@ -32,23 +52,12 @@ from aeneas.tree import Tree
 import aeneas.globalconstants as gc
 import aeneas.globalfunctions as gf
 
-__author__ = "Alberto Pettarin"
-__copyright__ = """
-    Copyright 2012-2013, Alberto Pettarin (www.albertopettarin.it)
-    Copyright 2013-2015, ReadBeyond Srl   (www.readbeyond.it)
-    Copyright 2015-2016, Alberto Pettarin (www.albertopettarin.it)
-    """
-__license__ = "GNU AGPL v3"
-__version__ = "1.5.1"
-__email__ = "aeneas@readbeyond.it"
-__status__ = "Production"
 
 class SyncMapMissingParameterError(Exception):
     """
     Error raised when a parameter implied by the SyncMapFormat is missing.
     """
     pass
-
 
 
 class SyncMapFormat(object):
@@ -649,7 +658,6 @@ class SyncMapFormat(object):
     """ List of all the allowed values """
 
 
-
 class SyncMap(Loggable):
     """
     A synchronization map, that is, a tree of
@@ -709,6 +717,7 @@ class SyncMap(Loggable):
         :rtype: :class:`~aeneas.tree.Tree`
         """
         return self.__fragments_tree
+
     @fragments_tree.setter
     def fragments_tree(self, fragments_tree):
         self.__fragments_tree = fragments_tree
@@ -752,11 +761,11 @@ class SyncMap(Loggable):
                 fragment = child.value
                 text = fragment.text_fragment
                 output_fragments.append({
-                    "id" : text.identifier,
-                    "language" : text.language,
-                    "lines" : text.lines,
-                    "begin" : gf.time_to_ssmmm(fragment.begin),
-                    "end" : gf.time_to_ssmmm(fragment.end),
+                    "id": text.identifier,
+                    "language": text.language,
+                    "lines": text.lines,
+                    "begin": gf.time_to_ssmmm(fragment.begin),
+                    "end": gf.time_to_ssmmm(fragment.end),
                     "children": visit_children(child)
                 })
             return output_fragments
@@ -1006,7 +1015,7 @@ class SyncMap(Loggable):
             self.add_fragment(
                 SyncMapFragment(
                     text_fragment=TextFragment(
-                        identifier = u"f" + str(identifier_index).zfill(6),
+                        identifier=(u"f" + str(identifier_index).zfill(6)),
                         lines=[split[2]]
                     ),
                     begin=parse_time(split[0]),
@@ -1062,7 +1071,7 @@ class SyncMap(Loggable):
         from lxml import etree
         # namespaces
         xsi = "http://www.w3.org/2001/XMLSchema-instance"
-        ns_map = {"xsi" : xsi}
+        ns_map = {"xsi": xsi}
         # get root
         root = etree.fromstring(gf.safe_bytes(input_file.read()))
         # get time slots
@@ -1093,7 +1102,7 @@ class SyncMap(Loggable):
         from lxml import etree
         # namespaces
         xsi = "http://www.w3.org/2001/XMLSchema-instance"
-        ns_map = {"xsi" : xsi}
+        ns_map = {"xsi": xsi}
         # build doc
         doc = etree.Element("ANNOTATION_DOCUMENT", nsmap=ns_map)
         doc.attrib["{%s}noNamespaceSchemaLocation" % xsi] = "http://www.mpi.nl/tools/elan/EAFv2.8.xsd"
@@ -1105,7 +1114,7 @@ class SyncMap(Loggable):
         header = etree.SubElement(doc, "HEADER")
         header.attrib["MEDIA_FILE"] = ""
         header.attrib["TIME_UNITS"] = "milliseconds"
-        if (not parameters is None) and (gc.PPN_TASK_OS_FILE_EAF_AUDIO_REF in parameters) and (parameters[gc.PPN_TASK_OS_FILE_EAF_AUDIO_REF] is not None):
+        if (parameters is not None) and (gc.PPN_TASK_OS_FILE_EAF_AUDIO_REF in parameters) and (parameters[gc.PPN_TASK_OS_FILE_EAF_AUDIO_REF] is not None):
             media = etree.SubElement(header, "MEDIA_DESCRIPTOR")
             media.attrib["MEDIA_URL"] = parameters[gc.PPN_TASK_OS_FILE_EAF_AUDIO_REF]
             media.attrib["MIME_TYPE"] = gf.mimetype_from_path(parameters[gc.PPN_TASK_OS_FILE_EAF_AUDIO_REF])
@@ -1170,7 +1179,7 @@ class SyncMap(Loggable):
                 SyncMapFragment(
                     text_fragment=TextFragment(
                         identifier=fragment["id"],
-                        lines=[u""] # TODO read text from additional text_file?
+                        lines=[u""]     # TODO read text from additional text_file?
                     ),
                     begin=gf.time_from_ssmmm(fragment["begin"]),
                     end=gf.time_from_ssmmm(fragment["end"])
@@ -1184,9 +1193,9 @@ class SyncMap(Loggable):
         for fragment in self.fragments:
             text = fragment.text_fragment
             smil_data.append({
-                "id" : text.identifier,
-                "begin" : gf.time_to_ssmmm(fragment.begin),
-                "end" : gf.time_to_ssmmm(fragment.end)
+                "id": text.identifier,
+                "begin": gf.time_to_ssmmm(fragment.begin),
+                "end": gf.time_to_ssmmm(fragment.end)
             })
             smil_ids.append(text.identifier)
         output_file.write(
@@ -1229,7 +1238,7 @@ class SyncMap(Loggable):
                 SyncMapFragment(
                     text_fragment=TextFragment(
                         identifier=identifier,
-                        lines=[u""] # TODO read text from additional text_file?
+                        lines=[u""]     # TODO read text from additional text_file?
                     ),
                     begin=begin,
                     end=end
@@ -1246,7 +1255,7 @@ class SyncMap(Loggable):
         # namespaces
         smil_ns = "http://www.w3.org/ns/SMIL"
         epub_ns = "http://www.idpf.org/2007/ops"
-        ns_map = {None : smil_ns, "epub" : epub_ns}
+        ns_map = {None: smil_ns, "epub": epub_ns}
 
         # build tree
         smil_elem = etree.Element("{%s}smil" % smil_ns, nsmap=ns_map)
@@ -1276,13 +1285,13 @@ class SyncMap(Loggable):
             par_index = 1
             for par_child in self.fragments_tree.children_not_empty:
                 par_seq_elem = etree.SubElement(seq_elem, "{%s}seq" % smil_ns)
-                #par_seq_elem.attrib["id"] = "p" + str(par_index).zfill(6)
+                # COMMENTED par_seq_elem.attrib["id"] = "p" + str(par_index).zfill(6)
                 par_seq_elem.attrib["{%s}type" % epub_ns] = "paragraph"
                 par_seq_elem.attrib["{%s}textref" % epub_ns] = text_ref + "#" + par_child.value.text_fragment.identifier
                 sen_index = 1
                 for sen_child in par_child.children_not_empty:
                     sen_seq_elem = etree.SubElement(par_seq_elem, "{%s}seq" % smil_ns)
-                    #sen_seq_elem.attrib["id"] = par_seq_elem.attrib["id"] + "s" + str(sen_index).zfill(6)
+                    # COMMENTED sen_seq_elem.attrib["id"] = par_seq_elem.attrib["id"] + "s" + str(sen_index).zfill(6)
                     sen_seq_elem.attrib["{%s}type" % epub_ns] = "sentence"
                     sen_seq_elem.attrib["{%s}textref" % epub_ns] = text_ref + "#" + sen_child.value.text_fragment.identifier
                     wor_index = 1
@@ -1290,7 +1299,7 @@ class SyncMap(Loggable):
                         fragment = wor_child.value
                         text = fragment.text_fragment
                         wor_seq_elem = etree.SubElement(sen_seq_elem, "{%s}seq" % smil_ns)
-                        #wor_seq_elem.attrib["id"] = sen_seq_elem.attrib["id"] + "s" + str(wor_index).zfill(6)
+                        # COMMENTED wor_seq_elem.attrib["id"] = sen_seq_elem.attrib["id"] + "s" + str(wor_index).zfill(6)
                         wor_seq_elem.attrib["{%s}type" % epub_ns] = "word"
                         wor_seq_elem.attrib["{%s}textref" % epub_ns] = text_ref + "#" + text.identifier
                         wor_par_elem = etree.SubElement(wor_seq_elem, "{%s}par" % smil_ns)
@@ -1300,9 +1309,9 @@ class SyncMap(Loggable):
                         audio_elem.attrib["src"] = audio_ref
                         audio_elem.attrib["clipBegin"] = format_time(fragment.begin)
                         audio_elem.attrib["clipEnd"] = format_time(fragment.end)
-                        wor_index +=1
-                    sen_index +=1
-                par_index +=1
+                        wor_index += 1
+                    sen_index += 1
+                par_index += 1
         # write tree
         self._write_tree_to_file(smil_elem, output_file, xml_declaration=False)
 
@@ -1463,7 +1472,7 @@ class SyncMap(Loggable):
                 SyncMapFragment(
                     text_fragment=TextFragment(
                         identifier=split[2],
-                        lines=[u""] # TODO read text from additional text_file?
+                        lines=[u""]     # TODO read text from additional text_file?
                     ),
                     begin=parse_time(split[0]),
                     end=parse_time(split[1])
@@ -1522,13 +1531,13 @@ class SyncMap(Loggable):
         # namespaces
         ttml_ns = "http://www.w3.org/ns/ttml"
         xml_ns = "http://www.w3.org/XML/1998/namespace"
-        ns_map = {None : ttml_ns}
+        ns_map = {None: ttml_ns}
 
         # build tree
         tt_elem = etree.Element("{%s}tt" % ttml_ns, nsmap=ns_map)
         tt_elem.attrib["{%s}lang" % xml_ns] = language
         # TODO add metadata from parameters here?
-        #head_elem = etree.SubElement(tt_elem, "{%s}head" % ttml_ns)
+        # COMMENTED head_elem = etree.SubElement(tt_elem, "{%s}head" % ttml_ns)
         body_elem = etree.SubElement(tt_elem, "{%s}body" % ttml_ns)
         div_elem = etree.SubElement(body_elem, "{%s}div" % ttml_ns)
 
@@ -1678,6 +1687,7 @@ class SyncMap(Loggable):
     def _write_xml(self, output_file):
         """ Write to XML file """
         from lxml import etree
+
         def visit_children(node, parent_elem):
             """ Recursively visit the fragments_tree """
             for child in node.children_not_empty:
@@ -1691,6 +1701,7 @@ class SyncMap(Loggable):
                     line_elem.text = line
                 children_elem = etree.SubElement(fragment_elem, "children")
                 visit_children(child, children_elem)
+
         map_elem = etree.Element("map")
         visit_children(self.fragments_tree, map_elem)
         self._write_tree_to_file(map_elem, output_file)
@@ -1711,7 +1722,7 @@ class SyncMap(Loggable):
                 SyncMapFragment(
                     text_fragment=TextFragment(
                         identifier=identifier,
-                        lines=[u""] # TODO read text from additional text_file?
+                        lines=[u""]     # TODO read text from additional text_file?
                     ),
                     begin=begin,
                     end=end
@@ -1739,7 +1750,7 @@ class SyncMap(Loggable):
             output_file,
             pretty_print=True,
             xml_declaration=True
-        ):
+    ):
         """
         Write an ``lxml`` tree to the given output file.
         """
@@ -1771,7 +1782,6 @@ class SyncMap(Loggable):
         return uparts
 
 
-
 class SyncMapFragment(object):
     """
     A sync map fragment, that is,
@@ -1794,7 +1804,7 @@ class SyncMapFragment(object):
             begin=None,
             end=None,
             confidence=1.0
-        ):
+    ):
         self.text_fragment = text_fragment
         self.begin = begin
         self.end = end
@@ -1818,6 +1828,7 @@ class SyncMapFragment(object):
         :rtype: :class:`~aeneas.textfile.TextFragment`
         """
         return self.__text_fragment
+
     @text_fragment.setter
     def text_fragment(self, text_fragment):
         self.__text_fragment = text_fragment
@@ -1830,6 +1841,7 @@ class SyncMapFragment(object):
         :rtype: :class:`~aeneas.timevalue.TimeValue`
         """
         return self.__begin
+
     @begin.setter
     def begin(self, begin):
         self.__begin = begin
@@ -1842,6 +1854,7 @@ class SyncMapFragment(object):
         :rtype: :class:`~aeneas.timevalue.TimeValue`
         """
         return self.__end
+
     @end.setter
     def end(self, end):
         self.__end = end
@@ -1856,6 +1869,7 @@ class SyncMapFragment(object):
         :rtype: float
         """
         return self.__confidence
+
     @confidence.setter
     def confidence(self, confidence):
         self.__confidence = confidence
@@ -1898,7 +1912,6 @@ class SyncMapFragment(object):
         if self.audio_duration == TimeValue("0.000"):
             return None
         return Decimal(self.chars / self.audio_duration)
-
 
 
 class SyncMapHeadTailFormat(object):
@@ -1979,6 +1992,3 @@ class SyncMapHeadTailFormat(object):
 
     ALLOWED_VALUES = [ADD, HIDDEN, STRETCH]
     """ List of all the allowed values """
-
-
-

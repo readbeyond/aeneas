@@ -1,17 +1,26 @@
 /*
 
-Python C Extension for synthesizing text with eSpeak
+# aeneas is a Python/C library and a set of tools
+# to automagically synchronize audio and text (aka forced alignment)
+#
+# Copyright (C) 2012-2013, Alberto Pettarin (www.albertopettarin.it)
+# Copyright (C) 2013-2015, ReadBeyond Srl   (www.readbeyond.it)
+# Copyright (C) 2015-2016, Alberto Pettarin (www.albertopettarin.it)
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU Affero General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU Affero General Public License for more details.
+#
+# You should have received a copy of the GNU Affero General Public License
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-__author__ = "Alberto Pettarin"
-__copyright__ = """
-    Copyright 2012-2013, Alberto Pettarin (www.albertopettarin.it)
-    Copyright 2013-2015, ReadBeyond Srl   (www.readbeyond.it)
-    Copyright 2015-2016, Alberto Pettarin (www.albertopettarin.it)
-    """
-__license__ = "GNU AGPL v3"
-__version__ = "1.5.1"
-__email__ = "aeneas@readbeyond.it"
-__status__ = "Production"
+Python C Extension for synthesizing text with eSpeak
 
 */
 
@@ -24,22 +33,6 @@ struct FRAGMENT_INFO {
     const char *voice_code;
     const char *text;
 };
-
-/*
-    Synthesize a single text fragment,
-    described by the FRAGMENT_INFO fragment_ret,
-    creating a WAVE file at output_file_path.
-
-    The sample rate of the output WAVE file is stored
-    in sample_rate_ret, and the begin and end times
-    are stored in the begin and end attributes of
-    fragment_ret.
-*/
-int _synthesize_single(
-    const char *output_file_path,
-    int *sample_rate_ret, // int because the espeak lib returns it as such
-    struct FRAGMENT_INFO *fragment_ret
-);
 
 /*
     Synthesize multiple text fragments,

@@ -1,17 +1,26 @@
 /*
 
-Python C Extension for synthesizing text with eSpeak
+# aeneas is a Python/C library and a set of tools
+# to automagically synchronize audio and text (aka forced alignment)
+#
+# Copyright (C) 2012-2013, Alberto Pettarin (www.albertopettarin.it)
+# Copyright (C) 2013-2015, ReadBeyond Srl   (www.readbeyond.it)
+# Copyright (C) 2015-2016, Alberto Pettarin (www.albertopettarin.it)
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU Affero General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU Affero General Public License for more details.
+#
+# You should have received a copy of the GNU Affero General Public License
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-__author__ = "Alberto Pettarin"
-__copyright__ = """
-    Copyright 2012-2013, Alberto Pettarin (www.albertopettarin.it)
-    Copyright 2013-2015, ReadBeyond Srl   (www.readbeyond.it)
-    Copyright 2015-2016, Alberto Pettarin (www.albertopettarin.it)
-    """
-__license__ = "GNU AGPL v3"
-__version__ = "1.5.1"
-__email__ = "aeneas@readbeyond.it"
-__status__ = "Production"
+Python C Extension for synthesizing text with eSpeak
 
 */
 
@@ -23,31 +32,6 @@ __status__ = "Production"
 
 #include "speak_lib.h"
 #include "cew_func.h"
-
-static PyObject *synthesize_single(PyObject *self, PyObject *args) {
-    PyObject *tuple;
-    char const *output_file_path;
-    struct FRAGMENT_INFO ret;
-    int sample_rate; // int because espeak lib returns it as such
-
-    // s = string
-    if (!PyArg_ParseTuple(args, "sss", &output_file_path, &ret.voice_code, &ret.text)) {
-        PyErr_SetString(PyExc_ValueError, "Error while parsing the arguments");
-        return NULL;
-    }
-
-    if (_synthesize_single(output_file_path, &sample_rate, &ret) != 0) {
-        PyErr_SetString(PyExc_ValueError, "Error while synthesizing text");
-        return NULL;
-    }
-
-    // build the tuple to be returned
-    tuple = PyTuple_New(3);
-    PyTuple_SetItem(tuple, 0, Py_BuildValue("i", sample_rate));
-    PyTuple_SetItem(tuple, 1, Py_BuildValue("f", ret.begin));
-    PyTuple_SetItem(tuple, 2, Py_BuildValue("f", ret.end));
-    return tuple;
-}
 
 static PyObject *synthesize_multiple(PyObject *self, PyObject *args) {
     PyObject *tuple;
@@ -146,16 +130,6 @@ static PyObject *synthesize_multiple(PyObject *self, PyObject *args) {
 }
 
 static PyMethodDef cew_methods[] = {
-    {
-        "synthesize_single",
-        synthesize_single,
-        METH_VARARGS,
-        "Synthesize a single text fragment with eSpeak\n"
-        ":param string output_file_path: the path of the WAVE file to be created\n"
-        ":param string voice_code: the voice code of the language to be used\n"
-        ":param string text: the text to be synthesized\n"
-        ":rtype: tuple (sample_rate, begin, end)"
-    },
     {
         "synthesize_multiple",
         synthesize_multiple,

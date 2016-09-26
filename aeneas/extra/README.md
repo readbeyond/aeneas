@@ -1,6 +1,6 @@
 # aeneas extras 
 
-This Python module (directory) contains
+This Python package contains
 a collection of extra tools for aeneas,
 mainly custom TTS engine wrappers.
 
@@ -47,11 +47,11 @@ is faster than the `ctw_espeak.py` wrapper.
 
 A wrapper for the `Speect` TTS engine
 that synthesizes text via Python calls
-to the `speect` Python module.
+to the `speect` Python package.
 
 To use it, do the following:
 
-1. Install `Speect` and compile the Python module `speect`:
+1. Install `Speect` and compile the Python package `speect`:
 see [http://speect.sourceforge.net/](http://speect.sourceforge.net/) for details.
 
 2. Download a voice for `Speect`, for example the `Speect CMU Arctic slt` voice

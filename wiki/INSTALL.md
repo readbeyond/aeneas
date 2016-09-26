@@ -7,22 +7,31 @@ The **recommended options** are:
 * Mac OS X: using the all-in-one installer or via `brew`;
 * Windows: using the all-in-one installer.
 
-Clearly, you can also install **aeneas** from source;
-in that case, just keep in mind:
+You can also install **aeneas** from source, just keep in mind:
 
 * if you want to install **aeneas** system-wise,
   you might need `root` or `Administrator` privileges,
   especially if you are using `pip`.
-  On Linux and Mac OS X, you probably can just use `sudo`:
+  On Linux and Mac OS X, probably you can just use `sudo`:
   for example `sudo pip install aeneas` instead of `pip install aeneas`.
   On Windows, you might need to open a console as Administrator;
 * you can install **aeneas** in a virtual environment
-  created by `virtualenv`;
-* **aeneas** provides a few extra tools (e.g., `download` and `plot_waveform`)
+  created by `virtualenv` or similar;
+* **aeneas** provides a few extra tools
+  (e.g., `download` and `plot_waveform`)
   which require extra dependencies.
   These extra tools are not installed by default:
   if you want to install them,
-  use `pip install aeneas[full]` instead of `pip install aeneas`.
+  use `pip install aeneas[full]` instead of `pip install aeneas`;
+* you can disable compiling Python C/C++ extensions by setting one or more
+  of the following environment variables:
+  ``AENEAS_WITH_CDTW=False``,
+  ``AENEAS_WITH_CEW=False``, or
+  ``AENEAS_WITH_CMFCC=False``;
+* you can enable force compiling Python C/C++ extensions by setting one or more
+  of the following environment variables:
+  ``AENEAS_FORCE_CEW=True`` or
+  ``AENEAS_FORCE_CFW=True``.
 
 Below you can find detailed procedures for each operating system.
 
@@ -285,12 +294,12 @@ before the all-in-one installer was available (July 2016).
 
 #### Manual Procedure Step 1: Create a parent folder for the installation
 
-Create a parent folder to contain the different programs and modules needed to run **aeneas**:
+Create a parent folder to contain the different programs and packages needed to run **aeneas**:
 
 1. Open Windows Explorer and navigate to the root of the `C:` drive.
 2. Create a new folder and name it `sync`.
 
-You will install the various programs and modules as subfolders of `C:\sync`,
+You will install the various programs and packages as subfolders of `C:\sync`,
 e.g. `C:\sync\eSpeak`, `C:\sync\FFmpeg`, `C:\sync\aeneas-1.5.0.3`, etc.
 
 #### Manual Procedure Step 2: Install eSpeak
@@ -351,7 +360,7 @@ If all is well, you should see some information about the FFmpeg program.
 #### Manual Procedure Step 4: Install Miniconda (Python 2.7.x)
 
 **Python** is the programming language that **aeneas** is written in, popular for writing scientific applications.
-**Miniconda** is a package manager which will make it easier to install Python and the required Python modules.
+**Miniconda** is a package manager which will make it easier to install Python and the required Python packages.
 
 1. Go to [http://conda.pydata.org/miniconda.html](http://conda.pydata.org/miniconda.html) .
 2. Download the Python 2.7.x release of Miniconda for Windows, either 64-bit or 32-bit depending on your system.
@@ -369,12 +378,12 @@ If the Python version displayed is version 3, it means that you already have Pyt
 Uninstall Python 3 if you do not need it.
 Otherwise, edit your system path so that Python 2.7 is found first.
 
-#### Manual Procedure Step 5: Install Python modules
+#### Manual Procedure Step 5: Install Python packages
 
-There are three Python modules required by **aeneas** to run:
+There are three Python packages required by **aeneas** to run:
 `BeautifulSoup4`, `lxml`, and `NumPy`.
 
-To install these modules, open a Windows command prompt and execute the following:
+To install these packages, open a Windows command prompt and execute the following:
 
 ```
 conda install setuptools -y --no-deps
@@ -467,7 +476,7 @@ If all is well, you should get an output similar to the following:
 
 Do not worry if you see warnings about UTF-8 input and output encoding.
 
-If one of the tests fails, it is often because a program or module
+If one of the tests fails, it is often because a program or package
 has not been added correctly to the system path (i.e., Python, eSpeak or FFmpeg).
 
 Congratulations, you completed the installation of **aeneas**!

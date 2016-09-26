@@ -1,22 +1,32 @@
 #!/usr/bin/env python
 # coding=utf-8
 
+# aeneas is a Python/C library and a set of tools
+# to automagically synchronize audio and text (aka forced alignment)
+#
+# Copyright (C) 2012-2013, Alberto Pettarin (www.albertopettarin.it)
+# Copyright (C) 2013-2015, ReadBeyond Srl   (www.readbeyond.it)
+# Copyright (C) 2015-2016, Alberto Pettarin (www.albertopettarin.it)
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU Affero General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU Affero General Public License for more details.
+#
+# You should have received a copy of the GNU Affero General Public License
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
 """
 This module contains the following classes:
 
 * :class:`~aeneas.language.Language`, an enumeration of the supported languages.
 """
 
-__author__ = "Alberto Pettarin"
-__copyright__ = """
-    Copyright 2012-2013, Alberto Pettarin (www.albertopettarin.it)
-    Copyright 2013-2015, ReadBeyond Srl   (www.readbeyond.it)
-    Copyright 2015-2016, Alberto Pettarin (www.albertopettarin.it)
-    """
-__license__ = "GNU AGPL v3"
-__version__ = "1.5.1"
-__email__ = "aeneas@readbeyond.it"
-__status__ = "Production"
 
 class Language(object):
     """
@@ -30,9 +40,10 @@ class Language(object):
     Consult the documentation of your TTS engine wrapper to
     see the list of languages supported by it:
 
-    * :class:`~aeneas.espeakwrapper.ESPEAKWrapper` (default TTS)
-    * :class:`~aeneas.festivalwrapper.FESTIVALWrapper`
-    * :class:`~aeneas.nuancettsapiwrapper.NuanceTTSAPIWrapper`
+    * :class:`~aeneas.ttswrappers.espeakttswrapper.ESPEAKTTSWrapper` (default TTS)
+    * :class:`~aeneas.ttswrappers.espeakngttswrapper.ESPEAKNGTTSWrapper`
+    * :class:`~aeneas.ttswrappers.festivalttswrapper.FESTIVALTTSWrapper`
+    * :class:`~aeneas.ttswrappers.nuancettswrapper.NuanceTTSWrapper`
 
     Each language is indicated by its ISO 639-3 language code.
     """
@@ -40,11 +51,23 @@ class Language(object):
     AFR = "afr"
     """ Afrikaans """
 
+    AMH = "amh"
+    """ Amharic """
+
     ARA = "ara"
     """ Arabic """
 
     ARG = "arg"
     """ Aragonese """
+
+    ASM = "asm"
+    """ Assamese """
+
+    AZE = "aze"
+    """ Azerbaijani """
+
+    BEN = "ben"
+    """ Bengali """
 
     BOS = "bos"
     """ Bosnian """
@@ -94,6 +117,9 @@ class Language(object):
     FRA = "fra"
     """ French """
 
+    GLA = "gla"
+    """ Scottish Gaelic """
+
     GLE = "gle"
     """ Irish """
 
@@ -102,6 +128,12 @@ class Language(object):
 
     GRC = "grc"
     """ Greek (Ancient) """
+
+    GRN = "grn"
+    """ Guarani """
+
+    GUJ = "guj"
+    """ Gujarati """
 
     HEB = "heb"
     """ Hebrew """
@@ -118,6 +150,9 @@ class Language(object):
     HYE = "hye"
     """ Armenian """
 
+    INA = "ina"
+    """ Interlingua """
+
     IND = "ind"
     """ Indonesian """
 
@@ -133,11 +168,17 @@ class Language(object):
     JPN = "jpn"
     """ Japanese """
 
+    KAL = "kal"
+    """ Greenlandic """
+
     KAN = "kan"
     """ Kannada """
 
     KAT = "kat"
     """ Georgian """
+
+    KIR = "kir"
+    """ Kirghiz """
 
     KOR = "kor"
     """ Korean """
@@ -160,11 +201,23 @@ class Language(object):
     MAL = "mal"
     """ Malayalam """
 
+    MAR = "mar"
+    """ Marathi """
+
     MKD = "mkd"
     """ Macedonian """
 
+    MLT = "mlt"
+    """ Maltese """
+
     MSA = "msa"
     """ Malay """
+
+    MYA = "mya"
+    """ Burmese """
+
+    NAH = "nah"
+    """ Nahuatl """
 
     NEP = "nep"
     """ Nepali """
@@ -175,8 +228,17 @@ class Language(object):
     NOR = "nor"
     """ Norwegian """
 
+    ORI = "ori"
+    """ Oriya """
+
+    ORM = "orm"
+    """ Oromo """
+
     PAN = "pan"
     """ Panjabi """
+
+    PAP = "pap"
+    """ Papiamento """
 
     POL = "pol"
     """ Polish """
@@ -190,8 +252,14 @@ class Language(object):
     RUS = "rus"
     """ Russian """
 
+    SIN = "sin"
+    """ Sinhala """
+
     SLK = "slk"
     """ Slovak """
+
+    SLV = "slv"
+    """ Slovenian """
 
     SPA = "spa"
     """ Spanish """
@@ -211,14 +279,26 @@ class Language(object):
     TAM = "tam"
     """ Tamil """
 
+    TAT = "tat"
+    """ Tatar """
+
+    TEL = "tel"
+    """ Telugu """
+
     THA = "tha"
     """ Thai """
+
+    TSN = "tsn"
+    """ Tswana """
 
     TUR = "tur"
     """ Turkish """
 
     UKR = "ukr"
     """ Ukrainian """
+
+    URD = "urd"
+    """ Urdu """
 
     VIE = "vie"
     """ Vietnamese """
@@ -231,8 +311,12 @@ class Language(object):
 
     ALLOWED_VALUES = [
         AFR,
+        AMH,
         ARA,
         ARG,
+        ASM,
+        AZE,
+        BEN,
         BOS,
         BUL,
         CAT,
@@ -252,18 +336,23 @@ class Language(object):
         GLE,
         GLG,
         GRC,
+        GRN,
+        GUJ,
         HEB,
         HIN,
         HRV,
         HUN,
         HYE,
+        INA,
         IND,
         ISL,
         ITA,
         JBO,
         JPN,
+        KAL,
         KAN,
         KAT,
+        KIR,
         KOR,
         KUR,
         LAT,
@@ -271,31 +360,41 @@ class Language(object):
         LFN,
         LIT,
         MAL,
+        MAR,
         MKD,
+        MLT,
         MSA,
+        MYA,
+        NAH,
         NEP,
         NLD,
         NOR,
+        ORI,
+        ORM,
         PAN,
+        PAP,
         POL,
         POR,
         RON,
         RUS,
+        SIN,
         SLK,
+        SLV,
         SPA,
         SQI,
         SRP,
         SWA,
         SWE,
         TAM,
+        TAT,
+        TEL,
         THA,
+        TSN,
         TUR,
         UKR,
+        URD,
         VIE,
         YUE,
         ZHO,
     ]
     """ List of all the allowed values """
-
-
-

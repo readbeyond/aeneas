@@ -1,6 +1,26 @@
 #!/usr/bin/env python
 # coding=utf-8
 
+# aeneas is a Python/C library and a set of tools
+# to automagically synchronize audio and text (aka forced alignment)
+#
+# Copyright (C) 2012-2013, Alberto Pettarin (www.albertopettarin.it)
+# Copyright (C) 2013-2015, ReadBeyond Srl   (www.readbeyond.it)
+# Copyright (C) 2015-2016, Alberto Pettarin (www.albertopettarin.it)
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU Affero General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU Affero General Public License for more details.
+#
+# You should have received a copy of the GNU Affero General Public License
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
 """
 This module contains the following classes:
 
@@ -24,16 +44,6 @@ from aeneas.logger import Loggable
 import aeneas.globalconstants as gc
 import aeneas.globalfunctions as gf
 
-__author__ = "Alberto Pettarin"
-__copyright__ = """
-    Copyright 2012-2013, Alberto Pettarin (www.albertopettarin.it)
-    Copyright 2013-2015, ReadBeyond Srl   (www.readbeyond.it)
-    Copyright 2015-2016, Alberto Pettarin (www.albertopettarin.it)
-    """
-__license__ = "GNU AGPL v3"
-__version__ = "1.5.1"
-__email__ = "aeneas@readbeyond.it"
-__status__ = "Production"
 
 class ContainerFormat(object):
     """
@@ -63,7 +73,6 @@ class ContainerFormat(object):
 
     ALLOWED_VALUES = [EPUB, TAR, TAR_GZ, TAR_BZ2, UNPACKED, ZIP]
     """ List of all the allowed values """
-
 
 
 class Container(Loggable):
@@ -109,6 +118,7 @@ class Container(Loggable):
         :rtype: string
         """
         return self.__file_path
+
     @file_path.setter
     def file_path(self, file_path):
         self.__file_path = file_path
@@ -121,6 +131,7 @@ class Container(Loggable):
         :rtype: :class:`~aeneas.container.ContainerFormat`
         """
         return self.__container_format
+
     @container_format.setter
     def container_format(self, container_format):
         self.__container_format = container_format
@@ -382,7 +393,6 @@ class Container(Loggable):
         self.log(u"Setting actual container... done")
 
 
-
 class _ContainerTAR(Loggable):
     """
     A TAR container.
@@ -439,7 +449,6 @@ class _ContainerTAR(Loggable):
             self.log_exc(u"Cannot compress TAR File", exc, True, OSError)
 
 
-
 class _ContainerZIP(Loggable):
     """
     A ZIP container.
@@ -491,7 +500,6 @@ class _ContainerZIP(Loggable):
             self.log_exc(u"Cannot compress ZIP file", exc, True, OSError)
 
 
-
 class _ContainerUnpacked(Loggable):
     """
     An unpacked container.
@@ -511,7 +519,7 @@ class _ContainerUnpacked(Loggable):
             for current_dir, dirs, files in os.walk(self.file_path):
                 current_dir_abs = os.path.abspath(current_dir)
                 for f in files:
-                    relative_path = os.path.join(current_dir_abs, f)[root_len+1:]
+                    relative_path = os.path.join(current_dir_abs, f)[(root_len + 1):]
                     result.append(relative_path)
             return sorted(result)
         except Exception as exc:
@@ -540,6 +548,3 @@ class _ContainerUnpacked(Loggable):
             gf.copytree(input_path, self.file_path)
         except Exception as exc:
             self.log_exc(u"Cannot compress unpacked", exc, True, OSError)
-
-
-

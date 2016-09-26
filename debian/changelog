@@ -1,3 +1,18 @@
+aeneas (1.6.0) stable; urgency=medium
+
+  * Fixed bug #102
+  * Better TTS engine wrappers
+  * Added eSpeak-ng TTS wrapper
+  * Added caching audio files for faster synthesis
+  * The TTS engine can be selected per-level (text in multilevel format)
+  * Added cfw Python C++ extension for Festival (disabled by default)
+  * Python C extension compilation can be disabled in setup.py via env vars
+  * All Python code formatted according to PEP 8 (-E501)
+  * All source files have AGPLv3 header
+  * Code, test, and documentation improvements
+
+ -- alberto <alberto@nievo>  Mon, 26 Sep 2016 01:02:03 +0200
+
 aeneas (1.5.1) stable; urgency=medium
 
   * Better aeneas.tools.*

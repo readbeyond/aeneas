@@ -4,8 +4,8 @@ aeneas
 **aeneas** is a Python/C library and a set of tools to automagically
 synchronize audio and text (aka forced alignment).
 
--  Version: 1.5.1.0
--  Date: 2016-07-25
+-  Version: 1.6.0.0
+-  Date: 2016-09-26
 -  Developed by: `ReadBeyond <http://www.readbeyond.it/>`__
 -  Lead Developer: `Alberto Pettarin <http://www.albertopettarin.it/>`__
 -  License: the GNU Affero General Public License Version 3 (AGPL v3)
@@ -74,8 +74,8 @@ System Requirements
    later (Linux, OS X)
 3. `FFmpeg <https://www.ffmpeg.org/>`__
 4. `eSpeak <http://espeak.sourceforge.net/>`__
-5. Python modules ``BeautifulSoup4``, ``lxml``, and ``numpy``
-6. Python C headers to compile the Python C extensions (optional but
+5. Python packages ``BeautifulSoup4``, ``lxml``, and ``numpy``
+6. Python headers to compile the Python C/C++ extensions (optional but
    strongly recommended)
 7. A shell supporting UTF-8 (optional but strongly recommended)
 
@@ -235,22 +235,24 @@ Supported Features
 -  Input audio file formats: all those readable by ``ffmpeg``
 -  Output sync map formats: AUD, CSV, EAF, JSON, SMIL, SRT, SSV, SUB,
    TSV, TTML, TXT, VTT, XML
--  Confirmed working on languages: ARA, BUL, CAT, CYM, CES, DAN, DEU,
+-  Confirmed working on 37 languages: ARA, BUL, CAT, CYM, CES, DAN, DEU,
    ELL, ENG, EPO, EST, FAS, FIN, FRA, GLE, GRC, HRV, HUN, ISL, ITA, JPN,
    LAT, LAV, LIT, NLD, NOR, RON, RUS, POL, POR, SLK, SPA, SRP, SWA, SWE,
    TUR, UKR
 -  MFCC and DTW computed via Python C extensions to reduce the
    processing time
--  Several built-in TTS engine wrappers: eSpeak (default, FLOSS),
-   Festival (FLOSS), Nuance TTS API (commercial)
+-  Several built-in TTS engine wrappers: eSpeak (default), eSpeak-ng,
+   Festival, Nuance TTS API
 -  Default TTS (eSpeak) called via a Python C extension for fast audio
    synthesis
--  A custom, user-provided TTS engine Python wrapper can be used instead
-   of the built-in ones (included example for speect)
+-  Possibility of running a custom, user-provided TTS engine Python
+   wrapper (e.g., included example for speect)
 -  Batch processing of multiple audio/text pairs
 -  Download audio from a YouTube video
 -  In multilevel mode, recursive alignment from paragraph to sentence to
    word level
+-  In multilevel mode, time resolution and/or TTS engine can be
+   specified for each level independently
 -  Robust against misspelled/mispronounced words, local rearrangements
    of words, background noise/sporadic spikes
 -  Adjustable splitting times, including a max character/second
@@ -261,7 +263,7 @@ Supported Features
 -  Execution parameters tunable at runtime
 -  Code suitable for Web app deployment (e.g., on-demand cloud
    computing)
--  Extensive test suite including 898 unit/integration/performance
+-  Extensive test suite including 800+ unit/integration/performance
    tests, that run and must pass before each release
 
 Limitations and Missing Features
@@ -333,31 +335,18 @@ Feel free to `get in touch <mailto:aeneas@readbeyond.it>`__.
 Contributing
 ~~~~~~~~~~~~
 
-If you think you found a bug, please use the `GitHub issue
-tracker <https://github.com/readbeyond/aeneas/issues>`__ to file a bug
-report.
+If you think you found a bug or you have a feature request, please use
+the `GitHub issue
+tracker <https://github.com/readbeyond/aeneas/issues>`__ to submit it.
 
-If you are able to contribute code directly, that is awesome! I will be
-glad to merge it! Just a few rules, to make life easier for both you and
-me:
+If you want to ask a question about using **aeneas**, your best option
+consists in sending an email to the `mailing
+list <https://groups.google.com/d/forum/aeneas-forced-alignment>`__.
 
-1. Please do not work on the ``master`` branch. Instead, create a new
-   branch on your GitHub repo by cheking out the ``devel`` branch. Open
-   a pull request from your branch on your repo to the ``devel`` branch
-   on this GitHub repo.
-
-2. Please make your code consistent with the existing code base style
-   (see the `Google Python Style
-   Guide <https://google-styleguide.googlecode.com/svn/trunk/pyguide.html>`__
-   ), and test your contributed code against the unit tests before
-   opening the pull request.
-
-3. Ideally, add some unit tests for the code you are submitting, either
-   adding them to the existing unit tests or creating a new file in
-   ``aeneas/tests/``.
-
-4. **Please note that, by opening a pull request, you automatically
-   agree to apply the AGPL v3 license to the code you contribute.**
+Finally, code contributions are welcome! Please refer to the `Code
+Contribution
+Guide <https://github.com/readbeyond/aeneas/blob/master/wiki/CONTRIBUTING.md>`__
+for details about the branch policies and the code style to follow.
 
 Acknowledgments
 ---------------
@@ -372,6 +361,9 @@ asynchronous usage.
 
 **Chris Hubbard** prepared the files for packaging aeneas as a
 Debian/Ubuntu ``.deb``.
+
+**Daniel Bair** prepared the ``brew`` formula for installing **aeneas**
+and its dependencies on Mac OS X.
 
 **Daniel Bair**, **Chris Hubbard**, and **Richard Margetts** packaged
 the installers for Mac OS X and Windows.

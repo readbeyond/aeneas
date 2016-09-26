@@ -1,6 +1,26 @@
 #!/usr/bin/env python
 # coding=utf-8
 
+# aeneas is a Python/C library and a set of tools
+# to automagically synchronize audio and text (aka forced alignment)
+#
+# Copyright (C) 2012-2013, Alberto Pettarin (www.albertopettarin.it)
+# Copyright (C) 2013-2015, ReadBeyond Srl   (www.readbeyond.it)
+# Copyright (C) 2015-2016, Alberto Pettarin (www.albertopettarin.it)
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU Affero General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU Affero General Public License for more details.
+#
+# You should have received a copy of the GNU Affero General Public License
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
 """
 This module contains the implementation
 of dynamic time warping (DTW) algorithms
@@ -41,16 +61,6 @@ from aeneas.logger import Loggable
 from aeneas.runtimeconfiguration import RuntimeConfiguration
 import aeneas.globalfunctions as gf
 
-__author__ = "Alberto Pettarin"
-__copyright__ = """
-    Copyright 2012-2013, Alberto Pettarin (www.albertopettarin.it)
-    Copyright 2013-2015, ReadBeyond Srl   (www.readbeyond.it)
-    Copyright 2015-2016, Alberto Pettarin (www.albertopettarin.it)
-    """
-__license__ = "GNU AGPL v3"
-__version__ = "1.5.1"
-__email__ = "aeneas@readbeyond.it"
-__status__ = "Production"
 
 class DTWAlgorithm(object):
     """
@@ -81,7 +91,6 @@ class DTWAlgorithm(object):
     """ List of all the allowed values """
 
 
-
 class DTWAlignerNotInitialized(Exception):
     """
     Error raised when trying to compute
@@ -89,7 +98,6 @@ class DTWAlignerNotInitialized(Exception):
     are not initialized yet.
     """
     pass
-
 
 
 class DTWAligner(Loggable):
@@ -220,8 +228,16 @@ class DTWAligner(Loggable):
         self.log([u"Fragments:        %d", len(synt_anchors)])
         self.log([u"Path length:      %d", len(real_indices)])
         # synt_anchors as in seconds, convert them in MFCC indices
+        # see also issue #102
         mws = self.rconf.mws
-        anchor_indices = numpy.array([int(a[0] / mws) for a in synt_anchors])
+        sample_rate = self.rconf.sample_rate
+        samples_per_mws = mws * sample_rate
+        if int(samples_per_mws) == samples_per_mws:
+            anchor_indices = numpy.array([int(a[0] / mws) for a in synt_anchors])
+        else:
+            self.log_warn(u"The number of samples in each window shift is not an integer, time drift might occur.")
+            # NOTE this is not elegant, but it saves the day for the user
+            anchor_indices = numpy.array([(int(a[0] * sample_rate / mws) / sample_rate) for a in synt_anchors])
         #
         # right side sets the split point at the very beginning of "next" fragment
         #
@@ -229,7 +245,7 @@ class DTWAligner(Loggable):
         #      an index == len(synt_indices) == len(real_indices)
         #      when the insertion point is past the last element of synt_indices
         #      causing the fancy indexing real_indices[...] below might fail
-        begin_indices = numpy.clip(numpy.searchsorted(synt_indices, anchor_indices, side="right"), 0, len(synt_indices)-1)
+        begin_indices = numpy.clip(numpy.searchsorted(synt_indices, anchor_indices, side="right"), 0, len(synt_indices) - 1)
         # first split must occur at zero
         begin_indices[0] = 0
         #
@@ -289,8 +305,6 @@ class DTWAligner(Loggable):
                 logger=self.logger
             )
         return dtw
-
-
 
 
 class DTWStripe(Loggable):
@@ -416,14 +430,14 @@ class DTWStripe(Loggable):
         for i in range(n):
             # center j at row i
             center_j = (m * i) // n
-            #self.log([u"Center at row %d is %d", i, center_j])
+            # COMMENTED self.log([u"Center at row %d is %d", i, center_j])
             range_start = max(0, center_j - (delta // 2))
             range_end = range_start + delta
             if range_end > m:
                 range_end = m
                 range_start = range_end - delta
             centers[i] = range_start
-            #self.log([u"Range at row %d is %d %d", i, range_start, range_end])
+            # COMMENTED self.log([u"Range at row %d is %d %d", i, range_start, range_end])
             for j in range(range_start, range_end):
                 tmp = mfcc1[:, i].transpose().dot(mfcc2[:, j])
                 tmp /= norm2_1[i] * norm2_2[j]
@@ -443,29 +457,29 @@ class DTWStripe(Loggable):
         n, delta = cost_matrix.shape
         self.log([u"n delta: %d %d", n, delta])
         current_row = numpy.copy(cost_matrix[0, :])
-        #cost_matrix[0][0] = current_row[0]
+        # COMMENTED cost_matrix[0][0] = current_row[0]
         for j in range(1, delta):
-            cost_matrix[0][j] = current_row[j] + cost_matrix[0][j-1]
+            cost_matrix[0][j] = current_row[j] + cost_matrix[0][j - 1]
         # fill table
         for i in range(1, n):
             current_row = numpy.copy(cost_matrix[i, :])
-            offset = centers[i] - centers[i-1]
+            offset = centers[i] - centers[i - 1]
             for j in range(delta):
                 cost0 = numpy.inf
-                if (j+offset) < delta:
-                    cost0 = cost_matrix[i-1][j+offset]
+                if (j + offset) < delta:
+                    cost0 = cost_matrix[i - 1][j + offset]
                 cost1 = numpy.inf
                 if j > 0:
-                    cost1 = cost_matrix[i][j-1]
+                    cost1 = cost_matrix[i][j - 1]
                 cost2 = numpy.inf
-                if ((j+offset-1) < delta) and ((j+offset-1) >= 0):
-                    cost2 = cost_matrix[i-1][j+offset-1]
+                if ((j + offset - 1) < delta) and ((j + offset - 1) >= 0):
+                    cost2 = cost_matrix[i - 1][j + offset - 1]
                 cost_matrix[i][j] = current_row[j] + min(cost0, cost1, cost2)
         self.log(u"Computing the acm with the in-place algorithm... done")
         return cost_matrix
 
     # DISABLED
-    #def _compute_acm_not_in_place(self, cost_matrix, centers):
+    # def _compute_acm_not_in_place(self, cost_matrix, centers):
     #    self.log(u"Computing the acm with the not-in-place algorithm...")
     #    acc_matrix = numpy.zeros(cost_matrix.shape)
     #    n, delta = acc_matrix.shape
@@ -502,35 +516,35 @@ class DTWStripe(Loggable):
         # compute best (min cost) path
         while (i > 0) or (j > 0):
             if i == 0:
-                path.append((0, j-1))
+                path.append((0, j - 1))
                 j -= 1
             elif j == 0:
-                path.append((i-1, 0))
+                path.append((i - 1, 0))
                 i -= 1
             else:
-                offset = centers[i] - centers[i-1]
+                offset = centers[i] - centers[i - 1]
                 r_j = j - centers[i]
                 cost0 = numpy.inf
-                if (r_j+offset) < delta:
-                    cost0 = acc_matrix[i-1][r_j+offset]
+                if (r_j + offset) < delta:
+                    cost0 = acc_matrix[i - 1][r_j + offset]
                 cost1 = numpy.inf
                 if r_j > 0:
-                    cost1 = acc_matrix[i][r_j-1]
+                    cost1 = acc_matrix[i][r_j - 1]
                 cost2 = numpy.inf
-                if (r_j > 0) and ((r_j+offset-1) < delta) and ((r_j+offset-1) >= 0):
-                    cost2 = acc_matrix[i-1][r_j+offset-1]
+                if (r_j > 0) and ((r_j + offset - 1) < delta) and ((r_j + offset - 1) >= 0):
+                    cost2 = acc_matrix[i - 1][r_j + offset - 1]
                 costs = [
                     cost0,
                     cost1,
                     cost2
                 ]
                 moves = [
-                    (i-1, j),
-                    (i, j-1),
-                    (i-1, j-1)
+                    (i - 1, j),
+                    (i, j - 1),
+                    (i - 1, j - 1)
                 ]
                 min_cost = numpy.argmin(costs)
-                #self.log([u"Selected min cost move %d", min_cost])
+                # COMMENTED self.log([u"Selected min cost move %d", min_cost])
                 min_move = moves[min_cost]
                 path.append(min_move)
                 i, j = min_move
@@ -538,7 +552,6 @@ class DTWStripe(Loggable):
         path.reverse()
         self.log(u"Computing best path... done")
         return path
-
 
 
 class DTWExact(Loggable):
@@ -595,23 +608,23 @@ class DTWExact(Loggable):
         n, m = cost_matrix.shape
         self.log([u"n m: %d %d", n, m])
         current_row = numpy.copy(cost_matrix[0, :])
-        #cost_matrix[0][0] = current_row[0]
+        # COMMENTED cost_matrix[0][0] = current_row[0]
         for j in range(1, m):
-            cost_matrix[0][j] = current_row[j] + cost_matrix[0][j-1]
+            cost_matrix[0][j] = current_row[j] + cost_matrix[0][j - 1]
         for i in range(1, n):
             current_row = numpy.copy(cost_matrix[i, :])
-            cost_matrix[i][0] = cost_matrix[i-1][0] + current_row[0]
+            cost_matrix[i][0] = cost_matrix[i - 1][0] + current_row[0]
             for j in range(1, m):
                 cost_matrix[i][j] = current_row[j] + min(
-                    cost_matrix[i-1][j],
-                    cost_matrix[i][j-1],
-                    cost_matrix[i-1][j-1]
+                    cost_matrix[i - 1][j],
+                    cost_matrix[i][j - 1],
+                    cost_matrix[i - 1][j - 1]
                 )
         self.log(u"Computing the acm with the in-place algorithm... done")
         return cost_matrix
 
     # DISABLED
-    #def _compute_acm_not_in_place(self, cost_matrix):
+    # def _compute_acm_not_in_place(self, cost_matrix):
     #    self.log(u"Computing the acm with the not-in-place algorithm...")
     #    acc_matrix = numpy.zeros(cost_matrix.shape)
     #    n, m = acc_matrix.shape
@@ -642,24 +655,24 @@ class DTWExact(Loggable):
         # compute best (min cost) path
         while (i > 0) or (j > 0):
             if i == 0:
-                path.append((0, j-1))
+                path.append((0, j - 1))
                 j -= 1
             elif j == 0:
-                path.append((i-1, 0))
+                path.append((i - 1, 0))
                 i -= 1
             else:
                 costs = [
-                    acc_matrix[i-1][j],
-                    acc_matrix[i][j-1],
-                    acc_matrix[i-1][j-1]
+                    acc_matrix[i - 1][j],
+                    acc_matrix[i][j - 1],
+                    acc_matrix[i - 1][j - 1]
                 ]
                 moves = [
-                    (i-1, j),
-                    (i, j-1),
-                    (i-1, j-1)
+                    (i - 1, j),
+                    (i, j - 1),
+                    (i - 1, j - 1)
                 ]
                 min_cost = numpy.argmin(costs)
-                #self.log([u"Selected min cost move %d", min_cost])
+                # COMMENTED self.log([u"Selected min cost move %d", min_cost])
                 min_move = moves[min_cost]
                 path.append(min_move)
                 i, j = min_move
@@ -667,6 +680,3 @@ class DTWExact(Loggable):
         path.reverse()
         self.log(u"Computing best path... done")
         return path
-
-
-

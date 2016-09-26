@@ -1,6 +1,25 @@
 #!/usr/bin/env python
 # coding=utf-8
 
+# aeneas is a Python/C library and a set of tools
+# to automagically synchronize audio and text (aka forced alignment)
+#
+# Copyright (C) 2012-2013, Alberto Pettarin (www.albertopettarin.it)
+# Copyright (C) 2013-2015, ReadBeyond Srl   (www.readbeyond.it)
+# Copyright (C) 2015-2016, Alberto Pettarin (www.albertopettarin.it)
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU Affero General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU Affero General Public License for more details.
+#
+# You should have received a copy of the GNU Affero General Public License
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 """
 This module contains the following classes:
@@ -17,16 +36,6 @@ from __future__ import print_function
 from aeneas.configuration import Configuration
 from aeneas.timevalue import TimeValue
 
-__author__ = "Alberto Pettarin"
-__copyright__ = """
-    Copyright 2012-2013, Alberto Pettarin (www.albertopettarin.it)
-    Copyright 2013-2015, ReadBeyond Srl   (www.readbeyond.it)
-    Copyright 2015-2016, Alberto Pettarin (www.albertopettarin.it)
-    """
-__license__ = "GNU AGPL v3"
-__version__ = "1.5.1"
-__email__ = "aeneas@readbeyond.it"
-__status__ = "Production"
 
 class RuntimeConfiguration(Configuration):
     """
@@ -48,18 +57,20 @@ class RuntimeConfiguration(Configuration):
     otherwise, generate an error if the user attempts
     to use a language not listed.
 
-    Default: ``True``.
+    Default: ``False``.
 
     .. versionadded:: 1.4.1
     """
 
     C_EXTENSIONS = "c_extensions"
     """
-    If ``True`` and Python C extensions are available, use them.
-    Otherwise, use pure Python code.
+    If ``True`` and the Python C/C++ extensions
+    are available, use them.
+    Otherwise, use the pure Python code.
 
     This option is equivalent to
-    setting ``CDTW``, ``CEW``, and ``CMFCC`` to ``True`` at once.
+    setting ``CDTW``, ``CEW``, ``CFW``,
+    and ``CMFCC`` to ``True`` or ``False`` at once.
 
     Default: ``True``.
 
@@ -68,8 +79,9 @@ class RuntimeConfiguration(Configuration):
 
     CDTW = "cdtw"
     """
-    If ``True`` and Python C extension ``cdtw`` is available, use it.
-    Otherwise, use pure Python code.
+    If ``True`` and the Python C extension ``cdtw``
+    is available, use it.
+    Otherwise, use the pure Python code.
 
     Default: ``True``.
 
@@ -78,17 +90,32 @@ class RuntimeConfiguration(Configuration):
 
     CEW = "cew"
     """
-    If ``True`` and Python C extension ``cew`` is available, use it.
-    Otherwise, use pure Python code.
+    If ``True`` and the Python C extension ``cew``
+    is available, use it.
+    Otherwise, use the pure Python code.
 
     Default: ``True``.
 
     .. versionadded:: 1.5.1
     """
 
+    CFW = "cfw"
+    """
+    If ``True`` and the Python C++ extension ``cfw``
+    is available, use it.
+    Otherwise, use the pure Python code.
+
+    Default: ``True``.
+
+    .. versionadded:: 1.6.0
+    """
+
     CEW_SUBPROCESS_ENABLED = "cew_subprocess_enabled"
     """
-    If ``True``, calls to ``aeneas.cew`` will be done via ``subprocess``.
+    If ``True``, calls to ``aeneas.cew``
+    will be done via ``subprocess``, using the
+    :class:`~aeneas.cewsubprocess.CEWSubprocess`
+    helper class.
 
     Default: ``False``.
 
@@ -109,8 +136,9 @@ class RuntimeConfiguration(Configuration):
 
     CMFCC = "cmfcc"
     """
-    If ``True`` and Python C extension ``cmfcc`` is available, use it.
-    Otherwise, use pure Python code.
+    If ``True`` and the Python C extension ``cmfcc``
+    is available, use it.
+    Otherwise, use the pure Python code.
 
     Default: ``True``.
 
@@ -352,6 +380,10 @@ class RuntimeConfiguration(Configuration):
     Important: this feature is experimental, use at your own risk.
     It is recommended not to use this TTS at word-level granularity,
     as it will create many requests, hence it will be expensive.
+    If you still want to use it, you can enable
+    the TTS caching mechanism by setting
+    :data:`~aeneas.runtimeconfiguration.RuntimeConfiguration.TTS_CACHE`
+    to ``True``.
 
     .. versionadded:: 1.5.0
     """
@@ -365,6 +397,10 @@ class RuntimeConfiguration(Configuration):
     Important: this feature is experimental, use at your own risk.
     It is recommended not to use this TTS at word-level granularity,
     as it will create many requests, hence it will be expensive.
+    If you still want to use it, you can enable
+    the TTS caching mechanism by setting
+    :data:`~aeneas.runtimeconfiguration.RuntimeConfiguration.TTS_CACHE`
+    to ``True``.
 
     .. versionadded:: 1.5.0
     """
@@ -439,17 +475,32 @@ class RuntimeConfiguration(Configuration):
     The default value is
     :data:`~aeneas.synthesizer.Synthesizer.ESPEAK` (``espeak``)
     which will use the built-in eSpeak TTS wrapper.
+    You might need to provide a ``/full/path/to/your/espeak`` value
+    to the
+    :data:`~aeneas.runtimeconfiguration.RuntimeConfiguration.TTS_PATH`
+    parameter if the command ``espeak`` is not available in
+    one of the directories listed in your ``PATH`` environment variable.
+
+    Specify the value
+    :data:`~aeneas.synthesizer.Synthesizer.ESPEAKNG` (``espeak-ng``)
+    to use the eSpeak-ng TTS wrapper.
+    You might need to provide a ``/full/path/to/your/espeak-ng`` value
+    to the
+    :data:`~aeneas.runtimeconfiguration.RuntimeConfiguration.TTS_PATH`
+    parameter if the command ``espeak-ng`` is not available in
+    one of the directories listed in your ``PATH`` environment variable.
 
     Specify the value
     :data:`~aeneas.synthesizer.Synthesizer.FESTIVAL` (``festival``)
-    to use the built-in Festival TTS wrapper;
-    you might need to provide the ``text2wave`` or ``/full/path/to/your/text2wave`` value
+    to use the built-in Festival TTS wrapper.
+    You might need to provide a ``/full/path/to/your/text2wave`` value
     to the
     :data:`~aeneas.runtimeconfiguration.RuntimeConfiguration.TTS_PATH`
-    parameter.
+    parameter if the command ``text2wave`` is not available in
+    one of the directories listed in your ``PATH`` environment variable.
 
     Specify the value
-    :data:`~aeneas.synthesizer.Synthesizer.NUANCETTSAPI` (``nuancettsapi``)
+    :data:`~aeneas.synthesizer.Synthesizer.NUANCE` (``nuance``)
     to use the built-in Nuance TTS API wrapper;
     you will need to provide your Nuance Developer API ID and API Key using the
     :data:`~aeneas.runtimeconfiguration.RuntimeConfiguration.NUANCE_TTS_API_ID`
@@ -469,6 +520,27 @@ class RuntimeConfiguration(Configuration):
     .. versionadded:: 1.5.0
     """
 
+    TTS_CACHE = "tts_cache"
+    """
+    If set to ``True``, synthesize each distinct text fragment
+    only once, caching the resulting audio data as a file on disk.
+
+    The cache files will be removed after the synthesis is compled.
+
+    This option is useful when calling TTS engines,
+    via subprocess or remote APIs,
+    on text files with many identical fragments,
+    for example when aligning at word-level granularity.
+
+    Enabling this option will create the cache files in
+    :data:`~aeneas.runtimeconfiguration.RuntimeConfiguration.TMP_PATH`,
+    so make sure that that path has enough free space.
+
+    Default: ``False``.
+
+    .. versionadded:: 1.6.0
+    """
+
     TTS_PATH = "tts_path"
     """
     Path to the TTS engine executable
@@ -476,10 +548,12 @@ class RuntimeConfiguration(Configuration):
     (see the ``aeneas/extra`` directory for examples).
 
     You might need to use a full path,
-    like ``/path/to/your/tts`` or
+    like ``/path/to/your/ttsengine`` or
     ``/path/to/your/ttswrapper.py``.
 
-    Default: ``espeak``.
+    Default: ``None``, implying to use the default path
+    defined by each TTS wrapper, if it calls the TTS engine
+    via ``subprocess`` (otherwise it does not matter).
 
     .. versionadded:: 1.5.0
     """
@@ -490,7 +564,93 @@ class RuntimeConfiguration(Configuration):
     If you specify this value, it will override the default voice code
     associated with the language of your text.
 
+    Default: ``None``.
+
     .. versionadded:: 1.5.0
+    """
+
+    TTS_L1 = "tts_l1"
+    """
+    The TTS engine to use for synthesizing text
+    at level 1 (paragraph).
+
+    See also :data:`~aeneas.runtimeconfiguration.RuntimeConfiguration.TTS`.
+
+    Default: ``espeak``.
+
+    .. versionadded:: 1.6.0
+    """
+
+    TTS_PATH_L1 = "tts_path_l1"
+    """
+    Path to the TTS engine executable to use for synthesizing text
+    at level 1 (paragraph).
+
+    See also :data:`~aeneas.runtimeconfiguration.RuntimeConfiguration.TTS_PATH`.
+
+    Default: ``None``.
+
+    .. versionadded:: 1.6.0
+    """
+
+    TTS_L2 = "tts_l2"
+    """
+    The TTS engine to use for synthesizing text
+    at level 2 (sentence).
+
+    See also :data:`~aeneas.runtimeconfiguration.RuntimeConfiguration.TTS`.
+
+    Default: ``espeak``.
+
+    .. versionadded:: 1.6.0
+    """
+
+    TTS_PATH_L2 = "tts_path_l2"
+    """
+    Path to the TTS engine executable to use for synthesizing text
+    at level 2 (sentence).
+
+    See also :data:`~aeneas.runtimeconfiguration.RuntimeConfiguration.TTS_PATH`.
+
+    Default: ``None``.
+
+    .. versionadded:: 1.6.0
+    """
+
+    TTS_L3 = "tts_l3"
+    """
+    The TTS engine to use for synthesizing text
+    at level 3 (word).
+
+    See also :data:`~aeneas.runtimeconfiguration.RuntimeConfiguration.TTS`.
+
+    Default: ``espeak``.
+
+    .. versionadded:: 1.6.0
+    """
+
+    TTS_PATH_L3 = "tts_path_l3"
+    """
+    Path to the TTS engine executable to use for synthesizing text
+    at level 3 (word).
+
+    See also :data:`~aeneas.runtimeconfiguration.RuntimeConfiguration.TTS_PATH`.
+
+    Default: ``None``.
+
+    .. versionadded:: 1.6.0
+    """
+
+    TTS_GRANULARITY_MAP = {
+        1: (TTS_L1, TTS_PATH_L1),
+        2: (TTS_L2, TTS_PATH_L2),
+        3: (TTS_L3, TTS_PATH_L3),
+    }
+    """
+    Map level numbers to ``TTS_*``
+    and ``TTS_PATH_*`` keys.
+
+    .. versionadded:: 1.6.0
     """
 
     VAD_EXTEND_SPEECH_INTERVAL_AFTER = "vad_extend_speech_after"
@@ -539,24 +699,26 @@ class RuntimeConfiguration(Configuration):
 
     # NOTE not using aliases just not to become confused
     #      about external (user rconf) and internal (lib code) key names
+    #      although the functionality might be useful in the future
     FIELDS = [
         (ALLOW_UNLISTED_LANGUAGES, (False, bool, [])),
 
         (C_EXTENSIONS, (True, bool, [])),
         (CDTW, (True, bool, [])),
         (CEW, (True, bool, [])),
+        (CFW, (True, bool, [])),
         (CMFCC, (True, bool, [])),
 
         (CEW_SUBPROCESS_ENABLED, (False, bool, [])),
-        (CEW_SUBPROCESS_PATH, ("python", None, [])), # or a full path like "/usr/bin/python"
+        (CEW_SUBPROCESS_PATH, ("python", None, [])),    # or a full path like "/usr/bin/python"
 
         (DTW_ALGORITHM, ("stripe", None, [])),
         (DTW_MARGIN, ("60.000", TimeValue, [])),
 
-        (FFMPEG_PATH, ("ffmpeg", None, [])), # or a full path like "/usr/bin/ffmpeg"
+        (FFMPEG_PATH, ("ffmpeg", None, [])),            # or a full path like "/usr/bin/ffmpeg"
         (FFMPEG_SAMPLE_RATE, (16000, int, [])),
 
-        (FFPROBE_PATH, ("ffprobe", None, [])), # or a full path like "/usr/bin/ffprobe"
+        (FFPROBE_PATH, ("ffprobe", None, [])),          # or a full path like "/usr/bin/ffprobe"
 
         (JOB_MAX_TASKS, (0, int, [])),
 
@@ -587,8 +749,16 @@ class RuntimeConfiguration(Configuration):
         (TMP_PATH, (None, None, [])),
 
         (TTS, ("espeak", None, [])),
-        (TTS_PATH, ("espeak", None, [])), # or a full path like "/usr/bin/espeak"
+        (TTS_PATH, (None, None, [])),                   # None (= default) or "espeak" or "/usr/bin/espeak"
         (TTS_VOICE_CODE, (None, None, [])),
+        (TTS_CACHE, (False, bool, [])),
+
+        (TTS_L1, ("espeak", None, [])),
+        (TTS_PATH_L1, (None, None, [])),                # None (= default) or "espeak" or "/usr/bin/espeak"
+        (TTS_L2, ("espeak", None, [])),
+        (TTS_PATH_L2, (None, None, [])),                # None (= default) or "espeak" or "/usr/bin/espeak"
+        (TTS_L3, ("espeak", None, [])),
+        (TTS_PATH_L3, (None, None, [])),                # None (= default) or "espeak" or "/usr/bin/espeak"
 
         (VAD_EXTEND_SPEECH_INTERVAL_AFTER, ("0.000", TimeValue, [])),
         (VAD_EXTEND_SPEECH_INTERVAL_BEFORE, ("0.000", TimeValue, [])),
@@ -615,6 +785,17 @@ class RuntimeConfiguration(Configuration):
         return new_rconf
 
     @property
+    def sample_rate(self):
+        """
+        Return the value of the
+        :data:`~aeneas.runtimeconfiguration.RuntimeConfiguration.FFMPEG_SAMPLE_RATE`
+        key stored in this configuration object.
+
+        :rtype: int
+        """
+        return self[self.FFMPEG_SAMPLE_RATE]
+
+    @property
     def mws(self):
         """
         Return the value of the
@@ -635,6 +816,28 @@ class RuntimeConfiguration(Configuration):
         :rtype: :class:`~aeneas.timevalue.TimeValue`
         """
         return self[self.MFCC_WINDOW_LENGTH]
+
+    @property
+    def tts(self):
+        """
+        Return the value of the
+        :data:`~aeneas.runtimeconfiguration.RuntimeConfiguration.TTS`
+        key stored in this configuration object.
+
+        :rtype: string
+        """
+        return self[self.TTS]
+
+    @property
+    def tts_path(self):
+        """
+        Return the value of the
+        :data:`~aeneas.runtimeconfiguration.RuntimeConfiguration.TTS_PATH`
+        key stored in this configuration object.
+
+        :rtype: string
+        """
+        return self[self.TTS_PATH]
 
     def set_granularity(self, level):
         """
@@ -657,5 +860,23 @@ class RuntimeConfiguration(Configuration):
             self[self.MFCC_WINDOW_LENGTH] = self[length_key]
             self[self.MFCC_WINDOW_SHIFT] = self[shift_key]
 
+    def set_tts(self, level):
+        """
+        Set the values for
+        :data:`~aeneas.runtimeconfiguration.RuntimeConfiguration.TTS`
+        and
+        :data:`~aeneas.runtimeconfiguration.RuntimeConfiguration.TTS_PATH`
+        matching the given granularity level.
 
+        Currently supported levels:
 
+        * ``1`` (paragraph)
+        * ``2`` (sentence)
+        * ``3`` (word)
+
+        :param int level: the desired granularity level
+        """
+        if level in self.TTS_GRANULARITY_MAP.keys():
+            tts_key, tts_path_key = self.TTS_GRANULARITY_MAP[level]
+            self[self.TTS] = self[tts_key]
+            self[self.TTS_PATH] = self[tts_path_key]

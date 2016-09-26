@@ -1,6 +1,26 @@
 #!/usr/bin/env python
 # coding=utf-8
 
+# aeneas is a Python/C library and a set of tools
+# to automagically synchronize audio and text (aka forced alignment)
+#
+# Copyright (C) 2012-2013, Alberto Pettarin (www.albertopettarin.it)
+# Copyright (C) 2013-2015, ReadBeyond Srl   (www.readbeyond.it)
+# Copyright (C) 2015-2016, Alberto Pettarin (www.albertopettarin.it)
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU Affero General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU Affero General Public License for more details.
+#
+# You should have received a copy of the GNU Affero General Public License
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
 """
 A wrapper for a custom TTS engine.
 """
@@ -9,20 +29,10 @@ from __future__ import absolute_import
 from __future__ import print_function
 
 from aeneas.language import Language
-from aeneas.ttswrapper import TTSWrapper
+from aeneas.ttswrappers.basettswrapper import BaseTTSWrapper
 
-__author__ = "Alberto Pettarin"
-__copyright__ = """
-    Copyright 2012-2013, Alberto Pettarin (www.albertopettarin.it)
-    Copyright 2013-2015, ReadBeyond Srl   (www.readbeyond.it)
-    Copyright 2015-2016, Alberto Pettarin (www.albertopettarin.it)
-    """
-__license__ = "GNU AGPL v3"
-__version__ = "1.5.1"
-__email__ = "aeneas@readbeyond.it"
-__status__ = "Production"
 
-class CustomTTSWrapper(TTSWrapper):
+class CustomTTSWrapper(BaseTTSWrapper):
     """
     A wrapper for the ``espeak`` TTS engine,
     to illustrate the use of custom TTS wrapper
@@ -46,8 +56,6 @@ class CustomTTSWrapper(TTSWrapper):
     :param logger: the logger object
     :type  logger: :class:`~aeneas.logger.Logger`
     """
-
-    TAG = u"CustomTTSWrapper"
 
     #
     # NOTE create aliases for the language codes
@@ -73,17 +81,24 @@ class CustomTTSWrapper(TTSWrapper):
     #      mock support for Ukrainian with Russian voice
     #
     LANGUAGE_TO_VOICE_CODE = {
-        ENG : "en",
-        ITA : "it",
-        RUS : "ru",
-        UKR : "ru",
+        ENG: "en",
+        ITA: "it",
+        RUS: "ru",
+        UKR: "ru",
     }
     DEFAULT_LANGUAGE = ENG
 
     #
-    # NOTE eSpeak always outputs to PCM16 mono WAVE (RIFF)
+    # NOTE eSpeak always outputs to PCM16 mono WAVE (RIFF) at 22050 Hz
     #
-    OUTPUT_MONO_WAVE = True
+    OUTPUT_AUDIO_FORMAT = ("pcm_s16le", 1, 22050)
+
+    #
+    # NOTE calling eSpeak via subprocess
+    #
+    HAS_SUBPROCESS_CALL = True
+
+    TAG = u"CustomTTSWrapperESPEAK"
 
     def __init__(self, rconf=None, logger=None):
         #
@@ -91,24 +106,15 @@ class CustomTTSWrapper(TTSWrapper):
         #      in a class named CustomTTSWrapper
         #      otherwise the Synthesizer will not work
         #
-        # NOTE this custom TTS wrapper implements
-        #      only the subprocess call method
-        #      hence we set the following init parameters
-        #
-        super(CustomTTSWrapper, self).__init__(
-            has_subprocess_call=True,
-            has_c_extension_call=False,
-            has_python_call=False,
-            rconf=rconf,
-            logger=logger
-        )
+        super(CustomTTSWrapper, self).__init__(rconf=rconf, logger=logger)
         #
         # NOTE this example is minimal, as we implement only
         #      the subprocess call method
         #      hence, all we need to do is to specify
         #      how to map the command line arguments of the TTS engine
         #
-        # NOTE if our TTS engine was callable via Python or a Python C extension,
+        # NOTE if our TTS engine was callable via Python
+        #      or a Python C extension,
         #      we would have needed to write a _synthesize_multiple_python()
         #      or a _synthesize_multiple_c_extension() function,
         #      with the same I/O interface of
@@ -117,7 +123,7 @@ class CustomTTSWrapper(TTSWrapper):
         # NOTE on a command line, you will use eSpeak
         #      to synthesize some text to a WAVE file as follows:
         #
-        #      $ echo "text to be synthesized" | espeak -v en -w output_file.wav
+        #      $ echo "text to synthesize" | espeak -v en -w output_file.wav
         #
         #      Observe that text is read from stdin, while the audio data
         #      is written to a file specified by a given output path,
@@ -126,27 +132,30 @@ class CustomTTSWrapper(TTSWrapper):
         #      introduced by the "-v" switch.
         #
         self.set_subprocess_arguments([
-            u"/usr/bin/espeak",                         # path of espeak executable; you can use just "espeak" if it is in your PATH
-            u"-v",                                      # append "-v"
-            TTSWrapper.CLI_PARAMETER_VOICE_CODE_STRING, # it will be replaced by the actual voice code
-            u"-w",                                      # append "-w"
-            TTSWrapper.CLI_PARAMETER_WAVE_PATH,         # it will be replaced by the actual output file path
-            TTSWrapper.CLI_PARAMETER_TEXT_STDIN         # text is read from stdin
+            u"/usr/bin/espeak",                     # path of espeak executable or just "espeak" if it is in your PATH
+            u"-v",                                  # append "-v"
+            self.CLI_PARAMETER_VOICE_CODE_STRING,   # it will be replaced by the actual voice code
+            u"-w",                                  # append "-w"
+            self.CLI_PARAMETER_WAVE_PATH,           # it will be replaced by the actual output file path
+            self.CLI_PARAMETER_TEXT_STDIN           # text is read from stdin
         ])
         #
         # NOTE if your TTS engine only reads text from a file
-        #      you can use the TTSWrapper.CLI_PARAMETER_TEXT_PATH placeholder.
+        #      you can use the
+        #      BaseTTSWrapper.CLI_PARAMETER_TEXT_PATH placeholder.
         #
         # NOTE if your TTS engine only writes audio data to stdout
-        #      you can use the TTSWrapper.CLI_PARAMETER_WAVE_STDOUT placeholder.
+        #      you can use the
+        #      BaseTTSWrapper.CLI_PARAMETER_WAVE_STDOUT placeholder.
         #
         # NOTE if your TTS engine needs a more complex parameter
-        #      for selecting the voice, e.g. Festival needs '-eval "(language_italian)"',
+        #      for selecting the voice, e.g. Festival needs
+        #      '-eval "(language_italian)"',
         #      you can implement a _voice_code_to_subprocess() function
-        #      and use the TTSWrapper.CLI_PARAMETER_VOICE_CODE_FUNCTION placeholder
-        #      instead of the TTSWrapper.CLI_PARAMETER_VOICE_CODE_STRING placeholder.
-        #      See the aeneas/festivalwrapper.py file for an example.
+        #      and use the
+        #      BaseTTSWrapper.CLI_PARAMETER_VOICE_CODE_FUNCTION placeholder
+        #      instead of the
+        #      BaseTTSWrapper.CLI_PARAMETER_VOICE_CODE_STRING placeholder.
+        #      See the aeneas/ttswrappers/festivalttswrapper.py file
+        #      for an example.
         #
-
-
-

@@ -1,5 +1,6 @@
 recursive-include aeneas/cdtw *
 recursive-include aeneas/cew *
+recursive-include aeneas/cfw *
 recursive-include aeneas/cint *
 recursive-include aeneas/cmfcc *
 recursive-include aeneas/cwave *
@@ -7,6 +8,7 @@ recursive-include aeneas/extra *
 prune aeneas/extra/ctw_speect
 recursive-include aeneas/res *
 recursive-include aeneas/tools/res *
+recursive-include aeneas/ttswrappers *
 include aeneas_check_setup.py
 recursive-include bin *
 recursive-include docs *
@@ -18,6 +20,7 @@ include output/.gitignore
 include README.md
 include README.rst
 include requirements.txt
+include setupmeta.py
 recursive-include thirdparty *
 include VERSION
 recursive-include wiki *

@@ -13,7 +13,9 @@ In computer science this task is known as (automatically computing a) **forced a
 
 For example, given the verses and a ``53.240s``-long audio recording
 of *Sonnet I* by William Shakespeare,
-**aeneas** might compute a map like the following::
+**aeneas** might compute a map like the following:
+
+.. code-block:: text
 
     1                                                     => [00:00:00.000, 00:00:02.640]
     From fairest creatures we desire increase,            => [00:00:02.640, 00:00:05.880]
@@ -51,7 +53,7 @@ Usage
 -----
 
 **aeneas** can be used via the **built-in command line tools**,
-or as a **Python module** inside third-party code.
+or as a **Python package** inside third-party code.
 
 (If you do not plan to write Python code,
 just proceed to the next section describing
@@ -111,6 +113,7 @@ enabling the user to run **live examples**.
 The help message for ``aeneas.tools.execute_job`` reads:
 
 .. literalinclude:: _static/execute_job_help.txt
+    :language: text
 
 The paths in the example might differ, depending on the installation location of **aeneas**.
 Usually, each command line in the ``EXAMPLES`` section
@@ -119,16 +122,20 @@ can be copied-and-pasted to see the corresponding example running live.
 The help message for ``aeneas.tools.execute_task`` reads:
 
 .. literalinclude:: _static/execute_task_help.txt
+    :language: text
 
 The ``--examples`` switch prints a list of **common** built-in live examples:
 
 .. literalinclude:: _static/execute_task_examples.txt
+    :language: text
 
 Similarly, the ``--examples-all`` switch prints a list
 of more than twenty built-in examples,
-covering **more specific input/output/parameter combinations**.
+covering **more peculiar input/output/parameter combinations**.
 
-For example, ``--example-srt`` produces the following output::
+For example, ``--example-srt`` produces the following output:
+
+.. code-block:: text
 
     $ python -m aeneas.tools.execute_task --example-srt
     [INFO] Running example task with arguments:
@@ -152,7 +159,9 @@ automatically aligned with the audio file ``audio.mp3``.
 
 Example shortcuts also print the **actual parameters**
 which are hidden behind the ``--example-srt`` shortcut.
-Thus, the above example is equivalent to::
+Thus, the above example is equivalent to:
+
+.. code-block:: text
 
     $ python -m aeneas.tools.execute_task aeneas/tools/res/audio.mp3 aeneas/tools/res/subtitles.txt "task_language=eng|is_text_type=subtitles|os_task_file_format=srt" output/sonnet.srt
     [INFO] Validating config string (specify --skip-validator to bypass)...
@@ -166,7 +175,9 @@ Thus, the above example is equivalent to::
     [INFO] Created file 'output/sonnet.srt'
 
 Note that a validation of the input files and parameters is performed as the first step.
-If incorrect or incomplete parameters are specified, an error message is printed::
+If incorrect or incomplete parameters are specified, an error message is printed:
+
+.. code-block:: text
 
     $ python -m aeneas.tools.execute_task aeneas/tools/res/audio.mp3 aeneas/tools/res/subtitles.txt "task_language=eng|is_text_type=subtitles" output/sonnet.srt
     [INFO] Validating config string (specify --skip-validator to bypass)...
@@ -182,8 +193,8 @@ To learn more, please continue with the :ref:`clitutorial`.
 
 
 
-Using aeneas As A Python Module
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Using aeneas As A Python Package
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Please consult the :ref:`libtutorial`.
 

@@ -1,6 +1,25 @@
 #!/usr/bin/env python
 # coding=utf-8
 
+# aeneas is a Python/C library and a set of tools
+# to automagically synchronize audio and text (aka forced alignment)
+#
+# Copyright (C) 2012-2013, Alberto Pettarin (www.albertopettarin.it)
+# Copyright (C) 2013-2015, ReadBeyond Srl   (www.readbeyond.it)
+# Copyright (C) 2015-2016, Alberto Pettarin (www.albertopettarin.it)
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU Affero General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU Affero General Public License for more details.
+#
+# You should have received a copy of the GNU Affero General Public License
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 """
 This module contains the following classes:
@@ -25,16 +44,6 @@ from aeneas.tree import Tree
 import aeneas.globalconstants as gc
 import aeneas.globalfunctions as gf
 
-__author__ = "Alberto Pettarin"
-__copyright__ = """
-    Copyright 2012-2013, Alberto Pettarin (www.albertopettarin.it)
-    Copyright 2013-2015, ReadBeyond Srl   (www.readbeyond.it)
-    Copyright 2015-2016, Alberto Pettarin (www.albertopettarin.it)
-    """
-__license__ = "GNU AGPL v3"
-__version__ = "1.5.1"
-__email__ = "aeneas@readbeyond.it"
-__status__ = "Production"
 
 class TextFileFormat(object):
     """
@@ -222,9 +231,11 @@ class TextFileFormat(object):
 
     """
 
+    MULTILEVEL_VALUES = [MPLAIN, MUNPARSED]
+    """ List of all multilevel formats """
+
     ALLOWED_VALUES = [MPLAIN, MUNPARSED, PARSED, PLAIN, SUBTITLES, UNPARSED]
     """ List of all the allowed values """
-
 
 
 class TextFragment(object):
@@ -270,18 +281,6 @@ class TextFragment(object):
         return gf.safe_str(self.__unicode__())
 
     @property
-    def chars(self):
-        """
-        Return the number of characters of the text fragment,
-        not including the line separators.
-
-        :rtype: int
-        """
-        if self.lines is None:
-            return 0
-        return sum([len(line) for line in self.lines])
-
-    @property
     def identifier(self):
         """
         The identifier of the text fragment.
@@ -289,6 +288,7 @@ class TextFragment(object):
         :rtype: string
         """
         return self.__identifier
+
     @identifier.setter
     def identifier(self, identifier):
         if (identifier is not None) and (not gf.is_unicode(identifier)):
@@ -303,11 +303,12 @@ class TextFragment(object):
         :rtype: :class:`~aeneas.language.Language`
         """
         return self.__language
+
     @language.setter
     def language(self, language):
         # NOTE disabling this check to allow for language codes not listed in Language
-        #if (language is not None) and (language not in Language.ALLOWED_VALUES):
-        #    raise ValueError(u"language value is not allowed")
+        # COMMENTED if (language is not None) and (language not in Language.ALLOWED_VALUES):
+        # COMMENTED     raise ValueError(u"language value is not allowed")
         self.__language = language
 
     @property
@@ -318,6 +319,7 @@ class TextFragment(object):
         :rtype: list of strings
         """
         return self.__lines
+
     @lines.setter
     def lines(self, lines):
         if lines is not None:
@@ -340,11 +342,24 @@ class TextFragment(object):
     @property
     def characters(self):
         """
-        The number of characters in this text fragment.
+        The number of characters in this text fragment,
+        including line separators, if any.
 
         :rtype: int
         """
         return len(self.text)
+
+    @property
+    def chars(self):
+        """
+        Return the number of characters of the text fragment,
+        not including the line separators.
+
+        :rtype: int
+        """
+        if self.lines is None:
+            return 0
+        return sum([len(line) for line in self.lines])
 
     @property
     def filtered_text(self):
@@ -363,7 +378,6 @@ class TextFragment(object):
         :rtype: int
         """
         return len(self.filtered_text)
-
 
 
 class TextFile(Loggable):
@@ -396,7 +410,7 @@ class TextFile(Loggable):
             parameters=None,
             rconf=None,
             logger=None
-        ):
+    ):
         super(TextFile, self).__init__(rconf=rconf, logger=logger)
         self.file_path = file_path
         self.file_format = file_format
@@ -428,6 +442,7 @@ class TextFile(Loggable):
         :rtype: :class:`~aeneas.tree.Tree`
         """
         return self.__fragments_tree
+
     @fragments_tree.setter
     def fragments_tree(self, fragments_tree):
         self.__fragments_tree = fragments_tree
@@ -448,16 +463,6 @@ class TextFile(Loggable):
         return children
 
     @property
-    def chars(self):
-        """
-        Return the number of characters of the text file,
-        not counting line or fragment separators.
-
-        :rtype: int
-        """
-        return sum([fragment.chars for fragment in self.fragments])
-
-    @property
     def file_path(self):
         """
         The path of the text file.
@@ -465,6 +470,7 @@ class TextFile(Loggable):
         :rtype: string
         """
         return self.__file_path
+
     @file_path.setter
     def file_path(self, file_path):
         if (file_path is not None) and (not gf.file_can_be_read(file_path)):
@@ -479,6 +485,7 @@ class TextFile(Loggable):
         :rtype: :class:`~aeneas.textfile.TextFileFormat`
         """
         return self.__file_format
+
     @file_format.setter
     def file_format(self, file_format):
         if (file_format is not None) and (file_format not in TextFileFormat.ALLOWED_VALUES):
@@ -493,11 +500,22 @@ class TextFile(Loggable):
         :rtype: dict
         """
         return self.__parameters
+
     @parameters.setter
     def parameters(self, parameters):
         if (parameters is not None) and (not isinstance(parameters, dict)):
             self.log_exc(u"parameters is not an instance of dict", None, True, TypeError)
         self.__parameters = parameters
+
+    @property
+    def chars(self):
+        """
+        Return the number of characters of the text file,
+        not counting line or fragment separators.
+
+        :rtype: int
+        """
+        return sum([fragment.chars for fragment in self.fragments])
 
     @property
     def characters(self):
@@ -744,6 +762,7 @@ class TextFile(Loggable):
         :param list lines: the lines of the unparsed text file
         """
         from bs4 import BeautifulSoup
+
         def nodes_at_level(root, level):
             """ Return a dict with the bs4 filter parameters """
             LEVEL_TO_REGEX_MAP = [
@@ -757,7 +776,7 @@ class TextFile(Loggable):
             indent = u" " * 2 * (level - 1)
             self.log([u"%sRegex for %s: '%s'", indent, attribute_name, regex_string])
             regex = re.compile(r".*\b" + regex_string + r"\b.*")
-            return root.findAll(attrs={ attribute_name: regex })
+            return root.findAll(attrs={attribute_name: regex})
         #
         # TODO better and/or parametric parsing,
         #      for example, removing tags but keeping text, etc.
@@ -900,6 +919,7 @@ class TextFile(Loggable):
         :param list lines: the lines of the unparsed text file
         """
         from bs4 import BeautifulSoup
+
         def filter_attributes():
             """ Return a dict with the bs4 filter parameters """
             attributes = {}
@@ -1007,8 +1027,8 @@ class TextFile(Loggable):
             if param_value is not None:
                 self.log([u"Creating %s object...", cls_name])
                 params = {
-                    param_name : param_value,
-                    "logger" : self.logger
+                    param_name: param_value,
+                    "logger": self.logger
                 }
                 try:
                     inner_filter = cls(**params)
@@ -1017,7 +1037,6 @@ class TextFile(Loggable):
                 except ValueError as exc:
                     self.log_exc(u"Creating %s object failed" % (cls_name), exc, False, None)
         return text_filter
-
 
 
 class TextFilter(Loggable):
@@ -1071,7 +1090,6 @@ class TextFilter(Loggable):
         return result
 
 
-
 class TextFilterIgnoreRegex(TextFilter):
     """
     Delete the text matching the given regex.
@@ -1105,7 +1123,6 @@ class TextFilterIgnoreRegex(TextFilter):
         result = self.regex.sub("", string)
         result = self.SPACES_REGEX.sub(" ", result).strip()
         return result
-
 
 
 class TextFilterTransliterate(TextFilter):
@@ -1152,7 +1169,6 @@ class TextFilterTransliterate(TextFilter):
         return result
 
 
-
 class TransliterationMap(Loggable):
     """
     A transliteration map is a dictionary that maps Unicode characters
@@ -1191,6 +1207,7 @@ class TransliterationMap(Loggable):
         :rtype: string
         """
         return self.__file_path
+
     @file_path.setter
     def file_path(self, file_path):
         if (file_path is not None) and (not gf.file_can_be_read(file_path)):
@@ -1316,6 +1333,3 @@ class TransliterationMap(Loggable):
         except:
             pass
         return -1
-
-
-

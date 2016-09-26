@@ -1,6 +1,26 @@
 #!/usr/bin/env python
 # coding=utf-8
 
+# aeneas is a Python/C library and a set of tools
+# to automagically synchronize audio and text (aka forced alignment)
+#
+# Copyright (C) 2012-2013, Alberto Pettarin (www.albertopettarin.it)
+# Copyright (C) 2013-2015, ReadBeyond Srl   (www.readbeyond.it)
+# Copyright (C) 2015-2016, Alberto Pettarin (www.albertopettarin.it)
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU Affero General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU Affero General Public License for more details.
+#
+# You should have received a copy of the GNU Affero General Public License
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
 """
 This module contains the following classes:
 
@@ -34,16 +54,6 @@ from aeneas.timevalue import TimeValue
 from aeneas.tree import Tree
 import aeneas.globalfunctions as gf
 
-__author__ = "Alberto Pettarin"
-__copyright__ = """
-    Copyright 2012-2013, Alberto Pettarin (www.albertopettarin.it)
-    Copyright 2013-2015, ReadBeyond Srl   (www.readbeyond.it)
-    Copyright 2015-2016, Alberto Pettarin (www.albertopettarin.it)
-    """
-__license__ = "GNU AGPL v3"
-__version__ = "1.5.1"
-__email__ = "aeneas@readbeyond.it"
-__status__ = "Production"
 
 class ExecuteTaskExecutionError(Exception):
     """
@@ -52,13 +62,11 @@ class ExecuteTaskExecutionError(Exception):
     pass
 
 
-
 class ExecuteTaskInputError(Exception):
     """
     Error raised when the input parameters of the task are invalid or missing.
     """
     pass
-
 
 
 class ExecuteTask(Loggable):
@@ -82,6 +90,7 @@ class ExecuteTask(Loggable):
         self.step_label = u""
         self.step_begin_time = None
         self.step_total = 0.000
+        self.synthesizer = None
         if task is not None:
             self.load_task(self.task)
 
@@ -139,13 +148,13 @@ class ExecuteTask(Loggable):
         if (
                 (self.task.audio_file.audio_length is None) or
                 (self.task.audio_file.audio_length <= 0)
-            ):
+        ):
             self.log_exc(u"The task seems to have an invalid audio file", None, True, ExecuteTaskInputError)
         task_max_audio_length = self.rconf[RuntimeConfiguration.TASK_MAX_AUDIO_LENGTH]
         if (
                 (task_max_audio_length > 0) and
                 (self.task.audio_file.audio_length > task_max_audio_length)
-            ):
+        ):
             self.log_exc(u"The audio file of the task has length %.3f, more than the maximum allowed (%.3f)." % (self.task.audio_file.audio_length, task_max_audio_length), None, True, ExecuteTaskInputError)
 
         # check that we have the TextFile object
@@ -157,7 +166,7 @@ class ExecuteTask(Loggable):
         if (
                 (task_max_text_length > 0) and
                 (len(self.task.text_file) > task_max_text_length)
-            ):
+        ):
             self.log_exc(u"The text file of the task has %d fragments, more than the maximum allowed (%d)." % (len(self.task.text_file), task_max_text_length), None, True, ExecuteTaskInputError)
         if self.task.text_file.chars == 0:
             self.log_exc(u"The task text file seems to have empty text", None, True, ExecuteTaskInputError)
@@ -167,7 +176,7 @@ class ExecuteTask(Loggable):
         # execute
         self.step_index = 1
         self.step_total = 0.000
-        if self.task.text_file.file_format in [TextFileFormat.MPLAIN, TextFileFormat.MUNPARSED]:
+        if self.task.text_file.file_format in TextFileFormat.MULTILEVEL_VALUES:
             self._execute_multi_level_task()
         else:
             self._execute_single_level_task()
@@ -179,7 +188,7 @@ class ExecuteTask(Loggable):
         try:
             # load audio file, extract MFCCs from real wave, clear audio file
             self._step_begin(u"extract MFCC real wave")
-            real_wave_mfcc = self._extract_mfcc(file_path=self.task.audio_file_path_absolute, file_path_is_mono_wave=False)
+            real_wave_mfcc = self._extract_mfcc(file_path=self.task.audio_file_path_absolute, file_format=None)
             self._step_end()
 
             # compute head and/or tail and set it
@@ -189,7 +198,9 @@ class ExecuteTask(Loggable):
             self._step_end()
 
             # compute a time map alignment
+            self._set_synthesizer()
             time_map = self._execute_inner(real_wave_mfcc, self.task.text_file, adjust_boundaries=True, log=True)
+            self._clear_cache_synthesizer()
 
             # convert time_map to tree and create syncmap and add it to task
             self._step_begin(u"create sync map")
@@ -221,6 +232,10 @@ class ExecuteTask(Loggable):
         for i in range(1, len(level_rconfs)):
             level_rconfs[i].set_granularity(i)
             self.log([u"Level %d mws: %.3f", i, level_rconfs[i].mws])
+            self.log([u"Level %d mwl: %.3f", i, level_rconfs[i].mwl])
+            level_rconfs[i].set_tts(i)
+            self.log([u"Level %d tts: %s", i, level_rconfs[i].tts])
+            self.log([u"Level %d tts_path: %s", i, level_rconfs[i].tts_path])
         self.log(u"Saving rconf... done")
 
         try:
@@ -231,12 +246,12 @@ class ExecuteTask(Loggable):
             # extract MFCC for each level
             for i in range(1, len(level_rconfs)):
                 self._step_begin(u"extract MFCC real wave level %d" % i)
-                if (i == 1) or (level_rconfs[i].mws != level_rconfs[i-1].mws) or (level_rconfs[i].mwl != level_rconfs[i-1].mwl):
+                if (i == 1) or (level_rconfs[i].mws != level_rconfs[i - 1].mws) or (level_rconfs[i].mwl != level_rconfs[i - 1].mwl):
                     self.rconf = level_rconfs[i]
                     level_mfccs[i] = self._extract_mfcc(audio_file=audio_file)
                 else:
                     self.log(u"Keeping MFCC real wave from previous level")
-                    level_mfccs[i] = level_mfccs[i-1]
+                    level_mfccs[i] = level_mfccs[i - 1]
                 self._step_end()
 
             self.log(u"Clearing AudioFile object...")
@@ -258,7 +273,8 @@ class ExecuteTask(Loggable):
             aba = [None, True, True, False]
             for i in range(1, len(level_rconfs)):
                 self._step_begin(u"compute alignment level %d" % i)
-                text_files, sync_roots = self._execute_level(i, level_rconfs[i], level_mfccs[i], text_files, sync_roots, aht[i], aba[i])
+                self.rconf = level_rconfs[i]
+                text_files, sync_roots = self._execute_level(i, level_mfccs[i], text_files, sync_roots, aht[i], aba[i])
                 self._step_end()
 
             self._step_begin(u"select levels")
@@ -279,7 +295,7 @@ class ExecuteTask(Loggable):
         except Exception as exc:
             self._step_failure(exc)
 
-    def _execute_level(self, level, rconf, audio_file_mfcc, text_files, sync_roots, add_head_tail, adjust_boundaries):
+    def _execute_level(self, level, audio_file_mfcc, text_files, sync_roots, add_head_tail, adjust_boundaries):
         """
         Compute the alignment for all the nodes in the given level.
 
@@ -288,8 +304,6 @@ class ExecuteTask(Loggable):
         on the next level.
 
         :param int level: the level
-        :param rconf: the runtime configuration for this level
-        :type  rconf: :class:`~aeneas.runtimeconfiguration.RuntimeConfiguration`
         :param audio_file_mfcc: the audio MFCC representation for this level
         :type  audio_file_mfcc: :class:`~aeneas.audiofilemfcc.AudioFileMFCC`
         :param list text_files: a list of :class:`~aeneas.textfile.TextFile` objects,
@@ -301,14 +315,13 @@ class ExecuteTask(Loggable):
         :param bool adjust_boundaries: if ``True``, execute the adjust boundary algorithm
         :rtype: (list, list)
         """
-        self.rconf = rconf
-        i = 0
+        self._set_synthesizer()
         next_level_text_files = []
         next_level_sync_roots = []
-        for text_file in text_files:
-            self.log([u"Text level %d, fragment %d", level, i])
+        for text_file_index, text_file in enumerate(text_files):
+            self.log([u"Text level %d, fragment %d", level, text_file_index])
             self.log([u"  Len:   %d", len(text_file)])
-            sync_root = sync_roots[i]
+            sync_root = sync_roots[text_file_index]
             if (level > 1) and (len(text_file) == 1):
                 self.log(u"  Level > 1 and only one child => returning trivial timemap")
                 time_map = [
@@ -337,7 +350,7 @@ class ExecuteTask(Loggable):
                 # we must not pass them to the next level
                 src = src[1:-1]
             next_level_sync_roots.extend(src)
-            i += 1
+        self._clear_cache_synthesizer()
         return (next_level_text_files, next_level_sync_roots)
 
     def _execute_inner(self, audio_file_mfcc, text_file, adjust_boundaries=True, log=True):
@@ -361,11 +374,11 @@ class ExecuteTask(Loggable):
         :rtype: list
         """
         self._step_begin(u"synthesize text", log=log)
-        synt_handler, synt_path, synt_anchors, synt_mono = self._synthesize(text_file)
+        synt_handler, synt_path, synt_anchors, synt_format = self._synthesize(text_file)
         self._step_end(log=log)
 
         self._step_begin(u"extract MFCC synt wave", log=log)
-        synt_wave_mfcc = self._extract_mfcc(file_path=synt_path, file_path_is_mono_wave=synt_mono)
+        synt_wave_mfcc = self._extract_mfcc(file_path=synt_path, file_format=synt_format)
         gf.delete_file(synt_handler, synt_path)
         self._step_end(log=log)
 
@@ -386,9 +399,11 @@ class ExecuteTask(Loggable):
         :rtype: :class:`~aeneas.audiofile.AudioFile`
         """
         self._step_begin(u"load audio file")
+        # NOTE file_format=None forces conversion to
+        #      PCM16 mono WAVE with proper sample rate
         audio_file = AudioFile(
             file_path=self.task.audio_file_path_absolute,
-            is_mono_wave=False,
+            file_format=None,
             rconf=self.rconf,
             logger=self.logger
         )
@@ -408,7 +423,7 @@ class ExecuteTask(Loggable):
         audio_file = None
         self._step_end()
 
-    def _extract_mfcc(self, file_path=None, file_path_is_mono_wave=False, audio_file=None):
+    def _extract_mfcc(self, file_path=None, file_format=None, audio_file=None):
         """
         Extract the MFCCs from the given audio file.
 
@@ -416,7 +431,7 @@ class ExecuteTask(Loggable):
         """
         return AudioFileMFCC(
             file_path=file_path,
-            file_path_is_mono_wave=file_path_is_mono_wave,
+            file_format=file_format,
             audio_file=audio_file,
             rconf=self.rconf,
             logger=self.logger
@@ -469,29 +484,39 @@ class ExecuteTask(Loggable):
         self.log([u"Tail:    %s", gf.safe_float(tail_length, None)])
         return (head_length, process_length, tail_length)
 
+    def _set_synthesizer(self):
+        """ Create synthesizer """
+        self.log(u"Setting synthesizer...")
+        self.synthesizer = Synthesizer(rconf=self.rconf, logger=self.logger)
+        self.log(u"Setting synthesizer... done")
+
+    def _clear_cache_synthesizer(self):
+        """ Clear the cache of the synthesizer """
+        self.log(u"Clearing synthesizer...")
+        self.synthesizer.clear_cache()
+        self.log(u"Clearing synthesizer... done")
+
     def _synthesize(self, text_file):
         """
         Synthesize text into a WAVE file.
 
-        Return:
+        Return a tuple consisting of:
 
-        1. handler of the generated wave file
-        2. path of the generated wave file
+        1. the handler of the generated audio file
+        2. the path of the generated audio file
         3. the list of anchors, that is, a list of floats
            each representing the start time of the corresponding
            text fragment in the generated wave file
            ``[start_1, start_2, ..., start_n]``
-        4. if the synthesizer produced a PCM16 mono WAVE file
+        4. a tuple describing the format of the audio file
 
-        :param synthesizer: the synthesizer to use
-        :type  synthesizer: :class:`~aeneas.synthesizer.Synthesizer`
+        :param text_file: the text to be synthesized
+        :type  text_file: :class:`~aeneas.textfile.TextFile`
         :rtype: tuple (handler, string, list)
         """
-        synthesizer = Synthesizer(rconf=self.rconf, logger=self.logger)
         handler, path = gf.tmp_file(suffix=u".wav", root=self.rconf[RuntimeConfiguration.TMP_PATH])
-        result = synthesizer.synthesize(text_file, path)
-        anchors = result[0]
-        return (handler, path, anchors, synthesizer.output_is_mono_wave)
+        result = self.synthesizer.synthesize(text_file, path)
+        return (handler, path, result[0], self.synthesizer.output_audio_format)
 
     def _align_waves(self, real_wave_mfcc, synt_wave_mfcc, synt_anchors):
         """
@@ -685,6 +710,3 @@ class ExecuteTask(Loggable):
             self.log(u"Checking for fragments with zero duration... done")
         else:
             self.log(u"Not checking for fragments with zero duration")
-
-
-

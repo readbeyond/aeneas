@@ -1,6 +1,26 @@
 #!/usr/bin/env python
 # coding=utf-8
 
+# aeneas is a Python/C library and a set of tools
+# to automagically synchronize audio and text (aka forced alignment)
+#
+# Copyright (C) 2012-2013, Alberto Pettarin (www.albertopettarin.it)
+# Copyright (C) 2013-2015, ReadBeyond Srl   (www.readbeyond.it)
+# Copyright (C) 2015-2016, Alberto Pettarin (www.albertopettarin.it)
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU Affero General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU Affero General Public License for more details.
+#
+# You should have received a copy of the GNU Affero General Public License
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
 """
 This module contains the following classes:
 
@@ -30,23 +50,12 @@ from aeneas.wavfile import read as scipywavread
 from aeneas.wavfile import write as scipywavwrite
 import aeneas.globalfunctions as gf
 
-__author__ = "Alberto Pettarin"
-__copyright__ = """
-    Copyright 2012-2013, Alberto Pettarin (www.albertopettarin.it)
-    Copyright 2013-2015, ReadBeyond Srl   (www.readbeyond.it)
-    Copyright 2015-2016, Alberto Pettarin (www.albertopettarin.it)
-    """
-__license__ = "GNU AGPL v3"
-__version__ = "1.5.1"
-__email__ = "aeneas@readbeyond.it"
-__status__ = "Production"
 
 class AudioFileConverterError(Exception):
     """
     Error raised when the audio converter executable cannot be executed.
     """
     pass
-
 
 
 class AudioFileNotInitializedError(Exception):
@@ -58,7 +67,6 @@ class AudioFileNotInitializedError(Exception):
     pass
 
 
-
 class AudioFileProbeError(Exception):
     """
     Error raised when the audio probe executable cannot be executed.
@@ -66,13 +74,11 @@ class AudioFileProbeError(Exception):
     pass
 
 
-
 class AudioFileUnsupportedFormatError(Exception):
     """
     Error raised when the format of the given file cannot be decoded.
     """
     pass
-
 
 
 class AudioFile(Loggable):
@@ -109,7 +115,7 @@ class AudioFile(Loggable):
     .. note:: Support for stereo WAVE files might be implemented in a future version
 
     :param string file_path: the path of the audio file
-    :param bool is_mono_wave: set to ``True`` if the audio file is a PCM16 mono WAVE file
+    :param tuple file_format: the format of the audio file, if known in advance: ``(codec, channels, rate)`` or ``None``
     :param rconf: a runtime configuration
     :type  rconf: :class:`~aeneas.runtimeconfiguration.RuntimeConfiguration`
     :param logger: the logger object
@@ -189,11 +195,11 @@ class AudioFile(Loggable):
 
     TAG = u"AudioFile"
 
-    def __init__(self, file_path=None, is_mono_wave=False, rconf=None, logger=None):
+    def __init__(self, file_path=None, file_format=None, rconf=None, logger=None):
         super(AudioFile, self).__init__(rconf=rconf, logger=logger)
         self.file_path = file_path
+        self.file_format = file_format
         self.file_size = None
-        self.is_mono_wave = is_mono_wave
         self.audio_length = None
         self.audio_format = None
         self.audio_sample_rate = None
@@ -205,6 +211,7 @@ class AudioFile(Loggable):
     def __unicode__(self):
         msg = [
             u"File path:         %s" % self.file_path,
+            u"File format:       %s" % self.file_format,
             u"File size (bytes): %s" % gf.safe_int(self.file_size),
             u"Audio length (s):  %s" % gf.safe_float(self.audio_length),
             u"Audio format:      %s" % self.audio_format,
@@ -226,6 +233,7 @@ class AudioFile(Loggable):
         :rtype: string
         """
         return self.__file_path
+
     @file_path.setter
     def file_path(self, file_path):
         self.__file_path = file_path
@@ -238,6 +246,7 @@ class AudioFile(Loggable):
         :rtype: int
         """
         return self.__file_size
+
     @file_size.setter
     def file_size(self, file_size):
         self.__file_size = file_size
@@ -250,6 +259,7 @@ class AudioFile(Loggable):
         :rtype: :class:`~aeneas.timevalue.TimeValue`
         """
         return self.__audio_length
+
     @audio_length.setter
     def audio_length(self, audio_length):
         self.__audio_length = audio_length
@@ -262,6 +272,7 @@ class AudioFile(Loggable):
         :rtype: string
         """
         return self.__audio_format
+
     @audio_format.setter
     def audio_format(self, audio_format):
         self.__audio_format = audio_format
@@ -274,6 +285,7 @@ class AudioFile(Loggable):
         :rtype: int
         """
         return self.__audio_sample_rate
+
     @audio_sample_rate.setter
     def audio_sample_rate(self, audio_sample_rate):
         self.__audio_sample_rate = audio_sample_rate
@@ -286,6 +298,7 @@ class AudioFile(Loggable):
         :rtype: int
         """
         return self.__audio_channels
+
     @audio_channels.setter
     def audio_channels(self, audio_channels):
         self.__audio_channels = audio_channels
@@ -363,13 +376,14 @@ class AudioFile(Loggable):
         """
         Load the audio samples from file into memory.
 
-        If ``self.is_mono_wave`` is ``False``,
+        If ``self.file_format`` is ``None`` or it is not
+        ``("pcm_s16le", 1, self.rconf.sample_rate)``,
         the file will be first converted
         to a temporary PCM16 mono WAVE file.
         Audio data will be read from this temporary file,
         which will be then deleted from disk immediately.
 
-        If ``self.is_mono_wave`` is ``True``,
+        Otherwise,
         the audio data will be read directly
         from the given file,
         which will not be deleted from disk.
@@ -384,13 +398,16 @@ class AudioFile(Loggable):
         if not gf.file_can_be_read(self.file_path):
             self.log_exc(u"File '%s' cannot be read" % (self.file_path), None, True, OSError)
 
-        # convert file to PCM16 mono WAVE
-        if self.is_mono_wave:
-            self.log(u"is_mono_wave=True => reading self.file_path directly")
-            tmp_handler = None
-            tmp_file_path = self.file_path
-        else:
-            self.log(u"is_mono_wave=False => converting self.file_path")
+        # determine if we need to convert the audio file
+        convert_audio_file = (
+            (self.file_format is None) or
+            (self.file_format != ("pcm_s16le", 1, self.rconf.sample_rate))
+        )
+
+        # convert the audio file if needed
+        if convert_audio_file:
+            # convert file to PCM16 mono WAVE with correct sample rate
+            self.log(u"self.file_format is None or not good => converting self.file_path")
             tmp_handler, tmp_file_path = gf.tmp_file(suffix=u".wav", root=self.rconf[RuntimeConfiguration.TMP_PATH])
             self.log([u"Temporary PCM16 mono WAVE file: '%s'", tmp_file_path])
             try:
@@ -404,6 +421,11 @@ class AudioFile(Loggable):
             except OSError:
                 gf.delete_file(tmp_handler, tmp_file_path)
                 self.log_exc(u"Audio file format not supported by ffmpeg", None, True, AudioFileUnsupportedFormatError)
+        else:
+            # read the file directly
+            self.log(u"self.file_format is good => reading self.file_path directly")
+            tmp_handler = None
+            tmp_file_path = self.file_path
 
         # TODO allow calling C extension cwave to read samples faster
         try:
@@ -419,9 +441,10 @@ class AudioFile(Loggable):
         except ValueError:
             self.log_exc(u"Audio format not supported by scipywavread", None, True, AudioFileUnsupportedFormatError)
 
-        if not self.is_mono_wave:
+        # if we converted the audio file, delete the temporary converted audio file
+        if convert_audio_file:
             gf.delete_file(tmp_handler, tmp_file_path)
-            self.log([u"Deleted temporary PCM16 mono WAVE file: '%s'", tmp_file_path])
+            self.log([u"Deleted temporary audio file: '%s'", tmp_file_path])
 
         self._update_length()
         self.log([u"Sample length:  %.3f", self.audio_length])
@@ -615,6 +638,3 @@ class AudioFile(Loggable):
         """
         if (self.audio_sample_rate is not None) and (self.__samples is not None):
             self.audio_length = TimeValue(self.__samples_length / self.audio_sample_rate)
-
-
-

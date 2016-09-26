@@ -1,6 +1,26 @@
 #!/usr/bin/env python
 # coding=utf-8
 
+# aeneas is a Python/C library and a set of tools
+# to automagically synchronize audio and text (aka forced alignment)
+#
+# Copyright (C) 2012-2013, Alberto Pettarin (www.albertopettarin.it)
+# Copyright (C) 2013-2015, ReadBeyond Srl   (www.readbeyond.it)
+# Copyright (C) 2015-2016, Alberto Pettarin (www.albertopettarin.it)
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU Affero General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU Affero General Public License for more details.
+#
+# You should have received a copy of the GNU Affero General Public License
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
 """
 This module contains the following classes:
 
@@ -22,16 +42,6 @@ from aeneas.timevalue import TimeValue
 from aeneas.vad import VAD
 import aeneas.globalfunctions as gf
 
-__author__ = "Alberto Pettarin"
-__copyright__ = """
-    Copyright 2012-2013, Alberto Pettarin (www.albertopettarin.it)
-    Copyright 2013-2015, ReadBeyond Srl   (www.readbeyond.it)
-    Copyright 2015-2016, Alberto Pettarin (www.albertopettarin.it)
-    """
-__license__ = "GNU AGPL v3"
-__version__ = "1.5.1"
-__email__ = "aeneas@readbeyond.it"
-__status__ = "Production"
 
 class AudioFileMFCC(Loggable):
     """
@@ -76,7 +86,7 @@ class AudioFileMFCC(Loggable):
     to avoid creating temporary data or copying data around.
 
     :param string file_path: the path of the PCM16 mono WAVE file, or ``None``
-    :param bool file_path_is_mono_wave: set to ``True`` if the audio file at ``file_path`` is a PCM16 mono WAVE file
+    :param tuple file_format: the format of the audio file, if known in advance: ``(codec, channels, rate)`` or ``None``
     :param mfcc_matrix: the MFCC matrix to be set, or ``None``
     :type  mfcc_matrix: :class:`numpy.ndarray`
     :param audio_file: an audio file, or ``None``
@@ -95,7 +105,7 @@ class AudioFileMFCC(Loggable):
     def __init__(
             self,
             file_path=None,
-            file_path_is_mono_wave=False,
+            file_format=None,
             mfcc_matrix=None,
             audio_file=None,
             rconf=None,
@@ -121,8 +131,8 @@ class AudioFileMFCC(Loggable):
             if self.audio_file is None:
                 audio_file_was_none = True
                 self.audio_file = AudioFile(
-                    self.file_path,
-                    is_mono_wave=file_path_is_mono_wave,
+                    file_path=self.file_path,
+                    file_format=file_format,
                     rconf=self.rconf,
                     logger=self.logger
                 )
@@ -260,6 +270,7 @@ class AudioFileMFCC(Loggable):
         :rtype: :class:`~aeneas.timevalue.TimeValue`
         """
         return self.__audio_length
+
     @audio_length.setter
     def audio_length(self, audio_length):
         self.__audio_length = audio_length
@@ -272,6 +283,7 @@ class AudioFileMFCC(Loggable):
         :rtype: bool
         """
         return self.__is_reversed
+
     @is_reversed.setter
     def is_reversed(self, is_reversed):
         self.__is_reversed = is_reversed
@@ -589,7 +601,7 @@ class AudioFileMFCC(Loggable):
         self.log(u"Running VAD... done")
         self.log(u"Storing speech and nonspeech intervals...")
         # where( == True) already computed, reusing
-        #runs = _compute_runs((numpy.where(self.__mfcc_mask))[0])
+        # COMMENTED runs = _compute_runs((numpy.where(self.__mfcc_mask))[0])
         runs = _compute_runs(self.__mfcc_mask_map)
         self.__speech_intervals = [(r[0], r[-1]) for r in runs]
         # where( == False) not already computed, computing now
@@ -613,6 +625,8 @@ class AudioFileMFCC(Loggable):
         :type  tail_length: :class:`~aeneas.timevalue.TimeValue`
         :raises: TypeError: if one of the arguments is not ``None``
                             or :class:`~aeneas.timevalue.TimeValue`
+        :raises: ValueError: if one of the arguments is greater
+                             than the length of the audio file
         """
         for variable, name in [
             (head_length, "head_length"),
@@ -621,6 +635,8 @@ class AudioFileMFCC(Loggable):
         ]:
             if (variable is not None) and (not isinstance(variable, TimeValue)):
                 raise TypeError(u"%s is not None or TimeValue" % name)
+            if (variable is not None) and (variable > self.audio_length):
+                raise ValueError(u"%s is greater than the length of the audio file" % name)
         self.log(u"Setting head middle tail...")
         mws = self.rconf.mws
         self.log([u"Before: 0 %d %d %d", self.middle_begin, self.middle_end, self.all_length])
@@ -632,6 +648,3 @@ class AudioFileMFCC(Loggable):
             self.middle_end = self.all_length - int(tail_length / mws)
         self.log([u"After:  0 %d %d %d", self.middle_begin, self.middle_end, self.all_length])
         self.log(u"Setting head middle tail... done")
-
-
-

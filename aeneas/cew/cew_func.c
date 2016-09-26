@@ -1,17 +1,26 @@
 /*
 
-Python C Extension for synthesizing text with eSpeak
+# aeneas is a Python/C library and a set of tools
+# to automagically synchronize audio and text (aka forced alignment)
+#
+# Copyright (C) 2012-2013, Alberto Pettarin (www.albertopettarin.it)
+# Copyright (C) 2013-2015, ReadBeyond Srl   (www.readbeyond.it)
+# Copyright (C) 2015-2016, Alberto Pettarin (www.albertopettarin.it)
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU Affero General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU Affero General Public License for more details.
+#
+# You should have received a copy of the GNU Affero General Public License
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-__author__ = "Alberto Pettarin"
-__copyright__ = """
-    Copyright 2012-2013, Alberto Pettarin (www.albertopettarin.it)
-    Copyright 2013-2015, ReadBeyond Srl   (www.readbeyond.it)
-    Copyright 2015-2016, Alberto Pettarin (www.albertopettarin.it)
-    """
-__license__ = "GNU AGPL v3"
-__version__ = "1.5.1"
-__email__ = "aeneas@readbeyond.it"
-__status__ = "Production"
+Python C Extension for synthesizing text with eSpeak
 
 */
 
@@ -226,37 +235,6 @@ int _initialize_synthesizer(char const *output_file_path) {
     // reset time
     current_time = 0.0;
     last_end_time = 0.0;
-
-    return CEW_SUCCESS;
-}
-
-// synthesize a single text fragment
-int _synthesize_single(
-        const char *output_file_path,
-        int *sample_rate_ret,
-        struct FRAGMENT_INFO *fragment_ret
-    ) {
-
-    // open output wave file
-    if (_initialize_synthesizer(output_file_path) != CEW_SUCCESS) {
-        return CEW_FAILURE;
-    }
-
-    // set voice code
-    if (_set_voice_code((*fragment_ret).voice_code) != CEW_SUCCESS) {
-        return CEW_FAILURE;
-    }
-
-    // synthesize text
-    *sample_rate_ret = sample_rate;
-    (*fragment_ret).begin = current_time;
-    if (_synthesize_string((*fragment_ret).text) != CEW_SUCCESS) {
-        return CEW_FAILURE;
-    }
-    (*fragment_ret).end = current_time;
-
-    // close output wave file
-    _terminate_synthesis();
 
     return CEW_SUCCESS;
 }

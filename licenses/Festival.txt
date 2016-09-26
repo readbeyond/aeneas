@@ -1,0 +1,113 @@
+The system as a whole and most of the files in it are distributed
+under the following copyright and conditions
+
+                The Festival Speech Synthesis System
+                Centre for Speech Technology Research                 
+                     University of Edinburgh, UK                       
+                      Copyright (c) 1996-2014
+                        All Rights Reserved.                           
+                                                                       
+  Permission is hereby granted, free of charge, to use and distribute  
+  this software and its documentation without restriction, including   
+  without limitation the rights to use, copy, modify, merge, publish,  
+  distribute, sublicense, and/or sell copies of this work, and to      
+  permit persons to whom this work is furnished to do so, subject to   
+  the following conditions:                                            
+   1. The code must retain the above copyright notice, this list of    
+      conditions and the following disclaimer.                         
+   2. Any modifications must be clearly marked as such.                
+   3. Original authors' names are not deleted.                         
+   4. The authors' names are not used to endorse or promote products   
+      derived from this software without specific prior written        
+      permission.                                                      
+                                  
+  THE UNIVERSITY OF EDINBURGH AND THE CONTRIBUTORS TO THIS WORK        
+  DISCLAIM ALL WARRANTIES WITH REGARD TO THIS SOFTWARE, INCLUDING      
+  ALL IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS, IN NO EVENT   
+  SHALL THE UNIVERSITY OF EDINBURGH NOR THE CONTRIBUTORS BE LIABLE     
+  FOR ANY SPECIAL, INDIRECT OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES    
+  WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN   
+  AN ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION,          
+  ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF       
+  THIS SOFTWARE.                                                       
+                                                                       
+Some further comments:
+
+Every effort has been made to ensure that Festival does not contain
+any violation of intellectual property rights through disclosure of
+trade secrets, copyright or patent violation.  Considerable time and
+effort has been spent to ensure that this is the case.  However,
+especially with patent problems, it is not always within our control
+to know what has or has not been restricted.  If you do suspect that
+some part of Festival cannot be legally distributed please inform us
+so that an alternative may be sought.  Festival is only useful if it
+is truly free to distribute.
+
+As of 1.4.0 the core distribution (and speech tools) is free.  Unlike
+previous versions which had a commercial restriction.  You are free to
+incorporate Festival in commercial (and of course non-commercial
+systems), without any further communication or licence from us.
+However if you are seriously using Festival within a commercial
+application we would like to know, both so we know we are contributing
+and so we can keep you informed of future developments.  Also if you
+require maintenance, support or wish us to provide consultancy feel
+free to contact us.
+
+The voices however aren't all free.  At present the US voices, kal and
+ked are free. Our British voices are free themselves but they use OALD
+which is restricted for non-commercial use.  Our Spanish voice is also
+so restricted.
+
+Note other modules that festival supports e.g MBROLA and OGI
+extensions, may have different licencing please take care when using
+the system to understand what you are actually using.
+
+--------------------------------------------------
+
+A number of individual files in the system fall under a different
+copyright from the above.  All however are termed "free software"
+but most people.  
+
+./src/arch/festival/tcl.c
+ * Copyright (C)1997 Jacques H. de Villiers <jacques@cse.ogi.edu>
+ * Copyright (C)1997 Center for Spoken Language Understanding,
+ *                   Oregon Graduate Institute of Science & Technology
+ See conditions in file.  This is the standard TCL licence and hence
+ shouldn't cause problems from most people.
+
+./examples/festival_client.pl
+# Copyright (C) 1997
+# Kevin A. Lenzo (lenzo@cs.cmu.edu) 7/97
+ See condition in file
+
+./src/modules/clunits/*
+./lib/*clunits*
+ Joint copyright University of Edinburgh and Carnegie Mellon University
+ Conditions remain as free software like the rest of distribution
+
+./src/modules/clustergen/*
+ Copyright Carnegie Mellon University
+ Nagoya Insitute of Technology (derived code from HTS)
+ HTS_vocoder_me.c HTS_vocoder_me.h
+   contains additions from Aby Louw 
+   Copyright (c) 2012 The Department of Arts and Culture,
+   The Government of the Republic of South Africa.       
+   under a free software licence compatible with the other
+   free software copyrights in this work
+
+./src/modules/hts_engine/*
+./lib/hts.scm
+ The HMM-based speech synthesis system (HTS)
+ hts_engine API version 1.07 (http://hts-engine.sourceforge.net/)
+ Copyright (C) 2001-2012  Nagoya Institute of Technology
+               2001-2008  Tokyo Institute of Technology
+ All rights reserved.
+ distributed under the Modified BSD licence.
+
+./lib/festival.el
+;;;               Copyright (C) Alan W Black 1996
+copyright under FSF General Public Licence
+
+Please also read the COPYING section of speech_tools/README for the
+conditions on those files.
+

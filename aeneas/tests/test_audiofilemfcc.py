@@ -1,6 +1,26 @@
 #!/usr/bin/env python
 # coding=utf-8
 
+# aeneas is a Python/C library and a set of tools
+# to automagically synchronize audio and text (aka forced alignment)
+#
+# Copyright (C) 2012-2013, Alberto Pettarin (www.albertopettarin.it)
+# Copyright (C) 2013-2015, ReadBeyond Srl   (www.readbeyond.it)
+# Copyright (C) 2015-2016, Alberto Pettarin (www.albertopettarin.it)
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU Affero General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU Affero General Public License for more details.
+#
+# You should have received a copy of the GNU Affero General Public License
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
 import numpy
 import unittest
 
@@ -9,6 +29,7 @@ from aeneas.audiofile import AudioFileUnsupportedFormatError
 from aeneas.audiofilemfcc import AudioFileMFCC
 from aeneas.timevalue import TimeValue
 import aeneas.globalfunctions as gf
+
 
 class TestAudioFileMFCC(unittest.TestCase):
 
@@ -36,7 +57,7 @@ class TestAudioFileMFCC(unittest.TestCase):
         af.read_samples_from_file()
         audiofile = AudioFileMFCC(audio_file=af)
         self.assertIsNotNone(audiofile.all_mfcc)
-        self.assertAlmostEqual(audiofile.audio_length, TimeValue("53.3"), places=1) # 53.266
+        self.assertAlmostEqual(audiofile.audio_length, TimeValue("53.3"), places=1)     # 53.266
 
     def test_load_mfcc_matrix(self):
         mfccs = numpy.zeros((13, 250))
@@ -48,7 +69,7 @@ class TestAudioFileMFCC(unittest.TestCase):
         audiofile = self.load(self.AUDIO_FILE_WAVE)
         self.assertEqual(audiofile.all_mfcc.shape[0], 13)
         self.assertEqual(audiofile.all_mfcc.shape[1], 1331)
-        self.assertAlmostEqual(audiofile.audio_length, TimeValue("53.3"), places=1) # 53.266
+        self.assertAlmostEqual(audiofile.audio_length, TimeValue("53.3"), places=1)     # 53.266
 
     def test_load_on_non_existing_path(self):
         with self.assertRaises(OSError):
@@ -261,6 +282,36 @@ class TestAudioFileMFCC(unittest.TestCase):
         self.assertEqual(audiofile.middle_length, 500)
         self.assertEqual(audiofile.tail_length, 831)
 
+    def test_set_head_bad1(self):
+        audiofile = self.load(self.AUDIO_FILE_WAVE)
+        with self.assertRaises(TypeError):
+            audiofile.set_head_middle_tail(head_length=0.000)
+
+    def test_set_head_bad2(self):
+        audiofile = self.load(self.AUDIO_FILE_WAVE)
+        with self.assertRaises(ValueError):
+            audiofile.set_head_middle_tail(head_length=TimeValue("1000.000"))
+
+    def test_set_middle_bad1(self):
+        audiofile = self.load(self.AUDIO_FILE_WAVE)
+        with self.assertRaises(TypeError):
+            audiofile.set_head_middle_tail(middle_length=0.000)
+
+    def test_set_middle_bad2(self):
+        audiofile = self.load(self.AUDIO_FILE_WAVE)
+        with self.assertRaises(ValueError):
+            audiofile.set_head_middle_tail(middle_length=TimeValue("1000.000"))
+
+    def test_set_tail_bad1(self):
+        audiofile = self.load(self.AUDIO_FILE_WAVE)
+        with self.assertRaises(TypeError):
+            audiofile.set_head_middle_tail(tail_length=0.000)
+
+    def test_set_tail_bad2(self):
+        audiofile = self.load(self.AUDIO_FILE_WAVE)
+        with self.assertRaises(ValueError):
+            audiofile.set_head_middle_tail(tail_length=TimeValue("1000.000"))
+
     def test_inside_nonspeech(self):
         audiofile = self.load(self.AUDIO_FILE_WAVE)
         audiofile.run_vad()
@@ -314,9 +365,5 @@ class TestAudioFileMFCC(unittest.TestCase):
         self.assertNotEqual(pre, audiofile.masked_middle_length)
 
 
-
 if __name__ == '__main__':
     unittest.main()
-
-
-

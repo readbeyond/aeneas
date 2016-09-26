@@ -1,6 +1,39 @@
 Changelog
 =========
 
+v1.6.0 (2016-09-26)
+-------------------
+
+#. Fixed bug #102 by checking that the audio file produced by the TTS engine is mono WAVE and has correct sample rate: slightly slower but safe
+#. Created ``aeneas.ttswrappers`` subpackage
+#. Renamed ``aeneas.ttswrapper`` to ``aeneas.ttswrappers.basettswrapper``, and ``TTSWrapper`` to ``BaseTTSWrapper``
+#. Renamed ``aeneas.espeakwrapper`` to ``aeneas.ttswrappers.espeakttswrapper``, and ``ESPEAKWrapper`` to ``ESPEAKTTSWrapper``
+#. Renamed ``aeneas.festivalwrapper`` to ``aeneas.ttswrappers.festivalttswrapper``, and ``FESTIVALWrapper`` to ``FESTIVALTTSWrapper``
+#. Renamed ``aeneas.nuancettsapiwrapper`` to ``aeneas.ttswrappers.nuancettswrapper``, and ``NuanceTTSAPIWrapper`` to ``NuanceTTSWrapper``
+#. Modified the value for using the Nuance TTS API from ``nuancettsapi`` to ``nuance`` in ``aeneas.synthesizer.SYNTHESIZER``
+#. Now each TTS wrapper must declare the format (codec, channels, sample rate) of its output
+#. Now each TTS wrapper can declare the default path for the TTS engine executable, using ``DEFAULT_TTS_PATH``
+#. Changed the constructor of ``BaseTTSWrapper`` and derived classes, moving call method flags from constructor parameters to class fields
+#. Added check when synthesizing multiple: at least one fragment should be not empty
+#. Simplified writing custom TTS wrappers by providing the "multiple generic" method in ``BaseTTSWrapper``
+#. Removed ``synthesize_single()`` function in all TTS wrappers and in ``cew``
+#. When working on multilevel sync, user can specify a different TTS for each level
+#. Added an optional TTS caching mechanism to reduce subprocess/API calls to the TTS engine (closes #87)
+#. Added wrapper for eSpeak-ng (subprocess only)
+#. Added ``cfw`` Python C++ Extension to call ``Festival`` via its C++ API, disabled by default (closes #106)
+#. Unified unit tests for eSpeak, eSpeak-ng, and Festival
+#. Python C extension compilation can be disabled/forced in setup.py via env vars
+#. Added check on head/process/tail length which should not exceed the audio file length (closes #80)
+#. Moved package metadata from ``setup.py`` into ``setupmeta.py``
+#. Added AGPL header to all source files
+#. Removed metadata (e.g., version) from all source files, except those directly facing the user
+#. PEP 8 compliance for all Python files (except for E501 "line too long")
+#. Added ``wiki/CONTRIBUTING.md`` explaining the contribution rules (branch policy, code style, etc.)
+#. Using Sphinx theme from readthedocs.org if available
+#. Updated dependencies: BeautifulSoup4>=4.5.1 and lxml>=3.6.4 (see discussion in #93)
+#. Updated documentation
+#. Several other minor code improvements
+
 v1.5.1 (2016-07-25)
 -------------------
 
@@ -222,7 +255,7 @@ v1.1.1 (2015-08-23)
 -------------------
 
 #. Added ``compile_c_extensions.bat`` and directions for Windows users (courtesy of Richard Margetts)
-#. Added warning to ``aeneas.tools.*`` when running without Python C Extensions compiled
+#. Added warning to ``aeneas.tools.*`` when running without Python C extensions compiled
 #. Improved ``README.md``
 
 v1.1.0 (2015-08-21)

@@ -1,6 +1,26 @@
 #!/usr/bin/env python
 # coding=utf-8
 
+# aeneas is a Python/C library and a set of tools
+# to automagically synchronize audio and text (aka forced alignment)
+#
+# Copyright (C) 2012-2013, Alberto Pettarin (www.albertopettarin.it)
+# Copyright (C) 2013-2015, ReadBeyond Srl   (www.readbeyond.it)
+# Copyright (C) 2015-2016, Alberto Pettarin (www.albertopettarin.it)
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU Affero General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU Affero General Public License for more details.
+#
+# You should have received a copy of the GNU Affero General Public License
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
 """
 This module contains the following classes:
 
@@ -13,24 +33,15 @@ This module contains the following classes:
 
 from __future__ import absolute_import
 from __future__ import print_function
-from aeneas.espeakwrapper import ESPEAKWrapper
-from aeneas.festivalwrapper import FESTIVALWrapper
 from aeneas.logger import Loggable
-from aeneas.nuancettsapiwrapper import NuanceTTSAPIWrapper
 from aeneas.runtimeconfiguration import RuntimeConfiguration
 from aeneas.textfile import TextFile
+from aeneas.ttswrappers.espeakttswrapper import ESPEAKTTSWrapper
+from aeneas.ttswrappers.espeakngttswrapper import ESPEAKNGTTSWrapper
+from aeneas.ttswrappers.festivalttswrapper import FESTIVALTTSWrapper
+from aeneas.ttswrappers.nuancettswrapper import NuanceTTSWrapper
 import aeneas.globalfunctions as gf
 
-__author__ = "Alberto Pettarin"
-__copyright__ = """
-    Copyright 2012-2013, Alberto Pettarin (www.albertopettarin.it)
-    Copyright 2013-2015, ReadBeyond Srl   (www.readbeyond.it)
-    Copyright 2015-2016, Alberto Pettarin (www.albertopettarin.it)
-    """
-__license__ = "GNU AGPL v3"
-__version__ = "1.5.1"
-__email__ = "aeneas@readbeyond.it"
-__status__ = "Production"
 
 class Synthesizer(Loggable):
     """
@@ -53,13 +64,16 @@ class Synthesizer(Loggable):
     ESPEAK = "espeak"
     """ Select eSpeak wrapper """
 
+    ESPEAKNG = "espeak-ng"
+    """ Select eSpeak-ng wrapper """
+
     FESTIVAL = "festival"
     """ Select Festival wrapper """
 
-    NUANCETTSAPI = "nuancettsapi"
+    NUANCE = "nuance"
     """ Select Nuance TTS API wrapper """
 
-    ALLOWED_VALUES = [CUSTOM, ESPEAK, FESTIVAL, NUANCETTSAPI]
+    ALLOWED_VALUES = [CUSTOM, ESPEAK, ESPEAKNG, FESTIVAL, NUANCE]
     """ List of all the allowed values """
 
     TAG = u"Synthesizer"
@@ -74,9 +88,12 @@ class Synthesizer(Loggable):
         Select the TTS engine to be used by looking at the rconf object.
         """
         self.log(u"Selecting TTS engine...")
-        if self.rconf[RuntimeConfiguration.TTS] == self.CUSTOM:
+        requested_tts_engine = self.rconf[RuntimeConfiguration.TTS]
+        if requested_tts_engine == self.CUSTOM:
             self.log(u"TTS engine: custom")
             tts_path = self.rconf[RuntimeConfiguration.TTS_PATH]
+            if tts_path is None:
+                self.log_exc(u"You must specify a value for tts_path", None, True, ValueError)
             if not gf.file_can_be_read(tts_path):
                 self.log_exc(u"Cannot read tts_path", None, True, OSError)
             try:
@@ -92,34 +109,45 @@ class Synthesizer(Loggable):
                 self.log(u"Creating CustomTTSWrapper instance... done")
             except Exception as exc:
                 self.log_exc(u"Unable to load custom TTS wrapper", exc, True, OSError)
-        elif self.rconf[RuntimeConfiguration.TTS] == self.FESTIVAL:
+        elif requested_tts_engine == self.FESTIVAL:
             self.log(u"TTS engine: Festival")
-            self.tts_engine = FESTIVALWrapper(rconf=self.rconf, logger=self.logger)
-        elif self.rconf[RuntimeConfiguration.TTS] == self.NUANCETTSAPI:
+            self.tts_engine = FESTIVALTTSWrapper(rconf=self.rconf, logger=self.logger)
+        elif requested_tts_engine == self.NUANCE:
             try:
                 import requests
             except ImportError as exc:
                 self.log_exc(u"Unable to import requests for Nuance TTS API wrapper", exc, True, ImportError)
             self.log(u"TTS engine: Nuance TTS API")
-            self.tts_engine = NuanceTTSAPIWrapper(rconf=self.rconf, logger=self.logger)
+            self.tts_engine = NuanceTTSWrapper(rconf=self.rconf, logger=self.logger)
+        elif requested_tts_engine == self.ESPEAKNG:
+            self.log(u"TTS engine: eSpeak-ng")
+            self.tts_engine = ESPEAKNGTTSWrapper(rconf=self.rconf, logger=self.logger)
         else:
             self.log(u"TTS engine: eSpeak")
-            self.tts_engine = ESPEAKWrapper(rconf=self.rconf, logger=self.logger)
+            self.tts_engine = ESPEAKTTSWrapper(rconf=self.rconf, logger=self.logger)
         self.log(u"Selecting TTS engine... done")
 
-    def output_is_mono_wave(self):
+    @property
+    def output_audio_format(self):
         """
-        Return ``True`` if the TTS engine
-        outputs a PCM16 mono WAVE file.
+        Return a tuple ``(codec, channels, rate)``
+        specifying the audio format
+        generated by the actual TTS engine.
 
-        This information can be used to avoid
-        converting the audio file output by the TTS engine.
-
-        :rtype: bool
+        :rtype: tuple
         """
         if self.tts_engine is not None:
-            return self.tts_engine.OUTPUT_MONO_WAVE
-        return False
+            return self.tts_engine.OUTPUT_AUDIO_FORMAT
+        return None
+
+    def clear_cache(self):
+        """
+        Clear the TTS cache, removing all cache files from disk.
+
+        .. versionadded:: 1.6.0
+        """
+        if self.tts_engine is not None:
+            self.tts_engine.clear_cache()
 
     def synthesize(
             self,
@@ -144,6 +172,7 @@ class Synthesizer(Loggable):
         :raises: TypeError: if ``text_file`` is ``None`` or not an instance of ``TextFile``
         :raises: OSError: if ``audio_file_path`` cannot be written
         :raises: OSError: if ``tts=custom`` in the RuntimeConfiguration and ``tts_path`` cannot be read
+        :raises: ValueError: if the TTS engine has not been set yet
         """
         if text_file is None:
             self.log_exc(u"text_file is None", None, True, TypeError)
@@ -169,6 +198,3 @@ class Synthesizer(Loggable):
             self.log_exc(u"Audio file path '%s' cannot be read" % (audio_file_path), None, True, OSError)
 
         return result
-
-
-
