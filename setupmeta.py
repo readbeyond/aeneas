@@ -47,7 +47,7 @@ __version__ = "1.6.0"
 
 # package version
 # NOTE: generate a new one for each PyPI upload, otherwise it will fail
-PKG_VERSION = "1.6.0.0"
+PKG_VERSION = "1.6.0.1"
 
 # required packages to install
 # NOTE: always use exact version numbers

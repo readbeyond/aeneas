@@ -221,53 +221,53 @@ class NuanceTTSWrapper(BaseTTSWrapper):
     """ English (USA) """
 
     LANGUAGE_TO_VOICE_CODE = {
-        CMN_CHN: "Tian-Tian",
-        CMN_TWN: "Mei-Jia",
-        FRA_CAN: "Amelie",      # F: Chantal
-        ENG_AUS: "Karen",
-        ENG_GBR: "Kate",        # F: Serena
-        ENG_IND: "Veena",
-        ENG_IRL: "Moira",
-        ENG_SCT: "Fiona",
-        ENG_USA: "Ava",         # F: Allison, F: Samantha, F: Susan, F: Zoe
-        ENG_ZAF: "Tessa",
-        NLD_BEL: "Ellen",
-        POR_BRA: "Luciana",
-        POR_PRT: "Catarina",    # F: Joana
-        SPA_COL: "Soledad",
-        SPA_ESP: "Monica",
-        SPA_MEX: "Angelica",    # F: Paulina, F: Empar (Valencian)
-        ARA: "Laila",
-        CAT: "Jordi",           # M, F: Montserrat
-        CES: "Iveta",           # F: Zuzana
-        CMN: "Tian-Tian",
-        DAN: "Ida",
-        DEU: "Anna-ML",         # F-ML, F-ML: Petra-ML
-        ELL: "Melina",
-        ENG: "Kate",
-        EUS: "Miren",
-        FIN: "Satu",
-        FRA: "Audrey-ML",       # F-ML, F: Aurelie
-        GLG: "Carmela",
-        HEB: "Carmit",
-        HIN: "Lekha",
-        HUN: "Mariska",
-        IND: "Damayanti",
-        ITA: "Alice-ML",        # F-ML, F: Federica, F: Paola
-        JPN: "Kyoko",
-        KOR: "Sora",
-        NLD: "Claire",
-        NOR: "Nora",
-        POL: "Ewa",             # F: Zosia
-        POR: "Catarina",
-        RON: "Ioana",
-        RUS: "Katya",           # F: Milena
-        SLK: "Laura",
-        SPA: "Monica",
-        SWE: "Alva",
-        THA: "Kanya",
-        TUR: "Cem",             # M, F: Yelda
-        YUE: "Sin-Ji",
+        CMN_CHN: "Tian-Tian",   # F
+        CMN_TWN: "Mei-Jia",     # F
+        FRA_CAN: "Amelie",      # F, F: Chantal, M: Nicolas
+        ENG_AUS: "Karen",       # F, M: Lee
+        ENG_GBR: "Kate",        # F, F: Serena, M: Daniel, Oliver
+        ENG_IND: "Veena",       # F
+        ENG_IRL: "Moira",       # F
+        ENG_SCT: "Fiona",       # F
+        ENG_USA: "Ava",         # F, F: Allison, Samantha, Susan, Zoe, M: Tom
+        ENG_ZAF: "Tessa",       # F
+        NLD_BEL: "Ellen",       # F
+        POR_BRA: "Luciana",     # F, M: Felipe
+        POR_PRT: "Catarina",    # F, F: Joana
+        SPA_COL: "Soledad",     # F, M: Carlos
+        SPA_ESP: "Monica",      # F, F (Valencian): Empar
+        SPA_MEX: "Angelica",    # F, F: Paulina, M: Juan
+        ARA: "Laila",           # F, M: Maged, Tarik
+        CAT: "Montserrat",      # F, M: Jordi
+        CES: "Iveta",           # F, F: Zuzana
+        CMN: "Tian-Tian",       # F
+        DAN: "Ida",             # F, M: Magnus
+        DEU: "Anna-ML",         # F-ML, F-ML: Petra-ML, M: Markus, Yannick
+        ELL: "Melina",          # F, M: Nikos
+        ENG: "Kate",            # F
+        EUS: "Miren",           # F
+        FIN: "Satu",            # F
+        FRA: "Audrey-ML",       # F-ML, F: Aurelie, M: Thomas
+        GLG: "Carmela",         # F
+        HEB: "Carmit",          # F
+        HIN: "Lekha",           # F
+        HUN: "Mariska",         # F
+        IND: "Damayanti",       # F
+        ITA: "Alice-ML",        # F-ML, F: Federica, Paola, M: Luca
+        JPN: "Kyoko",           # F, M: Otoya
+        KOR: "Sora",            # F
+        NLD: "Claire",          # F, M: Xander
+        NOR: "Nora",            # F, M: Henrik
+        POL: "Ewa",             # F, F: Zosia
+        POR: "Catarina",        # F
+        RON: "Ioana",           # F
+        RUS: "Katya",           # F, F: Milena, M: Yuri
+        SLK: "Laura",           # F
+        SPA: "Monica",          # F, M: Jorge
+        SWE: "Alva",            # F, M: Oskar
+        THA: "Kanya",           # F
+        TUR: "Yelda",           # F, M: Cem
+        YUE: "Sin-Ji",          # F
     }
     DEFAULT_LANGUAGE = ENG_GBR
 
@@ -290,7 +290,7 @@ class NuanceTTSWrapper(BaseTTSWrapper):
     def __init__(self, rconf=None, logger=None):
         super(NuanceTTSWrapper, self).__init__(rconf=rconf, logger=logger)
 
-    def _synthesize_single_python_helper(self, text, voice_code, output_file_path=None):
+    def _synthesize_single_python_helper(self, text, voice_code, output_file_path=None, return_audio_data=True):
         self.log(u"Importing requests...")
         import requests
         self.log(u"Importing requests... done")
