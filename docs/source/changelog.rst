@@ -1,6 +1,12 @@
 Changelog
 =========
 
+v1.6.1 (2016-10-??)
+-------------------
+
+#. Added two new output formats: ``TEXTGRID`` (Praat long TextGrid) and ``TEXTGRID_SHORT`` (Praat short TextGrid)
+#. Fixed typos in ``SyncMapFormat`` docstrings
+
 v1.6.0.1 (2016-09-30)
 ---------------------
 

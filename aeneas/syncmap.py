@@ -68,7 +68,7 @@ class SyncMapFormat(object):
 
     AUD = "aud"
     """
-    Alias for AUDM
+    Alias for AUDM.
     """
 
     AUDH = "audh"
@@ -106,7 +106,7 @@ class SyncMapFormat(object):
 
     CSV = "csv"
     """
-    Alias for CSVM
+    Alias for CSVM.
     """
 
     CSVH = "csvh"
@@ -114,12 +114,17 @@ class SyncMapFormat(object):
     Comma-separated values (CSV),
     with human-readable time values::
 
-        f001,00:00:00.000,00:00:01.234,First fragment text
-        f002,00:00:01.234,00:00:05.678,Second fragment text
-        f003,00:00:05.678,00:00:07.890,Third fragment text
+        f001,00:00:00.000,00:00:01.234,"First fragment text"
+        f002,00:00:01.234,00:00:05.678,"Second fragment text"
+        f003,00:00:05.678,00:00:07.890,"Third fragment text"
 
     * Multiple levels: no
     * Multiple lines: no
+
+    Please note that the text is assumed to be contained
+    in double quotes ("..."),
+    which are stripped when reading from file,
+    and added back when writing to file.
 
     .. versionadded:: 1.0.4
     """
@@ -129,19 +134,24 @@ class SyncMapFormat(object):
     Comma-separated values (CSV),
     with machine-readable time values::
 
-        f001,0.000,1.234,First fragment text
-        f002,1.234,5.678,Second fragment text
-        f003,5.678,7.890,Third fragment text
+        f001,0.000,1.234,"First fragment text"
+        f002,1.234,5.678,"Second fragment text"
+        f003,5.678,7.890,"Third fragment text"
 
     * Multiple levels: no
     * Multiple lines: no
+
+    Please note that the text is assumed to be contained
+    in double quotes ("..."),
+    which are stripped when reading from file,
+    and added back when writing to file.
 
     .. versionadded:: 1.2.0
     """
 
     DFXP = "dfxp"
     """
-    Alias for TTML
+    Alias for TTML.
 
     .. versionadded:: 1.4.1
     """
@@ -152,7 +162,7 @@ class SyncMapFormat(object):
 
         <?xml version="1.0" encoding="UTF-8"?>
         <ANNOTATION_DOCUMENT AUTHOR="aeneas" DATE="2016-01-01T00:00:00+00:00" FORMAT="2.8" VERSION="2.8" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="http://www.mpi.nl/tools/elan/EAFv2.8.xsd">
-            <HEADER MEDIA_FILE="" TIME_UNITS="milliseconds"></HEADER>
+            <HEADER MEDIA_FILE="" TIME_UNITS="milliseconds" />
             <TIME_ORDER>
                 <TIME_SLOT TIME_SLOT_ID="ts001b" TIME_VALUE="0"/>
                 <TIME_SLOT TIME_SLOT_ID="ts001e" TIME_VALUE="1234"/>
@@ -286,7 +296,7 @@ class SyncMapFormat(object):
 
     SMIL = "smil"
     """
-    Alias for SMILH
+    Alias for SMILH.
     """
 
     SMILH = "smilh"
@@ -374,14 +384,7 @@ class SyncMapFormat(object):
 
     SSV = "ssv"
     """
-    Space-separated plain text::
-
-        0.000 1.234 f001 "First fragment text"
-        1.234 5.678 f002 "Second fragment text"
-        5.678 7.890 f003 "Third fragment text"
-
-    * Multiple levels: no
-    * Multiple lines: no
+    Alias for SSVM.
 
     .. versionadded:: 1.0.4
     """
@@ -398,6 +401,11 @@ class SyncMapFormat(object):
     * Multiple levels: no
     * Multiple lines: no
 
+    Please note that the text is assumed to be contained
+    in double quotes ("..."),
+    which are stripped when reading from file,
+    and added back when writing to file.
+
     .. versionadded:: 1.0.4
     """
 
@@ -412,6 +420,11 @@ class SyncMapFormat(object):
 
     * Multiple levels: no
     * Multiple lines: no
+
+    Please note that the text is assumed to be contained
+    in double quotes ("..."),
+    which are stripped when reading from file,
+    and added back when writing to file.
 
     .. versionadded:: 1.2.0
     """
@@ -439,14 +452,84 @@ class SyncMapFormat(object):
 
     TAB = "tab"
     """
-    Deprecated, it will be removed in v2.0.0. Use TSV instead.
+    Deprecated, it will be removed in v2.0.0.
+    Use TSV instead.
 
     .. deprecated:: 1.0.3
     """
 
+    TEXTGRID = "textgrid"
+    """
+    Praat long TextGrid format::
+
+        File type = "ooTextFile"
+        Object class = "TextGrid"
+
+        xmin = 0.0
+        xmax = 7.89
+        tiers? <exists>
+        size = 1
+        item []:
+            item [1]:
+                class = "IntervalTier"
+                name = "Token"
+                xmin = 0.0
+                xmax = 7.89
+                intervals: size = 3
+                intervals [1]:
+                    xmin = 0.0
+                    xmax = 1.234
+                    text = "First fragment text"
+                intervals [2]:
+                    xmin = 1.234
+                    xmax = 5.678
+                    text = "Second fragment text"
+                intervals [3]:
+                    xmin = 5.678
+                    xmax = 7.89
+                    text = "Third fragment text"
+
+    * Multiple levels: no (not yet)
+    * Multiple lines: no
+
+    .. versionadded:: 1.6.1
+    """
+
+    TEXTGRID_SHORT = "textgrid_short"
+    """
+    Praat short TextGrid format::
+
+        File type = "ooTextFile"
+        Object class = "TextGrid"
+
+        0.0
+        7.89
+        <exists>
+        1
+        "IntervalTier"
+        "Token"
+        0.0
+        7.89
+        3
+        0.0
+        1.234
+        "First fragment text"
+        1.234
+        5.678
+        "Second fragment text"
+        5.678
+        7.89
+        "Third fragment text"
+
+    * Multiple levels: no (not yet)
+    * Multiple lines: no
+
+    .. versionadded:: 1.6.1
+    """
+
     TSV = "tsv"
     """
-    Alias for TSVM
+    Alias for TSVM.
     """
 
     TSVH = "tsvh"
@@ -508,7 +591,7 @@ class SyncMapFormat(object):
 
     TXT = "txt"
     """
-    Alias for TXTM
+    Alias for TXTM.
     """
 
     TXTH = "txth"
@@ -522,6 +605,11 @@ class SyncMapFormat(object):
 
     * Multiple levels: no
     * Multiple lines: no
+
+    Please note that the text is assumed to be contained
+    in double quotes ("..."),
+    which are stripped when reading from file,
+    and added back when writing to file.
 
     .. versionadded:: 1.0.4
     """
@@ -538,6 +626,11 @@ class SyncMapFormat(object):
 
     * Multiple levels: no
     * Multiple lines: no
+
+    Please note that the text is assumed to be contained
+    in double quotes ("..."),
+    which are stripped when reading from file,
+    and added back when writing to file.
 
     .. versionadded:: 1.2.0
     """
@@ -618,7 +711,8 @@ class SyncMapFormat(object):
     * Multiple levels: no
     * Multiple lines: no
 
-    Deprecated, it will be removed in v2.0.0. Use XML instead.
+    Deprecated, it will be removed in v2.0.0.
+    Use XML instead.
 
     .. deprecated:: 1.2.0
     """
@@ -644,6 +738,8 @@ class SyncMapFormat(object):
         SSVM,
         SUB,
         TAB,
+        TEXTGRID,
+        TEXTGRID_SHORT,
         TSV,
         TSVH,
         TSVM,
@@ -894,6 +990,8 @@ class SyncMap(Loggable):
             SyncMapFormat.SSVM: partial(self._read_ssv, parse_time=gf.time_from_ssmmm),
             SyncMapFormat.SUB: partial(self._read_sub, use_newline=False),
             SyncMapFormat.TAB: partial(self._read_tsv, parse_time=gf.time_from_ssmmm),
+            SyncMapFormat.TEXTGRID: self._read_textgrid,
+            SyncMapFormat.TEXTGRID_SHORT: self._read_textgrid,
             SyncMapFormat.TSV: partial(self._read_tsv, parse_time=gf.time_from_ssmmm),
             SyncMapFormat.TSVH: partial(self._read_tsv, parse_time=gf.time_from_hhmmssmmm),
             SyncMapFormat.TSVM: partial(self._read_tsv, parse_time=gf.time_from_ssmmm),
@@ -964,6 +1062,8 @@ class SyncMap(Loggable):
             SyncMapFormat.SSVM: partial(self._write_ssv, format_time=gf.time_to_ssmmm),
             SyncMapFormat.SUB: partial(self._write_sub, use_newline=False),
             SyncMapFormat.TAB: partial(self._write_tsv, format_time=gf.time_to_ssmmm),
+            SyncMapFormat.TEXTGRID: partial(self._write_textgrid, full=True),
+            SyncMapFormat.TEXTGRID_SHORT: partial(self._write_textgrid, full=False),
             SyncMapFormat.TSV: partial(self._write_tsv, format_time=gf.time_to_ssmmm),
             SyncMapFormat.TSVH: partial(self._write_tsv, format_time=gf.time_to_hhmmssmmm),
             SyncMapFormat.TSVM: partial(self._write_tsv, format_time=gf.time_to_ssmmm),
@@ -1009,20 +1109,18 @@ class SyncMap(Loggable):
 
     def _read_aud(self, input_file, parse_time):
         """ Read from AUD file """
-        identifier_index = 1
-        for line in input_file.readlines():
+        for identifier_index, line in enumerate(input_file.readlines(), 1):
             split = line.strip().split("\t")
             self.add_fragment(
                 SyncMapFragment(
                     text_fragment=TextFragment(
-                        identifier=(u"f" + str(identifier_index).zfill(6)),
+                        identifier=(u"f%06d" % (identifier_index)),
                         lines=[split[2]]
                     ),
                     begin=parse_time(split[0]),
                     end=parse_time(split[1])
                 )
             )
-            identifier_index += 1
 
     def _write_aud(self, output_file, format_time):
         """ Write to AUD file """
@@ -1124,8 +1222,7 @@ class SyncMap(Loggable):
         tier = etree.SubElement(doc, "TIER")
         tier.attrib["LINGUISTIC_TYPE_REF"] = "utterance"
         tier.attrib["TIER_ID"] = "tier1"
-        i = 1
-        for fragment in self.fragments:
+        for i, fragment in enumerate(self.fragments, 1):
             # time slots
             begin_id = "ts%06db" % i
             end_id = "ts%06de" % i
@@ -1143,7 +1240,6 @@ class SyncMap(Loggable):
             alignable.attrib["TIME_SLOT_REF2"] = end_id
             value = etree.SubElement(alignable, "ANNOTATION_VALUE")
             value.text = u" ".join(fragment.text_fragment.lines)
-            i += 1
         # linguistic type
         ling = etree.SubElement(doc, "LINGUISTIC_TYPE")
         ling.attrib["LINGUISTIC_TYPE_ID"] = "utterance"
@@ -1262,44 +1358,39 @@ class SyncMap(Loggable):
         smil_elem.attrib["version"] = "3.0"
         body_elem = etree.SubElement(smil_elem, "{%s}body" % smil_ns)
         seq_elem = etree.SubElement(body_elem, "{%s}seq" % smil_ns)
-        seq_elem.attrib["id"] = "seq" + str(1).zfill(6)
+        seq_elem.attrib["id"] = u"seq000001"
         seq_elem.attrib["{%s}textref" % epub_ns] = text_ref
 
         if self.is_single_level:
             # single level
-            i = 1
-            for fragment in self.fragments:
+            for i, fragment in enumerate(self.fragments, 1):
                 text = fragment.text_fragment
                 par_elem = etree.SubElement(seq_elem, "{%s}par" % smil_ns)
-                par_elem.attrib["id"] = "par" + str(i).zfill(6)
+                par_elem.attrib["id"] = "par%06d" % (i)
                 text_elem = etree.SubElement(par_elem, "{%s}text" % smil_ns)
                 text_elem.attrib["src"] = "%s#%s" % (text_ref, text.identifier)
                 audio_elem = etree.SubElement(par_elem, "{%s}audio" % smil_ns)
                 audio_elem.attrib["src"] = audio_ref
                 audio_elem.attrib["clipBegin"] = format_time(fragment.begin)
                 audio_elem.attrib["clipEnd"] = format_time(fragment.end)
-                i += 1
         else:
             # TODO support generic multiple levels
             # multiple levels
-            par_index = 1
-            for par_child in self.fragments_tree.children_not_empty:
+            for par_index, par_child in enumerate(self.fragments_tree.children_not_empty, 1):
                 par_seq_elem = etree.SubElement(seq_elem, "{%s}seq" % smil_ns)
-                # COMMENTED par_seq_elem.attrib["id"] = "p" + str(par_index).zfill(6)
+                # COMMENTED par_seq_elem.attrib["id"] = "p%06d" % (par_index)
                 par_seq_elem.attrib["{%s}type" % epub_ns] = "paragraph"
                 par_seq_elem.attrib["{%s}textref" % epub_ns] = text_ref + "#" + par_child.value.text_fragment.identifier
-                sen_index = 1
-                for sen_child in par_child.children_not_empty:
+                for sen_index, sen_child in enumerate(par_child.children_not_empty, 1):
                     sen_seq_elem = etree.SubElement(par_seq_elem, "{%s}seq" % smil_ns)
-                    # COMMENTED sen_seq_elem.attrib["id"] = par_seq_elem.attrib["id"] + "s" + str(sen_index).zfill(6)
+                    # COMMENTED sen_seq_elem.attrib["id"] = par_seq_elem.attrib["id"] + "s%06d" % (sen_index)
                     sen_seq_elem.attrib["{%s}type" % epub_ns] = "sentence"
                     sen_seq_elem.attrib["{%s}textref" % epub_ns] = text_ref + "#" + sen_child.value.text_fragment.identifier
-                    wor_index = 1
-                    for wor_child in sen_child.children_not_empty:
+                    for wor_index, wor_child in enumerate(sen_child.children_not_empty, 1):
                         fragment = wor_child.value
                         text = fragment.text_fragment
                         wor_seq_elem = etree.SubElement(sen_seq_elem, "{%s}seq" % smil_ns)
-                        # COMMENTED wor_seq_elem.attrib["id"] = sen_seq_elem.attrib["id"] + "s" + str(wor_index).zfill(6)
+                        # COMMENTED wor_seq_elem.attrib["id"] = sen_seq_elem.attrib["id"] + "w%06d" % (wor_index)
                         wor_seq_elem.attrib["{%s}type" % epub_ns] = "word"
                         wor_seq_elem.attrib["{%s}textref" % epub_ns] = text_ref + "#" + text.identifier
                         wor_par_elem = etree.SubElement(wor_seq_elem, "{%s}par" % smil_ns)
@@ -1309,9 +1400,6 @@ class SyncMap(Loggable):
                         audio_elem.attrib["src"] = audio_ref
                         audio_elem.attrib["clipBegin"] = format_time(fragment.begin)
                         audio_elem.attrib["clipEnd"] = format_time(fragment.end)
-                        wor_index += 1
-                    sen_index += 1
-                par_index += 1
         # write tree
         self._write_tree_to_file(smil_elem, output_file, xml_declaration=False)
 
@@ -1323,7 +1411,7 @@ class SyncMap(Loggable):
             line = lines[i].strip()
             if len(line) > 0:
                 identifier_index = int(line)
-                identifier = u"f" + str(identifier_index).zfill(6)
+                identifier = u"f%06d" % (identifier_index)
                 i += 1
                 if i < len(lines):
                     line = lines[i].strip()
@@ -1355,8 +1443,7 @@ class SyncMap(Loggable):
     def _write_srt(self, output_file):
         """ Write to SRT file """
         msg = []
-        i = 1
-        for fragment in self.fragments:
+        for i, fragment in enumerate(self.fragments, 1):
             text = fragment.text_fragment
             msg.append(u"%d" % i)
             msg.append(u"%s --> %s" % (
@@ -1365,7 +1452,6 @@ class SyncMap(Loggable):
             ))
             msg.extend(text.lines)
             msg.append(u"")
-            i += 1
         # add an extra \n at the end
         msg.append(u"")
         output_file.write(u"\n".join(msg))
@@ -1385,7 +1471,7 @@ class SyncMap(Loggable):
                 if in_subtitle:
                     timings = line.split(",")
                     if len(timings) == 2:
-                        identifier = u"f" + str(identifier_index).zfill(6)
+                        identifier = u"f%06d" % (identifier_index)
                         identifier_index += 1
                         begin = gf.time_from_hhmmssmmm(timings[0])
                         end = gf.time_from_hhmmssmmm(timings[1])
@@ -1463,6 +1549,67 @@ class SyncMap(Loggable):
                 )
             )
         output_file.write(u"\n".join(msg))
+
+    def _read_textgrid(self, input_file):
+        """ Read from TEXTGRID file """
+        try:
+            import tgt
+        except ImportError as exc:
+            self.log_exc(u"Python module tgt is not installed", exc, True, ImportError)
+
+        # from https://github.com/hbuschme/TextGridTools/blob/master/tgt/io.py
+        # get all non-empty lines
+        lines = [l.strip() for l in input_file.readlines()]
+        lines = [l for l in lines if l not in ["", "\""]]
+        # long format => has "xmin = 0.0" in its 3rd line
+        if lines[2].startswith("xmin"):
+            read_function = tgt.io.read_long_textgrid
+        else:
+            read_function = tgt.io.read_short_textgrid
+        textgrid = read_function(
+            filename="Dummy TextGrid file",
+            stg=lines,
+            include_empty_intervals=True
+        )
+        if len(textgrid.tiers) == 0:
+            # no tiers => nothing to read => empty sync map
+            return
+        # TODO at the moment we support only one tier, the first
+        for i, interval in enumerate(textgrid.tiers[0].intervals, 1):
+            self.add_fragment(
+                SyncMapFragment(
+                    text_fragment=TextFragment(
+                        identifier=u"f%06d" % i,
+                        lines=[interval.text]
+                    ),
+                    begin=TimeValue(interval.start_time.real),
+                    end=TimeValue(interval.end_time.real)
+                )
+            )
+
+    def _write_textgrid(self, output_file, full=True):
+        """ Write to TEXTGRID file """
+        try:
+            import tgt
+        except ImportError as exc:
+            self.log_exc(u"Python module tgt is not installed", exc, True, ImportError)
+        # from https://github.com/hbuschme/TextGridTools/blob/master/tgt/io.py
+        textgrid = tgt.TextGrid()
+        tier = tgt.IntervalTier(name="Token")
+        for fragment in self.fragments:
+            begin = float(fragment.begin)
+            end = float(fragment.end)
+            text = fragment.text_fragment.text
+            if text == u"":
+                text = u"SIL"
+            interval = tgt.Interval(begin, end, text=text)
+            tier.add_interval(interval)
+        textgrid.add_tier(tier)
+        if full:
+            msg = tgt.io.export_to_long_textgrid(textgrid)
+        else:
+            msg = tgt.io.export_to_short_textgrid(textgrid)
+        output_file.write(msg)
 
     def _read_tsv(self, input_file, parse_time):
         """ Read from TSV file """
@@ -1605,14 +1752,16 @@ class SyncMap(Loggable):
 
     def _read_vtt(self, input_file):
         """ Read from WebVTT file """
+        # TODO make this function more generic
         lines = input_file.readlines()
-        # ignore the first line containing "WEBVTT" and the following blank line
+        # ignore the first line containing "WEBVTT",
+        # and the following blank line
         i = 2
         while i < len(lines):
             line = lines[i].strip()
             if len(line) > 0:
                 identifier_index = int(line)
-                identifier = u"f" + str(identifier_index).zfill(6)
+                identifier = u"f%06d" % (identifier_index)
                 i += 1
                 if i < len(lines):
                     line = lines[i].strip()
@@ -1643,11 +1792,11 @@ class SyncMap(Loggable):
 
     def _write_vtt(self, output_file):
         """ Write to WebVTT file """
+        # NOTE this will create a valid, if constrained, WebVTT file
         msg = []
-        i = 1
         msg.append(u"WEBVTT")
         msg.append(u"")
-        for fragment in self.fragments:
+        for i, fragment in enumerate(self.fragments, 1):
             text = fragment.text_fragment
             msg.append(u"%d" % i)
             msg.append(u"%s --> %s" % (
@@ -1656,7 +1805,6 @@ class SyncMap(Loggable):
             ))
             msg.extend(text.lines)
             msg.append(u"")
-            i += 1
         # add an extra \n at the end
         msg.append(u"")
         output_file.write(u"\n".join(msg))
