@@ -4,7 +4,9 @@ Changelog
 v1.6.1 (2016-10-??)
 -------------------
 
+#. Moved syncmap I/O functions in ``aeneas.syncmap`` subpackage
 #. Added two new output formats: ``TEXTGRID`` (Praat long TextGrid) and ``TEXTGRID_SHORT`` (Praat short TextGrid)
+#. More robust and generic reading of SRT-like files, especially WebVTT
 #. Fixed typos in ``SyncMapFormat`` docstrings
 
 v1.6.0.1 (2016-09-30)

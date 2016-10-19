@@ -98,6 +98,7 @@ PKG_PACKAGES = [
     "aeneas.cmfcc",
     "aeneas.cwave",
     "aeneas.extra",
+    "aeneas.syncmap",
     "aeneas.tools",
     "aeneas.ttswrappers"
 ]
@@ -136,6 +137,9 @@ PKG_PACKAGE_DATA = {
         "*.md"
     ],
     "aeneas.extra": [
+        "*.md"
+    ],
+    "aeneas.syncmap": [
         "*.md"
     ],
     "aeneas.tools": [

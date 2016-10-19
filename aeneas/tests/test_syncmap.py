@@ -25,8 +25,8 @@ import unittest
 
 from aeneas.language import Language
 from aeneas.syncmap import SyncMap
-from aeneas.syncmap import SyncMapFormat
 from aeneas.syncmap import SyncMapFragment
+from aeneas.syncmap import SyncMapFormat
 from aeneas.syncmap import SyncMapMissingParameterError
 from aeneas.textfile import TextFragment
 from aeneas.timevalue import Decimal
