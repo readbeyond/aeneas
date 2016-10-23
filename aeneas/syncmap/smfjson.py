@@ -38,51 +38,6 @@ class SyncMapFormatJSON(SyncMapFormatBase):
     TAG = u"SyncMapFormatJSON"
 
     DEFAULT = "json"
-    """
-    JSON::
-
-        {
-         "fragments": [
-          {
-           "id": "f001",
-           "language": "en",
-           "begin": 0.000,
-           "end": 1.234,
-           "children": [],
-           "lines": [
-            "First fragment text"
-           ]
-          },
-          {
-           "id": "f002",
-           "language": "en",
-           "begin": 1.234,
-           "end": 5.678,
-           "children": [],
-           "lines": [
-            "Second fragment text",
-            "Second line of second fragment"
-           ]
-          },
-          {
-           "id": "f003",
-           "language": "en",
-           "begin": 5.678,
-           "end": 7.890,
-           "children": [],
-           "lines": [
-            "Third fragment text",
-            "Second line of third fragment"
-           ]
-          }
-         ]
-        }
-
-    * Multiple levels: yes (output only)
-    * Multiple lines: yes
-
-    .. versionadded:: 1.2.0
-    """
 
     def parse(self, input_text, syncmap):
         contents_dict = json.loads(input_text)

@@ -37,69 +37,15 @@ class SyncMapFormatSUB(SyncMapFormatGenericSubtitles):
     TAG = u"SyncMapFormatSUB"
 
     SUB = "sub"
-    """
-    SubViewer (SBV/SUB) caption/subtitle format,
-    with multiple lines per fragment are separated by [br]::
-
-        [SUBTITLE]
-        00:00:00.000,00:00:01.234
-        First fragment text
-
-        00:00:01.234,00:00:05.678
-        Second fragment text[br]Second line of second fragment
-
-        00:00:05.678,00:00:07.890
-        Third fragment text[br]Second line of third fragment
-
-    * Multiple levels: no
-    * Multiple lines: yes
-
-    See also https://wiki.videolan.org/SubViewer/
-
-    Note that the ``[INFORMATION]`` header is ignored when reading,
-    and it is not produced when writing.
-    Moreover, extensions
-    (i.e., ``[COLF]``, ``[SIZE]``, ``[FONT]``)
-    are not supported.
-
-    .. versionadded:: 1.4.1
-    """
 
     SBV = "sbv"
-    """
-    SubViewer (SBV/SUB) caption/subtitle format,
-    with multiple lines per fragment are separated by a newline character::
-
-        [SUBTITLE]
-        00:00:00.000,00:00:01.234
-        First fragment text
-
-        00:00:01.234,00:00:05.678
-        Second fragment text
-        Second line of second fragment
-
-        00:00:05.678,00:00:07.890
-        Third fragment text
-        Second line of third fragment
-
-    * Multiple levels: no
-    * Multiple lines: yes
-
-    See also https://wiki.videolan.org/SubViewer/
-
-    Note that the ``[INFORMATION]`` header is ignored when reading,
-    and it is not produced when writing.
-    Moreover, extensions
-    (i.e., ``[COLF]``, ``[SIZE]``, ``[FONT]``)
-    are not supported.
-    """
 
     DEFAULT = SUB
 
     def __init__(self, variant=DEFAULT, parameters=None, rconf=None, logger=None):
         super(SyncMapFormatSUB, self).__init__(variant=variant, parameters=parameters, rconf=rconf, logger=logger)
         self.header_string = u"[SUBTITLE]"
-        self.header_might_not_have_trailing_blank_line = True 
+        self.header_might_not_have_trailing_blank_line = True
         self.footer_string = u"[END SUBTITLE]"
         self.cue_has_identifier = False
         self.cue_has_optional_identifier = False

@@ -36,48 +36,12 @@ class SyncMapFormatTSV(SyncMapFormatGenericTabular):
     TAG = u"SyncMapFormatTSV"
 
     DEFAULT = "tsv"
-    """
-    Alias for ``MACHINE``.
-    """
 
     HUMAN = "tsvh"
-    """
-    Tab-separated plain text,
-    with human-readable time values::
-
-        00:00:00.000   00:00:01.234   f001
-        00:00:01.234   00:00:05.678   f002
-        00:00:05.678   00:00:07.890   f003
-
-    * Multiple levels: no
-    * Multiple lines: no
-
-    .. versionadded:: 1.0.4
-    """
 
     MACHINE = "tsvm"
-    """
-    Tab-separated plain text,
-    with machine-readable time values,
-    compatible with ``Audacity``::
-
-        0.000   1.234   f001
-        1.234   5.678   f002
-        5.678   7.890   f003
-
-    * Multiple levels: no
-    * Multiple lines: no
-
-    .. versionadded:: 1.2.0
-    """
 
     TAB = "tab"
-    """
-    Deprecated, it will be removed in v2.0.0.
-    Use ``TSV`` instead.
-
-    .. deprecated:: 1.0.3
-    """
 
     MACHINE_ALIASES = [DEFAULT, MACHINE, TAB]
 

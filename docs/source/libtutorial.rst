@@ -353,6 +353,7 @@ The main ``aeneas`` package contains several subpackages:
 * :mod:`aeneas.cmfcc` (Python C extension)
 * :mod:`aeneas.cwave` (Python C extension)
 * :mod:`aeneas.extra`
+* :mod:`aeneas.syncmap`
 * :mod:`aeneas.tests`
 * :mod:`aeneas.tools`
 * :mod:`aeneas.ttswrappers`

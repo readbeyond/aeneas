@@ -36,38 +36,11 @@ class SyncMapFormatTTML(SyncMapFormatGenericXML):
 
     TAG = u"SyncMapFormatTTML"
 
-    DEFAULT = "ttml"
-    """
-    TTML caption/subtitle format
-    (it might have multiple lines per fragment)::
-
-        <?xml version="1.0" encoding="UTF-8" ?>
-        <tt xmlns="http://www.w3.org/ns/ttml">
-         <body>
-          <div>
-           <p xml:id="f001" begin="0.000" end="1.234">
-            First fragment text
-           </p>
-           <p xml:id="f002" begin="1.234" end="5.678">
-            Second fragment text<br/>Second line of second fragment
-           </p>
-           <p xml:id="f003" begin="5.678" end="7.890">
-            Third fragment text<br/>Second line of third fragment
-           </p>
-          </div>
-         </body>
-        </tt>
-
-    * Multiple levels: yes (output only)
-    * Multiple lines: yes
-    """
+    TTML = "ttml"
 
     DFXP = "dfxp"
-    """
-    Alias for ``DEFAULT``.
 
-    .. versionadded:: 1.4.1
-    """
+    DEFAULT = TTML
 
     def parse(self, input_text, syncmap):
         from lxml import etree

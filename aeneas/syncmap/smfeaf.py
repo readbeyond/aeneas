@@ -40,45 +40,6 @@ class SyncMapFormatEAF(SyncMapFormatGenericXML):
     TAG = u"SyncMapFormatEAF"
 
     DEFAULT = "eaf"
-    """
-    ELAN EAF::
-
-        <?xml version="1.0" encoding="UTF-8"?>
-        <ANNOTATION_DOCUMENT AUTHOR="aeneas" DATE="2016-01-01T00:00:00+00:00" FORMAT="2.8" VERSION="2.8" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="http://www.mpi.nl/tools/elan/EAFv2.8.xsd">
-            <HEADER MEDIA_FILE="" TIME_UNITS="milliseconds" />
-            <TIME_ORDER>
-                <TIME_SLOT TIME_SLOT_ID="ts001b" TIME_VALUE="0"/>
-                <TIME_SLOT TIME_SLOT_ID="ts001e" TIME_VALUE="1234"/>
-                <TIME_SLOT TIME_SLOT_ID="ts002b" TIME_VALUE="1234"/>
-                <TIME_SLOT TIME_SLOT_ID="ts002e" TIME_VALUE="5678"/>
-                <TIME_SLOT TIME_SLOT_ID="ts003b" TIME_VALUE="5678"/>
-                <TIME_SLOT TIME_SLOT_ID="ts003e" TIME_VALUE="7890"/>
-            </TIME_ORDER>
-            <TIER LINGUISTIC_TYPE_REF="utterance" TIER_ID="tier1">
-                <ANNOTATION>
-                    <ALIGNABLE_ANNOTATION ANNOTATION_ID="f001" TIME_SLOT_REF1="ts001b" TIME_SLOT_REF2="ts001e">
-                        <ANNOTATION_VALUE>First fragment text</ANNOTATION_VALUE>
-                    </ALIGNABLE_ANNOTATION>
-                </ANNOTATION>
-                <ANNOTATION>
-                    <ALIGNABLE_ANNOTATION ANNOTATION_ID="f002" TIME_SLOT_REF1="ts002b" TIME_SLOT_REF2="ts002e">
-                        <ANNOTATION_VALUE>First fragment text</ANNOTATION_VALUE>
-                    </ALIGNABLE_ANNOTATION>
-                </ANNOTATION>
-                <ANNOTATION>
-                    <ALIGNABLE_ANNOTATION ANNOTATION_ID="f003" TIME_SLOT_REF1="ts003b" TIME_SLOT_REF2="ts003e">
-                        <ANNOTATION_VALUE>First fragment text</ANNOTATION_VALUE>
-                    </ALIGNABLE_ANNOTATION>
-                </ANNOTATION>
-            </TIER>
-            <LINGUISTIC_TYPE LINGUISTIC_TYPE_ID="utterance" TIME_ALIGNABLE="true"/>
-        </ANNOTATION_DOCUMENT>
-
-    * Multiple levels: no
-    * Multiple lines: no
-
-    .. versionadded:: 1.5.0
-    """
 
     def parse(self, input_text, syncmap):
         from lxml import etree

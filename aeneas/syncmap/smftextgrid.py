@@ -38,83 +38,10 @@ class SyncMapFormatTextGrid(SyncMapFormatBase):
     TAG = u"SyncMapFormatTextGrid"
 
     DEFAULT = "textgrid"
-    """
-    Praat full TextGrid format::
 
-        File type = "ooTextFile"
-        Object class = "TextGrid"
-
-        xmin = 0.0
-        xmax = 7.89
-        tiers? <exists>
-        size = 1
-        item []:
-            item [1]:
-                class = "IntervalTier"
-                name = "Token"
-                xmin = 0.0
-                xmax = 7.89
-                intervals: size = 3
-                intervals [1]:
-                    xmin = 0.0
-                    xmax = 1.234
-                    text = "First fragment text"
-                intervals [2]:
-                    xmin = 1.234
-                    xmax = 5.678
-                    text = "Second fragment text"
-                intervals [3]:
-                    xmin = 5.678
-                    xmax = 7.89
-                    text = "Third fragment text"
-
-    * Multiple levels: no (not yet)
-    * Multiple lines: no
-
-    See also 
-
-    Note that at the moment reading support is limited
-    to the first tier in the TextGrid file.
-
-    .. versionadded:: 1.6.1
-    """
+    LONG = "textgrid_long"
 
     SHORT = "textgrid_short"
-    """
-    Praat short TextGrid format::
-
-        File type = "ooTextFile"
-        Object class = "TextGrid"
-
-        0.0
-        7.89
-        <exists>
-        1
-        "IntervalTier"
-        "Token"
-        0.0
-        7.89
-        3
-        0.0
-        1.234
-        "First fragment text"
-        1.234
-        5.678
-        "Second fragment text"
-        5.678
-        7.89
-        "Third fragment text"
-
-    * Multiple levels: no (not yet)
-    * Multiple lines: no
-
-    See also 
-
-    Note that at the moment reading support is limited
-    to the first tier in the TextGrid file.
-
-    .. versionadded:: 1.6.1
-    """
 
     def parse(self, input_text, syncmap):
         try:

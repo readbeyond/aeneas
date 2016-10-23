@@ -37,33 +37,6 @@ class SyncMapFormatSRT(SyncMapFormatGenericSubtitles):
     TAG = u"SyncMapFormatSRT"
 
     DEFAULT = "srt"
-    """
-    SubRip (SRT) caption/subtitle format
-    (it might have multiple lines per fragment)::
-
-        1
-        00:00:00,000 --> 00:00:01,234
-        First fragment text
-
-        2
-        00:00:01,234 --> 00:00:05,678
-        Second fragment text
-        Second line of second fragment
-
-        3
-        00:00:05,678 --> 00:00:07,890
-        Third fragment text
-        Second line of third fragment
-
-    * Multiple levels: no
-    * Multiple lines: yes
-
-    See also https://wiki.videolan.org/SubRip/
-
-    Note that extensions
-    (i.e., ``<b>``, ``<s>``, ``<u>``, ``<i>``, ``<font>``)
-    are not supported.
-    """
 
     #
     # NOTE not strictly necessary, since SyncMapFormatGenericSubtitles

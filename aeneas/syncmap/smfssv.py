@@ -36,51 +36,10 @@ class SyncMapFormatSSV(SyncMapFormatGenericTabular):
     TAG = u"SyncMapFormatSSV"
 
     DEFAULT = "ssv"
-    """
-    Alias for ``MACHINE``.
-
-    .. versionadded:: 1.0.4
-    """
 
     HUMAN = "ssvh"
-    """
-    Space-separated plain text,
-    with human-readable time values::
-
-        00:00:00.000 00:00:01.234 f001 "First fragment text"
-        00:00:01.234 00:00:05.678 f002 "Second fragment text"
-        00:00:05.678 00:00:07.890 f003 "Third fragment text"
-
-    * Multiple levels: no
-    * Multiple lines: no
-
-    Please note that the text is assumed to be contained
-    in double quotes ("..."),
-    which are stripped when reading from file,
-    and added back when writing to file.
-
-    .. versionadded:: 1.0.4
-    """
 
     MACHINE = "ssvm"
-    """
-    Space-separated plain text,
-    with machine-readable time values::
-
-        0.000 1.234 f001 "First fragment text"
-        1.234 5.678 f002 "Second fragment text"
-        5.678 7.890 f003 "Third fragment text"
-
-    * Multiple levels: no
-    * Multiple lines: no
-
-    Please note that the text is assumed to be contained
-    in double quotes ("..."),
-    which are stripped when reading from file,
-    and added back when writing to file.
-
-    .. versionadded:: 1.2.0
-    """
 
     MACHINE_ALIASES = [DEFAULT, MACHINE]
 

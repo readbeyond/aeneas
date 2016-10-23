@@ -37,30 +37,6 @@ class SyncMapFormatXML(SyncMapFormatGenericXML):
     TAG = u"SyncMapFormatXML"
 
     DEFAULT = "xml"
-    """
-    XML::
-
-        <?xml version="1.0" encoding="UTF-8" ?>
-        <map>
-         <fragment id="f001" begin="0.000" end="1.234">
-          <line>First fragment text</line>
-          <children></children>
-         </fragment>
-         <fragment id="f002" begin="1.234" end="5.678">
-          <line>Second fragment text</line>
-          <line>Second line of second fragment</line>
-          <children></children>
-         </fragment>
-         <fragment id="f003" begin="5.678" end="7.890">
-          <line>Third fragment text</line>
-          <line>Second line of third fragment</line>
-          <children></children>
-         </fragment>
-        </map>
-
-    * Multiple levels: yes (output only)
-    * Multiple lines: yes
-    """
 
     def parse(self, input_text, syncmap):
         from lxml import etree

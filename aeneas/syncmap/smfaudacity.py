@@ -36,42 +36,10 @@ class SyncMapFormatAudacity(SyncMapFormatGenericTabular):
     TAG = u"SyncMapFormatAudacity"
 
     DEFAULT = "aud"
-    """
-    Alias for ``MACHINE``.
-    """
 
     HUMAN = "audh"
-    """
-    Tab-separated plain text,
-    with human-readable time values
-    and fragment text::
-
-        00:00:00.000   00:00:01.234   Text of fragment 1
-        00:00:01.234   00:00:05.678   Text of fragment 2
-        00:00:05.678   00:00:07.890   Text of fragment 3
-
-    * Multiple levels: no
-    * Multiple lines: no
-
-    .. versionadded:: 1.5.0
-    """
 
     MACHINE = "audm"
-    """
-    Tab-separated plain text,
-    with machine-readable time values
-    and fragment text,
-    compatible with ``Audacity``::
-
-        0.000   1.234   Text fragment 1
-        1.234   5.678   Text fragment 2
-        5.678   7.890   Text fragment 3
-
-    * Multiple levels: no
-    * Multiple lines: no
-
-    .. versionadded:: 1.5.0
-    """
 
     MACHINE_ALIASES = [DEFAULT, MACHINE]
 

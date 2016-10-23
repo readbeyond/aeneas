@@ -39,74 +39,12 @@ class SyncMapFormatSMIL(SyncMapFormatGenericXML):
     TAG = u"SyncMapFormatSMIL"
 
     DEFAULT = "smil"
-    """
-    Alias for ``HUMAN``.
-    """
 
     HUMAN = "smilh"
-    """
-    SMIL (as in the EPUB 3 Media Overlay specification),
-    with human-readable time values::
-
-        <smil xmlns="http://www.w3.org/ns/SMIL" xmlns:epub="http://www.idpf.org/2007/ops" version="3.0">
-         <body>
-          <seq id="seq000001" epub:textref="p001.xhtml">
-           <par id="par000001">
-            <text src="p001.xhtml#f001"/>
-            <audio clipBegin="00:00:00.000" clipEnd="00:00:01.234" src="../Audio/p001.mp3"/>
-           </par>
-           <par id="par000002">
-            <text src="p001.xhtml#f002"/>
-            <audio clipBegin="00:00:01.234" clipEnd="00:00:05.678" src="../Audio/p001.mp3"/>
-           </par>
-           <par id="par000003">
-            <text src="p001.xhtml#f003"/>
-            <audio clipBegin="00:00:05.678" clipEnd="00:00:07.890" src="../Audio/p001.mp3"/>
-           </par>
-          </seq>
-         </body>
-        </smil>
-
-    * Multiple levels: yes (output only)
-    * Multiple lines: no
-
-    .. versionadded:: 1.2.0
-    """
 
     MACHINE = "smilm"
-    """
-    SMIL (as in the EPUB 3 Media Overlay specification),
-    with machine-readable time values::
-
-        <smil xmlns="http://www.w3.org/ns/SMIL" xmlns:epub="http://www.idpf.org/2007/ops" version="3.0">
-         <body>
-          <seq id="seq000001" epub:textref="p001.xhtml">
-           <par id="par000001">
-            <text src="p001.xhtml#f001"/>
-            <audio clipBegin="0.000" clipEnd="1.234" src="../Audio/p001.mp3"/>
-           </par>
-           <par id="par000002">
-            <text src="p001.xhtml#f002"/>
-            <audio clipBegin="1.234" clipEnd="5.678" src="../Audio/p001.mp3"/>
-           </par>
-           <par id="par000003">
-            <text src="p001.xhtml#f003"/>
-            <audio clipBegin="5.678" clipEnd="7.890" src="../Audio/p001.mp3"/>
-           </par>
-          </seq>
-         </body>
-        </smil>
-
-    * Multiple levels: yes (output only)
-    * Multiple lines: no
-
-    .. versionadded:: 1.2.0
-    """
 
     MACHINE_ALIASES = [MACHINE]
-    """
-    Aliases for the machine-readable variant.
-    """
 
     def __init__(self, variant=DEFAULT, parameters=None, rconf=None, logger=None):
         super(SyncMapFormatSMIL, self).__init__(variant=variant, parameters=parameters, rconf=rconf, logger=logger)

@@ -25,15 +25,13 @@
 A synchronization map, or sync map,
 is a map from text fragments to time intervals.
 
-This module contains the following classes:
+This package contains the following classes:
 
 * :class:`~aeneas.syncmap.SyncMap`, represents a sync map as a tree of sync map fragments;
 * :class:`~aeneas.syncmap.format.SyncMapFormat`, an enumeration of the supported output formats;
 * :class:`~aeneas.syncmap.fragment.SyncMapFragment`, connects a text fragment with a ``begin`` and ``end`` time values;
 * :class:`~aeneas.syncmap.headtailformat.SyncMapHeadTailFormat`, an enumeration of the supported formats for the sync map head/tail.
 * :class:`~aeneas.syncmap.missingparametererror.SyncMapMissingParameterError`, an error raised when reading sync maps from file;
-
-.. warning:: This module is likely to be refactored in a future version
 """
 
 from __future__ import absolute_import

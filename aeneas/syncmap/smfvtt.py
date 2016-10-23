@@ -37,41 +37,12 @@ class SyncMapFormatVTT(SyncMapFormatGenericSubtitles):
     TAG = u"SyncMapFormatVTT"
 
     DEFAULT = "vtt"
-    """
-    WebVTT caption/subtitle format::
-
-        WEBVTT
-
-        1
-        00:00:00.000 --> 00:00:01.234
-        First fragment text
-
-        2
-        00:00:01.234 --> 00:00:05.678
-        Second fragment text
-        Second line of second fragment
-
-        3
-        00:00:05.678 --> 00:00:07.890
-        Third fragment text
-        Second line of third fragment
-
-    * Multiple levels: no
-    * Multiple lines: yes
-
-    See also https://w3c.github.io/webvtt/
-
-    Note that WebVTT files using tabs as separators
-    cannot be read at the moment.
-    Use spaces instead or pre-process your files,
-    replacing tabs with spaces.
-    """
 
     def __init__(self, variant=DEFAULT, parameters=None, rconf=None, logger=None):
         super(SyncMapFormatVTT, self).__init__(variant=variant, parameters=parameters, rconf=rconf, logger=logger)
         self.header_string = u"WEBVTT"
         self.header_might_not_have_trailing_blank_line = False
-        self.footer_string = None 
+        self.footer_string = None
         self.cue_has_identifier = False
         self.cue_has_optional_identifier = True
         self.time_values_separator = u" --> "

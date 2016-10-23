@@ -38,31 +38,6 @@ class SyncMapFormatRBSE(SyncMapFormatBase):
     TAG = u"SyncMapFormatRBSE"
 
     DEFAULT = "rbse"
-    """
-    JSON compatible with ``rb_smil_emulator.js``::
-
-        {
-         "smil_ids": [
-          "f001",
-          "f002",
-          "f003",
-         ],
-         "smil_data": [
-          { "id": "f001", "begin": 0.000, "end": 1.234 },
-          { "id": "f002", "begin": 1.234, "end": 5.678 },
-          { "id": "f003", "begin": 5.678, "end": 7.890 }
-         ]
-        }
-
-    * Multiple levels: no
-    * Multiple lines: no
-
-    Deprecated, it will be removed in v2.0.0.
-
-    .. deprecated:: 1.5.0
-
-    .. versionadded:: 1.2.0
-    """
 
     def parse(self, input_text, syncmap):
         contents_dict = json.loads(input_text)

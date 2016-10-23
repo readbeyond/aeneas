@@ -36,49 +36,10 @@ class SyncMapFormatCSV(SyncMapFormatGenericTabular):
     TAG = u"SyncMapFormatCSV"
 
     DEFAULT = "csv"
-    """
-    Alias for ``MACHINE``.
-    """
 
     HUMAN = "csvh"
-    """
-    Comma-separated values (CSV),
-    with human-readable time values::
-
-        f001,00:00:00.000,00:00:01.234,"First fragment text"
-        f002,00:00:01.234,00:00:05.678,"Second fragment text"
-        f003,00:00:05.678,00:00:07.890,"Third fragment text"
-
-    * Multiple levels: no
-    * Multiple lines: no
-
-    Please note that the text is assumed to be contained
-    in double quotes (``"..."``),
-    which are stripped when reading from file,
-    and added back when writing to file.
-
-    .. versionadded:: 1.0.4
-    """
 
     MACHINE = "csvm"
-    """
-    Comma-separated values (CSV),
-    with machine-readable time values::
-
-        f001,0.000,1.234,"First fragment text"
-        f002,1.234,5.678,"Second fragment text"
-        f003,5.678,7.890,"Third fragment text"
-
-    * Multiple levels: no
-    * Multiple lines: no
-
-    Please note that the text is assumed to be contained
-    in double quotes (``"..."``),
-    which are stripped when reading from file,
-    and added back when writing to file.
-
-    .. versionadded:: 1.2.0
-    """
 
     MACHINE_ALIASES = [DEFAULT, MACHINE]
 

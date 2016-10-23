@@ -37,36 +37,6 @@ class SyncMapFormatXMLLegacy(SyncMapFormatGenericXML):
     TAG = u"SyncMapFormatXMLLegacy"
 
     DEFAULT = "xml_legacy"
-    """
-    XML, legacy format::
-
-        <?xml version="1.0" encoding="UTF-8" ?>
-        <map>
-         <fragment>
-          <identifier>f001</identifier>
-          <start>0.000</start>
-          <end>1.234</end>
-         </fragment>
-         <fragment>
-          <identifier>f002</identifier>
-          <start>1.234</start>
-          <end>5.678</end>
-         </fragment>
-         <fragment>
-          <identifier>f003</identifier>
-          <start>5.678</start>
-          <end>7.890</end>
-         </fragment>
-        </map>
-
-    * Multiple levels: no
-    * Multiple lines: no
-
-    Deprecated, it will be removed in v2.0.0.
-    Use XML instead.
-
-    .. deprecated:: 1.2.0
-    """
 
     def parse(self, input_text, syncmap):
         from lxml import etree
