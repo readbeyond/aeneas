@@ -516,7 +516,7 @@ class SyncMapFormat(object):
     Note that at the moment reading support is limited
     to the first tier in the TextGrid file.
 
-    .. versionadded:: 1.6.1
+    .. versionadded:: 1.7.0
     """
 
     TEXTGRID_SHORT = SyncMapFormatTextGrid.SHORT
@@ -553,7 +553,7 @@ class SyncMapFormat(object):
     Note that at the moment reading support is limited
     to the first tier in the TextGrid file.
 
-    .. versionadded:: 1.6.1
+    .. versionadded:: 1.7.0
     """
 
     TSV = SyncMapFormatTSV.DEFAULT

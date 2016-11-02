@@ -7,7 +7,7 @@
 #     Copyright 2015-2016, Alberto Pettarin (www.albertopettarin.it)
 #     """
 # __license__ = "GNU AGPL 3"
-# __version__ = "1.6.1"
+# __version__ = "1.7.0"
 # __email__ = "aeneas@readbeyond.it"
 # __status__ = "Production"
 

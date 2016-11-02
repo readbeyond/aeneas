@@ -428,6 +428,21 @@ class RuntimeConfiguration(Configuration):
     .. versionadded:: 1.5.0
     """
 
+    SAFETY_CHECKS = "safety_checks"
+    """
+    If ``True``, perform safety checks on input files and parameters.
+    If set to ``False``, it disables:
+
+    * checks perfomed by :class:`~aeneas.validator.Validator`;
+    * converting the audio file synthesized by the TTS engine so that its sample rate times the MFCC shift is an integer value.
+
+    .. warning:: Setting this parameter to ``False`` might result in runtime errors. Please be sure to understand the implications.
+
+    Default: ``True``.
+
+    .. versionadded:: 1.7.0
+    """
+
     TASK_MAX_AUDIO_LENGTH = "task_max_audio_length"
     """
     Maximum length of the audio file of a Task, in seconds.
@@ -743,6 +758,8 @@ class RuntimeConfiguration(Configuration):
         (NUANCE_TTS_API_SLEEP, ("1.000", TimeValue, [])),
         (NUANCE_TTS_API_RETRY_ATTEMPTS, (5, int, [])),
 
+        (SAFETY_CHECKS, (True, bool, [])),
+
         (TASK_MAX_AUDIO_LENGTH, ("7200.0", TimeValue, [])),
         (TASK_MAX_TEXT_LENGTH, (0, int, [])),
 
@@ -783,6 +800,19 @@ class RuntimeConfiguration(Configuration):
         new_rconf.types = dict(self.types)
         new_rconf.aliases = dict(self.aliases)
         return new_rconf
+
+    @property
+    def safety_checks(self):
+        """
+        Return the value of the
+        :data:`~aeneas.runtimeconfiguration.RuntimeConfiguration.SAFETY_CHECKS`
+        key stored in this configuration object.
+
+        If ``False``, safety checks are not performed.
+
+        :rtype: bool
+        """
+        return self[self.SAFETY_CHECKS]
 
     @property
     def sample_rate(self):
