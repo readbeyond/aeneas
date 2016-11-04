@@ -1,4 +1,5 @@
-#!/bin/bash
+#!/usr/bin/env python
+# coding=utf-8
 
 # aeneas is a Python/C library and a set of tools
 # to automagically synchronize audio and text (aka forced alignment)
@@ -20,5 +21,35 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-g++ cfw_driver.cc cfw_func.cc -Ifestival -lFestival -Ispeech_tools -lestools -lestbase -leststring -o cfw_driver -Wall -pedantic
+"""
+TBW
+"""
 
+from __future__ import absolute_import
+from __future__ import print_function
+
+from aeneas.syncmap.smfgtabular import SyncMapFormatGenericTabular
+
+
+class SyncMapFormatTXT(SyncMapFormatGenericTabular):
+
+    TAG = u"SyncMapFormatTXT"
+
+    DEFAULT = "txt"
+
+    HUMAN = "txth"
+
+    MACHINE = "txtm"
+
+    MACHINE_ALIASES = [DEFAULT, MACHINE]
+
+    FIELD_DELIMITER = u" "
+
+    FIELDS = {
+        "identifier": 0,
+        "begin": 1,
+        "end": 2,
+        "text": 3,
+    }
+
+    TEXT_DELIMITER = u"\""

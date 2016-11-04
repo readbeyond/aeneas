@@ -1,4 +1,5 @@
-#!/bin/bash
+#!/usr/bin/env python
+# coding=utf-8
 
 # aeneas is a Python/C library and a set of tools
 # to automagically synchronize audio and text (aka forced alignment)
@@ -20,5 +21,35 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-rm -rf build __pycache__ *.so cmfcc_driver_wo_ff cmfcc_driver_wo_fo cmfcc_driver_ws_ff cmfcc_driver_ws_fo
+"""
+TBW
+"""
 
+from __future__ import absolute_import
+from __future__ import print_function
+import json
+
+from aeneas.syncmap.smfbase import SyncMapFormatBase
+import aeneas.globalfunctions as gf
+
+
+class SyncMapFormatJSON(SyncMapFormatBase):
+
+    TAG = u"SyncMapFormatJSON"
+
+    DEFAULT = "json"
+
+    def parse(self, input_text, syncmap):
+        contents_dict = json.loads(input_text)
+        for fragment in contents_dict["fragments"]:
+            self._add_fragment(
+                syncmap=syncmap,
+                identifier=fragment["id"],
+                language=fragment["language"],
+                lines=fragment["lines"],
+                begin=gf.time_from_ssmmm(fragment["begin"]),
+                end=gf.time_from_ssmmm(fragment["end"])
+            )
+
+    def format(self, syncmap):
+        return syncmap.json_string

@@ -265,6 +265,8 @@ class Validator(Loggable):
         """
         self.log([u"Checking encoding of file '%s'", input_file_path])
         self.result = ValidatorResult()
+        if self._are_safety_checks_disabled(u"check_file_encoding"):
+            return self.result
         if not gf.file_can_be_read(input_file_path):
             self._failed(u"File '%s' cannot be read." % (input_file_path))
             return self.result
@@ -286,6 +288,8 @@ class Validator(Loggable):
         """
         self.log(u"Checking the given byte string")
         self.result = ValidatorResult()
+        if self._are_safety_checks_disabled(u"check_raw_string"):
+            return self.result
         if is_bstring:
             self._check_utf8_encoding(string)
             if not self.result.passed:
@@ -320,6 +324,8 @@ class Validator(Loggable):
         else:
             self.log(u"Checking task configuration string")
         self.result = ValidatorResult()
+        if self._are_safety_checks_disabled(u"check_configuration_string"):
+            return self.result
         if is_job:
             required_parameters = self.JOB_REQUIRED_PARAMETERS
         elif external_name:
@@ -352,6 +358,8 @@ class Validator(Loggable):
         """
         self.log(u"Checking contents TXT config file")
         self.result = ValidatorResult()
+        if self._are_safety_checks_disabled(u"check_config_txt"):
+            return self.result
         is_bstring = gf.is_bytes(contents)
         if is_bstring:
             self.log(u"Checking that contents is well formed")
@@ -380,6 +388,8 @@ class Validator(Loggable):
         """
         self.log(u"Checking contents XML config file")
         self.result = ValidatorResult()
+        if self._are_safety_checks_disabled(u"check_config_xml"):
+            return self.result
         contents = gf.safe_bytes(contents)
         self.log(u"Checking that contents is well formed")
         self.check_raw_string(contents, is_bstring=True)
@@ -411,6 +421,9 @@ class Validator(Loggable):
         """
         self.log([u"Checking container '%s'", container_path])
         self.result = ValidatorResult()
+
+        if self._are_safety_checks_disabled(u"check_container"):
+            return self.result
 
         if not (gf.file_exists(container_path) or gf.directory_exists(container_path)):
             self._failed(u"Container '%s' not found." % container_path)
@@ -453,6 +466,18 @@ class Validator(Loggable):
         except OSError:
             self._failed(u"Unable to read the contents of the container.")
         return self.result
+
+    def _are_safety_checks_disabled(self, caller=u"unknown_function"):
+        """
+        Return ``True`` if safety checks are disabled.
+
+        :param string caller: the name of the caller function
+        :rtype: bool
+        """
+        if self.rconf.safety_checks:
+            return False
+        self.log_warn([u"Safety checks disabled => %s passed", caller])
+        return True
 
     def _failed(self, msg):
         """

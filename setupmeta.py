@@ -36,7 +36,7 @@ __copyright__ = """
 """
 __license__ = "GNU AGPL 3"
 __status__ = "Production"
-__version__ = "1.6.0"
+__version__ = "1.7.0"
 
 
 ##############################################################################
@@ -47,7 +47,7 @@ __version__ = "1.6.0"
 
 # package version
 # NOTE: generate a new one for each PyPI upload, otherwise it will fail
-PKG_VERSION = "1.6.0.1"
+PKG_VERSION = "1.7.0.0"
 
 # required packages to install
 # NOTE: always use exact version numbers
@@ -61,25 +61,30 @@ PKG_INSTALL_REQUIRES = [
 # required packages to install extra tools
 PKG_EXTRAS_REQUIRE = {
     "full": [
-        "pafy>=0.3.74",
+        "pafy>=0.5.2",
         "Pillow>=3.1.1",
         "requests>=2.9.1",
-        "youtube-dl>=2015.7.21"
+        "tgt>=1.4.2",
+        "youtube-dl>=2016.9.27"
     ],
     "nopillow": [
-        "pafy>=0.3.74",
+        "pafy>=0.5.2",
         "requests>=2.9.1",
-        "youtube-dl>=2015.7.21"
+        "tgt>=1.4.2",
+        "youtube-dl>=2016.9.27"
     ],
     "pafy": [
-        "pafy>=0.3.74",
-        "youtube-dl>=2015.7.21"
+        "pafy>=0.5.2",
+        "youtube-dl>=2016.9.27"
     ],
     "pillow": [
         "Pillow>=3.1.1"
     ],
     "requests": [
         "requests>=2.9.1"
+    ],
+    "tgt": [
+        "tgt>=1.4.2"
     ]
 }
 
@@ -93,6 +98,7 @@ PKG_PACKAGES = [
     "aeneas.cmfcc",
     "aeneas.cwave",
     "aeneas.extra",
+    "aeneas.syncmap",
     "aeneas.tools",
     "aeneas.ttswrappers"
 ]
@@ -131,6 +137,9 @@ PKG_PACKAGE_DATA = {
         "*.md"
     ],
     "aeneas.extra": [
+        "*.md"
+    ],
+    "aeneas.syncmap": [
         "*.md"
     ],
     "aeneas.tools": [
@@ -204,6 +213,8 @@ PKG_KEYWORDS = [
     "SRT",
     "SSV",
     "SUB",
+    "TextGrid",
+    "TGT",
     "TSV",
     "TTML",
     "VTT",

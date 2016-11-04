@@ -401,7 +401,10 @@ class AudioFile(Loggable):
         # determine if we need to convert the audio file
         convert_audio_file = (
             (self.file_format is None) or
-            (self.file_format != ("pcm_s16le", 1, self.rconf.sample_rate))
+            (
+                (self.rconf.safety_checks) and
+                (self.file_format != ("pcm_s16le", 1, self.rconf.sample_rate))
+            )
         )
 
         # convert the audio file if needed
@@ -414,6 +417,7 @@ class AudioFile(Loggable):
                 self.log(u"Converting audio file to mono...")
                 converter = FFMPEGWrapper(rconf=self.rconf, logger=self.logger)
                 converter.convert(self.file_path, tmp_file_path)
+                self.file_format = ("pcm_s16le", 1, self.rconf.sample_rate)
                 self.log(u"Converting audio file to mono... done")
             except FFMPEGPathError:
                 gf.delete_file(tmp_handler, tmp_file_path)
@@ -423,7 +427,10 @@ class AudioFile(Loggable):
                 self.log_exc(u"Audio file format not supported by ffmpeg", None, True, AudioFileUnsupportedFormatError)
         else:
             # read the file directly
-            self.log(u"self.file_format is good => reading self.file_path directly")
+            if self.rconf.safety_checks:
+                self.log(u"self.file_format is good => reading self.file_path directly")
+            else:
+                self.log_warn(u"Safety checks disabled => reading self.file_path directly")
             tmp_handler = None
             tmp_file_path = self.file_path
 

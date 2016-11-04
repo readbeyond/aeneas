@@ -1,4 +1,5 @@
-#!/bin/bash
+#!/usr/bin/env python
+# coding=utf-8
 
 # aeneas is a Python/C library and a set of tools
 # to automagically synchronize audio and text (aka forced alignment)
@@ -20,28 +21,13 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-if [ ! -e cfw_driver ]
-then
-    bash 000_compile_driver.sh
-fi
+from __future__ import absolute_import
+from __future__ import print_function
 
-echo "Run 1"
-./cfw_driver
-echo ""
 
-echo "Run 2"
-./cfw_driver "(language_english)" "Hello|World|My|Dear|Friend" /tmp/out.wav 0.0 0
-echo ""
-
-echo "Run 3"
-./cfw_driver "(language_english)" "Hello|World|My|Dear|Friend" /tmp/out.wav 0.0 1
-echo ""
-
-echo "Run 4"
-./cfw_driver "(language_english)" "Hello|World|My|Dear|Friend" /tmp/out.wav 2.0 0
-echo ""
-
-echo "Run 5"
-./cfw_driver "(language_english)" "Hello|World|My|Dear|Friend" /tmp/out.wav 2.0 1
-echo ""
-
+class SyncMapMissingParameterError(Exception):
+    """
+    Error raised when a parameter which is implied
+    by the actual SyncMapFormat value is missing.
+    """
+    pass

@@ -1,4 +1,5 @@
-#!/bin/bash
+#!/usr/bin/env python
+# coding=utf-8
 
 # aeneas is a Python/C library and a set of tools
 # to automagically synchronize audio and text (aka forced alignment)
@@ -20,8 +21,35 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-gcc cmfcc_driver.c cmfcc_func.c ../cwave/cwave_func.c ../cint/cint.c -o cmfcc_driver_wo_fo -Wall -pedantic -std=c99 -lm
-gcc cmfcc_driver.c cmfcc_func.c ../cwave/cwave_func.c ../cint/cint.c -o cmfcc_driver_wo_ff -Wall -pedantic -std=c99 -lm           -lrfftw -lfftw               -DUSE_FFTW
-gcc cmfcc_driver.c cmfcc_func.c ../cwave/cwave_func.c ../cint/cint.c -o cmfcc_driver_ws_fo -Wall -pedantic -std=c99 -lm -lsndfile                -DUSE_SNDFILE
-gcc cmfcc_driver.c cmfcc_func.c ../cwave/cwave_func.c ../cint/cint.c -o cmfcc_driver_ws_ff -Wall -pedantic -std=c99 -lm -lsndfile -lrfftw -lfftw -DUSE_SNDFILE -DUSE_FFTW
+"""
+TBW
+"""
 
+from __future__ import absolute_import
+from __future__ import print_function
+
+from aeneas.syncmap.smfgtabular import SyncMapFormatGenericTabular
+
+
+class SyncMapFormatSSV(SyncMapFormatGenericTabular):
+
+    TAG = u"SyncMapFormatSSV"
+
+    DEFAULT = "ssv"
+
+    HUMAN = "ssvh"
+
+    MACHINE = "ssvm"
+
+    MACHINE_ALIASES = [DEFAULT, MACHINE]
+
+    FIELD_DELIMITER = u" "
+
+    FIELDS = {
+        "begin": 0,
+        "end": 1,
+        "identifier": 2,
+        "text": 3
+    }
+
+    TEXT_DELIMITER = u"\""

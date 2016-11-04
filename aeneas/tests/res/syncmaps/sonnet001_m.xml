@@ -1,10 +1,10 @@
 <?xml version='1.0' encoding='UTF-8'?>
 <map>
-  <fragment id="f000001" begin="0.000" end="2.640">
+  <fragment id="f000001" begin="0.000" end="2.680">
     <line>1</line>
     <children/>
   </fragment>
-  <fragment id="f000002" begin="2.640" end="5.880">
+  <fragment id="f000002" begin="2.680" end="5.880">
     <line>From fairest creatures</line>
     <line>we desire increase,</line>
     <children/>
@@ -24,17 +24,17 @@
     <line>might bear his memory:</line>
     <children/>
   </fragment>
-  <fragment id="f000006" begin="15.280" end="18.800">
+  <fragment id="f000006" begin="15.280" end="18.600">
     <line>But thou contracted</line>
     <line>to thine own bright eyes,</line>
     <children/>
   </fragment>
-  <fragment id="f000007" begin="18.800" end="22.760">
+  <fragment id="f000007" begin="18.600" end="22.800">
     <line>Feed'st thy light's flame</line>
     <line>with self-substantial fuel,</line>
     <children/>
   </fragment>
-  <fragment id="f000008" begin="22.760" end="25.680">
+  <fragment id="f000008" begin="22.800" end="25.680">
     <line>Making a famine</line>
     <line>where abundance lies,</line>
     <children/>
@@ -44,25 +44,25 @@
     <line>to thy sweet self too cruel:</line>
     <children/>
   </fragment>
-  <fragment id="f000010" begin="31.240" end="34.400">
+  <fragment id="f000010" begin="31.240" end="34.280">
     <line>Thou that art now</line>
     <line>the world's fresh ornament,</line>
     <children/>
   </fragment>
-  <fragment id="f000011" begin="34.400" end="36.920">
+  <fragment id="f000011" begin="34.280" end="36.960">
     <line>And only herald to the gaudy spring,</line>
     <children/>
   </fragment>
-  <fragment id="f000012" begin="36.920" end="40.640">
+  <fragment id="f000012" begin="36.960" end="40.680">
     <line>Within thine own bud</line>
     <line>buriest thy content,</line>
     <children/>
   </fragment>
-  <fragment id="f000013" begin="40.640" end="43.640">
+  <fragment id="f000013" begin="40.680" end="44.560">
     <line>And tender churl mak'st waste in niggarding:</line>
     <children/>
   </fragment>
-  <fragment id="f000014" begin="43.640" end="48.080">
+  <fragment id="f000014" begin="44.560" end="48.080">
     <line>Pity the world,</line>
     <line>or else this glutton be,</line>
     <children/>

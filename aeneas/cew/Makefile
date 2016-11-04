@@ -1,5 +1,3 @@
-#!/bin/bash
-
 # aeneas is a Python/C library and a set of tools
 # to automagically synchronize audio and text (aka forced alignment)
 #
@@ -20,5 +18,42 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-rm -rf build __pycache__ *.so cfw_driver
+PREFIX=cew
 
+FUNC=$(PREFIX)_func
+DRIVER=$(PREFIX)_driver
+SETUP_PY=$(PREFIX)_setup.py
+
+SRCS=$(DRIVER).c $(FUNC).c ../cint/cint.c
+CLIBS=-lespeak
+
+CC=gcc
+CFLAGS=-Wall -pedantic -std=c99
+PYTHON=python
+
+
+
+all: driver py
+
+$(DRIVER): $(SRCS)
+	$(CC) $(SRCS) -o $(DRIVER) $(CLIBS) $(CFLAGS) 
+
+driver: $(DRIVER)
+
+test: $(DRIVER)
+	./$(DRIVER) || exit 0
+	./$(DRIVER) en "Hello|World|My|Dear|Friend" /tmp/out.wav 0.0 0
+	./$(DRIVER) en "Hello|World|My|Dear|Friend" /tmp/out.wav 0.0 1
+	./$(DRIVER) en "Hello|World|My|Dear|Friend" /tmp/out.wav 2.0 0
+	./$(DRIVER) en "Hello|World|My|Dear|Friend" /tmp/out.wav 2.0 1
+
+clean_driver:
+	rm -rf $(DRIVER)
+
+py: clean_py $(SETUP_PY)
+	$(PYTHON) $(SETUP_PY) build_ext --inplace
+
+clean_py:
+	rm -rf *.pyc *.so build __pycache__
+
+clean: clean_driver clean_py

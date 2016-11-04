@@ -1,4 +1,4 @@
-aeneas (1.6.0.11) stable; urgency=medium
+aeneas (1.6.0.1) stable; urgency=medium
 
   * Fixed bug in Nuance TTS wrapper 
 

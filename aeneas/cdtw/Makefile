@@ -1,5 +1,3 @@
-#!/bin/bash
-
 # aeneas is a Python/C library and a set of tools
 # to automagically synchronize audio and text (aka forced alignment)
 #
@@ -20,28 +18,41 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-if [ ! -e cmfcc_driver_wo_fo ]
-then
-    bash 000_compile_driver.sh
-fi
+PREFIX=cdtw
 
-echo "Run 1"
-./cmfcc_driver_wo_fo
-echo ""
+FUNC=$(PREFIX)_func
+DRIVER=$(PREFIX)_driver
+SETUP_PY=$(PREFIX)_setup.py
 
-echo "Run 2"
-./cmfcc_driver_wo_fo ../tools/res/audio.wav /tmp/out.dt.bin data text
-echo ""
+SRCS=$(DRIVER).c $(FUNC).c ../cint/cint.c
+CLIBS=-lm
 
-echo "Run 3"
-./cmfcc_driver_wo_fo ../tools/res/audio.wav /tmp/out.db.bin data binary
-echo ""
+CC=gcc
+CFLAGS=-Wall -pedantic -std=c99
+PYTHON=python
 
-echo "Run 4"
-./cmfcc_driver_wo_fo ../tools/res/audio.wav /tmp/out.ft.bin file text
-echo ""
 
-echo "Run 5"
-./cmfcc_driver_wo_fo ../tools/res/audio.wav /tmp/out.fb.bin file binary
-echo ""
 
+all: driver py
+
+$(DRIVER): $(SRCS)
+	$(CC) $(SRCS) -o $(DRIVER) $(CLIBS) $(CFLAGS) 
+
+driver: $(DRIVER)
+
+test: $(DRIVER)
+	./$(DRIVER) || exit 0
+	./$(DRIVER) 12 3000 ../tests/res/cdtw/mfcc1_12_1332 1332 ../tests/res/cdtw/mfcc2_12_868 868 cm > /dev/null
+	./$(DRIVER) 12 3000 ../tests/res/cdtw/mfcc1_12_1332 1332 ../tests/res/cdtw/mfcc2_12_868 868 acm > /dev/null
+	./$(DRIVER) 12 3000 ../tests/res/cdtw/mfcc1_12_1332 1332 ../tests/res/cdtw/mfcc2_12_868 868 path > /dev/null
+
+clean_driver:
+	rm -rf $(DRIVER)
+
+py: clean_py $(SETUP_PY)
+	$(PYTHON) $(SETUP_PY) build_ext --inplace
+
+clean_py:
+	rm -rf *.pyc *.so build __pycache__
+
+clean: clean_driver clean_py

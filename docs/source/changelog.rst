@@ -1,6 +1,16 @@
 Changelog
 =========
 
+v1.7.0 (2016-11-??)
+-------------------
+
+#. Moved syncmap I/O functions in ``aeneas.syncmap`` subpackage
+#. Added two new output formats: ``TEXTGRID`` (Praat long TextGrid) and ``TEXTGRID_SHORT`` (Praat short TextGrid)
+#. More robust and generic reading of SRT-like files, especially WebVTT
+#. Fixed typos in ``SyncMapFormat`` docstrings
+#. Added ``safety_checks`` parameter to ``RuntimeConfiguration`` that can disable to trade safety for speed (issue #117)
+#. Added Makefile files to C/C++ extensions, replacing previous Bash scripts
+
 v1.6.0.1 (2016-09-30)
 ---------------------
 

@@ -9,13 +9,19 @@ See the [__init__.py](__init__.py) file.
 ## Compiling the Python C extension locally
 
 ```bash
-$ python cmfcc_setup.py build_ext --inplace
+$ make py 
 ```
 
 ## Compiling the pure C driver program
 
 ```bash
-$ bash 000_compile_driver.sh
+$ make driver
+```
+
+## Testing the pure C driver program
+
+```bash
+$ make test
 ```
 
 

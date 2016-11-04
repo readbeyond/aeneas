@@ -685,6 +685,16 @@ def time_to_hhmmssmmm(time_value, decimal_separator="."):
     )
 
 
+def time_from_srt(string):
+    """
+    Parse the given ``HH:MM:SS,mmm`` string and return a time value.
+
+    :param string string: the string to be parsed
+    :rtype: :class:`~aeneas.timevalue.TimeValue`
+    """
+    return time_from_hhmmssmmm(string, decimal_separator=",")
+
+
 def time_to_srt(time_value):
     """
     Format the given time value into a ``HH:MM:SS,mmm`` string,
@@ -705,7 +715,7 @@ def time_to_srt(time_value):
     :param float time_value: a time value, in seconds
     :rtype: string
     """
-    return time_to_hhmmssmmm(time_value, ",")
+    return time_to_hhmmssmmm(time_value, decimal_separator=",")
 
 
 def split_url(url):

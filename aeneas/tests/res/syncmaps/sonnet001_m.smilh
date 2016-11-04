@@ -3,11 +3,11 @@
     <seq id="seq000001" epub:textref="sonnet001.xhtml">
       <par id="par000001">
         <text src="sonnet001.xhtml#f000001"/>
-        <audio src="sonnet001.mp3" clipBegin="00:00:00.000" clipEnd="00:00:02.640"/>
+        <audio src="sonnet001.mp3" clipBegin="00:00:00.000" clipEnd="00:00:02.680"/>
       </par>
       <par id="par000002">
         <text src="sonnet001.xhtml#f000002"/>
-        <audio src="sonnet001.mp3" clipBegin="00:00:02.640" clipEnd="00:00:05.880"/>
+        <audio src="sonnet001.mp3" clipBegin="00:00:02.680" clipEnd="00:00:05.880"/>
       </par>
       <par id="par000003">
         <text src="sonnet001.xhtml#f000003"/>
@@ -23,15 +23,15 @@
       </par>
       <par id="par000006">
         <text src="sonnet001.xhtml#f000006"/>
-        <audio src="sonnet001.mp3" clipBegin="00:00:15.280" clipEnd="00:00:18.800"/>
+        <audio src="sonnet001.mp3" clipBegin="00:00:15.280" clipEnd="00:00:18.600"/>
       </par>
       <par id="par000007">
         <text src="sonnet001.xhtml#f000007"/>
-        <audio src="sonnet001.mp3" clipBegin="00:00:18.800" clipEnd="00:00:22.760"/>
+        <audio src="sonnet001.mp3" clipBegin="00:00:18.600" clipEnd="00:00:22.800"/>
       </par>
       <par id="par000008">
         <text src="sonnet001.xhtml#f000008"/>
-        <audio src="sonnet001.mp3" clipBegin="00:00:22.760" clipEnd="00:00:25.680"/>
+        <audio src="sonnet001.mp3" clipBegin="00:00:22.800" clipEnd="00:00:25.680"/>
       </par>
       <par id="par000009">
         <text src="sonnet001.xhtml#f000009"/>
@@ -39,23 +39,23 @@
       </par>
       <par id="par000010">
         <text src="sonnet001.xhtml#f000010"/>
-        <audio src="sonnet001.mp3" clipBegin="00:00:31.240" clipEnd="00:00:34.400"/>
+        <audio src="sonnet001.mp3" clipBegin="00:00:31.240" clipEnd="00:00:34.280"/>
       </par>
       <par id="par000011">
         <text src="sonnet001.xhtml#f000011"/>
-        <audio src="sonnet001.mp3" clipBegin="00:00:34.400" clipEnd="00:00:36.920"/>
+        <audio src="sonnet001.mp3" clipBegin="00:00:34.280" clipEnd="00:00:36.960"/>
       </par>
       <par id="par000012">
         <text src="sonnet001.xhtml#f000012"/>
-        <audio src="sonnet001.mp3" clipBegin="00:00:36.920" clipEnd="00:00:40.640"/>
+        <audio src="sonnet001.mp3" clipBegin="00:00:36.960" clipEnd="00:00:40.680"/>
       </par>
       <par id="par000013">
         <text src="sonnet001.xhtml#f000013"/>
-        <audio src="sonnet001.mp3" clipBegin="00:00:40.640" clipEnd="00:00:43.640"/>
+        <audio src="sonnet001.mp3" clipBegin="00:00:40.680" clipEnd="00:00:44.560"/>
       </par>
       <par id="par000014">
         <text src="sonnet001.xhtml#f000014"/>
-        <audio src="sonnet001.mp3" clipBegin="00:00:43.640" clipEnd="00:00:48.080"/>
+        <audio src="sonnet001.mp3" clipBegin="00:00:44.560" clipEnd="00:00:48.080"/>
       </par>
       <par id="par000015">
         <text src="sonnet001.xhtml#f000015"/>
