@@ -42,9 +42,9 @@ from aeneas.dtw import DTWAligner
 from aeneas.logger import Loggable
 from aeneas.runtimeconfiguration import RuntimeConfiguration
 from aeneas.synthesizer import Synthesizer
-from aeneas.timevalue import Decimal
-from aeneas.timevalue import TimeValue
-from aeneas.timevalue import InvalidOperation
+from aeneas.exacttiming import Decimal
+from aeneas.exacttiming import TimePoint
+from aeneas.exacttiming import InvalidOperation
 import aeneas.globalfunctions as gf
 
 
@@ -100,7 +100,7 @@ class SD(Loggable):
     .. versionadded:: 1.5.0
     """
 
-    MAX_LENGTH = TimeValue("10.000")
+    MAX_LENGTH = TimePoint("10.000")
     """
     Try detecting audio head or tail up to this many seconds.
     Default: ``10.000``.
@@ -108,7 +108,7 @@ class SD(Loggable):
     .. versionadded:: 1.2.0
     """
 
-    MIN_LENGTH = TimeValue("0.000")
+    MIN_LENGTH = TimePoint("0.000")
     """
     Try detecting audio head or tail of at least this many seconds.
     Default: ``0.000``.
@@ -135,7 +135,7 @@ class SD(Loggable):
         containing the fragments in the text file.
 
         Return the audio interval as a tuple of two
-        :class:`~aeneas.timevalue.TimeValue` objects,
+        :class:`~aeneas.exacttiming.TimePoint` objects,
         representing the begin and end time, in seconds,
         with respect to the full wave duration.
 
@@ -143,14 +143,14 @@ class SD(Loggable):
         (``0.0`` for min, ``10.0`` for max) will be used.
 
         :param min_head_length: estimated minimum head length
-        :type  min_head_length: :class:`~aeneas.timevalue.TimeValue`
+        :type  min_head_length: :class:`~aeneas.exacttiming.TimePoint`
         :param max_head_length: estimated maximum head length
-        :type  max_head_length: :class:`~aeneas.timevalue.TimeValue`
+        :type  max_head_length: :class:`~aeneas.exacttiming.TimePoint`
         :param min_tail_length: estimated minimum tail length
-        :type  min_tail_length: :class:`~aeneas.timevalue.TimeValue`
+        :type  min_tail_length: :class:`~aeneas.exacttiming.TimePoint`
         :param max_tail_length: estimated maximum tail length
-        :type  max_tail_length: :class:`~aeneas.timevalue.TimeValue`
-        :rtype: (:class:`~aeneas.timevalue.TimeValue`, :class:`~aeneas.timevalue.TimeValue`)
+        :type  max_tail_length: :class:`~aeneas.exacttiming.TimePoint`
+        :rtype: (:class:`~aeneas.exacttiming.TimePoint`, :class:`~aeneas.exacttiming.TimePoint`)
         :raises: TypeError: if one of the parameters is not ``None`` or a number
         :raises: ValueError: if one of the parameters is negative
         """
@@ -163,21 +163,21 @@ class SD(Loggable):
         self.log([u"Tail length:  %.3f", tail])
         self.log([u"Begin:        %.3f", begin])
         self.log([u"End:          %.3f", end])
-        if (begin >= TimeValue("0.000")) and (end > begin):
+        if (begin >= TimePoint("0.000")) and (end > begin):
             self.log([u"Returning %.3f %.3f", begin, end])
             return (begin, end)
         self.log(u"Returning (0.000, 0.000)")
-        return (TimeValue("0.000"), TimeValue("0.000"))
+        return (TimePoint("0.000"), TimePoint("0.000"))
 
     def detect_head(self, min_head_length=None, max_head_length=None):
         """
         Detect the audio head, returning its duration, in seconds.
 
         :param min_head_length: estimated minimum head length
-        :type  min_head_length: :class:`~aeneas.timevalue.TimeValue`
+        :type  min_head_length: :class:`~aeneas.exacttiming.TimePoint`
         :param max_head_length: estimated maximum head length
-        :type  max_head_length: :class:`~aeneas.timevalue.TimeValue`
-        :rtype: :class:`~aeneas.timevalue.TimeValue`
+        :type  max_head_length: :class:`~aeneas.exacttiming.TimePoint`
+        :rtype: :class:`~aeneas.exacttiming.TimePoint`
         :raises: TypeError: if one of the parameters is not ``None`` or a number
         :raises: ValueError: if one of the parameters is negative
         """
@@ -188,10 +188,10 @@ class SD(Loggable):
         Detect the audio tail, returning its duration, in seconds.
 
         :param min_tail_length: estimated minimum tail length
-        :type  min_tail_length: :class:`~aeneas.timevalue.TimeValue`
+        :type  min_tail_length: :class:`~aeneas.exacttiming.TimePoint`
         :param max_tail_length: estimated maximum tail length
-        :type  max_tail_length: :class:`~aeneas.timevalue.TimeValue`
-        :rtype: :class:`~aeneas.timevalue.TimeValue`
+        :type  max_tail_length: :class:`~aeneas.exacttiming.TimePoint`
+        :rtype: :class:`~aeneas.exacttiming.TimePoint`
         :raises: TypeError: if one of the parameters is not ``None`` or a number
         :raises: ValueError: if one of the parameters is negative
         """
@@ -207,10 +207,10 @@ class SD(Loggable):
         Return the duration of the head or tail, in seconds.
 
         :param min_length: estimated minimum length
-        :type  min_length: :class:`~aeneas.timevalue.TimeValue`
+        :type  min_length: :class:`~aeneas.exacttiming.TimePoint`
         :param max_length: estimated maximum length
-        :type  max_length: :class:`~aeneas.timevalue.TimeValue`
-        :rtype: :class:`~aeneas.timevalue.TimeValue`
+        :type  max_length: :class:`~aeneas.exacttiming.TimePoint`
+        :rtype: :class:`~aeneas.exacttiming.TimePoint`
         :raises: TypeError: if one of the parameters is not ``None`` or a number
         :raises: ValueError: if one of the parameters is negative
         """
@@ -218,7 +218,7 @@ class SD(Loggable):
             if value is None:
                 value = default
             try:
-                value = TimeValue(value)
+                value = TimePoint(value)
             except (TypeError, ValueError, InvalidOperation) as exc:
                 self.log_exc(u"The value of %s is not a number" % (name), exc, True, TypeError)
             if value < 0:
@@ -276,7 +276,7 @@ class SD(Loggable):
             self.log(u"No speech intervals, hence no start found")
             if tail:
                 self.real_wave_mfcc.reverse()
-            return TimeValue("0.000")
+            return TimePoint("0.000")
 
         # generate a list of begin indices
         search_end = None
@@ -327,7 +327,7 @@ class SD(Loggable):
         # return
         if len(candidates) < 1:
             self.log(u"No candidates found")
-            return TimeValue("0.000")
+            return TimePoint("0.000")
         self.log(u"Candidates:")
         for candidate in candidates:
             self.log([u"  Value: %.6f Begin Time: %.3f Min Index: %d", candidate[0], candidate[1] * mws, candidate[2]])

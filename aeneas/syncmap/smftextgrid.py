@@ -29,7 +29,7 @@ from __future__ import absolute_import
 from __future__ import print_function
 
 from aeneas.syncmap.smfbase import SyncMapFormatBase
-from aeneas.timevalue import TimeValue
+from aeneas.exacttiming import TimePoint
 import aeneas.globalfunctions as gf
 
 
@@ -72,8 +72,8 @@ class SyncMapFormatTextGrid(SyncMapFormatBase):
                 syncmap=syncmap,
                 identifier=u"f%06d" % i,
                 lines=[interval.text],
-                begin=TimeValue(interval.start_time.real),
-                end=TimeValue(interval.end_time.real)
+                begin=TimePoint(interval.start_time.real),
+                end=TimePoint(interval.end_time.real)
             )
 
     def format(self, syncmap):

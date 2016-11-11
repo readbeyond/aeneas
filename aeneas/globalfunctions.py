@@ -38,7 +38,7 @@ import tempfile
 import uuid
 
 import aeneas.globalconstants as gc
-from aeneas.timevalue import TimeValue
+from aeneas.exacttiming import TimePoint
 
 
 # RUNTIME CONSTANTS
@@ -560,7 +560,7 @@ def time_from_ttml(string):
     and return a time value.
 
     :param string string: the string to be parsed
-    :rtype: :class:`~aeneas.timevalue.TimeValue`
+    :rtype: :class:`~aeneas.exacttiming.TimePoint`
     """
     if (string is None) or (len(string) < 2):
         return 0
@@ -594,11 +594,11 @@ def time_from_ssmmm(string):
     Parse the given ``SS.mmm`` string and return a time value.
 
     :param string string: the string to be parsed
-    :rtype: :class:`~aeneas.timevalue.TimeValue`
+    :rtype: :class:`~aeneas.exacttiming.TimePoint`
     """
     if (string is None) or (len(string) < 1):
-        return TimeValue("0.000")
-    return TimeValue(string)
+        return TimePoint("0.000")
+    return TimePoint(string)
 
 
 def time_to_ssmmm(time_value):
@@ -626,20 +626,20 @@ def time_from_hhmmssmmm(string, decimal_separator="."):
 
     :param string string: the string to be parsed
     :param string decimal_separator: the decimal separator to be used
-    :rtype: :class:`~aeneas.timevalue.TimeValue`
+    :rtype: :class:`~aeneas.exacttiming.TimePoint`
     """
     if decimal_separator == ",":
         pattern = HHMMSS_MMM_PATTERN_COMMA
     else:
         pattern = HHMMSS_MMM_PATTERN
-    v_length = TimeValue("0.000")
+    v_length = TimePoint("0.000")
     try:
         match = pattern.search(string)
         if match is not None:
             v_h = int(match.group(1))
             v_m = int(match.group(2))
             v_s = int(match.group(3))
-            v_f = TimeValue("0." + match.group(4))
+            v_f = TimePoint("0." + match.group(4))
             v_length = v_h * 3600 + v_m * 60 + v_s + v_f
     except:
         pass
@@ -690,7 +690,7 @@ def time_from_srt(string):
     Parse the given ``HH:MM:SS,mmm`` string and return a time value.
 
     :param string string: the string to be parsed
-    :rtype: :class:`~aeneas.timevalue.TimeValue`
+    :rtype: :class:`~aeneas.exacttiming.TimePoint`
     """
     return time_from_hhmmssmmm(string, decimal_separator=",")
 

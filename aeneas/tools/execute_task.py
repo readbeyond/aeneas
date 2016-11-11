@@ -33,6 +33,7 @@ import sys
 from aeneas.adjustboundaryalgorithm import AdjustBoundaryAlgorithm
 from aeneas.audiofile import AudioFile
 from aeneas.downloader import Downloader
+from aeneas.exacttiming import Decimal
 from aeneas.executetask import ExecuteTask
 from aeneas.idsortingalgorithm import IDSortingAlgorithm
 from aeneas.language import Language
@@ -41,11 +42,9 @@ from aeneas.syncmap import SyncMapFormat
 from aeneas.syncmap import SyncMapHeadTailFormat
 from aeneas.task import Task
 from aeneas.textfile import TextFileFormat
-from aeneas.timevalue import Decimal
-from aeneas.timevalue import TimeValue
 from aeneas.tools.abstract_cli_program import AbstractCLIProgram
-from aeneas.ttswrappers.espeakttswrapper import ESPEAKTTSWrapper
 from aeneas.ttswrappers.espeakngttswrapper import ESPEAKNGTTSWrapper
+from aeneas.ttswrappers.espeakttswrapper import ESPEAKTTSWrapper
 from aeneas.ttswrappers.festivalttswrapper import FESTIVALTTSWrapper
 from aeneas.ttswrappers.nuancettswrapper import NuanceTTSWrapper
 from aeneas.validator import Validator

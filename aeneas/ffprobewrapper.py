@@ -38,7 +38,7 @@ import subprocess
 
 from aeneas.logger import Loggable
 from aeneas.runtimeconfiguration import RuntimeConfiguration
-from aeneas.timevalue import TimeValue
+from aeneas.exacttiming import TimePoint
 import aeneas.globalfunctions as gf
 
 
@@ -266,7 +266,7 @@ class FFPROBEWrapper(Loggable):
 
         try:
             self.log([u"Duration found in stdout: '%s'", results[self.STDOUT_DURATION]])
-            results[self.STDOUT_DURATION] = TimeValue(results[self.STDOUT_DURATION])
+            results[self.STDOUT_DURATION] = TimePoint(results[self.STDOUT_DURATION])
             self.log(u"Valid duration")
         except:
             self.log_warn(u"Invalid duration")

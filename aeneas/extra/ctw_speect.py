@@ -35,7 +35,7 @@ import speect.audio_riff
 
 from aeneas.audiofile import AudioFile
 from aeneas.language import Language
-from aeneas.timevalue import TimeValue
+from aeneas.exacttiming import TimePoint
 from aeneas.ttswrappers.basettswrapper import BaseTTSWrapper
 import aeneas.globalfunctions as gf
 
@@ -109,10 +109,10 @@ class CustomTTSWrapper(BaseTTSWrapper):
             # NOTE values of sample_rate, encoding, data
             #      do not matter if the duration is 0.000,
             #      so set them to None instead of the more precise:
-            #      return (True, (TimeValue("0.000"), 16000, "pcm_s16le", numpy.array([])))
+            #      return (True, (TimePoint("0.000"), 16000, "pcm_s16le", numpy.array([])))
             #
             self.log(u"len(text) is zero: returning 0.000")
-            return (True, (TimeValue("0.000"), None, None, None))
+            return (True, (TimePoint("0.000"), None, None, None))
 
         #
         # NOTE in this example, we assume that the Speect voice data files
@@ -149,7 +149,7 @@ class CustomTTSWrapper(BaseTTSWrapper):
         self.log(u"return_audio_data is True => read and return audio data")
         waveform = audio.get_audio_waveform()
         audio_sample_rate = int(waveform["samplerate"])
-        audio_length = TimeValue(audio.num_samples() / audio_sample_rate)
+        audio_length = TimePoint(audio.num_samples() / audio_sample_rate)
         audio_format = "pcm16"
         audio_samples = numpy.fromstring(
             waveform["samples"],

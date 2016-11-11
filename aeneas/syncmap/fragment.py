@@ -24,8 +24,8 @@
 from __future__ import absolute_import
 from __future__ import print_function
 
-from aeneas.timevalue import Decimal
-from aeneas.timevalue import TimeValue
+from aeneas.exacttiming import Decimal
+from aeneas.exacttiming import TimePoint
 import aeneas.globalfunctions as gf
 
 
@@ -37,9 +37,9 @@ class SyncMapFragment(object):
     :param text_fragment: the text fragment
     :type  text_fragment: :class:`~aeneas.textfile.TextFragment`
     :param begin: the begin time of the audio interval
-    :type  begin: :class:`~aeneas.timevalue.TimeValue`
+    :type  begin: :class:`~aeneas.exacttiming.TimePoint`
     :param end: the end time of the audio interval
-    :type  end: :class:`~aeneas.timevalue.TimeValue`
+    :type  end: :class:`~aeneas.exacttiming.TimePoint`
     :param float confidence: the confidence of the audio timing
     """
 
@@ -85,7 +85,7 @@ class SyncMapFragment(object):
         """
         The begin time of this sync map fragment.
 
-        :rtype: :class:`~aeneas.timevalue.TimeValue`
+        :rtype: :class:`~aeneas.exacttiming.TimePoint`
         """
         return self.__begin
 
@@ -98,7 +98,7 @@ class SyncMapFragment(object):
         """
         The end time of this sync map fragment.
 
-        :rtype: :class:`~aeneas.timevalue.TimeValue`
+        :rtype: :class:`~aeneas.exacttiming.TimePoint`
         """
         return self.__end
 
@@ -127,10 +127,10 @@ class SyncMapFragment(object):
         The audio duration of this sync map fragment,
         as end time minus begin time.
 
-        :rtype: :class:`~aeneas.timevalue.TimeValue`
+        :rtype: :class:`~aeneas.exacttiming.TimePoint`
         """
         if (self.begin is None) or (self.end is None):
-            return TimeValue("0.000")
+            return TimePoint("0.000")
         return self.end - self.begin
 
     @property
@@ -156,6 +156,6 @@ class SyncMapFragment(object):
 
         .. versionadded:: 1.2.0
         """
-        if self.audio_duration == TimeValue("0.000"):
+        if self.audio_duration == TimePoint("0.000"):
             return None
         return Decimal(self.chars / self.audio_duration)

@@ -50,7 +50,7 @@ from aeneas.synthesizer import Synthesizer
 from aeneas.task import Task
 from aeneas.textfile import TextFileFormat
 from aeneas.textfile import TextFragment
-from aeneas.timevalue import TimeValue
+from aeneas.exacttiming import TimePoint
 from aeneas.tree import Tree
 import aeneas.globalfunctions as gf
 
@@ -325,7 +325,7 @@ class ExecuteTask(Loggable):
             if (level > 1) and (len(text_file) == 1):
                 self.log(u"  Level > 1 and only one child => returning trivial timemap")
                 time_map = [
-                    (TimeValue("0.000"), sync_root.value.begin),
+                    (TimePoint("0.000"), sync_root.value.begin),
                     (sync_root.value.begin, sync_root.value.end),
                     (sync_root.value.end, audio_file_mfcc.audio_length)
                 ]
@@ -465,9 +465,9 @@ class ExecuteTask(Loggable):
         else:
             self.log(u"Detecting head tail...")
             sd = SD(audio_file_mfcc, self.task.text_file, rconf=self.rconf, logger=self.logger)
-            head_length = TimeValue("0.000")
+            head_length = TimePoint("0.000")
             process_length = None
-            tail_length = TimeValue("0.000")
+            tail_length = TimePoint("0.000")
             if (head_min is not None) or (head_max is not None):
                 self.log(u"Detecting HEAD...")
                 head_length = sd.detect_head(head_min, head_max)
@@ -680,7 +680,7 @@ class ExecuteTask(Loggable):
         """ Check for fragments with zero duration """
         if self.task.configuration["o_no_zero"]:
             self.log(u"Checking for fragments with zero duration...")
-            delta = TimeValue("0.001")
+            delta = TimePoint("0.001")
             leaves = self.task.sync_map.fragments_tree.vleaves_not_empty
             # first and last leaves are HEAD and TAIL, skipping them
             max_index = len(leaves) - 1

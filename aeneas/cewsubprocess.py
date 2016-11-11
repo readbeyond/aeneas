@@ -49,7 +49,7 @@ import sys
 
 from aeneas.logger import Loggable
 from aeneas.runtimeconfiguration import RuntimeConfiguration
-from aeneas.timevalue import TimeValue
+from aeneas.exacttiming import TimePoint
 import aeneas.globalfunctions as gf
 
 
@@ -123,7 +123,7 @@ class CEWSubprocess(Loggable):
             for line in lines[2:]:
                 values = line.split(u" ")
                 if len(values) == 2:
-                    intervals.append((TimeValue(values[0]), TimeValue(values[1])))
+                    intervals.append((TimePoint(values[0]), TimePoint(values[1])))
         self.log(u"Reading output data... done")
 
         self.log(u"Deleting text and data files...")
@@ -145,7 +145,7 @@ def main():
         return 1
 
     # read parameters
-    c_quit_after = float(sys.argv[1])   # NOTE: cew needs float, not TimeValue
+    c_quit_after = float(sys.argv[1])   # NOTE: cew needs float, not TimePoint
     c_backwards = int(sys.argv[2])
     text_file_path = sys.argv[3]
     audio_file_path = sys.argv[4]

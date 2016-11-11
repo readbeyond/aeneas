@@ -45,7 +45,7 @@ from aeneas.ffmpegwrapper import FFMPEGPathError
 from aeneas.ffmpegwrapper import FFMPEGWrapper
 from aeneas.logger import Loggable
 from aeneas.runtimeconfiguration import RuntimeConfiguration
-from aeneas.timevalue import TimeValue
+from aeneas.exacttiming import TimePoint
 from aeneas.wavfile import read as scipywavread
 from aeneas.wavfile import write as scipywavwrite
 import aeneas.globalfunctions as gf
@@ -256,7 +256,7 @@ class AudioFile(Loggable):
         """
         The length of the audio file, in seconds.
 
-        :rtype: :class:`~aeneas.timevalue.TimeValue`
+        :rtype: :class:`~aeneas.exacttiming.TimePoint`
         """
         return self.__audio_length
 
@@ -362,7 +362,7 @@ class AudioFile(Loggable):
             self.log_exc(u"Audio file format not supported by ffprobe", None, True, AudioFileUnsupportedFormatError)
 
         # save relevant properties in results inside the audiofile object
-        self.audio_length = TimeValue(properties[FFPROBEWrapper.STDOUT_DURATION])
+        self.audio_length = TimePoint(properties[FFPROBEWrapper.STDOUT_DURATION])
         self.audio_format = properties[FFPROBEWrapper.STDOUT_CODEC_NAME]
         self.audio_sample_rate = gf.safe_int(properties[FFPROBEWrapper.STDOUT_SAMPLE_RATE])
         self.audio_channels = gf.safe_int(properties[FFPROBEWrapper.STDOUT_CHANNELS])
@@ -568,30 +568,30 @@ class AudioFile(Loggable):
         If audio data is not loaded, load it and then slice it.
 
         :param begin: the start position, in seconds
-        :type  begin: :class:`~aeneas.timevalue.TimeValue`
+        :type  begin: :class:`~aeneas.exacttiming.TimePoint`
         :param length: the  position, in seconds
-        :type  length: :class:`~aeneas.timevalue.TimeValue`
+        :type  length: :class:`~aeneas.exacttiming.TimePoint`
         :raises: TypeError: if one of the arguments is not ``None``
-                            or :class:`~aeneas.timevalue.TimeValue`
+                            or :class:`~aeneas.exacttiming.TimePoint`
 
         .. versionadded:: 1.2.0
         """
         for variable, name in [(begin, "begin"), (length, "length")]:
-            if (variable is not None) and (not isinstance(variable, TimeValue)):
-                raise TypeError(u"%s is not None or TimeValue" % name)
+            if (variable is not None) and (not isinstance(variable, TimePoint)):
+                raise TypeError(u"%s is not None or TimePoint" % name)
         self.log(u"Trimming...")
         if (begin is None) and (length is None):
             self.log(u"begin and length are both None: nothing to do")
         else:
             if begin is None:
-                begin = TimeValue("0.000")
+                begin = TimePoint("0.000")
                 self.log([u"begin was None, now set to %.3f", begin])
-            begin = min(max(TimeValue("0.000"), begin), self.audio_length)
+            begin = min(max(TimePoint("0.000"), begin), self.audio_length)
             self.log([u"begin is %.3f", begin])
             if length is None:
                 length = self.audio_length - begin
                 self.log([u"length was None, now set to %.3f", length])
-            length = min(max(TimeValue("0.000"), length), self.audio_length - begin)
+            length = min(max(TimePoint("0.000"), length), self.audio_length - begin)
             self.log([u"length is %.3f", length])
             begin_index = int(begin * self.audio_sample_rate)
             end_index = int((begin + length) * self.audio_sample_rate)
@@ -644,4 +644,4 @@ class AudioFile(Loggable):
         This function fails silently if one of the two is ``None``.
         """
         if (self.audio_sample_rate is not None) and (self.__samples is not None):
-            self.audio_length = TimeValue(self.__samples_length / self.audio_sample_rate)
+            self.audio_length = TimePoint(self.__samples_length / self.audio_sample_rate)
