@@ -11,6 +11,7 @@ v1.7.0 (2016-11-??)
 #. Added ``safety_checks`` parameter to ``RuntimeConfiguration`` that can disable to trade safety for speed (issue #117)
 #. Added Makefile files to C/C++ extensions, replacing previous Bash scripts
 #. Renamed ``aeneas.timevalue`` into ``aeneas.exacttiming`` and ``TimeValue`` into ``TimePoint``
+#. Added ``aeneas.exacttiming.TimeInterval`` class to represent time intervals and act upon them
 
 v1.6.0.1 (2016-09-30)
 ---------------------

@@ -25,6 +25,7 @@ import unittest
 import numpy
 
 from aeneas.exacttiming import Decimal
+from aeneas.exacttiming import TimeInterval
 from aeneas.exacttiming import TimePoint
 
 
@@ -185,6 +186,319 @@ class TestExactTiming(unittest.TestCase):
             prod = TimePoint(m) * s
             self.assertTrue(isinstance(prod, TimePoint))
             self.assertEqual(int(prod) == prod, e)
+
+    def test_time_interval_bad_type(self):
+        params = [
+            (None, None),
+            (0, 1),
+            (TimePoint("0.000"), 1),
+            (0, TimePoint("1.000")),
+        ]
+        for b, e in params:
+            with self.assertRaises(TypeError):
+                TimeInterval(begin=b, end=e)
+
+    def test_time_interval_bad_value(self):
+        params = [
+            ("1.000", "0.000"),
+            ("-1.000", "0.000"),
+            ("0.000", "-1.000"),
+            ("-2.000", "-1.000"),
+        ]
+        for b, e in params:
+            with self.assertRaises(ValueError):
+                TimeInterval(begin=TimePoint(b), end=TimePoint(e))
+
+    def test_time_interval_constructor(self):
+        params = [
+            ("0.000", "0.000"),
+            ("0.000", "1.000"),
+            ("1.000", "1.000"),
+            ("1.234", "1.235"),
+        ]
+        for b, e in params:
+            TimeInterval(begin=TimePoint(b), end=TimePoint(e))
+
+    def test_time_interval_length(self):
+        params = [
+            ("0.000", "0.000", "0.000"),
+            ("0.000", "1.000", "1.000"),
+            ("1.000", "1.000", "0.000"),
+            ("1.234", "1.235", "0.001"),
+        ]
+        for b, e, l in params:
+            ti = TimeInterval(begin=TimePoint(b), end=TimePoint(e))
+            self.assertEqual(ti.length, TimePoint(l))
+
+    def test_time_interval_has_zero_length(self):
+        params = [
+            ("0.000", "0.000", True),
+            ("0.000", "1.000", False),
+            ("1.000", "1.000", True),
+            ("1.234", "1.235", False),
+        ]
+        for b, e, f in params:
+            ti = TimeInterval(begin=TimePoint(b), end=TimePoint(e))
+            self.assertEqual(ti.has_zero_length, f)
+
+    def test_time_interval_starts_at(self):
+        params = [
+            ("1.234", "1.237", "0.000", False),
+            ("1.234", "1.237", "1.233", False),
+            ("1.234", "1.237", "1.234", True),
+            ("1.234", "1.237", "1.235", False),
+            ("1.234", "1.237", "1.236", False),
+            ("1.234", "1.237", "1.237", False),
+            ("1.234", "1.237", "1.238", False),
+            ("1.234", "1.237", "2.000", False),
+        ]
+        for b, e, p, f in params:
+            ti = TimeInterval(begin=TimePoint(b), end=TimePoint(e))
+            self.assertEqual(ti.starts_at(TimePoint(p)), f)
+
+    def test_time_interval_ends_at(self):
+        params = [
+            ("1.234", "1.237", "0.000", False),
+            ("1.234", "1.237", "1.233", False),
+            ("1.234", "1.237", "1.234", False),
+            ("1.234", "1.237", "1.235", False),
+            ("1.234", "1.237", "1.236", False),
+            ("1.234", "1.237", "1.237", True),
+            ("1.234", "1.237", "1.238", False),
+            ("1.234", "1.237", "2.000", False),
+        ]
+        for b, e, p, f in params:
+            ti = TimeInterval(begin=TimePoint(b), end=TimePoint(e))
+            self.assertEqual(ti.ends_at(TimePoint(p)), f)
+
+    def test_time_interval_translate_bad(self):
+        params = [
+            None,
+            1,
+            1.234,
+            "1.234",
+            Decimal("1.234"),
+        ]
+        ti1 = TimeInterval(begin=TimePoint("0.000"), end=TimePoint("1.000"))
+        for p in params:
+            with self.assertRaises(TypeError):
+                ti1.translate(p)
+
+    def test_time_interval_translate(self):
+        params = [
+            (("0.000", "0.000"), "-1.000", False, ("0.000", "0.000")),
+            (("0.000", "0.000"), "-0.000", False, ("0.000", "0.000")),
+            (("0.000", "0.000"), "0.000", False, ("0.000", "0.000")),
+            (("0.000", "0.000"), "0.500", False, ("0.500", "0.500")),
+            (("1.000", "2.000"), "-2.500", False, ("0.000", "0.000")),
+            (("1.000", "2.000"), "-2.000", False, ("0.000", "0.000")),
+            (("1.000", "2.000"), "-1.500", False, ("0.000", "0.500")),
+            (("1.000", "2.000"), "-1.000", False, ("0.000", "1.000")),
+            (("1.000", "2.000"), "-0.000", False, ("1.000", "2.000")),
+            (("1.000", "2.000"), "0.000", False, ("1.000", "2.000")),
+            (("1.000", "2.000"), "0.500", False, ("1.500", "2.500")),
+            (("1.000", "2.000"), "1.000", False, ("2.000", "3.000")),
+
+            (("0.000", "0.000"), "-1.000", True, ("-1.000", "-1.000")),
+            (("0.000", "0.000"), "-0.000", True, ("0.000", "0.000")),
+            (("0.000", "0.000"), "0.000", True, ("0.000", "0.000")),
+            (("0.000", "0.000"), "0.500", True, ("0.500", "0.500")),
+            (("1.000", "2.000"), "-2.500", True, ("-1.500", "-0.500")),
+            (("1.000", "2.000"), "-2.000", True, ("-1.000", "0.000")),
+            (("1.000", "2.000"), "-1.500", True, ("-0.500", "0.500")),
+            (("1.000", "2.000"), "-1.000", True, ("0.000", "1.000")),
+            (("1.000", "2.000"), "-0.000", True, ("1.000", "2.000")),
+            (("1.000", "2.000"), "0.000", True, ("1.000", "2.000")),
+            (("1.000", "2.000"), "0.500", True, ("1.500", "2.500")),
+            (("1.000", "2.000"), "1.000", True, ("2.000", "3.000")),
+        ]
+        for ti1, d, a, exp in params:
+            ti1 = TimeInterval(begin=TimePoint(ti1[0]), end=TimePoint(ti1[1]))
+            d = TimePoint(d)
+            ti1.translate(delta=d, allow_negative=a)
+            self.assertEqual(ti1.begin, TimePoint(exp[0]))
+            self.assertEqual(ti1.end, TimePoint(exp[1]))
+
+    def test_time_interval_contains(self):
+        params = [
+            ("1.000", "1.000", "0.000", False),
+            ("1.000", "1.000", "0.999", False),
+            ("1.000", "1.000", "1.000", True),
+            ("1.000", "1.000", "1.001", False),
+            ("1.000", "1.000", "2.000", False),
+
+            ("1.000", "1.001", "0.000", False),
+            ("1.000", "1.001", "0.999", False),
+            ("1.000", "1.001", "1.000", True),
+            ("1.000", "1.001", "1.001", True),
+            ("1.000", "1.001", "1.002", False),
+            ("1.000", "1.001", "2.000", False),
+
+            ("1.000", "1.002", "0.000", False),
+            ("1.000", "1.002", "0.999", False),
+            ("1.000", "1.002", "1.000", True),
+            ("1.000", "1.002", "1.001", True),
+            ("1.000", "1.002", "1.002", True),
+            ("1.000", "1.002", "1.003", False),
+            ("1.000", "1.002", "2.000", False),
+
+            ("1.234", "1.237", "0.000", False),
+            ("1.234", "1.237", "1.233", False),
+            ("1.234", "1.237", "1.234", True),
+            ("1.234", "1.237", "1.235", True),
+            ("1.234", "1.237", "1.236", True),
+            ("1.234", "1.237", "1.237", True),
+            ("1.234", "1.237", "1.238", False),
+            ("1.234", "1.237", "2.000", False),
+        ]
+        for b, e, p, f in params:
+            ti = TimeInterval(begin=TimePoint(b), end=TimePoint(e))
+            self.assertEqual(ti.contains(TimePoint(p)), f)
+
+    def test_time_interval_inner_contains(self):
+        params = [
+            ("1.000", "1.000", "0.000", False),
+            ("1.000", "1.000", "0.999", False),
+            ("1.000", "1.000", "1.000", False),
+            ("1.000", "1.000", "1.001", False),
+            ("1.000", "1.000", "2.000", False),
+
+            ("1.000", "1.001", "0.000", False),
+            ("1.000", "1.001", "0.999", False),
+            ("1.000", "1.001", "1.000", False),
+            ("1.000", "1.001", "1.001", False),
+            ("1.000", "1.001", "1.002", False),
+            ("1.000", "1.001", "2.000", False),
+
+            ("1.000", "1.002", "0.000", False),
+            ("1.000", "1.002", "0.999", False),
+            ("1.000", "1.002", "1.000", False),
+            ("1.000", "1.002", "1.001", True),
+            ("1.000", "1.002", "1.002", False),
+            ("1.000", "1.002", "1.003", False),
+            ("1.000", "1.002", "2.000", False),
+
+            ("1.234", "1.237", "0.000", False),
+            ("1.234", "1.237", "1.233", False),
+            ("1.234", "1.237", "1.234", False),
+            ("1.234", "1.237", "1.235", True),
+            ("1.234", "1.237", "1.236", True),
+            ("1.234", "1.237", "1.237", False),
+            ("1.234", "1.237", "1.238", False),
+            ("1.234", "1.237", "2.000", False),
+        ]
+        for b, e, p, f in params:
+            ti = TimeInterval(begin=TimePoint(b), end=TimePoint(e))
+            self.assertEqual(ti.inner_contains(TimePoint(p)), f)
+
+    def test_time_interval_relative_position_of(self):
+        params = [
+            # TABLE 1
+            (("1.000", "1.000"), ("0.000", "0.000"), TimeInterval.RELATIVE_POSITION_PP_L),
+            (("1.000", "1.000"), ("1.000", "1.000"), TimeInterval.RELATIVE_POSITION_PP_C),
+            (("1.000", "1.000"), ("2.000", "2.000"), TimeInterval.RELATIVE_POSITION_PP_G),
+            # TABLE 2
+            (("1.000", "1.000"), ("0.000", "0.500"), TimeInterval.RELATIVE_POSITION_PI_LL),
+            (("1.000", "1.000"), ("0.500", "1.000"), TimeInterval.RELATIVE_POSITION_PI_LC),
+            (("1.000", "1.000"), ("0.500", "1.500"), TimeInterval.RELATIVE_POSITION_PI_LG),
+            (("1.000", "1.000"), ("1.000", "1.500"), TimeInterval.RELATIVE_POSITION_PI_CG),
+            (("1.000", "1.000"), ("1.500", "2.000"), TimeInterval.RELATIVE_POSITION_PI_GG),
+            # TABLE 3
+            (("1.000", "2.000"), ("0.000", "0.000"), TimeInterval.RELATIVE_POSITION_IP_L),
+            (("1.000", "2.000"), ("1.000", "1.000"), TimeInterval.RELATIVE_POSITION_IP_B),
+            (("1.000", "2.000"), ("1.500", "1.500"), TimeInterval.RELATIVE_POSITION_IP_I),
+            (("1.000", "2.000"), ("2.000", "2.000"), TimeInterval.RELATIVE_POSITION_IP_E),
+            (("1.000", "2.000"), ("2.500", "2.500"), TimeInterval.RELATIVE_POSITION_IP_G),
+            # TABLE 4
+            (("1.000", "2.000"), ("0.000", "0.500"), TimeInterval.RELATIVE_POSITION_II_LL),
+            (("1.000", "2.000"), ("0.000", "1.000"), TimeInterval.RELATIVE_POSITION_II_LB),
+            (("1.000", "2.000"), ("0.000", "1.500"), TimeInterval.RELATIVE_POSITION_II_LI),
+            (("1.000", "2.000"), ("0.000", "2.000"), TimeInterval.RELATIVE_POSITION_II_LE),
+            (("1.000", "2.000"), ("0.000", "2.500"), TimeInterval.RELATIVE_POSITION_II_LG),
+            # TABLE 5
+            (("1.000", "2.000"), ("1.000", "1.500"), TimeInterval.RELATIVE_POSITION_II_BI),
+            (("1.000", "2.000"), ("1.000", "2.000"), TimeInterval.RELATIVE_POSITION_II_BE),
+            (("1.000", "2.000"), ("1.000", "2.500"), TimeInterval.RELATIVE_POSITION_II_BG),
+            # TABLE 6
+            (("1.000", "2.000"), ("1.100", "1.500"), TimeInterval.RELATIVE_POSITION_II_II),
+            (("1.000", "2.000"), ("1.100", "2.000"), TimeInterval.RELATIVE_POSITION_II_IE),
+            (("1.000", "2.000"), ("1.100", "2.500"), TimeInterval.RELATIVE_POSITION_II_IG),
+            # TABLE 7
+            (("1.000", "2.000"), ("2.000", "2.500"), TimeInterval.RELATIVE_POSITION_II_EG),
+            # TABLE 8
+            (("1.000", "2.000"), ("2.500", "3.000"), TimeInterval.RELATIVE_POSITION_II_GG),
+        ]
+        for ti1, ti2, exp in params:
+            ti1 = TimeInterval(begin=TimePoint(ti1[0]), end=TimePoint(ti1[1]))
+            ti2 = TimeInterval(begin=TimePoint(ti2[0]), end=TimePoint(ti2[1]))
+            self.assertEqual(ti1.relative_position_of(ti2), exp)
+            self.assertEqual(ti2.relative_position_wrt(ti1), exp)
+
+    def test_time_interval_intersection(self):
+        params = [
+            # TABLE 1
+            (("1.000", "1.000"), ("0.000", "0.000"), None),
+            (("1.000", "1.000"), ("1.000", "1.000"), ("1.000", "1.000")),
+            (("1.000", "1.000"), ("2.000", "2.000"), None),
+            # TABLE 2
+            (("1.000", "1.000"), ("0.000", "0.500"), None),
+            (("1.000", "1.000"), ("0.500", "1.000"), ("1.000", "1.000")),
+            (("1.000", "1.000"), ("0.500", "1.500"), ("1.000", "1.000")),
+            (("1.000", "1.000"), ("1.000", "1.500"), ("1.000", "1.000")),
+            (("1.000", "1.000"), ("1.500", "2.000"), None),
+            # TABLE 3
+            (("1.000", "2.000"), ("0.000", "0.000"), None),
+            (("1.000", "2.000"), ("1.000", "1.000"), ("1.000", "1.000")),
+            (("1.000", "2.000"), ("1.500", "1.500"), ("1.500", "1.500")),
+            (("1.000", "2.000"), ("2.000", "2.000"), ("2.000", "2.000")),
+            (("1.000", "2.000"), ("2.500", "2.500"), None),
+            # TABLE 4
+            (("1.000", "2.000"), ("0.000", "0.500"), None),
+            (("1.000", "2.000"), ("0.000", "1.000"), ("1.000", "1.000")),
+            (("1.000", "2.000"), ("0.000", "1.500"), ("1.000", "1.500")),
+            (("1.000", "2.000"), ("0.000", "2.000"), ("1.000", "2.000")),
+            (("1.000", "2.000"), ("0.000", "2.500"), ("1.000", "2.000")),
+            # TABLE 5
+            (("1.000", "2.000"), ("1.000", "1.500"), ("1.000", "1.500")),
+            (("1.000", "2.000"), ("1.000", "2.000"), ("1.000", "2.000")),
+            (("1.000", "2.000"), ("1.000", "2.500"), ("1.000", "2.000")),
+            # TABLE 6
+            (("1.000", "2.000"), ("1.100", "1.500"), ("1.100", "1.500")),
+            (("1.000", "2.000"), ("1.100", "2.000"), ("1.100", "2.000")),
+            (("1.000", "2.000"), ("1.100", "2.500"), ("1.100", "2.000")),
+            # TABLE 7
+            (("1.000", "2.000"), ("2.000", "2.500"), ("2.000", "2.000")),
+            # TABLE 8
+            (("1.000", "2.000"), ("2.500", "3.000"), None),
+        ]
+        for ti1, ti2, exp in params:
+            ti1 = TimeInterval(begin=TimePoint(ti1[0]), end=TimePoint(ti1[1]))
+            ti2 = TimeInterval(begin=TimePoint(ti2[0]), end=TimePoint(ti2[1]))
+            if exp is not None:
+                exp = TimeInterval(begin=TimePoint(exp[0]), end=TimePoint(exp[1]))
+            self.assertEqual(ti1.intersection(ti2), exp)
+            self.assertEqual(ti2.intersection(ti1), exp)
+            self.assertEqual(ti1.overlaps(ti2), exp is not None)
+            self.assertEqual(ti2.overlaps(ti1), exp is not None)
+
+    def test_time_interval_adjacent(self):
+        params = [
+            (("1.000", "1.000"), ("0.000", "2.000"), False),
+            (("1.000", "1.000"), ("0.999", "2.000"), False),
+            (("1.000", "1.000"), ("1.000", "2.000"), True),
+            (("1.000", "1.000"), ("1.001", "2.000"), False),
+            (("1.000", "1.000"), ("2.000", "2.000"), False),
+            (("0.000", "1.000"), ("0.000", "2.000"), False),
+            (("0.000", "1.000"), ("0.999", "2.000"), False),
+            (("0.000", "1.000"), ("1.000", "2.000"), True),
+            (("0.000", "1.000"), ("1.001", "2.000"), False),
+            (("0.000", "1.000"), ("2.000", "2.000"), False),
+        ]
+        for ti1, ti2, exp in params:
+            ti1 = TimeInterval(begin=TimePoint(ti1[0]), end=TimePoint(ti1[1]))
+            ti2 = TimeInterval(begin=TimePoint(ti2[0]), end=TimePoint(ti2[1]))
+            self.assertEqual(ti1.adjacent_before(ti2), exp)
+            self.assertEqual(ti2.adjacent_after(ti1), exp)
 
 
 if __name__ == '__main__':
