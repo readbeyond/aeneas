@@ -36,5 +36,5 @@ class TestESPEAKNGTTSWrapper(TestBaseTTSWrapper):
     TTS_LANGUAGE_VARIATION = ESPEAKNGTTSWrapper.ENG_GBR
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     unittest.main()

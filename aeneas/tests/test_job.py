@@ -191,5 +191,5 @@ class TestJob(unittest.TestCase):
         self.assertEqual(jobconf["description"], u"Test description")
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     unittest.main()

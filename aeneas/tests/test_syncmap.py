@@ -213,5 +213,5 @@ class TestSyncMap(unittest.TestCase):
         gf.delete_file(handler, output_file_path)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     unittest.main()

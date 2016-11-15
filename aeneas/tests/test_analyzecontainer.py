@@ -139,5 +139,5 @@ class TestAnalyzeContainer(unittest.TestCase):
         self.assertEqual(len(job), f["length"])
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     unittest.main()

@@ -173,5 +173,5 @@ class TestBaseTTSWrapper(unittest.TestCase):
             self.synthesize(tfl)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     unittest.main()

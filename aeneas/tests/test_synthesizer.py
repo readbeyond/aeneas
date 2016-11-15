@@ -94,5 +94,5 @@ class TestSynthesizer(unittest.TestCase):
         self.perform("res/inputtext/sonnet_plain.txt", 4, TimePoint("10.000"), quit_after=TimePoint("10.000"), backwards=True)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     unittest.main()

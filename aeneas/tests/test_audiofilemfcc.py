@@ -365,5 +365,5 @@ class TestAudioFileMFCC(unittest.TestCase):
         self.assertNotEqual(pre, audiofile.masked_middle_length)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     unittest.main()

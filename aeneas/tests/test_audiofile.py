@@ -278,5 +278,5 @@ class TestAudioFile(unittest.TestCase):
         self.assertEqual(audiofile.audio_samples[9], 6)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     unittest.main()

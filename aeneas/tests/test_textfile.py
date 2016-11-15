@@ -553,5 +553,5 @@ class TestTextFile(unittest.TestCase):
         self.filter_transliterate([u"x" + u"\U00108888" + u"z"], [u"xaz"])
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     unittest.main()

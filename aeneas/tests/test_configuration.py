@@ -32,6 +32,14 @@ class TestConfiguration(unittest.TestCase):
         c = Configuration()
         c.config_string
 
+    def test_set_config_string_bad(self):
+        with self.assertRaises(TypeError):
+            c = Configuration("not a unicode string")
+
+    def test_set_config_string_good(self):
+        c = Configuration(u"foo=bar")
+        c.config_string
+
     def test_clone(self):
         c = Configuration()
         d = c.clone()
@@ -39,5 +47,5 @@ class TestConfiguration(unittest.TestCase):
         self.assertEqual(c.config_string, d.config_string)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     unittest.main()

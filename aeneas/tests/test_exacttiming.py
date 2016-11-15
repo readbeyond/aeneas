@@ -501,5 +501,5 @@ class TestExactTiming(unittest.TestCase):
             self.assertEqual(ti2.adjacent_after(ti1), exp)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     unittest.main()

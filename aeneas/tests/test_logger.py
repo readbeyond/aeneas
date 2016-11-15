@@ -194,5 +194,5 @@ class TestLogger(unittest.TestCase):
             self.assertEqual(len(loggable.logger), 1)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     unittest.main()

@@ -26,6 +26,9 @@ This module contains the following classes:
 
 * :class:`~aeneas.exacttiming.TimePoint`,
   a numeric type to represent time values with arbitrary precision.
+* :class:`~aeneas.exacttiming.TimeInterval`,
+  representing a time interval, that is,
+  a pair ``(begin, end)`` of time points.
 
 .. versionadded:: 1.5.0
 """
@@ -131,8 +134,9 @@ class TimeInterval(object):
 
     This class has some convenience methods for calculating
     the length of interval,
-    whether a given time point belongs to it,
-    etc.
+    whether a given time point belongs to it, etc.
+
+    .. versionadded:: 1.7.0
 
     :param begin: the begin time
     :type  begin: :class:`aeneas.exacttiming.TimePoint`

@@ -113,5 +113,5 @@ class TestDownloader(unittest.TestCase):
         self.download(405826, preferred_index=4, preferred_format="m4a", largest_audio=True)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     unittest.main()

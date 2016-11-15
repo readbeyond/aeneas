@@ -319,6 +319,22 @@ class TestTree(unittest.TestCase):
             (root, c1, c11, c12, c13, c2, c21, c22, c23, c231, c232, c24, c25, c3, c4) = self.create_tree2()
             self.keep(root, levels)
 
+    def test_clone(self):
+        (root, c1, c11, c111, c1111, c1112, c1113) = self.create_tree1()
+        copy_root = root.clone()
+        nodes = [n for n in root.dfs]
+        copy_nodes = [n for n in copy_root.dfs]
+        self.assertEqual(len(nodes), len(copy_nodes))
+        for i in range(len(nodes)):
+            self.assertEqual(nodes[i].value, copy_nodes[i].value)
 
-if __name__ == '__main__':
+    def test_clone_and_edit(self):
+        (root, c1, c11, c111, c1111, c1112, c1113) = self.create_tree1()
+        copy_root = root.clone()
+        copy_root.get_child(0).value = "n1"
+        self.assertEqual(copy_root.get_child(0).value, "n1")
+        self.assertEqual(root.get_child(0).value, "c1")
+
+
+if __name__ == "__main__":
     unittest.main()

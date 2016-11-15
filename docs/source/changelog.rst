@@ -16,6 +16,8 @@ v1.7.0 (2016-11-??)
 #. Added ``clone()`` method to ``aeneas.configuration.Configuration``
 #. Removed ``clone()`` method to ``aeneas.runtimeconfiguration.RuntimeConfiguration`` (now it inherits from ``Configuration``)
 #. Added ``clone()`` method to ``aeneas.tree.Tree``
+#. Added tests for ``Configuration`` and ``RuntimeConfiguration``
+#. Added more tests for ``Tree``
 
 v1.6.0.1 (2016-09-30)
 ---------------------
