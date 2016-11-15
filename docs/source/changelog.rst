@@ -12,6 +12,10 @@ v1.7.0 (2016-11-??)
 #. Added Makefile files to C/C++ extensions, replacing previous Bash scripts
 #. Renamed ``aeneas.timevalue`` into ``aeneas.exacttiming`` and ``TimeValue`` into ``TimePoint``
 #. Added ``aeneas.exacttiming.TimeInterval`` class to represent time intervals and act upon them
+#. Changed ``config_string()`` to property in ``aeneas.configuration.Configuration``
+#. Added ``clone()`` method to ``aeneas.configuration.Configuration``
+#. Removed ``clone()`` method to ``aeneas.runtimeconfiguration.RuntimeConfiguration`` (now it inherits from ``Configuration``)
+#. Added ``clone()`` method to ``aeneas.tree.Tree``
 
 v1.6.0.1 (2016-09-30)
 ---------------------

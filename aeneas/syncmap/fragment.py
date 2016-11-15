@@ -25,6 +25,7 @@ from __future__ import absolute_import
 from __future__ import print_function
 
 from aeneas.exacttiming import Decimal
+from aeneas.exacttiming import TimeInterval
 from aeneas.exacttiming import TimePoint
 import aeneas.globalfunctions as gf
 
@@ -32,7 +33,7 @@ import aeneas.globalfunctions as gf
 class SyncMapFragment(object):
     """
     A sync map fragment, that is,
-    a text fragment and an associated time interval ``[begin, end]``.
+    a text fragment and an associated time interval.
 
     :param text_fragment: the text fragment
     :type  text_fragment: :class:`~aeneas.textfile.TextFragment`
@@ -45,21 +46,38 @@ class SyncMapFragment(object):
 
     TAG = u"SyncMapFragment"
 
+    FRAGMENT_TYPE_REGULAR = 0
+    """ Regular fragment """
+
+    FRAGMENT_TYPE_HEAD = 1
+    """ Head fragment """
+
+    FRAGMENT_TYPE_TAIL = 2
+    """ Tail fragment """
+
+    FRAGMENT_TYPE_SILENCE = 3
+    """ (Long) Silence fragment """
+
     def __init__(
             self,
             text_fragment=None,
             begin=None,
             end=None,
+            fragment_type=FRAGMENT_TYPE_REGULAR,
             confidence=1.0
     ):
         self.text_fragment = text_fragment
-        self.begin = begin
-        self.end = end
+        if (begin is not None) and (end is not None):
+            self.interval = TimeInterval(begin, end)
+        else:
+            self.interval = None
+        self.fragment_type = fragment_type
         self.confidence = confidence
 
     def __unicode__(self):
-        return u"%s %.3f %.3f" % (
+        return u"%s %d %.3f %.3f" % (
             self.text_fragment.identifier,
+            self.fragment_type,
             self.begin,
             self.end
         )
@@ -81,30 +99,37 @@ class SyncMapFragment(object):
         self.__text_fragment = text_fragment
 
     @property
-    def begin(self):
+    def interval(self):
         """
-        The begin time of this sync map fragment.
+        The time interval corresponding to this fragment.
 
-        :rtype: :class:`~aeneas.exacttiming.TimePoint`
+        :rtype: :class:`~aeneas.exacttiming.TimeInterval`
         """
-        return self.__begin
+        return self.__interval
 
-    @begin.setter
-    def begin(self, begin):
-        self.__begin = begin
+    @interval.setter
+    def interval(self, interval):
+        self.__interval = interval
 
     @property
-    def end(self):
+    def fragment_type(self):
         """
-        The end time of this sync map fragment.
+        The type of fragment.
 
-        :rtype: :class:`~aeneas.exacttiming.TimePoint`
+        Possible values are:
+
+        * :data:`~aeneas.syncmap.fragment.SyncMapFragment.FRAGMENT_TYPE_REGULAR`
+        * :data:`~aeneas.syncmap.fragment.SyncMapFragment.FRAGMENT_TYPE_HEAD`
+        * :data:`~aeneas.syncmap.fragment.SyncMapFragment.FRAGMENT_TYPE_TAIL`
+        * :data:`~aeneas.syncmap.fragment.SyncMapFragment.FRAGMENT_TYPE_SILENCE`
+
+        :rtype: int
         """
-        return self.__end
+        return self.__fragment_type
 
-    @end.setter
-    def end(self, end):
-        self.__end = end
+    @fragment_type.setter
+    def fragment_type(self, fragment_type):
+        self.__fragment_type = fragment_type
 
     @property
     def confidence(self):
@@ -122,6 +147,44 @@ class SyncMapFragment(object):
         self.__confidence = confidence
 
     @property
+    def begin(self):
+        """
+        The begin time of this sync map fragment.
+
+        :rtype: :class:`~aeneas.exacttiming.TimePoint`
+        """
+        if self.interval is None:
+            return None
+        return self.interval.begin
+
+    @begin.setter
+    def begin(self, begin):
+        if self.interval is None:
+            raise TypeError(u"Attempting to set begin when interval is None")
+        if not isinstance(begin, TimePoint):
+            raise TypeError(u"The given begin value is not an instance of TimePoint")
+        self.interval.begin = begin
+
+    @property
+    def end(self):
+        """
+        The end time of this sync map fragment.
+
+        :rtype: :class:`~aeneas.exacttiming.TimePoint`
+        """
+        if self.interval is None:
+            return None
+        return self.interval.end
+
+    @end.setter
+    def end(self, end):
+        if self.interval is None:
+            raise TypeError(u"Attempting to set end when interval is None")
+        if not isinstance(end, TimePoint):
+            raise TypeError(u"The given end value is not an instance of TimePoint")
+        self.interval.end = end
+
+    @property
     def audio_duration(self):
         """
         The audio duration of this sync map fragment,
@@ -129,9 +192,9 @@ class SyncMapFragment(object):
 
         :rtype: :class:`~aeneas.exacttiming.TimePoint`
         """
-        if (self.begin is None) or (self.end is None):
+        if self.interval is None:
             return TimePoint("0.000")
-        return self.end - self.begin
+        return self.interval.length
 
     @property
     def chars(self):

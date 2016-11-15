@@ -183,19 +183,25 @@ class Task(Loggable):
         gf.ensure_parent_directory(path)
         self.log([u"Output sync map to %s", path])
 
-        sync_map_format = self.configuration["o_format"]
         eaf_audio_ref = self.configuration["o_eaf_audio_ref"]
+        head_tail_format = self.configuration["o_h_t_format"]
+        levels = self.configuration["o_levels"]
         smil_audio_ref = self.configuration["o_smil_audio_ref"]
         smil_page_ref = self.configuration["o_smil_page_ref"]
+        sync_map_format = self.configuration["o_format"]
 
-        self.log([u"sync_map_format is %s", sync_map_format])
         self.log([u"eaf_audio_ref is %s", eaf_audio_ref])
+        self.log([u"head_tail_format is %s", head_tail_format])
+        self.log([u"levels is %s", levels])
         self.log([u"smil_audio_ref is %s", smil_audio_ref])
         self.log([u"smil_page_ref is %s", smil_page_ref])
+        self.log([u"sync_map_format is %s", sync_map_format])
 
         self.log(u"Calling sync_map.write...")
         parameters = {
             gc.PPN_TASK_OS_FILE_EAF_AUDIO_REF: eaf_audio_ref,
+            gc.PPN_TASK_OS_FILE_HEAD_TAIL_FORMAT: head_tail_format,
+            gc.PPN_TASK_OS_FILE_LEVELS: levels,
             gc.PPN_TASK_OS_FILE_SMIL_AUDIO_REF: smil_audio_ref,
             gc.PPN_TASK_OS_FILE_SMIL_PAGE_REF: smil_page_ref,
         }
@@ -271,6 +277,8 @@ class TaskConfiguration(Configuration):
     * :data:`~aeneas.globalconstants.PPN_TASK_ADJUST_BOUNDARY_OFFSET_VALUE`       or ``aba_offset_value``
     * :data:`~aeneas.globalconstants.PPN_TASK_ADJUST_BOUNDARY_PERCENT_VALUE`      or ``aba_percent_value``
     * :data:`~aeneas.globalconstants.PPN_TASK_ADJUST_BOUNDARY_RATE_VALUE`         or ``aba_rate_value``
+    * :data:`~aeneas.globalconstants.PPN_TASK_ADJUST_BOUNDARY_SILENCE_MIN`        or ``aba_silence_min``
+    * :data:`~aeneas.globalconstants.PPN_TASK_ADJUST_BOUNDARY_SILENCE_STRING`     or ``aba_silence_string``
     * :data:`~aeneas.globalconstants.PPN_TASK_IS_AUDIO_FILE_DETECT_HEAD_MAX`      or ``i_a_head_max``
     * :data:`~aeneas.globalconstants.PPN_TASK_IS_AUDIO_FILE_DETECT_HEAD_MIN`      or ``i_a_head_min``
     * :data:`~aeneas.globalconstants.PPN_TASK_IS_AUDIO_FILE_DETECT_TAIL_MAX`      or ``i_a_tail_max``
@@ -313,6 +321,8 @@ class TaskConfiguration(Configuration):
         (gc.PPN_TASK_ADJUST_BOUNDARY_OFFSET_VALUE, (None, TimePoint, ["aba_offset_value"])),
         (gc.PPN_TASK_ADJUST_BOUNDARY_PERCENT_VALUE, (None, int, ["aba_percent_value"])),
         (gc.PPN_TASK_ADJUST_BOUNDARY_RATE_VALUE, (None, Decimal, ["aba_rate_value"])),
+        (gc.PPN_TASK_ADJUST_BOUNDARY_SILENCE_MIN, (None, TimePoint, ["aba_silence_min"])),
+        (gc.PPN_TASK_ADJUST_BOUNDARY_SILENCE_STRING, (None, None, ["aba_silence_string"])),
         (gc.PPN_TASK_IS_AUDIO_FILE_DETECT_HEAD_MAX, (None, TimePoint, ["i_a_head_max"])),
         (gc.PPN_TASK_IS_AUDIO_FILE_DETECT_HEAD_MIN, (None, TimePoint, ["i_a_head_min"])),
         (gc.PPN_TASK_IS_AUDIO_FILE_DETECT_TAIL_MAX, (None, TimePoint, ["i_a_tail_max"])),

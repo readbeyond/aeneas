@@ -158,7 +158,7 @@ class TestJob(unittest.TestCase):
         jobconf["o_hierarchy_type"] = HierarchyType.FLAT
         jobconf["o_name"] = u"test_output.zip"
         expected = u"is_audio_file_name_regex=*.mp3|is_audio_file_relative_path=.|is_hierarchy_prefix=OEBPS/|is_hierarchy_type=flat|is_task_dir_name_regex=[0-9]*|is_text_file_name_regex=*.txt|is_text_file_relative_path=.|job_description=Test description|job_language=ita|os_job_file_container=zip|os_job_file_hierarchy_prefix=OEBPS/mo/|os_job_file_hierarchy_type=flat|os_job_file_name=test_output.zip"
-        self.assertEqual(jobconf.config_string(), expected)
+        self.assertEqual(jobconf.config_string, expected)
 
     def test_config_string_missing_keys(self):
         jobconf = JobConfiguration()
@@ -176,7 +176,7 @@ class TestJob(unittest.TestCase):
         jobconf["o_hierarchy_type"] = HierarchyType.FLAT
         jobconf["o_name"] = u"test_output.zip"
         expected = u"is_audio_file_name_regex=*.mp3|is_audio_file_relative_path=.|is_hierarchy_prefix=OEBPS/|is_hierarchy_type=flat|is_task_dir_name_regex=[0-9]*|is_text_file_name_regex=*.txt|is_text_file_relative_path=.|job_description=Test description|job_language=ita|os_job_file_container=zip|os_job_file_hierarchy_prefix=OEBPS/mo/|os_job_file_hierarchy_type=flat|os_job_file_name=test_output.zip"
-        self.assertEqual(jobconf.config_string(), expected)
+        self.assertEqual(jobconf.config_string, expected)
 
     def test_constructor_from_config_string_unparsed(self):
         config_string = u"job_description=Test description|job_language=ita|is_audio_file_name_regex=*.mp3|is_audio_file_relative_path=.|is_hierarchy_prefix=OEBPS/|is_hierarchy_type=flat|is_task_dir_name_regex=[0-9]*|is_text_type=unparsed|is_text_file_name_regex=*.txt|is_text_file_relative_path=.|is_text_unparsed_class_regex=ra|is_text_unparsed_id_regex=f[0-9]*|is_text_unparsed_id_sort=numeric|os_job_file_name=test_output.zip|os_job_file_container=zip|os_job_file_hierarchy_type=flat|os_job_file_hierarchy_prefix=OEBPS/mo/"

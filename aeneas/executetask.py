@@ -205,12 +205,7 @@ class ExecuteTask(Loggable):
             # convert time_map to tree and create syncmap and add it to task
             self._step_begin(u"create sync map")
             tree = self._level_time_map_to_tree(self.task.text_file, time_map)
-            self.task.sync_map = self._create_syncmap(tree)
-            self._step_end()
-
-            # check for fragments with zero duration
-            self._step_begin(u"check zero duration")
-            self._check_no_zero(self.rconf.mws)
+            self.task.sync_map = SyncMap(tree=tree, rconf=self.rconf, logger=self.logger)
             self._step_end()
 
             # log total
@@ -269,25 +264,17 @@ class ExecuteTask(Loggable):
             tree = Tree()
             sync_roots = [tree]
             text_files = [self.task.text_file]
-            aht = [None, True, False, False]
             aba = [None, True, True, False]
             for i in range(1, len(level_rconfs)):
                 self._step_begin(u"compute alignment level %d" % i)
                 self.rconf = level_rconfs[i]
-                text_files, sync_roots = self._execute_level(i, level_mfccs[i], text_files, sync_roots, aht[i], aba[i])
+                text_files, sync_roots = self._execute_level(i, level_mfccs[i], text_files, sync_roots, aba[i])
                 self._step_end()
 
-            self._step_begin(u"select levels")
-            tree = self._select_levels(tree)
-            self._step_end()
-
+            # convert time_map to tree and create syncmap and add it to task
             self._step_begin(u"create sync map")
             self.rconf = orig_rconf
-            self.task.sync_map = self._create_syncmap(tree)
-            self._step_end()
-
-            self._step_begin(u"check zero duration")
-            self._check_no_zero(level_rconfs[-1].mws)
+            self.task.sync_map = SyncMap(tree=tree, rconf=self.rconf, logger=self.logger)
             self._step_end()
 
             self._step_total()
@@ -295,7 +282,7 @@ class ExecuteTask(Loggable):
         except Exception as exc:
             self._step_failure(exc)
 
-    def _execute_level(self, level, audio_file_mfcc, text_files, sync_roots, add_head_tail, adjust_boundaries):
+    def _execute_level(self, level, audio_file_mfcc, text_files, sync_roots, adjust_boundaries):
         """
         Compute the alignment for all the nodes in the given level.
 
@@ -311,7 +298,6 @@ class ExecuteTask(Loggable):
         :param list sync_roots: a list of :class:`~aeneas.tree.Tree` objects,
                                 each representing a SyncMapFragment tree,
                                 one for each element in ``text_files``
-        :param bool add_head_tail: if ``True``, add head and tail nodes to the sync map tree
         :param bool adjust_boundaries: if ``True``, execute the adjust boundary algorithm
         :rtype: (list, list)
         """
@@ -341,15 +327,12 @@ class ExecuteTask(Loggable):
                     self.log(u"  No begin or end to set")
                 time_map = self._execute_inner(audio_file_mfcc, text_file, adjust_boundaries=adjust_boundaries, log=False)
             self.log([u"  Map:   %s", str(time_map)])
-            self._level_time_map_to_tree(text_file, time_map, sync_root, add_head_tail=add_head_tail)
+            self._level_time_map_to_tree(text_file, time_map, sync_root)
             # store next level roots
             next_level_text_files.extend(text_file.children_not_empty)
             src = sync_root.children
-            if add_head_tail:
-                # if we added head and tail,
-                # we must not pass them to the next level
-                src = src[1:-1]
-            next_level_sync_roots.extend(src)
+            # we added head and tail, we must not pass them to the next level
+            next_level_sync_roots.extend(src[1:-1])
         self._clear_cache_synthesizer()
         return (next_level_text_files, next_level_sync_roots)
 
@@ -562,7 +545,7 @@ class ExecuteTask(Loggable):
             logger=self.logger
         ).to_time_map()
 
-    def _level_time_map_to_tree(self, text_file, time_map, tree=None, add_head_tail=True):
+    def _level_time_map_to_tree(self, text_file, time_map, tree=None):
         """
         Convert a level time map into a Tree of SyncMapFragments.
 
@@ -581,132 +564,17 @@ class ExecuteTask(Loggable):
         """
         if tree is None:
             tree = Tree()
-        if add_head_tail:
-            fragments = (
-                [TextFragment(u"HEAD", self.task.configuration["language"], [u""])] +
-                text_file.fragments +
-                [TextFragment(u"TAIL", self.task.configuration["language"], [u""])]
+        fragments = (
+            [(time_map[0], TextFragment(u"HEAD", self.task.configuration["language"], [u""]), SyncMapFragment.FRAGMENT_TYPE_HEAD)] +
+            [(time_map[i], f, SyncMapFragment.FRAGMENT_TYPE_REGULAR) for i, f in enumerate(text_file.fragments, 1)] +
+            [(time_map[-1], TextFragment(u"TAIL", self.task.configuration["language"], [u""]), SyncMapFragment.FRAGMENT_TYPE_TAIL)]
+        )
+        for interval, fragment, fragment_type in fragments:
+            sm_frag = SyncMapFragment(
+                text_fragment=fragment,
+                begin=interval[0],
+                end=interval[1],
+                fragment_type=fragment_type
             )
-            i = 0
-        else:
-            fragments = text_file.fragments
-            i = 1
-        for fragment in fragments:
-            interval = time_map[i]
-            sm_frag = SyncMapFragment(fragment, interval[0], interval[1])
             tree.add_child(Tree(value=sm_frag))
-            i += 1
         return tree
-
-    def _select_levels(self, tree):
-        """
-        Select the correct levels in the tree,
-        reading the ``os_task_file_levels``
-        parameter in the Task configuration.
-
-        If ``None`` or invalid, return the current sync map tree
-        unchanged.
-        Otherwise, return only the levels appearing in it.
-
-        :param tree: a Tree of SyncMapFragments
-        :type  tree: :class:`~aeneas.tree.Tree`
-        :rtype: :class:`~aeneas.tree.Tree`
-        """
-        levels = self.task.configuration["o_levels"]
-        self.log([u"Levels: '%s'", levels])
-        if (levels is None) or (len(levels) < 1):
-            return tree
-        try:
-            levels = [int(l) for l in levels if int(l) > 0]
-            self.log([u"Converted levels: %s", levels])
-        except ValueError:
-            self.log_warn(u"Cannot convert levels to list of int, returning unchanged")
-            return tree
-        # remove head and tail nodes
-        head = tree.vchildren[0]
-        tail = tree.vchildren[-1]
-        tree.remove_child(0)
-        tree.remove_child(-1)
-        # keep only the selected levels
-        tree.keep_levels(levels)
-        # add head and tail back
-        tree.add_child(Tree(value=head), as_last=False)
-        tree.add_child(Tree(value=tail), as_last=True)
-        # return the new tree
-        return tree
-
-    def _create_syncmap(self, tree):
-        """
-        Return a sync map corresponding to the provided text file and time map.
-
-        :param tree: a Tree of SyncMapFragments
-        :type  tree: :class:`~aeneas.tree.Tree`
-        :rtype: :class:`~aeneas.syncmap.SyncMap`
-        """
-        self.log([u"Fragments in time map (including HEAD/TAIL): %d", len(tree)])
-        head_tail_format = self.task.configuration["o_h_t_format"]
-        self.log([u"Head/tail format: %s", str(head_tail_format)])
-
-        children = tree.vchildren
-        head = children[0]
-        first = children[1]
-        last = children[-2]
-        tail = children[-1]
-
-        # remove HEAD fragment if needed
-        if head_tail_format != SyncMapHeadTailFormat.ADD:
-            tree.remove_child(0)
-            self.log(u"Removed HEAD")
-
-        # stretch first and last fragment timings if needed
-        if head_tail_format == SyncMapHeadTailFormat.STRETCH:
-            self.log([u"Stretched first.begin: %.3f => %.3f (head)", first.begin, head.begin])
-            self.log([u"Stretched last.end:    %.3f => %.3f (tail)", last.end, tail.end])
-            first.begin = head.begin
-            last.end = tail.end
-
-        # remove TAIL fragment if needed
-        if head_tail_format != SyncMapHeadTailFormat.ADD:
-            tree.remove_child(-1)
-            self.log(u"Removed TAIL")
-
-        # return sync map
-        sync_map = SyncMap()
-        sync_map.fragments_tree = tree
-        return sync_map
-
-    # TODO can this be done during the alignment?
-    def _check_no_zero(self, min_mws):
-        """ Check for fragments with zero duration """
-        if self.task.configuration["o_no_zero"]:
-            self.log(u"Checking for fragments with zero duration...")
-            delta = TimePoint("0.001")
-            leaves = self.task.sync_map.fragments_tree.vleaves_not_empty
-            # first and last leaves are HEAD and TAIL, skipping them
-            max_index = len(leaves) - 1
-            self.log([u"Fragment min index: %d", 1])
-            self.log([u"Fragment max index: %d", max_index - 1])
-            for i in range(1, max_index):
-                self.log([u"Checking index:     %d", i])
-                j = i
-                while (j < max_index) and (leaves[j].end == leaves[i].begin):
-                    j += 1
-                if j != i:
-                    self.log(u"Fragment(s) with zero duration:")
-                    for k in range(i, j):
-                        self.log([u"  %d : %s", k, leaves[k]])
-
-                    if leaves[j].end - leaves[j].begin > (j - i) * delta:
-                        # there is room after
-                        # to move each zero fragment forward by 0.001
-                        for k in range(j - i):
-                            shift = (k + 1) * delta
-                            leaves[i + k].end += shift
-                            leaves[i + k + 1].begin += shift
-                            self.log([u"  Moved fragment %d forward by %.3f", i + k, shift])
-                    else:
-                        self.log_warn(u"  Unable to fix")
-                    i = j - 1
-            self.log(u"Checking for fragments with zero duration... done")
-        else:
-            self.log(u"Not checking for fragments with zero duration")

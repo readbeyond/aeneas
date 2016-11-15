@@ -33,6 +33,7 @@ This module contains the following classes:
 
 from __future__ import absolute_import
 from __future__ import print_function
+from copy import deepcopy
 
 import aeneas.globalconstants as gc
 import aeneas.globalfunctions as gf
@@ -146,6 +147,17 @@ class Configuration(object):
                 return self.types[key](value)
         return value
 
+    def clone(self):
+        """
+        Return a deep copy of this configuration object.
+
+        .. versionadded:: 1.7.0
+
+        :rtype: :class:`~aeneas.configuration.Configuration`
+        """
+        return deepcopy(self)
+
+    @property
     def config_string(self):
         """
         Build the storable string corresponding

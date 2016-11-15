@@ -44,11 +44,11 @@ class TestTask(unittest.TestCase):
     def dummy_sync_map(self):
         sync_map = SyncMap()
         frag = TextFragment(u"f001", Language.ENG, [u"Fragment 1"])
-        sync_map.add_fragment(SyncMapFragment(frag, 0, 12.345))
+        sync_map.add_fragment(SyncMapFragment(text_fragment=frag, begin=TimePoint("0.000"), end=TimePoint("12.345")))
         frag = TextFragment(u"f002", Language.ENG, [u"Fragment 2"])
-        sync_map.add_fragment(SyncMapFragment(frag, 12.345, 23.456))
+        sync_map.add_fragment(SyncMapFragment(text_fragment=frag, begin=TimePoint("12.345"), end=TimePoint("23.456")))
         frag = TextFragment(u"f003", Language.ENG, [u"Fragment 3"])
-        sync_map.add_fragment(SyncMapFragment(frag, 23.456, 34.567))
+        sync_map.add_fragment(SyncMapFragment(text_fragment=frag, begin=TimePoint("23.456"), end=TimePoint("34.567")))
         return sync_map
 
     def setter(self, attribute, value, expected):
@@ -252,6 +252,12 @@ class TestTask(unittest.TestCase):
     def test_tc_adjust_boundary_rate_value(self):
         self.setter("aba_rate_value", u"22.5", 22.5)
 
+    def test_tc_adjust_boundary_silence_min(self):
+        self.setter("aba_silence_min", 1.000, 1.000)
+
+    def test_tc_adjust_boundary_silence_string(self):
+        self.setter("aba_silence_string", "REMOVE", "REMOVE")
+
     def test_tc_is_audio_file_detect_head_max(self):
         self.setter("i_a_head_max", u"10.000", 10.0)
 
@@ -300,6 +306,9 @@ class TestTask(unittest.TestCase):
     def test_tc_os_file_name(self):
         self.setter("o_name", u"output.smil", u"output.smil")
 
+    def test_tc_os_file_no_zero(self):
+        self.setter("o_no_zero", True, True)
+
     def test_tc_os_file_smil_audio_ref(self):
         self.setter("o_smil_audio_ref", u"../audio/audio001.mp3", u"../audio/audio001.mp3")
 
@@ -318,7 +327,7 @@ class TestTask(unittest.TestCase):
         taskconf["o_smil_audio_ref"] = u"../audio/audio001.mp3"
         taskconf["o_smil_page_ref"] = u"../text/page001.xhtml"
         expected = u"is_audio_file_head_length=20|is_audio_file_process_length=100|os_task_file_format=smil|os_task_file_name=output.smil|os_task_file_smil_audio_ref=../audio/audio001.mp3|os_task_file_smil_page_ref=../text/page001.xhtml|task_custom_id=customid|task_description=Test description|task_language=ita"
-        self.assertEqual(taskconf.config_string(), expected)
+        self.assertEqual(taskconf.config_string, expected)
 
     def test_tc_from_string_with_optional(self):
         config_string = u"task_description=Test description|task_language=ita|task_custom_id=customid|is_audio_file_head_length=20|is_audio_file_process_length=100|os_task_file_format=smil|os_task_file_name=output.smil|os_task_file_smil_audio_ref=../audio/audio001.mp3|os_task_file_smil_page_ref=../text/page001.xhtml"

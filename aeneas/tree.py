@@ -29,6 +29,7 @@ A generic rooted, ordered, levelled tree.
 
 from __future__ import absolute_import
 from __future__ import print_function
+from copy import deepcopy
 
 from aeneas.logger import Loggable
 import aeneas.globalfunctions as gf
@@ -79,6 +80,17 @@ class Tree(Loggable):
 
     def __len__(self):
         return len(self.children)
+
+    def clone(self):
+        """
+        Return a deep copy of this node
+        and of any children it might have.
+
+        .. versionadded:: 1.7.0
+
+        :rtype: :class:`~aeneas.tree.Tree`
+        """
+        return deepcopy(self)
 
     @property
     def value(self):

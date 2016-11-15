@@ -36,6 +36,7 @@ This package contains the following classes:
 
 from __future__ import absolute_import
 from __future__ import print_function
+from copy import deepcopy
 from functools import partial
 from itertools import chain
 import io
@@ -91,9 +92,13 @@ class SyncMap(Loggable):
 
     TAG = u"SyncMap"
 
-    def __init__(self, rconf=None, logger=None):
+    def __init__(self, tree=None, rconf=None, logger=None):
+        if (tree is not None) and (not isinstance(tree, Tree)):
+            self.log_exc(u"tree is not an instance of Tree", None, True, TypeError)
         super(SyncMap, self).__init__(rconf=rconf, logger=logger)
-        self.fragments_tree = Tree()
+        if tree is None:
+            tree = Tree()
+        self.fragments_tree = tree
 
     def __len__(self):
         return len(self.fragments)
@@ -191,6 +196,16 @@ class SyncMap(Loggable):
         """
         self.log(u"Clearing sync map")
         self.fragments_tree = Tree()
+
+    def clone(self):
+        """
+        Return a deep copy of this sync map.
+
+        .. versionadded:: 1.7.0
+
+        :rtype: :class:`~aeneas.syncmap.SyncMap`
+        """
+        return deepcopy(self)
 
     def output_html_for_tuning(
             self,
@@ -315,6 +330,55 @@ class SyncMap(Loggable):
         :raises: TypeError: if a required parameter is missing
         :raises: OSError: if ``output_file_path`` cannot be written
         """
+        def select_levels(syncmap, levels):
+            """
+            Select the given levels of the fragments tree,
+            modifying the given syncmap (always pass a copy of it!).
+            """
+            self.log([u"Levels: '%s'", levels])
+            if levels is None:
+                return
+            try:
+                levels = [int(l) for l in levels if int(l) > 0]
+                syncmap.fragments_tree.keep_levels(levels)
+                self.log([u"Selected levels: %s", levels])
+            except ValueError:
+                self.log_warn(u"Cannot convert levels to list of int, returning unchanged")
+
+        def set_head_tail_format(syncmap, head_tail_format=None):
+            """
+            Set the appropriate head/tail nodes of the fragments tree,
+            modifying the given syncmap (always pass a copy of it!).
+            """
+            self.log([u"Head/tail format: '%s'", str(head_tail_format)])
+            tree = syncmap.fragments_tree
+            head = tree.get_child(0)
+            first = tree.get_child(1)
+            last = tree.get_child(-2)
+            tail = tree.get_child(-1)
+            # mark HEAD as REGULAR if needed
+            if head_tail_format == SyncMapHeadTailFormat.ADD:
+                head.value.fragment_type = SyncMapFragment.FRAGMENT_TYPE_REGULAR
+                self.log(u"Marked HEAD as REGULAR")
+            # stretch first and last fragment timings if needed
+            if head_tail_format == SyncMapHeadTailFormat.STRETCH:
+                self.log([u"Stretched first.begin: %.3f => %.3f (head)", first.value.begin, head.value.begin])
+                self.log([u"Stretched last.end:    %.3f => %.3f (tail)", last.value.end, tail.value.end])
+                first.value.begin = head.value.begin
+                last.value.end = tail.value.end
+            # mark TAIL as REGULAR if needed
+            if head_tail_format == SyncMapHeadTailFormat.ADD:
+                tail.value.fragment_type = SyncMapFragment.FRAGMENT_TYPE_REGULAR
+                self.log(u"Marked TAIL as REGULAR")
+            # remove HEAD and TAIL fragments
+            for node in tree.dfs:
+                if node.value is not None:
+                    # TODO from here: remove all but REGULAR fragments
+                    if node.value.fragment_type == SyncMapFragment.FRAGMENT_TYPE_HEAD:
+                        node.parent.remove_child(0)
+                    elif node.value.fragment_type == SyncMapFragment.FRAGMENT_TYPE_TAIL:
+                        node.parent.remove_child(-1)
+
         if sync_map_format is None:
             self.log_exc(u"Sync map format is None", None, True, ValueError)
         if sync_map_format not in SyncMapFormat.CODE_TO_CLASS:
@@ -325,6 +389,17 @@ class SyncMap(Loggable):
         self.log([u"Output format:     '%s'", sync_map_format])
         self.log([u"Output path:       '%s'", output_file_path])
         self.log([u"Output parameters: '%s'", parameters])
+
+        # select levels and head/tail format
+        pruned_syncmap = self.clone()
+        try:
+            select_levels(pruned_syncmap, parameters[gc.PPN_TASK_OS_FILE_LEVELS])
+        except:
+            self.log_warn([u"No %s parameter specified", gc.PPN_TASK_OS_FILE_LEVELS])
+        try:
+            set_head_tail_format(pruned_syncmap, parameters[gc.PPN_TASK_OS_FILE_HEAD_TAIL_FORMAT])
+        except:
+            self.log_warn([u"No %s parameter specified", gc.PPN_TASK_OS_FILE_HEAD_TAIL_FORMAT])
 
         # create writer
         # the constructor will check for required parameters, if any
@@ -342,5 +417,5 @@ class SyncMap(Loggable):
         # open file for writing
         self.log(u"Writing output file...")
         with io.open(output_file_path, "w", encoding="utf-8") as output_file:
-            output_file.write(writer.format(syncmap=self))
+            output_file.write(writer.format(syncmap=pruned_syncmap))
         self.log(u"Writing output file... done")

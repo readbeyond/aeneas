@@ -485,6 +485,48 @@ Example::
 .. versionadded:: 1.0.4
 """
 
+PPN_TASK_ADJUST_BOUNDARY_SILENCE_MIN = "task_adjust_boundary_silence_min"
+"""
+If greater than zero, create a new sync map fragment
+for each nonspeech interval
+with duration greater than or equal to this value.
+
+The text to be associated with these silence intervals
+can be specified with ``task_adjust_boundary_silence_string``.
+
+Usage: config string, TXT config file, XML config file
+
+Values: float
+
+Example::
+
+    task_adjust_boundary_silence_min=0.500
+
+.. versionadded:: 1.7.0
+"""
+
+PPN_TASK_ADJUST_BOUNDARY_SILENCE_STRING = "task_adjust_boundary_silence_string"
+"""
+Specify the text to be associated with silence intervals
+of length greater than or equal to
+the value provided in ``task_adjust_boundary_silence_min``.
+
+Use the string ``PPV_TASK_ADJUST_BOUNDARY_SILENCE_REMOVE``
+to remove these intervals from the output sync map.
+
+Usage: config string, TXT config file, XML config file
+
+Values: string
+
+Example::
+
+    task_adjust_boundary_silence_string=REMOVE
+    task_adjust_boundary_silence_string=(sil)
+    task_adjust_boundary_silence_string=<sil>
+
+.. versionadded:: 1.7.0
+"""
+
 PPN_TASK_IS_AUDIO_FILE_DETECT_HEAD_MAX = "is_audio_file_detect_head_max"
 """
 When synchronizing, auto detect the head of the audio file,
@@ -1006,4 +1048,13 @@ Example::
 
     os_task_file_name=$PREFIX.smil
 
+"""
+
+PPV_TASK_ADJUST_BOUNDARY_SILENCE_REMOVE = "REMOVE"
+"""
+Use this string as the value of
+the ``PPN_TASK_ADJUST_BOUNDARY_SILENCE_STRING`` parameter
+to remove long nonspeech intervals from the output sync map.
+
+.. versionadded:: 1.7.0
 """

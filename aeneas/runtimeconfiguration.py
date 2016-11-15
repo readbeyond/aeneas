@@ -788,19 +788,6 @@ class RuntimeConfiguration(Configuration):
     def __init__(self, config_string=None):
         super(RuntimeConfiguration, self).__init__(config_string)
 
-    def clone(self):
-        """
-        Return a new configuration object
-        that contains a copy of this configuration object.
-
-        :rtype: :class:`~aeneas.runtimeconfiguration.RuntimeConfiguration`
-        """
-        new_rconf = RuntimeConfiguration()
-        new_rconf.data = dict(self.data)
-        new_rconf.types = dict(self.types)
-        new_rconf.aliases = dict(self.aliases)
-        return new_rconf
-
     @property
     def safety_checks(self):
         """

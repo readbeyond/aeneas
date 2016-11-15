@@ -560,3 +560,43 @@ class AdjustBoundaryAlgorithm(Loggable):
             i += 1
         self.log(u"  Second iteration... done")
         self._times_to_intervals(times)
+
+
+
+    ######### TODO
+
+    # TODO can this be done during the alignment?
+    def _check_no_zero(self, min_mws):
+        """ Check for fragments with zero duration """
+        if self.task.configuration["o_no_zero"]:
+            self.log(u"Checking for fragments with zero duration...")
+            delta = TimePoint("0.001")
+            leaves = self.task.sync_map.fragments_tree.vleaves_not_empty
+            # first and last leaves are HEAD and TAIL, skipping them
+            max_index = len(leaves) - 1
+            self.log([u"Fragment min index: %d", 1])
+            self.log([u"Fragment max index: %d", max_index - 1])
+            for i in range(1, max_index):
+                self.log([u"Checking index:     %d", i])
+                j = i
+                while (j < max_index) and (leaves[j].end == leaves[i].begin):
+                    j += 1
+                if j != i:
+                    self.log(u"Fragment(s) with zero duration:")
+                    for k in range(i, j):
+                        self.log([u"  %d : %s", k, leaves[k]])
+
+                    if leaves[j].end - leaves[j].begin > (j - i) * delta:
+                        # there is room after
+                        # to move each zero fragment forward by 0.001
+                        for k in range(j - i):
+                            shift = (k + 1) * delta
+                            leaves[i + k].end += shift
+                            leaves[i + k + 1].begin += shift
+                            self.log([u"  Moved fragment %d forward by %.3f", i + k, shift])
+                    else:
+                        self.log_warn(u"  Unable to fix")
+                    i = j - 1
+            self.log(u"Checking for fragments with zero duration... done")
+        else:
+            self.log(u"Not checking for fragments with zero duration")
