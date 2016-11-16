@@ -23,7 +23,7 @@
 
 import unittest
 
-from aeneas.exacttiming import TimePoint
+from aeneas.exacttiming import TimeValue
 from aeneas.language import Language
 from aeneas.logger import Logger
 from aeneas.runtimeconfiguration import RuntimeConfiguration
@@ -85,13 +85,13 @@ class TestSynthesizer(unittest.TestCase):
         self.perform("res/inputtext/sonnet_plain_utf8.txt", 15)
 
     def test_synthesize_quit_after(self):
-        self.perform("res/inputtext/sonnet_plain.txt", 6, TimePoint("12.000"), quit_after=TimePoint("10.000"))
+        self.perform("res/inputtext/sonnet_plain.txt", 6, TimeValue("12.000"), quit_after=TimeValue("10.000"))
 
     def test_synthesize_backwards(self):
         self.perform("res/inputtext/sonnet_plain.txt", 15, backwards=True)
 
     def test_synthesize_quit_after_backwards(self):
-        self.perform("res/inputtext/sonnet_plain.txt", 4, TimePoint("10.000"), quit_after=TimePoint("10.000"), backwards=True)
+        self.perform("res/inputtext/sonnet_plain.txt", 4, TimeValue("10.000"), quit_after=TimeValue("10.000"), backwards=True)
 
 
 if __name__ == "__main__":

@@ -23,7 +23,7 @@
 
 import unittest
 
-from aeneas.exacttiming import TimePoint
+from aeneas.exacttiming import TimeValue
 from aeneas.runtimeconfiguration import RuntimeConfiguration
 
 
@@ -43,11 +43,11 @@ class TestRuntimeConfiguration(unittest.TestCase):
 
     def test_mws(self):
         rconf = RuntimeConfiguration()
-        self.assertEqual(rconf.mws, TimePoint("0.040"))
+        self.assertEqual(rconf.mws, TimeValue("0.040"))
 
     def test_mwl(self):
         rconf = RuntimeConfiguration()
-        self.assertEqual(rconf.mwl, TimePoint("0.100"))
+        self.assertEqual(rconf.mwl, TimeValue("0.100"))
 
     def test_tts(self):
         rconf = RuntimeConfiguration()
@@ -60,14 +60,14 @@ class TestRuntimeConfiguration(unittest.TestCase):
     def test_set_granularity(self):
         rconf = RuntimeConfiguration()
         rconf.set_granularity(level=1)
-        self.assertEqual(rconf.mwl, TimePoint("0.500"))
-        self.assertEqual(rconf.mws, TimePoint("0.200"))
+        self.assertEqual(rconf.mwl, TimeValue("0.500"))
+        self.assertEqual(rconf.mws, TimeValue("0.200"))
         rconf.set_granularity(level=2)
-        self.assertEqual(rconf.mwl, TimePoint("0.100"))
-        self.assertEqual(rconf.mws, TimePoint("0.040"))
+        self.assertEqual(rconf.mwl, TimeValue("0.100"))
+        self.assertEqual(rconf.mws, TimeValue("0.040"))
         rconf.set_granularity(level=3)
-        self.assertEqual(rconf.mwl, TimePoint("0.020"))
-        self.assertEqual(rconf.mws, TimePoint("0.005"))
+        self.assertEqual(rconf.mwl, TimeValue("0.020"))
+        self.assertEqual(rconf.mws, TimeValue("0.005"))
 
     def test_set_tts(self):
         rconf = RuntimeConfiguration()
@@ -97,7 +97,7 @@ class TestRuntimeConfiguration(unittest.TestCase):
             (u"cew_subprocess_enabled=True", "cew_subprocess_enabled", True),
             (u"cew_subprocess_path=/foo/bar/python", "cew_subprocess_path", "/foo/bar/python"),
             (u"dtw_algorithm=exact", "dtw_algorithm", "exact"),
-            (u"dtw_margin=100", "dtw_margin", TimePoint("100")),
+            (u"dtw_margin=100", "dtw_margin", TimeValue("100")),
             (u"ffmpeg_path=/foo/bar/ffmpeg", "ffmpeg_path", "/foo/bar/ffmpeg"),
             (u"ffmpeg_sample_rate=8000", "ffmpeg_sample_rate", 8000),
             (u"ffprobe_path=/foo/bar/ffprobe", "ffprobe_path", "/foo/bar/ffprobe"),
@@ -108,20 +108,20 @@ class TestRuntimeConfiguration(unittest.TestCase):
             (u"mfcc_lower_frequency=120.0", "mfcc_lower_frequency", 120.0),
             (u"mfcc_upper_frequency=5000.0", "mfcc_upper_frequency", 5000.0),
             (u"mfcc_emphasis_factor=1.0", "mfcc_emphasis_factor", 1.0),
-            (u"mfcc_window_length=0.360", "mfcc_window_length", TimePoint("0.360")),
-            (u"mfcc_window_shift=0.160", "mfcc_window_shift", TimePoint("0.160")),
-            (u"mfcc_window_length_l1=0.360", "mfcc_window_length_l1", TimePoint("0.360")),
-            (u"mfcc_window_shift_l1=0.160", "mfcc_window_shift_l1", TimePoint("0.160")),
-            (u"mfcc_window_length_l2=0.360", "mfcc_window_length_l2", TimePoint("0.360")),
-            (u"mfcc_window_shift_l2=0.160", "mfcc_window_shift_l2", TimePoint("0.160")),
-            (u"mfcc_window_length_l3=0.360", "mfcc_window_length_l3", TimePoint("0.360")),
-            (u"mfcc_window_shift_l3=0.160", "mfcc_window_shift_l3", TimePoint("0.160")),
+            (u"mfcc_window_length=0.360", "mfcc_window_length", TimeValue("0.360")),
+            (u"mfcc_window_shift=0.160", "mfcc_window_shift", TimeValue("0.160")),
+            (u"mfcc_window_length_l1=0.360", "mfcc_window_length_l1", TimeValue("0.360")),
+            (u"mfcc_window_shift_l1=0.160", "mfcc_window_shift_l1", TimeValue("0.160")),
+            (u"mfcc_window_length_l2=0.360", "mfcc_window_length_l2", TimeValue("0.360")),
+            (u"mfcc_window_shift_l2=0.160", "mfcc_window_shift_l2", TimeValue("0.160")),
+            (u"mfcc_window_length_l3=0.360", "mfcc_window_length_l3", TimeValue("0.360")),
+            (u"mfcc_window_shift_l3=0.160", "mfcc_window_shift_l3", TimeValue("0.160")),
             (u"nuance_tts_api_id=foo", "nuance_tts_api_id", "foo"),
             (u"nuance_tts_api_key=bar", "nuance_tts_api_key", "bar"),
-            (u"nuance_tts_api_sleep=5.000", "nuance_tts_api_sleep", TimePoint("5.000")),
+            (u"nuance_tts_api_sleep=5.000", "nuance_tts_api_sleep", TimeValue("5.000")),
             (u"nuance_tts_api_retry_attempts=3", "nuance_tts_api_retry_attempts", 3),
             (u"safety_checks=False", "safety_checks", False),
-            (u"task_max_audio_length=1000", "task_max_audio_length", TimePoint("1000")),
+            (u"task_max_audio_length=1000", "task_max_audio_length", TimeValue("1000")),
             (u"task_max_text_length=1000", "task_max_text_length", 1000),
             (u"tmp_path=/foo/bar", "tmp_path", "/foo/bar"),
             (u"tts=festival", "tts", "festival"),
@@ -134,10 +134,10 @@ class TestRuntimeConfiguration(unittest.TestCase):
             (u"tts_path_l2=/foo/bar/festival", "tts_path_l2", "/foo/bar/festival"),
             (u"tts_l3=festival", "tts_l3", "festival"),
             (u"tts_path_l3=/foo/bar/festival", "tts_path_l3", "/foo/bar/festival"),
-            (u"vad_extend_speech_after=1.000", "vad_extend_speech_after", TimePoint("1.000")),
-            (u"vad_extend_speech_before=1.000", "vad_extend_speech_before", TimePoint("1.000")),
+            (u"vad_extend_speech_after=1.000", "vad_extend_speech_after", TimeValue("1.000")),
+            (u"vad_extend_speech_before=1.000", "vad_extend_speech_before", TimeValue("1.000")),
             (u"vad_log_energy_threshold=0.750", "vad_log_energy_threshold", 0.750),
-            (u"vad_min_nonspeech_length=0.500", "vad_min_nonspeech_length", TimePoint("0.500")),
+            (u"vad_min_nonspeech_length=0.500", "vad_min_nonspeech_length", TimeValue("0.500")),
         ]
         for string, key, value in params:
             rconf = RuntimeConfiguration(string)

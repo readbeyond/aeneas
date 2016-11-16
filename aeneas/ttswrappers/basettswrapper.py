@@ -37,7 +37,7 @@ import subprocess
 
 from aeneas.audiofile import AudioFile
 from aeneas.audiofile import AudioFileUnsupportedFormatError
-from aeneas.exacttiming import TimePoint
+from aeneas.exacttiming import TimeValue
 from aeneas.logger import Loggable
 from aeneas.runtimeconfiguration import RuntimeConfiguration
 import aeneas.globalfunctions as gf
@@ -369,7 +369,7 @@ class BaseTTSWrapper(Loggable):
         :param string output_file_path: the path to the output audio file
         :param quit_after: stop synthesizing as soon as
                                  reaching this many seconds
-        :type quit_after: :class:`~aeneas.exacttiming.TimePoint`
+        :type quit_after: :class:`~aeneas.exacttiming.TimeValue`
         :param bool backwards: if > 0, synthesize from the end of the text file
         :rtype: tuple (anchors, total_time, num_chars)
         :raises: TypeError: if ``text_file`` is ``None`` or
@@ -520,7 +520,7 @@ class BaseTTSWrapper(Loggable):
             #      if the duration is 0.000 => set them to None
             #
             self.log(u"len(text) is zero: returning 0.000")
-            return (True, (TimePoint("0.000"), None, None, None))
+            return (True, (TimeValue("0.000"), None, None, None))
 
         # create a temporary output file if needed
         synt_tmp_file = (output_file_path is None)
@@ -691,7 +691,7 @@ class BaseTTSWrapper(Loggable):
 
         # create output
         anchors = []
-        current_time = TimePoint("0.000")
+        current_time = TimeValue("0.000")
         num_chars = 0
         fragments = text_file.fragments
         if backwards:

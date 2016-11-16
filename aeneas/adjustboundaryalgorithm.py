@@ -41,7 +41,7 @@ from aeneas.logger import Loggable
 from aeneas.runtimeconfiguration import RuntimeConfiguration
 from aeneas.textfile import TextFile
 from aeneas.exacttiming import Decimal
-from aeneas.exacttiming import TimePoint
+from aeneas.exacttiming import TimeValue
 
 
 class AdjustBoundaryAlgorithm(Loggable):
@@ -292,14 +292,14 @@ class AdjustBoundaryAlgorithm(Loggable):
         AUTO (do not modify)
         """
         self.log(u"Called _adjust_auto")
-        self._apply_offset(TimePoint("0.000"))
+        self._apply_offset(TimeValue("0.000"))
 
     def _adjust_offset(self):
         """
         OFFSET
         """
         self.log(u"Called _adjust_offset")
-        # NOTE self.parameters[0] is TimePoint
+        # NOTE self.parameters[0] is TimeValue
         self._apply_offset(self.parameters[0])
 
     def _adjust_percent(self):
@@ -321,8 +321,8 @@ class AdjustBoundaryAlgorithm(Loggable):
         def new_time(begin, end, current):
             """ Compute new time """
             mws = self.rconf.mws
-            # NOTE self.parameters[0] is TimePoint
-            delay = max(self.parameters[0], TimePoint("0.000"))
+            # NOTE self.parameters[0] is TimeValue
+            delay = max(self.parameters[0], TimeValue("0.000"))
             tentative = begin * mws + delay
             if tentative > (end + 1) * mws:
                 return current * mws
@@ -337,8 +337,8 @@ class AdjustBoundaryAlgorithm(Loggable):
         def new_time(begin, end, current):
             """ Compute new time """
             mws = self.rconf.mws
-            # NOTE self.parameters[0] is TimePoint
-            delay = max(self.parameters[0], TimePoint("0.000"))
+            # NOTE self.parameters[0] is TimeValue
+            delay = max(self.parameters[0], TimeValue("0.000"))
             tentative = (end + 1) * mws - delay
             if tentative < begin * mws:
                 return current * mws
@@ -351,7 +351,7 @@ class AdjustBoundaryAlgorithm(Loggable):
         # if only one fragment, return unchanged
         if len(self.text_file) <= 1:
             self.log(u"Only one fragment, returning")
-            self._apply_offset(TimePoint("0.000"))
+            self._apply_offset(TimeValue("0.000"))
             return
 
         # compute fragments too fast
@@ -371,7 +371,7 @@ class AdjustBoundaryAlgorithm(Loggable):
         # if no fragment is faster, return unchanged
         if len(faster) == 0:
             self.log([u"No fragment faster than max rate %.3f", max_rate])
-            self._apply_offset(TimePoint("0.000"))
+            self._apply_offset(TimeValue("0.000"))
             return
 
         # try fixing faster fragments
@@ -447,13 +447,13 @@ class AdjustBoundaryAlgorithm(Loggable):
         For example: [0,1,2,3,4] => [[0,1], [1,2], [2,3], [3,4]]
 
         :param times: the time values
-        :type  times: list of :class:`~aeneas.exacttiming.TimePoint`
+        :type  times: list of :class:`~aeneas.exacttiming.TimeValue`
         """
         self.log(u"Converting times to intervals...")
         intervals = [[times[i], times[i + 1]] for i in range(len(times) - 1)]
         self.log(u"Converting times to intervals... done")
         self.log(u"Adding head and tail...")
-        self.intervals = [[TimePoint("0.000"), intervals[0][0]]] + intervals + [[intervals[-1][1], self.real_wave_mfcc.audio_length]]
+        self.intervals = [[TimeValue("0.000"), intervals[0][0]]] + intervals + [[intervals[-1][1], self.real_wave_mfcc.audio_length]]
         self.log(u"Adding head and tail... done")
 
     def _apply_offset(self, offset):
@@ -462,14 +462,14 @@ class AdjustBoundaryAlgorithm(Loggable):
         to all times.
 
         :param offset: the offset, in seconds
-        :type  offset: :class:`~aeneas.exacttiming.TimePoint`
+        :type  offset: :class:`~aeneas.exacttiming.TimeValue`
         """
         times = (self.boundary_indices * self.rconf.mws) + offset
-        if numpy.min(times) < TimePoint("0.000"):
+        if numpy.min(times) < TimeValue("0.000"):
             self.log_warn(u"After applying offset some boundary times are negative")
         if numpy.max(times) > self.real_wave_mfcc.audio_length:
             self.log_warn(u"After applying offset some boundary times are beyond audio file duration")
-        times = numpy.clip(times, TimePoint("0.000"), self.real_wave_mfcc.audio_length)
+        times = numpy.clip(times, TimeValue("0.000"), self.real_wave_mfcc.audio_length)
         self._times_to_intervals(times)
 
     def _adjust_on_nonspeech(self, adjust_function):
@@ -524,7 +524,7 @@ class AdjustBoundaryAlgorithm(Loggable):
         # all the other boundary indices are returned unchanged
         #
         self.log(u"  Second iteration...")
-        times = numpy.zeros(len(self.boundary_indices), dtype=TimePoint)
+        times = numpy.zeros(len(self.boundary_indices), dtype=TimeValue)
         i = 0
         j = 0
         while i < len(self.boundary_indices):
@@ -570,7 +570,7 @@ class AdjustBoundaryAlgorithm(Loggable):
         """ Check for fragments with zero duration """
         if self.task.configuration["o_no_zero"]:
             self.log(u"Checking for fragments with zero duration...")
-            delta = TimePoint("0.001")
+            delta = TimeValue("0.001")
             leaves = self.task.sync_map.fragments_tree.vleaves_not_empty
             # first and last leaves are HEAD and TAIL, skipping them
             max_index = len(leaves) - 1

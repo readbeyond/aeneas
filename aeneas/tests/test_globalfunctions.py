@@ -26,7 +26,7 @@ import os
 import sys
 import unittest
 
-from aeneas.exacttiming import TimePoint
+from aeneas.exacttiming import TimeValue
 import aeneas.globalconstants as gc
 import aeneas.globalfunctions as gf
 
@@ -338,15 +338,15 @@ class TestGlobalFunctions(unittest.TestCase):
 
     def test_time_from_ttml(self):
         tests = [
-            (None, TimePoint("0")),
-            ("", TimePoint("0")),
-            ("s", TimePoint("0")),
-            ("0s", TimePoint("0")),
-            ("000s", TimePoint("0")),
-            ("1s", TimePoint("1")),
-            ("001s", TimePoint("1")),
-            ("1s", TimePoint("1")),
-            ("001.234s", TimePoint("1.234")),
+            (None, TimeValue("0")),
+            ("", TimeValue("0")),
+            ("s", TimeValue("0")),
+            ("0s", TimeValue("0")),
+            ("000s", TimeValue("0")),
+            ("1s", TimeValue("1")),
+            ("001s", TimeValue("1")),
+            ("1s", TimeValue("1")),
+            ("001.234s", TimeValue("1.234")),
         ]
         for test in tests:
             self.assertEqual(gf.time_from_ttml(test[0]), test[1])
@@ -363,14 +363,14 @@ class TestGlobalFunctions(unittest.TestCase):
 
     def test_time_from_ssmmm(self):
         tests = [
-            (None, TimePoint("0")),
-            ("", TimePoint("0")),
-            ("0", TimePoint("0")),
-            ("000", TimePoint("0")),
-            ("1", TimePoint("1")),
-            ("001", TimePoint("1")),
-            ("1.234", TimePoint("1.234")),
-            ("001.234", TimePoint("1.234")),
+            (None, TimeValue("0")),
+            ("", TimeValue("0")),
+            ("0", TimeValue("0")),
+            ("000", TimeValue("0")),
+            ("1", TimeValue("1")),
+            ("001", TimeValue("1")),
+            ("1.234", TimeValue("1.234")),
+            ("001.234", TimeValue("1.234")),
         ]
         for test in tests:
             self.assertEqual(gf.time_from_ssmmm(test[0]), test[1])
@@ -387,30 +387,30 @@ class TestGlobalFunctions(unittest.TestCase):
 
     def test_time_from_hhmmssmmm(self):
         tests = [
-            (None, TimePoint("0.000")),
-            ("", TimePoint("0.000")),
-            ("23:45.678", TimePoint("0.000")),          # no 2 ":"
-            ("3:45.678", TimePoint("0.000")),           # no 2 ":"
-            ("45.678", TimePoint("0.000")),             # no 2 ":"
-            ("5.678", TimePoint("0.000")),              # no 2 ":"
-            ("5", TimePoint("0.000")),                  # no 2 ":"
-            ("00:00:01", TimePoint("0.000")),           # no "."
-            ("1:23:45.678", TimePoint("5025.678")),     # tolerate this (?)
-            ("1:2:45.678", TimePoint("3765.678")),      # tolerate this (?)
-            ("1:23:4.678", TimePoint("4984.678")),      # tolerate this (?)
-            ("1:23:4.", TimePoint("4984.000")),         # tolerate this (?)
-            ("00:00:00.000", TimePoint("0.000")),
-            ("00:00:12.000", TimePoint("12.000")),
-            ("00:00:12.345", TimePoint("12.345")),
-            ("00:01:00.000", TimePoint("60")),
-            ("00:01:23.000", TimePoint("83.000")),
-            ("00:01:23.456", TimePoint("83.456")),
-            ("01:00:00.000", TimePoint("3600.000")),
-            ("01:00:12.000", TimePoint("3612.000")),
-            ("01:00:12.345", TimePoint("3612.345")),
-            ("01:23:00.000", TimePoint("4980.000")),
-            ("01:23:45.000", TimePoint("5025.000")),
-            ("01:23:45.678", TimePoint("5025.678")),
+            (None, TimeValue("0.000")),
+            ("", TimeValue("0.000")),
+            ("23:45.678", TimeValue("0.000")),          # no 2 ":"
+            ("3:45.678", TimeValue("0.000")),           # no 2 ":"
+            ("45.678", TimeValue("0.000")),             # no 2 ":"
+            ("5.678", TimeValue("0.000")),              # no 2 ":"
+            ("5", TimeValue("0.000")),                  # no 2 ":"
+            ("00:00:01", TimeValue("0.000")),           # no "."
+            ("1:23:45.678", TimeValue("5025.678")),     # tolerate this (?)
+            ("1:2:45.678", TimeValue("3765.678")),      # tolerate this (?)
+            ("1:23:4.678", TimeValue("4984.678")),      # tolerate this (?)
+            ("1:23:4.", TimeValue("4984.000")),         # tolerate this (?)
+            ("00:00:00.000", TimeValue("0.000")),
+            ("00:00:12.000", TimeValue("12.000")),
+            ("00:00:12.345", TimeValue("12.345")),
+            ("00:01:00.000", TimeValue("60")),
+            ("00:01:23.000", TimeValue("83.000")),
+            ("00:01:23.456", TimeValue("83.456")),
+            ("01:00:00.000", TimeValue("3600.000")),
+            ("01:00:12.000", TimeValue("3612.000")),
+            ("01:00:12.345", TimeValue("3612.345")),
+            ("01:23:00.000", TimeValue("4980.000")),
+            ("01:23:45.000", TimeValue("5025.000")),
+            ("01:23:45.678", TimeValue("5025.678")),
         ]
         for test in tests:
             self.assertEqual(gf.time_from_hhmmssmmm(test[0]), test[1])

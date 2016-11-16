@@ -38,7 +38,7 @@ from aeneas.audiofile import AudioFile
 from aeneas.logger import Loggable
 from aeneas.mfcc import MFCC
 from aeneas.runtimeconfiguration import RuntimeConfiguration
-from aeneas.exacttiming import TimePoint
+from aeneas.exacttiming import TimeValue
 from aeneas.vad import VAD
 import aeneas.globalfunctions as gf
 
@@ -267,7 +267,7 @@ class AudioFileMFCC(Loggable):
         computed as ``number of samples / sample_rate``,
         hence it might differ than ``len(self.__mfcc) * mfcc_window_shift``.
 
-        :rtype: :class:`~aeneas.exacttiming.TimePoint`
+        :rtype: :class:`~aeneas.exacttiming.TimeValue`
         """
         return self.__audio_length
 
@@ -382,7 +382,7 @@ class AudioFileMFCC(Loggable):
 
         :param bool speech: if ``True``, return speech intervals,
                             otherwise return nonspeech intervals
-        :param bool time: if ``True``, return values in seconds (:class:`~aeneas.exacttiming.TimePoint`),
+        :param bool time: if ``True``, return values in seconds (:class:`~aeneas.exacttiming.TimeValue`),
                           otherwise in indices (int)
         :rtype: list of pairs (see above)
         """
@@ -459,9 +459,9 @@ class AudioFileMFCC(Loggable):
         """
         Return the time instant, in seconds, where MIDDLE starts.
 
-        :rtype: :class:`~aeneas.exacttiming.TimePoint`
+        :rtype: :class:`~aeneas.exacttiming.TimeValue`
         """
-        return TimePoint(self.__middle_begin) * self.rconf.mws
+        return TimeValue(self.__middle_begin) * self.rconf.mws
 
     @property
     def middle_end(self):
@@ -488,9 +488,9 @@ class AudioFileMFCC(Loggable):
         """
         Return the time instant, in seconds, where MIDDLE ends.
 
-        :rtype: :class:`~aeneas.exacttiming.TimePoint`
+        :rtype: :class:`~aeneas.exacttiming.TimeValue`
         """
-        return TimePoint(self.__middle_end) * self.rconf.mws
+        return TimeValue(self.__middle_end) * self.rconf.mws
 
     def _ensure_mfcc_mask(self):
         """
@@ -618,13 +618,13 @@ class AudioFileMFCC(Loggable):
         only ``middle_length`` will be applied.
 
         :param head_length: the length of HEAD, in seconds
-        :type  head_length: :class:`~aeneas.exacttiming.TimePoint`
+        :type  head_length: :class:`~aeneas.exacttiming.TimeValue`
         :param middle_length: the length of MIDDLE, in seconds
-        :type  middle_length: :class:`~aeneas.exacttiming.TimePoint`
+        :type  middle_length: :class:`~aeneas.exacttiming.TimeValue`
         :param tail_length: the length of TAIL, in seconds
-        :type  tail_length: :class:`~aeneas.exacttiming.TimePoint`
+        :type  tail_length: :class:`~aeneas.exacttiming.TimeValue`
         :raises: TypeError: if one of the arguments is not ``None``
-                            or :class:`~aeneas.exacttiming.TimePoint`
+                            or :class:`~aeneas.exacttiming.TimeValue`
         :raises: ValueError: if one of the arguments is greater
                              than the length of the audio file
         """
@@ -633,8 +633,8 @@ class AudioFileMFCC(Loggable):
             (middle_length, "middle_length"),
             (tail_length, "tail_length")
         ]:
-            if (variable is not None) and (not isinstance(variable, TimePoint)):
-                raise TypeError(u"%s is not None or TimePoint" % name)
+            if (variable is not None) and (not isinstance(variable, TimeValue)):
+                raise TypeError(u"%s is not None or TimeValue" % name)
             if (variable is not None) and (variable > self.audio_length):
                 raise ValueError(u"%s is greater than the length of the audio file" % name)
         self.log(u"Setting head middle tail...")

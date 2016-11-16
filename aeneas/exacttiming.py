@@ -24,7 +24,7 @@
 """
 This module contains the following classes:
 
-* :class:`~aeneas.exacttiming.TimePoint`,
+* :class:`~aeneas.exacttiming.TimeValue`,
   a numeric type to represent time values with arbitrary precision.
 * :class:`~aeneas.exacttiming.TimeInterval`,
   representing a time interval, that is,
@@ -43,88 +43,88 @@ import sys
 PY2 = (sys.version_info[0] == 2)
 
 
-class TimePoint(Decimal):
+class TimeValue(Decimal):
     """
     A numeric type to represent time values with arbitrary precision.
     """
 
-    TAG = u"TimePoint"
+    TAG = u"TimeValue"
 
     def __repr__(self):
-        return super(TimePoint, self).__repr__().replace("Decimal", "TimePoint")
+        return super(TimeValue, self).__repr__().replace("Decimal", "TimeValue")
 
     # NOTE overriding so that the result
-    #      is still an instance of TimePoint
+    #      is still an instance of TimeValue
 
     def __add__(self, other, context=None):
         if PY2:
-            return TimePoint(Decimal.__add__(self, other, context))
-        return TimePoint(Decimal.__add__(self, other))
+            return TimeValue(Decimal.__add__(self, other, context))
+        return TimeValue(Decimal.__add__(self, other))
 
     def __div__(self, other, context=None):
         if PY2:
-            return TimePoint(Decimal.__div__(self, other, context))
-        return TimePoint(Decimal.__div__(self, other))
+            return TimeValue(Decimal.__div__(self, other, context))
+        return TimeValue(Decimal.__div__(self, other))
 
     def __floordiv__(self, other, context=None):
         if PY2:
-            return TimePoint(Decimal.__floordiv__(self, other, context))
-        return TimePoint(Decimal.__floordiv__(self, other))
+            return TimeValue(Decimal.__floordiv__(self, other, context))
+        return TimeValue(Decimal.__floordiv__(self, other))
 
     def __mod__(self, other, context=None):
         if PY2:
-            return TimePoint(Decimal.__mod__(self, other, context))
-        return TimePoint(Decimal.__mod__(self, other))
+            return TimeValue(Decimal.__mod__(self, other, context))
+        return TimeValue(Decimal.__mod__(self, other))
 
     def __mul__(self, other, context=None):
         if PY2:
-            return TimePoint(Decimal.__mul__(self, other, context))
-        return TimePoint(Decimal.__mul__(self, other))
+            return TimeValue(Decimal.__mul__(self, other, context))
+        return TimeValue(Decimal.__mul__(self, other))
 
     def __radd__(self, other, context=None):
         if PY2:
-            return TimePoint(Decimal.__radd__(self, other, context))
-        return TimePoint(Decimal.__radd__(self, other))
+            return TimeValue(Decimal.__radd__(self, other, context))
+        return TimeValue(Decimal.__radd__(self, other))
 
     def __rdiv__(self, other, context=None):
         if PY2:
-            return TimePoint(Decimal.__rdiv__(self, other, context))
-        return TimePoint(Decimal.__rdiv__(self, other))
+            return TimeValue(Decimal.__rdiv__(self, other, context))
+        return TimeValue(Decimal.__rdiv__(self, other))
 
     def __rfloordiv__(self, other, context=None):
         if PY2:
-            return TimePoint(Decimal.__rfloordiv__(self, other, context))
-        return TimePoint(Decimal.__rfloordiv__(self, other))
+            return TimeValue(Decimal.__rfloordiv__(self, other, context))
+        return TimeValue(Decimal.__rfloordiv__(self, other))
 
     def __rmod__(self, other, context=None):
         if PY2:
-            return TimePoint(Decimal.__rmod__(self, other, context))
-        return TimePoint(Decimal.__rmod__(self, other))
+            return TimeValue(Decimal.__rmod__(self, other, context))
+        return TimeValue(Decimal.__rmod__(self, other))
 
     def __rmul__(self, other, context=None):
         if PY2:
-            return TimePoint(Decimal.__rmul__(self, other, context))
-        return TimePoint(Decimal.__rmul__(self, other))
+            return TimeValue(Decimal.__rmul__(self, other, context))
+        return TimeValue(Decimal.__rmul__(self, other))
 
     def __rsub__(self, other, context=None):
         if PY2:
-            return TimePoint(Decimal.__rsub__(self, other, context))
-        return TimePoint(Decimal.__rsub__(self, other))
+            return TimeValue(Decimal.__rsub__(self, other, context))
+        return TimeValue(Decimal.__rsub__(self, other))
 
     def __rtruediv__(self, other, context=None):
         if PY2:
-            return TimePoint(Decimal.__rtruediv__(self, other, context))
-        return TimePoint(Decimal.__rtruediv__(self, other))
+            return TimeValue(Decimal.__rtruediv__(self, other, context))
+        return TimeValue(Decimal.__rtruediv__(self, other))
 
     def __sub__(self, other, context=None):
         if PY2:
-            return TimePoint(Decimal.__sub__(self, other, context))
-        return TimePoint(Decimal.__sub__(self, other))
+            return TimeValue(Decimal.__sub__(self, other, context))
+        return TimeValue(Decimal.__sub__(self, other))
 
     def __truediv__(self, other, context=None):
         if PY2:
-            return TimePoint(Decimal.__truediv__(self, other, context))
-        return TimePoint(Decimal.__truediv__(self, other))
+            return TimeValue(Decimal.__truediv__(self, other, context))
+        return TimeValue(Decimal.__truediv__(self, other))
 
 
 class TimeInterval(object):
@@ -139,10 +139,10 @@ class TimeInterval(object):
     .. versionadded:: 1.7.0
 
     :param begin: the begin time
-    :type  begin: :class:`aeneas.exacttiming.TimePoint`
+    :type  begin: :class:`aeneas.exacttiming.TimeValue`
     :param end: the end time
-    :type  end: :class:`aeneas.exacttiming.TimePoint`
-    :raises TypeError: if `begin` or `end` are not instances of :class:`aeneas.exacttiming.TimePoint`
+    :type  end: :class:`aeneas.exacttiming.TimeValue`
+    :raises TypeError: if `begin` or `end` are not instances of :class:`aeneas.exacttiming.TimeValue`
     :raises ValueError: if `begin` or `end` are negative or if `begin` is bigger than `end`
     """
 
@@ -287,10 +287,10 @@ class TimeInterval(object):
     TAG = u"TimeInterval"
 
     def __init__(self, begin, end):
-        if not isinstance(begin, TimePoint):
-            raise TypeError(u"begin is not an instance of TimePoint")
-        if not isinstance(end, TimePoint):
-            raise TypeError(u"end is not an instance of TimePoint")
+        if not isinstance(begin, TimeValue):
+            raise TypeError(u"begin is not an instance of TimeValue")
+        if not isinstance(end, TimeValue):
+            raise TypeError(u"end is not an instance of TimeValue")
         if begin < 0:
             raise ValueError(u"begin is negative")
         if end < 0:
@@ -314,7 +314,7 @@ class TimeInterval(object):
         Return the length of this interval,
         that is, the difference between its end and begin values.
 
-        :rtype: :class:`aeneas.exacttiming.TimePoint`
+        :rtype: :class:`aeneas.exacttiming.TimeValue`
         """
         return self.end - self.begin
 
@@ -333,11 +333,11 @@ class TimeInterval(object):
         Returns ``True`` if this interval starts at the given time point.
 
         :param time_point: the time point to test
-        :type  time_point: :class:`aeneas.exacttiming.TimePoint`
+        :type  time_point: :class:`aeneas.exacttiming.TimeValue`
         :rtype: bool
         """
-        if not isinstance(time_point, TimePoint):
-            raise TypeError(u"time_point is not an instance of TimePoint")
+        if not isinstance(time_point, TimeValue):
+            raise TypeError(u"time_point is not an instance of TimeValue")
         return self.begin == time_point
 
     def ends_at(self, time_point):
@@ -345,11 +345,11 @@ class TimeInterval(object):
         Returns ``True`` if this interval ends at the given time point.
 
         :param time_point: the time point to test
-        :type  time_point: :class:`aeneas.exacttiming.TimePoint`
+        :type  time_point: :class:`aeneas.exacttiming.TimeValue`
         :rtype: bool
         """
-        if not isinstance(time_point, TimePoint):
-            raise TypeError(u"time_point is not an instance of TimePoint")
+        if not isinstance(time_point, TimeValue):
+            raise TypeError(u"time_point is not an instance of TimeValue")
         return self.end == time_point
 
     def translate(self, delta, allow_negative=False):
@@ -362,18 +362,18 @@ class TimeInterval(object):
         unless ``allow_negative`` is set to ``True``.
 
         :param delta: the shift to be applied
-        :type  delta: :class:`aeneas.exacttiming.TimePoint`
+        :type  delta: :class:`aeneas.exacttiming.TimeValue`
         :param allow_negative: if ``True``, allow the translated interval to have negative extrema
         :type  allow_negative: bool
         :rtype: :class:`aeneas.exacttiming.TimeInterval`
         """
-        if not isinstance(delta, TimePoint):
-            raise TypeError(u"delta is not an instance of TimePoint")
+        if not isinstance(delta, TimeValue):
+            raise TypeError(u"delta is not an instance of TimeValue")
         self.begin += delta
         self.end += delta
         if not allow_negative:
-            self.begin = max(self.begin, TimePoint("0.000"))
-            self.end = max(self.end, TimePoint("0.000"))
+            self.begin = max(self.begin, TimeValue("0.000"))
+            self.end = max(self.end, TimeValue("0.000"))
         return self
 
     def contains(self, time_point):
@@ -381,11 +381,11 @@ class TimeInterval(object):
         Returns ``True`` if this interval contains the given time point.
 
         :param time_point: the time point to test
-        :type  time_point: :class:`aeneas.exacttiming.TimePoint`
+        :type  time_point: :class:`aeneas.exacttiming.TimeValue`
         :rtype: bool
         """
-        if not isinstance(time_point, TimePoint):
-            raise TypeError(u"time_point is not an instance of TimePoint")
+        if not isinstance(time_point, TimeValue):
+            raise TypeError(u"time_point is not an instance of TimeValue")
         return (self.begin <= time_point) and (time_point <= self.end)
 
     def inner_contains(self, time_point):
@@ -394,11 +394,11 @@ class TimeInterval(object):
         excluding its extrema (begin and end).
 
         :param time_point: the time point to test
-        :type  time_point: :class:`aeneas.exacttiming.TimePoint`
+        :type  time_point: :class:`aeneas.exacttiming.TimeValue`
         :rtype: bool
         """
-        if not isinstance(time_point, TimePoint):
-            raise TypeError(u"time_point is not an instance of TimePoint")
+        if not isinstance(time_point, TimeValue):
+            raise TypeError(u"time_point is not an instance of TimeValue")
         return (self.begin < time_point) and (time_point < self.end)
 
     def relative_position_of(self, other):

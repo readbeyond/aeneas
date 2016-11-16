@@ -335,6 +335,24 @@ class TestTree(unittest.TestCase):
         self.assertEqual(copy_root.get_child(0).value, "n1")
         self.assertEqual(root.get_child(0).value, "c1")
 
+    def test_remove(self):
+        (root, c1, c11, c111, c1111, c1112, c1113) = self.create_tree1()
+        self.assertEqual(len(c111.children), 3)
+        c1113.remove()
+        self.assertEqual(len(c111.children), 2)
+        c1112.remove()
+        self.assertEqual(len(c111.children), 1)
+        c1111.remove()
+        self.assertEqual(len(c111.children), 0)
+
+    def test_remove_dangling(self):
+        (root, c1, c11, c111, c1111, c1112, c1113) = self.create_tree1()
+        self.assertEqual(len(list(root.dfs)), 7)
+        self.assertEqual(len(list(c1.dfs)), 6)
+        c1.remove()
+        self.assertEqual(len(list(root.dfs)), 1)
+        self.assertEqual(len(list(c1.dfs)), 6)
+
 
 if __name__ == "__main__":
     unittest.main()

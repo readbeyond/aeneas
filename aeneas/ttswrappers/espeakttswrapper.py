@@ -31,7 +31,7 @@ This module contains the following classes:
 from __future__ import absolute_import
 from __future__ import print_function
 
-from aeneas.exacttiming import TimePoint
+from aeneas.exacttiming import TimeValue
 from aeneas.language import Language
 from aeneas.runtimeconfiguration import RuntimeConfiguration
 from aeneas.ttswrappers.basettswrapper import BaseTTSWrapper
@@ -663,7 +663,7 @@ class ESPEAKTTSWrapper(BaseTTSWrapper):
 
         Return a tuple (anchors, total_time, num_chars).
 
-        :rtype: (bool, (list, :class:`~aeneas.exacttiming.TimePoint`, int))
+        :rtype: (bool, (list, :class:`~aeneas.exacttiming.TimeValue`, int))
         """
         self.log(u"Synthesizing using C extension...")
 
@@ -743,7 +743,7 @@ class ESPEAKTTSWrapper(BaseTTSWrapper):
 
         # create output
         anchors = []
-        current_time = TimePoint("0.000")
+        current_time = TimeValue("0.000")
         num_chars = 0
         if backwards:
             fragments = fragments[::-1]
@@ -752,14 +752,14 @@ class ESPEAKTTSWrapper(BaseTTSWrapper):
             fragment = fragments[i]
             # store for later output
             anchors.append([
-                TimePoint(intervals[i][0]),
+                TimeValue(intervals[i][0]),
                 fragment.identifier,
                 fragment.filtered_text
             ])
             # increase the character counter
             num_chars += fragment.characters
             # update current_time
-            current_time = TimePoint(intervals[i][1])
+            current_time = TimeValue(intervals[i][1])
 
         # return output
         # NOTE anchors do not make sense if backwards == True

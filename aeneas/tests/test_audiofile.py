@@ -27,7 +27,7 @@ import unittest
 from aeneas.audiofile import AudioFile
 from aeneas.audiofile import AudioFileNotInitializedError
 from aeneas.audiofile import AudioFileUnsupportedFormatError
-from aeneas.exacttiming import TimePoint
+from aeneas.exacttiming import TimeValue
 import aeneas.globalfunctions as gf
 
 
@@ -44,7 +44,7 @@ class TestAudioFile(unittest.TestCase):
             "rate": 44100,
             "channels": 2,
             "format": "aac",
-            "length": TimePoint("7.9"),     # 7.907558 Estimating duration from bitrate, this may be inaccurate
+            "length": TimeValue("7.9"),     # 7.907558 Estimating duration from bitrate, this may be inaccurate
         },
         {
             "path": "res/audioformats/p001.aiff",
@@ -52,7 +52,7 @@ class TestAudioFile(unittest.TestCase):
             "rate": 44100,
             "channels": 2,
             "format": "pcm_s16be",
-            "length": TimePoint("9.0"),     # 8.994989
+            "length": TimeValue("9.0"),     # 8.994989
         },
         {
             "path": "res/audioformats/p001.flac",
@@ -60,7 +60,7 @@ class TestAudioFile(unittest.TestCase):
             "rate": 44100,
             "channels": 2,
             "format": "flac",
-            "length": TimePoint("9.0"),     # 8.994989
+            "length": TimeValue("9.0"),     # 8.994989
         },
         {
             "path": "res/audioformats/p001.mp3",
@@ -68,7 +68,7 @@ class TestAudioFile(unittest.TestCase):
             "rate": 44100,
             "channels": 2,
             "format": "mp3",
-            "length": TimePoint("9.0"),     # 9.038367
+            "length": TimeValue("9.0"),     # 9.038367
         },
         {
             "path": "res/audioformats/p001.mp4",
@@ -76,7 +76,7 @@ class TestAudioFile(unittest.TestCase):
             "rate": 44100,
             "channels": 2,
             "format": "aac",
-            "length": TimePoint("9.0"),     # 9.018209
+            "length": TimeValue("9.0"),     # 9.018209
         },
         {
             "path": "res/audioformats/p001.ogg",
@@ -84,7 +84,7 @@ class TestAudioFile(unittest.TestCase):
             "rate": 44100,
             "channels": 2,
             "format": "vorbis",
-            "length": TimePoint("9.0"),     # 8.994989
+            "length": TimeValue("9.0"),     # 8.994989
         },
         {
             "path": "res/audioformats/p001.wav",
@@ -92,7 +92,7 @@ class TestAudioFile(unittest.TestCase):
             "rate": 44100,
             "channels": 2,
             "format": "pcm_s16le",
-            "length": TimePoint("9.0"),     # 8.994989
+            "length": TimeValue("9.0"),     # 8.994989
         },
         {
             "path": "res/audioformats/p001.webm",
@@ -100,7 +100,7 @@ class TestAudioFile(unittest.TestCase):
             "rate": 44100,
             "channels": 2,
             "format": "vorbis",
-            "length": TimePoint("9.0"),     # 9.0
+            "length": TimeValue("9.0"),     # 9.0
         },
     ]
 
@@ -161,7 +161,7 @@ class TestAudioFile(unittest.TestCase):
     def test_length(self):
         audiofile = self.load(self.AUDIO_FILE_WAVE, rs=True)
         audiofile.clear_data()
-        self.assertAlmostEqual(audiofile.audio_length, TimePoint("53.3"), places=1)     # 53.266
+        self.assertAlmostEqual(audiofile.audio_length, TimeValue("53.3"), places=1)     # 53.266
 
     def test_add_samples_file(self):
         audiofile = self.load(self.AUDIO_FILE_WAVE, rs=True)
@@ -192,15 +192,15 @@ class TestAudioFile(unittest.TestCase):
 
     def test_trim(self):
         intervals = [
-            [None, None, TimePoint("53.3")],
-            [TimePoint("1.0"), None, TimePoint("52.3")],
-            [None, TimePoint("52.3"), TimePoint("52.3")],
-            [TimePoint("1.0"), TimePoint("51.3"), TimePoint("51.3")],
-            [TimePoint("0.0"), None, TimePoint("53.3")],
-            [None, TimePoint("60.0"), TimePoint("53.3")],
-            [TimePoint("-1.0"), None, TimePoint("53.3")],
-            [TimePoint("0.0"), TimePoint("-60.0"), TimePoint("0.0")],
-            [TimePoint("10.0"), TimePoint("50.0"), TimePoint("43.3")]
+            [None, None, TimeValue("53.3")],
+            [TimeValue("1.0"), None, TimeValue("52.3")],
+            [None, TimeValue("52.3"), TimeValue("52.3")],
+            [TimeValue("1.0"), TimeValue("51.3"), TimeValue("51.3")],
+            [TimeValue("0.0"), None, TimeValue("53.3")],
+            [None, TimeValue("60.0"), TimeValue("53.3")],
+            [TimeValue("-1.0"), None, TimeValue("53.3")],
+            [TimeValue("0.0"), TimeValue("-60.0"), TimeValue("0.0")],
+            [TimeValue("10.0"), TimeValue("50.0"), TimeValue("43.3")]
         ]
 
         for interval in intervals:

@@ -370,14 +370,10 @@ class SyncMap(Loggable):
             if head_tail_format == SyncMapHeadTailFormat.ADD:
                 tail.value.fragment_type = SyncMapFragment.FRAGMENT_TYPE_REGULAR
                 self.log(u"Marked TAIL as REGULAR")
-            # remove HEAD and TAIL fragments
-            for node in tree.dfs:
-                if node.value is not None:
-                    # TODO from here: remove all but REGULAR fragments
-                    if node.value.fragment_type == SyncMapFragment.FRAGMENT_TYPE_HEAD:
-                        node.parent.remove_child(0)
-                    elif node.value.fragment_type == SyncMapFragment.FRAGMENT_TYPE_TAIL:
-                        node.parent.remove_child(-1)
+            # remove all fragments that are not REGULAR
+            for node in list(tree.dfs):
+                if (node.value is not None) and (node.value.fragment_type != SyncMapFragment.FRAGMENT_TYPE_REGULAR):
+                    node.remove()
 
         if sync_map_format is None:
             self.log_exc(u"Sync map format is None", None, True, ValueError)

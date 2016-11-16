@@ -253,6 +253,20 @@ class Tree(Loggable):
             index = index + len(self)
         self.__children = self.__children[0:index] + self.__children[(index + 1):]
 
+    def remove(self):
+        """
+        Remove this node from the list of children of its current parent,
+        if the current parent is not ``None``, otherwise do nothing.
+
+        .. versionadded:: 1.7.0
+        """
+        if self.parent is not None:
+            for i, child in enumerate(self.parent.children):
+                if id(child) == id(self):
+                    self.parent.remove_child(i)
+                    self.parent = None
+                    break
+
     def remove_children(self, reset_parent=True):
         """
         Remove all the children of this node.

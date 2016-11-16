@@ -49,7 +49,7 @@ class Configuration(object):
 
     Values are stored as Unicode strings (or ``None``), and casted
     to the type of the field (``int``, ``float``,
-    ``bool``, :class:`~aeneas.exacttiming.TimePoint`, etc.)
+    ``bool``, :class:`~aeneas.exacttiming.TimeValue`, etc.)
     when accessed.
 
     For ``bool`` keys, values listed in
@@ -73,7 +73,7 @@ class Configuration(object):
         # examples:
         # (gc.FOO, (None, None, ["foo"]))
         # (gc.BAR, (0.0, float, ["bar", "barrr"]))
-        # (gc.BAZ, (None, TimePoint, ["baz"]))
+        # (gc.BAZ, (None, TimeValue, ["baz"]))
         #
     ]
     """

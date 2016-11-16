@@ -95,7 +95,7 @@ using the library functions and constants.
         #!/usr/bin/env python
         # coding=utf-8
 
-        from aeneas.exacttiming import TimePoint
+        from aeneas.exacttiming import TimeValue
         from aeneas.executetask import ExecuteTask
         from aeneas.language import Language
         from aeneas.syncmap import SyncMapFormat
@@ -257,8 +257,8 @@ and they do not require explicitly passing an ``rconf`` object.
 
         # create RuntimeConfiguration object, with custom MFCC length and shift
         rconf = RuntimeConfiguration()
-        rconf[RuntimeConfiguration.MFCC_WINDOW_LENGTH] = TimePoint(u"0.150")
-        rconf[RuntimeConfiguration.MFCC_WINDOW_SHIFT] = TimePoint(u"0.050")
+        rconf[RuntimeConfiguration.MFCC_WINDOW_LENGTH] = TimeValue(u"0.150")
+        rconf[RuntimeConfiguration.MFCC_WINDOW_SHIFT] = TimeValue(u"0.050")
 
         # create Task object
         task = ...
@@ -333,11 +333,11 @@ Miscellanea
   and properly dispose of them in your code.
 * Wherever possible, ``NumPy`` views are used to avoid data copying.
   Similarly, built-in ``NumPy`` functions are used to improve run time. 
-* To avoid numerical issues, always use :class:`~aeneas.exacttiming.TimePoint`
+* To avoid numerical issues, always use :class:`~aeneas.exacttiming.TimeValue`
   to hold time values with arbitrary precision.
   Note that doing so incurs in a negligible execution slow down,
   because the heaviest computations are done with integer ``NumPy`` indices and arrays
-  and the transformation to :class:`~aeneas.exacttiming.TimePoint` takes place
+  and the transformation to :class:`~aeneas.exacttiming.TimeValue` takes place
   only when the sync map is output to file.
 
 

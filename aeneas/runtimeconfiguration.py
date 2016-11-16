@@ -34,7 +34,7 @@ from __future__ import absolute_import
 from __future__ import print_function
 
 from aeneas.configuration import Configuration
-from aeneas.exacttiming import TimePoint
+from aeneas.exacttiming import TimeValue
 
 
 class RuntimeConfiguration(Configuration):
@@ -728,7 +728,7 @@ class RuntimeConfiguration(Configuration):
         (CEW_SUBPROCESS_PATH, ("python", None, [])),    # or a full path like "/usr/bin/python"
 
         (DTW_ALGORITHM, ("stripe", None, [])),
-        (DTW_MARGIN, ("60.000", TimePoint, [])),
+        (DTW_MARGIN, ("60.000", TimeValue, [])),
 
         (FFMPEG_PATH, ("ffmpeg", None, [])),            # or a full path like "/usr/bin/ffmpeg"
         (FFMPEG_SAMPLE_RATE, (16000, int, [])),
@@ -743,24 +743,24 @@ class RuntimeConfiguration(Configuration):
         (MFCC_LOWER_FREQUENCY, (133.3333, float, [])),
         (MFCC_UPPER_FREQUENCY, (6855.4976, float, [])),
         (MFCC_EMPHASIS_FACTOR, (0.970, float, [])),
-        (MFCC_WINDOW_LENGTH, ("0.100", TimePoint, [])),
-        (MFCC_WINDOW_SHIFT, ("0.040", TimePoint, [])),
+        (MFCC_WINDOW_LENGTH, ("0.100", TimeValue, [])),
+        (MFCC_WINDOW_SHIFT, ("0.040", TimeValue, [])),
 
-        (MFCC_WINDOW_LENGTH_L1, ("0.500", TimePoint, [])),
-        (MFCC_WINDOW_SHIFT_L1, ("0.200", TimePoint, [])),
-        (MFCC_WINDOW_LENGTH_L2, ("0.100", TimePoint, [])),
-        (MFCC_WINDOW_SHIFT_L2, ("0.040", TimePoint, [])),
-        (MFCC_WINDOW_LENGTH_L3, ("0.020", TimePoint, [])),
-        (MFCC_WINDOW_SHIFT_L3, ("0.005", TimePoint, [])),
+        (MFCC_WINDOW_LENGTH_L1, ("0.500", TimeValue, [])),
+        (MFCC_WINDOW_SHIFT_L1, ("0.200", TimeValue, [])),
+        (MFCC_WINDOW_LENGTH_L2, ("0.100", TimeValue, [])),
+        (MFCC_WINDOW_SHIFT_L2, ("0.040", TimeValue, [])),
+        (MFCC_WINDOW_LENGTH_L3, ("0.020", TimeValue, [])),
+        (MFCC_WINDOW_SHIFT_L3, ("0.005", TimeValue, [])),
 
         (NUANCE_TTS_API_ID, (None, None, [])),
         (NUANCE_TTS_API_KEY, (None, None, [])),
-        (NUANCE_TTS_API_SLEEP, ("1.000", TimePoint, [])),
+        (NUANCE_TTS_API_SLEEP, ("1.000", TimeValue, [])),
         (NUANCE_TTS_API_RETRY_ATTEMPTS, (5, int, [])),
 
         (SAFETY_CHECKS, (True, bool, [])),
 
-        (TASK_MAX_AUDIO_LENGTH, ("7200.0", TimePoint, [])),
+        (TASK_MAX_AUDIO_LENGTH, ("7200.0", TimeValue, [])),
         (TASK_MAX_TEXT_LENGTH, (0, int, [])),
 
         (TMP_PATH, (None, None, [])),
@@ -777,10 +777,10 @@ class RuntimeConfiguration(Configuration):
         (TTS_L3, ("espeak", None, [])),
         (TTS_PATH_L3, (None, None, [])),                # None (= default) or "espeak" or "/usr/bin/espeak"
 
-        (VAD_EXTEND_SPEECH_INTERVAL_AFTER, ("0.000", TimePoint, [])),
-        (VAD_EXTEND_SPEECH_INTERVAL_BEFORE, ("0.000", TimePoint, [])),
+        (VAD_EXTEND_SPEECH_INTERVAL_AFTER, ("0.000", TimeValue, [])),
+        (VAD_EXTEND_SPEECH_INTERVAL_BEFORE, ("0.000", TimeValue, [])),
         (VAD_LOG_ENERGY_THRESHOLD, (0.699, float, [])),
-        (VAD_MIN_NONSPEECH_LENGTH, ("0.200", TimePoint, [])),
+        (VAD_MIN_NONSPEECH_LENGTH, ("0.200", TimeValue, [])),
     ]
 
     TAG = u"RuntimeConfiguration"
@@ -819,7 +819,7 @@ class RuntimeConfiguration(Configuration):
         :data:`~aeneas.runtimeconfiguration.RuntimeConfiguration.MFCC_WINDOW_SHIFT`
         key stored in this configuration object.
 
-        :rtype: :class:`~aeneas.exacttiming.TimePoint`
+        :rtype: :class:`~aeneas.exacttiming.TimeValue`
         """
         return self[self.MFCC_WINDOW_SHIFT]
 
@@ -830,7 +830,7 @@ class RuntimeConfiguration(Configuration):
         :data:`~aeneas.runtimeconfiguration.RuntimeConfiguration.MFCC_WINDOW_LENGTH`
         key stored in this configuration object.
 
-        :rtype: :class:`~aeneas.exacttiming.TimePoint`
+        :rtype: :class:`~aeneas.exacttiming.TimeValue`
         """
         return self[self.MFCC_WINDOW_LENGTH]
 

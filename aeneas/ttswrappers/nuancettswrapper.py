@@ -44,7 +44,7 @@ import time
 import uuid
 
 from aeneas.audiofile import AudioFile
-from aeneas.exacttiming import TimePoint
+from aeneas.exacttiming import TimeValue
 from aeneas.language import Language
 from aeneas.runtimeconfiguration import RuntimeConfiguration
 from aeneas.ttswrappers.basettswrapper import BaseTTSWrapper
@@ -363,7 +363,7 @@ class NuanceTTSWrapper(BaseTTSWrapper):
         # get length and data
         audio_sample_rate = self.SAMPLE_RATE
         number_of_frames = len(response.content) / 2
-        audio_length = TimePoint(number_of_frames / audio_sample_rate)
+        audio_length = TimeValue(number_of_frames / audio_sample_rate)
         self.log([u"Response (bytes): %d", len(response.content)])
         self.log([u"Number of frames: %d", number_of_frames])
         self.log([u"Audio length (s): %.3f", audio_length])
