@@ -50,6 +50,7 @@ from aeneas.synthesizer import Synthesizer
 from aeneas.task import Task
 from aeneas.textfile import TextFileFormat
 from aeneas.textfile import TextFragment
+from aeneas.exacttiming import TimeInterval
 from aeneas.exacttiming import TimeValue
 from aeneas.tree import Tree
 import aeneas.globalfunctions as gf
@@ -199,12 +200,13 @@ class ExecuteTask(Loggable):
 
             # compute alignment, outputting a tree of time intervals
             self._set_synthesizer()
-            tree = self._execute_inner(real_wave_mfcc, self.task.text_file, tree_root=None, adjust_boundaries=True, log=True)
+            sync_root = Tree()
+            self._execute_inner(real_wave_mfcc, self.task.text_file, sync_root=sync_root, adjust_boundaries=True, log=True)
             self._clear_cache_synthesizer()
 
             # create syncmap and add it to task
             self._step_begin(u"create sync map")
-            self.task.sync_map = SyncMap(tree=tree, rconf=self.rconf, logger=self.logger)
+            self.task.sync_map = SyncMap(tree=sync_root, rconf=self.rconf, logger=self.logger)
             self._step_end()
 
             # log total
@@ -221,8 +223,10 @@ class ExecuteTask(Loggable):
         # save original rconf
         orig_rconf = self.rconf.clone()
         # clone rconfs and set granularity
+        # TODO the following code assumes 3 levels: generalize this
         level_rconfs = [None, self.rconf.clone(), self.rconf.clone(), self.rconf.clone()]
         level_mfccs = [None, None, None, None]
+        level_abas = [None, True, True, False]
         for i in range(1, len(level_rconfs)):
             level_rconfs[i].set_granularity(i)
             self.log([u"Level %d mws: %.3f", i, level_rconfs[i].mws])
@@ -231,7 +235,6 @@ class ExecuteTask(Loggable):
             self.log([u"Level %d tts: %s", i, level_rconfs[i].tts])
             self.log([u"Level %d tts_path: %s", i, level_rconfs[i].tts_path])
         self.log(u"Saving rconf... done")
-
         try:
             self.log(u"Creating AudioFile object...")
             audio_file = self._load_audio_file()
@@ -260,20 +263,20 @@ class ExecuteTask(Loggable):
             self._step_end()
 
             # compute alignment at each level
-            tree = Tree()
-            sync_roots = [tree]
+            sync_root = Tree()
+            sync_roots = [sync_root]
             text_files = [self.task.text_file]
-            aba = [None, True, True, False]
-            for i in range(1, len(level_rconfs)):
+            number_levels = len(level_rconfs)
+            for i in range(1, number_levels):
                 self._step_begin(u"compute alignment level %d" % i)
                 self.rconf = level_rconfs[i]
-                text_files, sync_roots = self._execute_level(i, level_mfccs[i], text_files, sync_roots, aba[i])
+                text_files, sync_roots = self._execute_level(i, level_mfccs[i], text_files, sync_roots, level_abas[i])
                 self._step_end()
 
             # restore original rconf, and create syncmap and add it to task
             self._step_begin(u"create sync map")
             self.rconf = orig_rconf
-            self.task.sync_map = SyncMap(tree=tree, rconf=self.rconf, logger=self.logger)
+            self.task.sync_map = SyncMap(tree=sync_root, rconf=self.rconf, logger=self.logger)
             self._step_end()
 
             self._step_total()
@@ -281,7 +284,7 @@ class ExecuteTask(Loggable):
         except Exception as exc:
             self._step_failure(exc)
 
-    def _execute_level(self, level, audio_file_mfcc, text_files, sync_roots, adjust_boundaries):
+    def _execute_level(self, level, audio_file_mfcc, text_files, sync_roots, aba):
         """
         Compute the alignment for all the nodes in the given level.
 
@@ -297,7 +300,7 @@ class ExecuteTask(Loggable):
         :param list sync_roots: a list of :class:`~aeneas.tree.Tree` objects,
                                 each representing a SyncMapFragment tree,
                                 one for each element in ``text_files``
-        :param bool adjust_boundaries: if ``True``, execute the adjust boundary algorithm
+        :param bool aba: if ``True``, execute the adjust boundary algorithm
         :rtype: (list, list)
         """
         self._set_synthesizer()
@@ -310,20 +313,12 @@ class ExecuteTask(Loggable):
             if (level > 1) and (len(text_file) == 1) and (not sync_root.is_empty):
                 self.log(u"Level > 1 and only one text fragment => return trivial tree")
                 interval = sync_root.value
-                time_intervals = [
-                        (TimeValue("0.000"), interval.begin),
-                        (interval.begin, interval.end),
-                        (interval.end, audio_file_mfcc.audio_length),
+                head_fragment_tail = [
+                    (TimeValue("0.000"), interval.begin),
+                    (interval.begin, interval.end, text_file.fragments[0]),
+                    (interval.end, audio_file_mfcc.audio_length)
                 ]
-                for interval, fragment, fragment_type in fragments:
-                    sm_frag = SyncMapFragment(
-                        text_fragment=fragment,
-                        begin=interval[0],
-                        end=interval[1],
-                        fragment_type=fragment_type
-                    )
-                sync_root.add_child(Tree(value=sm_frag))
-                tree = self._time_intervals_to_tree(text_file, time_intervals, tree_root)
+                self._append_trivial_children(head_fragment_tail, sync_root)
             else:
                 self.log(u"Level == 1 or more than one text fragment => compute tree")
                 if not sync_root.is_empty:
@@ -334,7 +329,7 @@ class ExecuteTask(Loggable):
                     audio_file_mfcc.set_head_middle_tail(head_length=begin, middle_length=(end - begin))
                 else:
                     self.log(u"  No begin or end to set")
-                tree = self._execute_inner(audio_file_mfcc, text_file, tree_root=sync_root, adjust_boundaries=adjust_boundaries, log=False)
+                self._execute_inner(audio_file_mfcc, text_file, sync_root=sync_root, adjust_boundaries=aba, log=False)
             # store next level roots
             next_level_text_files.extend(text_file.children_not_empty)
             # we added head and tail, we must not pass them to the next level
@@ -342,13 +337,13 @@ class ExecuteTask(Loggable):
         self._clear_cache_synthesizer()
         return (next_level_text_files, next_level_sync_roots)
 
-    def _execute_inner(self, audio_file_mfcc, text_file, tree_root=None, adjust_boundaries=True, log=True):
+    def _execute_inner(self, audio_file_mfcc, text_file, sync_root=None, adjust_boundaries=True, log=True):
         """
         Align a subinterval of the given AudioFileMFCC
         with the given TextFile.
 
         Return the computed tree of time intervals,
-        rooted at ``tree_root`` if the latter is not ``None``,
+        rooted at ``sync_root`` if the latter is not ``None``,
         or as a new ``Tree`` otherwise.
 
         The begin and end positions inside the AudioFileMFCC
@@ -360,8 +355,8 @@ class ExecuteTask(Loggable):
         :type  audio_file_mfcc: :class:`~aeneas.audiofilemfcc.AudioFileMFCC`
         :param text_file: the text file subtree to align
         :type  text_file: :class:`~aeneas.textfile.TextFile`
-        :param tree_root: the tree node to which fragments should be appended
-        :type  tree_root: :class:`~aeneas.tree.Tree`
+        :param sync_root: the tree node to which fragments should be appended
+        :type  sync_root: :class:`~aeneas.tree.Tree`
         :param bool adjust_boundaries: if ``True``, execute the adjust boundary algorithm
         :param bool log: if ``True``, log steps
         :rtype: :class:`~aeneas.tree.Tree`
@@ -380,14 +375,8 @@ class ExecuteTask(Loggable):
         self._step_end(log=log)
 
         self._step_begin(u"adjust boundaries", log=log)
-        time_intervals = self._adjust_boundaries(audio_file_mfcc, text_file, indices, adjust_boundaries)
+        self._adjust_boundaries(audio_file_mfcc, text_file, indices, sync_root, adjust_boundaries)
         self._step_end(log=log)
-
-        self._step_begin(u"time intervals to tree", log=log)
-        self.log([u"  Map:   %s", str(time_intervals)])
-        tree = self._time_intervals_to_tree(text_file, time_intervals, tree_root)
-        self._step_end(log=log)
-        return tree 
 
     def _load_audio_file(self):
         """
@@ -530,7 +519,7 @@ class ExecuteTask(Loggable):
         self.log(u"Computing boundary indices... done")
         return boundary_indices
 
-    def _adjust_boundaries(self, real_wave_mfcc, text_file, boundary_indices, adjust_boundaries=True):
+    def _adjust_boundaries(self, real_wave_mfcc, text_file, boundary_indices, sync_root, adjust_boundaries=True):
         """
         Adjust boundaries as requested by the user.
 
@@ -542,53 +531,49 @@ class ExecuteTask(Loggable):
         """
         # boundary_indices contains the boundary indices in the all_mfcc of real_wave_mfcc
         # starting with the (head-1st fragment) and ending with (-1th fragment-tail)
-        if adjust_boundaries:
-            aba_algorithm, aba_parameters = self.task.configuration.aba_parameters()
-            self.log([u"Running algorithm: '%s'", aba_algorithm])
-        else:
+        aba_parameters = self.task.configuration.aba_parameters()
+        self.log([u"ABA parameters: %s", aba_parameters])
+        if not adjust_boundaries:
             self.log(u"Forced running algorithm: 'auto'")
-            aba_algorithm = AdjustBoundaryAlgorithm.AUTO
-            aba_parameters = None
+            aba_parameters["algorithm"] = (AdjustBoundaryAlgorithm.AUTO, [])
         return AdjustBoundaryAlgorithm(
-            algorithm=aba_algorithm,
-            parameters=aba_parameters,
+            aba_parameters=aba_parameters,
             real_wave_mfcc=real_wave_mfcc,
             boundary_indices=boundary_indices,
             text_file=text_file,
+            sync_root=sync_root,
             rconf=self.rconf,
             logger=self.logger
-        ).to_time_map()
+        ).adjust()
 
-    def _time_intervals_to_tree(self, text_file, time_intervals, tree_root=None):
+    def _append_trivial_children(self, head_fragment_tail, sync_root):
         """
-        Convert a level time map into a Tree of SyncMapFragments.
-
-        The time map is
-        a list of pairs ``[start_time, end_time]``,
-        of length equal to number of fragments + 2,
-        where the two extra elements are for
-        the HEAD (first) and TAIL (last).
-
-        :param text_file: the text file object
-        :type  text_file: :class:`~aeneas.textfile.TextFile`
-        :param list time_intervals: the time map
-        :param tree_root: the tree root to which append; if ``None``, a new Tree will be built
-        :type  tree_root: :class:`~aeneas.tree.Tree`
-        :rtype: :class:`~aeneas.tree.Tree`
+        Add to the ``sync_root`` three children:
+        one HEAD, one fragment, and one TAIL fragment.
         """
-        if tree_root is None:
-            tree_root = Tree()
-        fragments = (
-            [(time_intervals[0], TextFragment(u"HEAD", self.task.configuration["language"], [u""]), SyncMapFragment.FRAGMENT_TYPE_HEAD)] +
-            [(time_intervals[i], f, SyncMapFragment.FRAGMENT_TYPE_REGULAR) for i, f in enumerate(text_file.fragments, 1)] +
-            [(time_intervals[-1], TextFragment(u"TAIL", self.task.configuration["language"], [u""]), SyncMapFragment.FRAGMENT_TYPE_TAIL)]
+        # HEAD
+        sm_frag = SyncMapFragment(
+            text_fragment=TextFragment(identifier=u"TAIL", language=None, lines=[u""]),
+            begin=head_fragment_tail[0][0],
+            end=head_fragment_tail[0][1],
+            fragment_type=SyncMapFragment.FRAGMENT_TYPE_HEAD
         )
-        for interval, fragment, fragment_type in fragments:
-            sm_frag = SyncMapFragment(
-                text_fragment=fragment,
-                begin=interval[0],
-                end=interval[1],
-                fragment_type=fragment_type
-            )
-            tree_root.add_child(Tree(value=sm_frag))
-        return tree_root
+        sync_root.add_child(Tree(value=sm_frag))
+
+        # REGULAR
+        sm_frag = SyncMapFragment(
+            text_fragment=head_fragment_tail[1][2],
+            begin=head_fragment_tail[1][0],
+            end=head_fragment_tail[1][1],
+            fragment_type=SyncMapFragment.FRAGMENT_TYPE_REGULAR
+        )
+        sync_root.add_child(Tree(value=sm_frag))
+
+        # TAIL
+        sm_frag = SyncMapFragment(
+            text_fragment=TextFragment(identifier=u"TAIL", language=None, lines=[u""]),
+            begin=head_fragment_tail[2][0],
+            end=head_fragment_tail[2][1],
+            fragment_type=SyncMapFragment.FRAGMENT_TYPE_HEAD
+        )
+        sync_root.add_child(Tree(value=sm_frag))

@@ -274,6 +274,7 @@ class TaskConfiguration(Configuration):
     * :data:`~aeneas.globalconstants.PPN_TASK_ADJUST_BOUNDARY_AFTERCURRENT_VALUE` or ``aba_aftercurrent_value``
     * :data:`~aeneas.globalconstants.PPN_TASK_ADJUST_BOUNDARY_ALGORITHM`          or ``aba_algorithm``
     * :data:`~aeneas.globalconstants.PPN_TASK_ADJUST_BOUNDARY_BEFORENEXT_VALUE`   or ``aba_beforenext_value``
+    * :data:`~aeneas.globalconstants.PPN_TASK_ADJUST_BOUNDARY_NO_ZERO`            or ``aba_no_zero``
     * :data:`~aeneas.globalconstants.PPN_TASK_ADJUST_BOUNDARY_OFFSET_VALUE`       or ``aba_offset_value``
     * :data:`~aeneas.globalconstants.PPN_TASK_ADJUST_BOUNDARY_PERCENT_VALUE`      or ``aba_percent_value``
     * :data:`~aeneas.globalconstants.PPN_TASK_ADJUST_BOUNDARY_RATE_VALUE`         or ``aba_rate_value``
@@ -319,6 +320,7 @@ class TaskConfiguration(Configuration):
         (gc.PPN_TASK_ADJUST_BOUNDARY_ALGORITHM, (None, None, ["aba_algorithm"])),
         (gc.PPN_TASK_ADJUST_BOUNDARY_BEFORENEXT_VALUE, (None, TimeValue, ["aba_beforenext_value"])),
         (gc.PPN_TASK_ADJUST_BOUNDARY_OFFSET_VALUE, (None, TimeValue, ["aba_offset_value"])),
+        (gc.PPN_TASK_ADJUST_BOUNDARY_NO_ZERO, (None, bool, ["aba_no_zero"])),
         (gc.PPN_TASK_ADJUST_BOUNDARY_PERCENT_VALUE, (None, int, ["aba_percent_value"])),
         (gc.PPN_TASK_ADJUST_BOUNDARY_RATE_VALUE, (None, Decimal, ["aba_rate_value"])),
         (gc.PPN_TASK_ADJUST_BOUNDARY_SILENCE_MIN, (None, TimeValue, ["aba_silence_min"])),
@@ -346,7 +348,6 @@ class TaskConfiguration(Configuration):
         (gc.PPN_TASK_OS_FILE_ID_REGEX, (None, None, ["o_id_regex"])),
         (gc.PPN_TASK_OS_FILE_LEVELS, (None, None, ["o_levels"])),
         (gc.PPN_TASK_OS_FILE_NAME, (None, None, ["o_name"])),
-        (gc.PPN_TASK_OS_FILE_NO_ZERO, (None, bool, ["o_no_zero"])),
         (gc.PPN_TASK_OS_FILE_SMIL_AUDIO_REF, (None, None, ["o_smil_audio_ref"])),
         (gc.PPN_TASK_OS_FILE_SMIL_PAGE_REF, (None, None, ["o_smil_page_ref"])),
     ]
@@ -358,11 +359,17 @@ class TaskConfiguration(Configuration):
 
     def aba_parameters(self):
         """
-        Return a tuple ``(aba_algorithm, aba_parameters)``
-        representing the :class:`~aeneas.adjustboundaryalgorithm.AdjustBoundaryAlgorithm`
-        algorithm and its parameters.
+        Return a dictionary representing the
+        :class:`~aeneas.adjustboundaryalgorithm.AdjustBoundaryAlgorithm`
+        parameters stored in this task configuration.
 
-        :rtype: tuple
+        Available keys:
+
+        * ``algorithm``, tuple: (string, list)
+        * ``silence``, tuple: (TimeValue or None, string)
+        * ``nozero``, tuple: (bool, TimeValue)
+
+        :rtype: dict
         """
         ABA_MAP = {
             AdjustBoundaryAlgorithm.AFTERCURRENT: [self[gc.PPN_TASK_ADJUST_BOUNDARY_AFTERCURRENT_VALUE]],
@@ -373,7 +380,12 @@ class TaskConfiguration(Configuration):
             AdjustBoundaryAlgorithm.RATE: [self[gc.PPN_TASK_ADJUST_BOUNDARY_RATE_VALUE]],
             AdjustBoundaryAlgorithm.RATEAGGRESSIVE: [self[gc.PPN_TASK_ADJUST_BOUNDARY_RATE_VALUE]]
         }
-        aba_algorithm = self["aba_algorithm"]
-        if aba_algorithm is None:
-            aba_algorithm = AdjustBoundaryAlgorithm.AUTO
-        return (aba_algorithm, ABA_MAP[aba_algorithm])
+        aba_algorithm = self[gc.PPN_TASK_ADJUST_BOUNDARY_ALGORITHM] or AdjustBoundaryAlgorithm.AUTO
+        sil_min = self[gc.PPN_TASK_ADJUST_BOUNDARY_SILENCE_MIN]
+        sil_string = self[gc.PPN_TASK_ADJUST_BOUNDARY_SILENCE_STRING]
+        no_zero = self[gc.PPN_TASK_ADJUST_BOUNDARY_NO_ZERO] or False
+        return {
+            "algorithm": (aba_algorithm, ABA_MAP[aba_algorithm]),
+            "silence": (sil_min, sil_string),
+            "nozero": (no_zero, TimeValue("0.001"))
+        }

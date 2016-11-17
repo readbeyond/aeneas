@@ -26,6 +26,7 @@ import numpy
 
 from aeneas.exacttiming import Decimal
 from aeneas.exacttiming import TimeInterval
+from aeneas.exacttiming import TimeIntervalList
 from aeneas.exacttiming import TimeValue
 
 
@@ -219,6 +220,39 @@ class TestExactTiming(unittest.TestCase):
         for b, e in params:
             TimeInterval(begin=TimeValue(b), end=TimeValue(e))
 
+    def test_time_interval_ordering(self):
+        t_0_0 = TimeInterval(begin=TimeValue("0.000"), end=TimeValue("0.000"))
+        t_0_1 = TimeInterval(begin=TimeValue("0.000"), end=TimeValue("1.000"))
+        t_0_3 = TimeInterval(begin=TimeValue("0.000"), end=TimeValue("3.000"))
+        q_0_3 = TimeInterval(begin=TimeValue("0.000"), end=TimeValue("3.000"))
+        t_2_2 = TimeInterval(begin=TimeValue("2.000"), end=TimeValue("2.000"))
+        q_2_2 = TimeInterval(begin=TimeValue("2.000"), end=TimeValue("2.000"))
+        self.assertTrue(t_0_0 <= t_0_0)
+        self.assertTrue(t_0_0 == t_0_0)
+        self.assertTrue(t_0_0 >= t_0_0)
+        self.assertFalse(t_0_0 != t_0_0)
+        self.assertTrue(t_0_1 <= t_0_1)
+        self.assertTrue(t_0_1 == t_0_1)
+        self.assertTrue(t_0_1 >= t_0_1)
+        self.assertTrue(t_0_0 < t_0_1)
+        self.assertTrue(t_0_0 < t_0_3)
+        self.assertTrue(t_0_0 < t_2_2)
+        self.assertTrue(t_0_0 <= t_0_1)
+        self.assertTrue(t_0_0 <= t_0_3)
+        self.assertTrue(t_0_0 <= t_2_2)
+        self.assertFalse(t_0_3 < q_0_3)
+        self.assertTrue(t_0_3 <= q_0_3)
+        self.assertTrue(t_0_3 == q_0_3)
+        self.assertTrue(t_0_3 >= q_0_3)
+        self.assertFalse(t_0_3 > q_0_3)
+        self.assertFalse(t_0_3 != q_0_3)
+        self.assertFalse(t_2_2 < q_2_2)
+        self.assertTrue(t_2_2 <= q_2_2)
+        self.assertTrue(t_2_2 == q_2_2)
+        self.assertTrue(t_2_2 >= q_2_2)
+        self.assertFalse(t_2_2 > q_2_2)
+        self.assertFalse(t_2_2 != q_2_2)
+
     def test_time_interval_length(self):
         params = [
             ("0.000", "0.000", "0.000"),
@@ -271,7 +305,7 @@ class TestExactTiming(unittest.TestCase):
             ti = TimeInterval(begin=TimeValue(b), end=TimeValue(e))
             self.assertEqual(ti.ends_at(TimeValue(p)), f)
 
-    def test_time_interval_translate_bad(self):
+    def test_time_interval_offset_bad(self):
         params = [
             None,
             1,
@@ -282,9 +316,9 @@ class TestExactTiming(unittest.TestCase):
         ti1 = TimeInterval(begin=TimeValue("0.000"), end=TimeValue("1.000"))
         for p in params:
             with self.assertRaises(TypeError):
-                ti1.translate(p)
+                ti1.offset(p)
 
-    def test_time_interval_translate(self):
+    def test_time_interval_offset(self):
         params = [
             (("0.000", "0.000"), "-1.000", False, ("0.000", "0.000")),
             (("0.000", "0.000"), "-0.000", False, ("0.000", "0.000")),
@@ -315,7 +349,7 @@ class TestExactTiming(unittest.TestCase):
         for ti1, d, a, exp in params:
             ti1 = TimeInterval(begin=TimeValue(ti1[0]), end=TimeValue(ti1[1]))
             d = TimeValue(d)
-            ti1.translate(delta=d, allow_negative=a)
+            ti1.offset(offset=d, allow_negative=a)
             self.assertEqual(ti1.begin, TimeValue(exp[0]))
             self.assertEqual(ti1.end, TimeValue(exp[1]))
 
@@ -499,6 +533,654 @@ class TestExactTiming(unittest.TestCase):
             ti2 = TimeInterval(begin=TimeValue(ti2[0]), end=TimeValue(ti2[1]))
             self.assertEqual(ti1.adjacent_before(ti2), exp)
             self.assertEqual(ti2.adjacent_after(ti1), exp)
+
+    def test_time_interval_list_bad(self):
+        params = [
+            (0.000, None, TypeError),
+            (0.000, 5.000, TypeError),
+            ("0.000", None, TypeError),
+            ("0.000", "5.000", TypeError),
+            (TimeValue("-5.000"), TimeValue("5.000"), ValueError),
+            (TimeValue("5.000"), TimeValue("0.000"), ValueError),
+        ]
+        for b, e, exc in params:
+            with self.assertRaises(exc):
+                TimeIntervalList(begin=b, end=e)
+
+    def test_time_interval_list_good(self):
+        params = [
+            (None, None),
+            ("0.000", None),
+            ("0.000", "0.000"),
+            ("0.000", "5.000"),
+            ("1.000", "5.000"),
+            ("5.000", "5.000"),
+        ]
+        for b, e in params:
+            if b is not None:
+                b = TimeValue(b)
+            if e is not None:
+                e = TimeValue(e)
+            l = TimeIntervalList(begin=b, end=e)
+
+    def test_time_interval_list_add_bad_type(self):
+        params = [
+            None,
+            (0.000, 5.000),
+            (TimeValue("0.000"), TimeValue("5.000")),
+        ]
+        l = TimeIntervalList()
+        for p in params:
+            with self.assertRaises(TypeError):
+                l.add(p)
+
+    def test_time_interval_list_add_bad_value(self):
+        params = [
+            ("5.000", "6.000", "1.000", "2.000"),
+            ("5.000", "6.000", "1.000", "5.000"),
+            ("5.000", "6.000", "5.000", "7.000"),
+            ("5.000", "6.000", "5.500", "7.000"),
+            ("5.000", "6.000", "6.000", "7.000"),
+            ("5.000", "6.000", "7.000", "8.000"),
+        ]
+        for lb, le, b, e in params:
+            i = TimeInterval(begin=TimeValue(b), end=TimeValue(e))
+            l = TimeIntervalList(begin=TimeValue(lb), end=TimeValue(le))
+            with self.assertRaises(ValueError):
+                l.add(i)
+
+    def test_time_interval_list_add_good(self):
+        params = [
+            ("5.000", "6.000", "5.000", "5.000"),
+            ("5.000", "6.000", "5.000", "5.500"),
+            ("5.000", "6.000", "5.000", "6.000"),
+            ("5.000", "6.000", "5.500", "5.600"),
+            ("5.000", "6.000", "6.000", "6.000"),
+        ]
+        for lb, le, b, e in params:
+            i = TimeInterval(begin=TimeValue(b), end=TimeValue(e))
+            l = TimeIntervalList(begin=TimeValue(lb), end=TimeValue(le))
+            l.add(i)
+
+    def test_time_interval_list_add_bad_sequence(self):
+        params = [
+            [
+                ("1.000", "1.000"),
+                ("0.500", "1.500"),
+            ],
+            [
+                ("1.000", "2.000"),
+                ("1.500", "1.750"),
+            ],
+            [
+                ("1.000", "2.000"),
+                ("1.500", "1.500"),
+            ],
+            [
+                ("1.000", "2.000"),
+                ("0.500", "1.500"),
+            ],
+            [
+                ("1.000", "2.000"),
+                ("1.500", "2.500"),
+            ],
+            [
+                ("1.000", "2.000"),
+                ("0.500", "2.500"),
+            ],
+        ]
+        for seq in params:
+            l = TimeIntervalList(begin=TimeValue("0.000"), end=TimeValue("10.000"))
+            with self.assertRaises(ValueError):
+                for b, e in seq:
+                    i = TimeInterval(begin=TimeValue(b), end=TimeValue(e))
+                    l.add(i)
+
+    def test_time_interval_list_add_sorted(self):
+        params = [
+            (
+                [
+                    ("1.000", "1.000"),
+                    ("0.500", "0.500"),
+                    ("1.000", "1.000"),
+                ],
+                [
+                    ("0.500", "0.500"),
+                    ("1.000", "1.000"),
+                    ("1.000", "1.000"),
+                ]
+            ),
+            (
+                [
+                    ("1.000", "1.000"),
+                    ("0.500", "0.500"),
+                ],
+                [
+                    ("0.500", "0.500"),
+                    ("1.000", "1.000"),
+                ]
+            ),
+            (
+                [
+                    ("2.000", "2.000"),
+                    ("1.000", "2.000"),
+                    ("0.500", "0.500"),
+                ],
+                [
+                    ("0.500", "0.500"),
+                    ("1.000", "2.000"),
+                    ("2.000", "2.000"),
+                ]
+            ),
+            (
+                [
+                    ("2.000", "2.000"),
+                    ("0.500", "0.500"),
+                    ("2.000", "3.000"),
+                    ("1.000", "2.000"),
+                    ("0.500", "0.500"),
+                ],
+                [
+                    ("0.500", "0.500"),
+                    ("0.500", "0.500"),
+                    ("1.000", "2.000"),
+                    ("2.000", "2.000"),
+                    ("2.000", "3.000"),
+                ]
+            ),
+        ]
+        for ins, exp in params:
+            l = TimeIntervalList(begin=TimeValue("0.000"), end=TimeValue("10.000"))
+            for b, e in ins:
+                i = TimeInterval(begin=TimeValue(b), end=TimeValue(e))
+                l.add(i)
+            for j, interval in enumerate(l.intervals):
+                b, e = exp[j]
+                exp_i = TimeInterval(begin=TimeValue(b), end=TimeValue(e))
+                self.assertTrue(interval == exp_i)
+
+    def test_time_interval_list_offset(self):
+        params = [
+            (
+                [
+                    ("0.500", "0.500"),
+                    ("1.000", "1.000"),
+                    ("1.000", "2.000"),
+                ],
+                "0.500",
+                [
+                    ("1.000", "1.000"),
+                    ("1.500", "1.500"),
+                    ("1.500", "2.500"),
+                ],
+            ),
+            (
+                [
+                    ("0.500", "0.500"),
+                    ("1.000", "1.000"),
+                    ("1.000", "2.000"),
+                ],
+                "8.000",
+                [
+                    ("8.500", "8.500"),
+                    ("9.000", "9.000"),
+                    ("9.000", "10.000"),
+                ],
+            ),
+            (
+                [
+                    ("0.500", "0.500"),
+                    ("1.000", "1.000"),
+                    ("1.000", "2.000"),
+                ],
+                "8.500",
+                [
+                    ("9.000", "9.000"),
+                    ("9.500", "9.500"),
+                    ("9.500", "10.000"),
+                ],
+            ),
+            (
+                [
+                    ("0.500", "0.500"),
+                    ("1.000", "1.000"),
+                    ("1.000", "2.000"),
+                ],
+                "9.000",
+                [
+                    ("9.500", "9.500"),
+                    ("10.000", "10.000"),
+                    ("10.000", "10.000"),
+                ],
+            ),
+            (
+                [
+                    ("0.500", "0.500"),
+                    ("1.000", "1.000"),
+                    ("1.000", "2.000"),
+                ],
+                "10.000",
+                [
+                    ("10.000", "10.000"),
+                    ("10.000", "10.000"),
+                    ("10.000", "10.000"),
+                ],
+            ),
+            (
+                [
+                    ("0.500", "0.500"),
+                    ("1.000", "1.000"),
+                    ("1.000", "2.000"),
+                ],
+                "-0.500",
+                [
+                    ("0.000", "0.000"),
+                    ("0.500", "0.500"),
+                    ("0.500", "1.500"),
+                ],
+            ),
+            (
+                [
+                    ("0.500", "0.500"),
+                    ("1.000", "1.000"),
+                    ("1.000", "2.000"),
+                ],
+                "-1.000",
+                [
+                    ("0.000", "0.000"),
+                    ("0.000", "0.000"),
+                    ("0.000", "1.000"),
+                ],
+            ),
+            (
+                [
+                    ("0.500", "0.500"),
+                    ("1.000", "1.000"),
+                    ("1.000", "2.000"),
+                ],
+                "-1.500",
+                [
+                    ("0.000", "0.000"),
+                    ("0.000", "0.000"),
+                    ("0.000", "0.500"),
+                ],
+            ),
+            (
+                [
+                    ("0.500", "0.500"),
+                    ("1.000", "1.000"),
+                    ("1.000", "2.000"),
+                ],
+                "-3.000",
+                [
+                    ("0.000", "0.000"),
+                    ("0.000", "0.000"),
+                    ("0.000", "0.000"),
+                ],
+            ),
+        ]
+        for ins, off, exp in params:
+            l = TimeIntervalList(begin=TimeValue("0.000"), end=TimeValue("10.000"))
+            for b, e in ins:
+                i = TimeInterval(begin=TimeValue(b), end=TimeValue(e))
+                l.add(i)
+            l.offset(TimeValue(off))
+            for j, interval in enumerate(l.intervals):
+                b, e = exp[j]
+                exp_i = TimeInterval(begin=TimeValue(b), end=TimeValue(e))
+                self.assertTrue(interval == exp_i)
+
+    def test_time_interval_list_fix_zero_length_intervals(self):
+        params = [
+            (
+                [
+                    ("0.000", "1.000"),
+                    ("1.000", "1.000"),
+                    ("1.000", "2.000"),
+                ],
+                [
+                    ("0.000", "1.000"),
+                    ("1.000", "1.001"),
+                    ("1.001", "2.000"),
+                ],
+            ),
+            (
+                [
+                    ("0.000", "1.000"),
+                    ("1.000", "1.000"),
+                    ("1.000", "1.000"),
+                    ("1.000", "2.000"),
+                ],
+                [
+                    ("0.000", "1.000"),
+                    ("1.000", "1.001"),
+                    ("1.001", "1.002"),
+                    ("1.002", "2.000"),
+                ],
+            ),
+            (
+                [
+                    ("0.000", "1.000"),
+                    ("1.000", "1.000"),
+                    ("1.000", "1.000"),
+                    ("1.000", "1.000"),
+                    ("1.000", "2.000"),
+                ],
+                [
+                    ("0.000", "1.000"),
+                    ("1.000", "1.001"),
+                    ("1.001", "1.002"),
+                    ("1.002", "1.003"),
+                    ("1.003", "2.000"),
+                ],
+            ),
+            (
+                [
+                    ("0.000", "1.000"),
+                    ("1.000", "1.000"),
+                    ("1.000", "1.000"),
+                    ("1.000", "1.000"),
+                    ("1.000", "2.000"),
+                    ("2.000", "3.000"),
+                    ("3.000", "4.000"),
+                    ("4.000", "4.000"),
+                    ("4.000", "5.000"),
+                ],
+                [
+                    ("0.000", "1.000"),
+                    ("1.000", "1.001"),
+                    ("1.001", "1.002"),
+                    ("1.002", "1.003"),
+                    ("1.003", "2.000"),
+                    ("2.000", "3.000"),
+                    ("3.000", "4.000"),
+                    ("4.000", "4.001"),
+                    ("4.001", "5.000"),
+                ],
+            ),
+            (
+                [
+                    ("0.000", "0.000"),
+                    ("0.000", "1.000"),
+                    ("1.000", "1.000"),
+                    ("1.000", "1.000"),
+                    ("1.000", "1.000"),
+                    ("1.000", "2.000"),
+                    ("2.000", "3.000"),
+                    ("3.000", "4.000"),
+                    ("4.000", "4.000"),
+                    ("4.000", "5.000"),
+                ],
+                [
+                    ("0.000", "0.001"),
+                    ("0.001", "1.000"),
+                    ("1.000", "1.001"),
+                    ("1.001", "1.002"),
+                    ("1.002", "1.003"),
+                    ("1.003", "2.000"),
+                    ("2.000", "3.000"),
+                    ("3.000", "4.000"),
+                    ("4.000", "4.001"),
+                    ("4.001", "5.000"),
+                ],
+            ),
+            (
+                [
+                    ("0.000", "1.000"),
+                    ("1.000", "1.000"),
+                    ("1.000", "1.000"),
+                    ("1.000", "1.000"),
+                    ("1.000", "1.002"),
+                ],
+                [
+                    ("0.000", "1.000"),
+                    ("1.000", "1.001"),
+                    ("1.001", "1.002"),
+                    ("1.002", "1.003"),
+                    ("1.003", "1.005"),
+                ],
+            ),
+            (
+                [
+                    ("0.000", "1.000"),
+                    ("1.000", "1.000"),
+                    ("1.000", "1.000"),
+                    ("1.000", "1.000"),
+                    ("1.000", "1.002"),
+                    ("1.002", "2.000"),
+                ],
+                [
+                    ("0.000", "1.000"),
+                    ("1.000", "1.001"),
+                    ("1.001", "1.002"),
+                    ("1.002", "1.003"),
+                    ("1.003", "1.005"),
+                    ("1.005", "2.000"),
+                ],
+            ),
+            (
+                [
+                    ("0.000", "1.000"),
+                    ("1.000", "1.000"),
+                    ("1.000", "1.000"),
+                    ("1.000", "1.000"),
+                    ("1.000", "1.002"),
+                    ("1.002", "1.002"),
+                    ("1.002", "2.000"),
+                ],
+                [
+                    ("0.000", "1.000"),
+                    ("1.000", "1.001"),
+                    ("1.001", "1.002"),
+                    ("1.002", "1.003"),
+                    ("1.003", "1.005"),
+                    ("1.005", "1.006"),
+                    ("1.006", "2.000"),
+                ],
+            ),
+        ]
+        for ins, exp in params:
+            l = TimeIntervalList(begin=TimeValue("0.000"), end=TimeValue("10.000"))
+            for b, e in ins:
+                i = TimeInterval(begin=TimeValue(b), end=TimeValue(e))
+                l.add(i)
+            l.fix_zero_length_intervals()
+            for j, interval in enumerate(l.intervals):
+                b, e = exp[j]
+                exp_i = TimeInterval(begin=TimeValue(b), end=TimeValue(e))
+                self.assertTrue(interval == exp_i)
+
+    def test_time_interval_list_fix_zero_length_intervals_middle(self):
+        params = [
+            (
+                [
+                    ("0.000", "0.000"),
+                    ("0.000", "1.000"),
+                    ("1.000", "1.000"),
+                    ("1.000", "2.000"),
+                    ("2.000", "9.999"),
+                ],
+                [
+                    ("0.000", "0.000"),
+                    ("0.000", "1.000"),
+                    ("1.000", "1.001"),
+                    ("1.001", "2.000"),
+                    ("2.000", "9.999"),
+                ],
+            ),
+            (
+                [
+                    ("0.000", "0.000"),
+                    ("0.000", "1.000"),
+                    ("1.000", "1.000"),
+                    ("1.000", "1.000"),
+                    ("1.000", "2.000"),
+                    ("2.000", "9.999"),
+                ],
+                [
+                    ("0.000", "0.000"),
+                    ("0.000", "1.000"),
+                    ("1.000", "1.001"),
+                    ("1.001", "1.002"),
+                    ("1.002", "2.000"),
+                    ("2.000", "9.999"),
+                ],
+            ),
+            (
+                [
+                    ("0.000", "0.000"),
+                    ("0.000", "1.000"),
+                    ("1.000", "1.000"),
+                    ("1.000", "1.000"),
+                    ("1.000", "1.000"),
+                    ("1.000", "2.000"),
+                    ("2.000", "9.999"),
+                ],
+                [
+                    ("0.000", "0.000"),
+                    ("0.000", "1.000"),
+                    ("1.000", "1.001"),
+                    ("1.001", "1.002"),
+                    ("1.002", "1.003"),
+                    ("1.003", "2.000"),
+                    ("2.000", "9.999"),
+                ],
+            ),
+            (
+                [
+                    ("0.000", "0.000"),
+                    ("0.000", "1.000"),
+                    ("1.000", "1.000"),
+                    ("1.000", "1.000"),
+                    ("1.000", "1.000"),
+                    ("1.000", "2.000"),
+                    ("2.000", "3.000"),
+                    ("3.000", "4.000"),
+                    ("4.000", "4.000"),
+                    ("4.000", "5.000"),
+                    ("5.000", "9.999"),
+                ],
+                [
+                    ("0.000", "0.000"),
+                    ("0.000", "1.000"),
+                    ("1.000", "1.001"),
+                    ("1.001", "1.002"),
+                    ("1.002", "1.003"),
+                    ("1.003", "2.000"),
+                    ("2.000", "3.000"),
+                    ("3.000", "4.000"),
+                    ("4.000", "4.001"),
+                    ("4.001", "5.000"),
+                    ("5.000", "9.999"),
+                ],
+            ),
+            (
+                [
+                    ("0.000", "0.000"),
+                    ("0.000", "0.000"),
+                    ("0.000", "1.000"),
+                    ("1.000", "1.000"),
+                    ("1.000", "1.000"),
+                    ("1.000", "1.000"),
+                    ("1.000", "2.000"),
+                    ("2.000", "3.000"),
+                    ("3.000", "4.000"),
+                    ("4.000", "4.000"),
+                    ("4.000", "5.000"),
+                    ("5.000", "9.999"),
+                ],
+                [
+                    ("0.000", "0.000"),
+                    ("0.000", "0.001"),
+                    ("0.001", "1.000"),
+                    ("1.000", "1.001"),
+                    ("1.001", "1.002"),
+                    ("1.002", "1.003"),
+                    ("1.003", "2.000"),
+                    ("2.000", "3.000"),
+                    ("3.000", "4.000"),
+                    ("4.000", "4.001"),
+                    ("4.001", "5.000"),
+                    ("5.000", "9.999"),
+                ],
+            ),
+            (
+                [
+                    ("0.000", "0.000"),
+                    ("0.000", "1.000"),
+                    ("1.000", "1.000"),
+                    ("1.000", "1.000"),
+                    ("1.000", "1.000"),
+                    ("1.000", "1.002"),
+                    ("1.002", "9.999"),
+                ],
+                [
+                    ("0.000", "0.000"),
+                    ("0.000", "1.000"),
+                    ("1.000", "1.001"),
+                    ("1.001", "1.002"),
+                    ("1.002", "1.003"),
+                    ("1.003", "1.005"),
+                    ("1.002", "9.999"),     # NOTE: this will be fixed later in ABA
+                ],
+            ),
+            (
+                [
+                    ("0.000", "0.000"),
+                    ("0.000", "1.000"),
+                    ("1.000", "1.000"),
+                    ("1.000", "1.000"),
+                    ("1.000", "1.000"),
+                    ("1.000", "1.002"),
+                    ("1.002", "2.000"),
+                    ("2.000", "9.999"),
+                ],
+                [
+                    ("0.000", "0.000"),
+                    ("0.000", "1.000"),
+                    ("1.000", "1.001"),
+                    ("1.001", "1.002"),
+                    ("1.002", "1.003"),
+                    ("1.003", "1.005"),
+                    ("1.005", "2.000"),
+                    ("2.000", "9.999"),
+                ],
+            ),
+            (
+                [
+                    ("0.000", "0.000"),
+                    ("0.000", "1.000"),
+                    ("1.000", "1.000"),
+                    ("1.000", "1.000"),
+                    ("1.000", "1.000"),
+                    ("1.000", "1.002"),
+                    ("1.002", "1.002"),
+                    ("1.002", "2.000"),
+                    ("2.000", "9.999"),
+                ],
+                [
+                    ("0.000", "0.000"),
+                    ("0.000", "1.000"),
+                    ("1.000", "1.001"),
+                    ("1.001", "1.002"),
+                    ("1.002", "1.003"),
+                    ("1.003", "1.005"),
+                    ("1.005", "1.006"),
+                    ("1.006", "2.000"),
+                    ("2.000", "9.999"),
+                ],
+            ),
+        ]
+        for ins, exp in params:
+            l = TimeIntervalList(begin=TimeValue("0.000"), end=TimeValue("10.000"))
+            for b, e in ins:
+                i = TimeInterval(begin=TimeValue(b), end=TimeValue(e))
+                l.add(i)
+            l.fix_zero_length_intervals(min_index=1, max_index=(len(l) - 1))
+            for j, interval in enumerate(l.intervals):
+                b, e = exp[j]
+                exp_i = TimeInterval(begin=TimeValue(b), end=TimeValue(e))
+                self.assertTrue(interval == exp_i)
 
 
 if __name__ == "__main__":

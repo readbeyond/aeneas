@@ -421,6 +421,24 @@ Example::
 .. versionadded:: 1.0.4
 """
 
+PPN_TASK_ADJUST_BOUNDARY_NO_ZERO = "task_adjust_boundary_no_zero"
+"""
+If specified, do not allow fragments with zero duration.
+
+Note: before version 1.7.0 this parameter
+was called ``os_task_file_no_zero``.
+
+Usage: config string, TXT config file, XML config file
+
+Values: string
+
+Example::
+
+    task_adjust_boundary_no_zero=True
+
+.. versionadded:: 1.5.0
+"""
+
 PPN_TASK_ADJUST_BOUNDARY_OFFSET_VALUE = "task_adjust_boundary_offset_value"
 """
 The new boundary between two consecutive fragments
@@ -923,21 +941,6 @@ Example::
 
     os_task_file_name=map.smil
 
-"""
-
-PPN_TASK_OS_FILE_NO_ZERO = "os_task_file_no_zero"
-"""
-If specified, do not allow fragments with zero duration.
-
-Usage: config string, TXT config file, XML config file
-
-Values: string
-
-Example::
-
-    os_task_file_no_zero=True
-
-.. versionadded:: 1.5.0
 """
 
 PPN_TASK_OS_FILE_EAF_AUDIO_REF = "os_task_file_eaf_audio_ref"

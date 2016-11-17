@@ -243,6 +243,9 @@ class TestTask(unittest.TestCase):
     def test_tc_adjust_boundary_beforenext_value(self):
         self.setter("aba_beforenext_value", u"0.100", TimeValue("0.100"))
 
+    def test_tc_adjust_boundary_no_zero(self):
+        self.setter("aba_no_zero", True, True)
+
     def test_tc_adjust_boundary_offset_value(self):
         self.setter("aba_offset_value", u"0.100", TimeValue("0.100"))
 
@@ -305,9 +308,6 @@ class TestTask(unittest.TestCase):
 
     def test_tc_os_file_name(self):
         self.setter("o_name", u"output.smil", u"output.smil")
-
-    def test_tc_os_file_no_zero(self):
-        self.setter("o_no_zero", True, True)
 
     def test_tc_os_file_smil_audio_ref(self):
         self.setter("o_smil_audio_ref", u"../audio/audio001.mp3", u"../audio/audio001.mp3")
