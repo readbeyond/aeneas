@@ -312,13 +312,7 @@ class ExecuteTask(Loggable):
             sync_root = sync_roots[text_file_index]
             if (level > 1) and (len(text_file) == 1) and (not sync_root.is_empty):
                 self.log(u"Level > 1 and only one text fragment => return trivial tree")
-                interval = sync_root.value
-                head_fragment_tail = [
-                    (TimeValue("0.000"), interval.begin),
-                    (interval.begin, interval.end, text_file.fragments[0]),
-                    (interval.end, audio_file_mfcc.audio_length)
-                ]
-                self._append_trivial_children(head_fragment_tail, sync_root)
+                self._append_trivial_tree(text_file, audio_file_mfcc.audio_length, sync_root)
             else:
                 self.log(u"Level == 1 or more than one text fragment => compute tree")
                 if not sync_root.is_empty:
@@ -375,7 +369,7 @@ class ExecuteTask(Loggable):
         self._step_end(log=log)
 
         self._step_begin(u"adjust boundaries", log=log)
-        self._adjust_boundaries(audio_file_mfcc, text_file, indices, sync_root, adjust_boundaries)
+        self._adjust_boundaries(indices, text_file, audio_file_mfcc, sync_root, adjust_boundaries)
         self._step_end(log=log)
 
     def _load_audio_file(self):
@@ -519,7 +513,7 @@ class ExecuteTask(Loggable):
         self.log(u"Computing boundary indices... done")
         return boundary_indices
 
-    def _adjust_boundaries(self, real_wave_mfcc, text_file, boundary_indices, sync_root, adjust_boundaries=True):
+    def _adjust_boundaries(self, boundary_indices, text_file, real_wave_mfcc, sync_root, adjust_boundaries=True):
         """
         Adjust boundaries as requested by the user.
 
@@ -536,44 +530,25 @@ class ExecuteTask(Loggable):
         if not adjust_boundaries:
             self.log(u"Forced running algorithm: 'auto'")
             aba_parameters["algorithm"] = (AdjustBoundaryAlgorithm.AUTO, [])
-        return AdjustBoundaryAlgorithm(
+        aba = AdjustBoundaryAlgorithm(rconf=self.rconf, logger=self.logger)
+        aba.adjust(
             aba_parameters=aba_parameters,
             real_wave_mfcc=real_wave_mfcc,
             boundary_indices=boundary_indices,
             text_file=text_file,
-            sync_root=sync_root,
-            rconf=self.rconf,
-            logger=self.logger
-        ).adjust()
+        )
+        aba.append_fragment_list_to_sync_root(sync_root=sync_root)
 
-    def _append_trivial_children(self, head_fragment_tail, sync_root):
+    def _append_trivial_tree(self, text_file, end, sync_root):
         """
-        Add to the ``sync_root`` three children:
-        one HEAD, one fragment, and one TAIL fragment.
+        Append trivial tree, made by HEAD, one fragment, and TAIL.
         """
-        # HEAD
-        sm_frag = SyncMapFragment(
-            text_fragment=TextFragment(identifier=u"TAIL", language=None, lines=[u""]),
-            begin=head_fragment_tail[0][0],
-            end=head_fragment_tail[0][1],
-            fragment_type=SyncMapFragment.FRAGMENT_TYPE_HEAD
+        interval = sync_root.value
+        aba = AdjustBoundaryAlgorithm(rconf=self.rconf, logger=self.logger)
+        aba.intervals_to_fragment_list(
+            text_file=text_file,
+            end=end,
+            boundary_indices=None,
+            time_values=[TimeValue("0.000"), interval.begin, interval.end, end],
         )
-        sync_root.add_child(Tree(value=sm_frag))
-
-        # REGULAR
-        sm_frag = SyncMapFragment(
-            text_fragment=head_fragment_tail[1][2],
-            begin=head_fragment_tail[1][0],
-            end=head_fragment_tail[1][1],
-            fragment_type=SyncMapFragment.FRAGMENT_TYPE_REGULAR
-        )
-        sync_root.add_child(Tree(value=sm_frag))
-
-        # TAIL
-        sm_frag = SyncMapFragment(
-            text_fragment=TextFragment(identifier=u"TAIL", language=None, lines=[u""]),
-            begin=head_fragment_tail[2][0],
-            end=head_fragment_tail[2][1],
-            fragment_type=SyncMapFragment.FRAGMENT_TYPE_HEAD
-        )
-        sync_root.add_child(Tree(value=sm_frag))
+        aba.append_fragment_list_to_sync_root(sync_root=sync_root)

@@ -46,28 +46,31 @@ class SyncMapFragment(object):
 
     TAG = u"SyncMapFragment"
 
-    FRAGMENT_TYPE_REGULAR = 0
+    REGULAR = 0
     """ Regular fragment """
 
-    FRAGMENT_TYPE_HEAD = 1
+    HEAD = 1
     """ Head fragment """
 
-    FRAGMENT_TYPE_TAIL = 2
+    TAIL = 2
     """ Tail fragment """
 
-    FRAGMENT_TYPE_SILENCE = 3
+    SILENCE = 3
     """ (Long) Silence fragment """
 
     def __init__(
             self,
             text_fragment=None,
+            interval=None,
             begin=None,
             end=None,
-            fragment_type=FRAGMENT_TYPE_REGULAR,
+            fragment_type=REGULAR,
             confidence=1.0
     ):
         self.text_fragment = text_fragment
-        if (begin is not None) and (end is not None):
+        if interval is not None:
+            self.interval = interval
+        elif (begin is not None) and (end is not None):
             self.interval = TimeInterval(begin, end)
         else:
             self.interval = None
@@ -84,6 +87,30 @@ class SyncMapFragment(object):
 
     def __str__(self):
         return gf.safe_str(self.__unicode__())
+
+    def __eq__(self, other):
+        if not isinstance(other, SyncMapFragment):
+            return False
+        return self.interval == other.interval
+
+    def __ne__(self, other):
+        return not (self == other)
+
+    def __gt__(self, other):
+        if not isinstance(other, SyncMapFragment):
+            return False
+        return self.interval > other.interval
+
+    def __lt__(self, other):
+        if not isinstance(other, SyncMapFragment):
+            return False
+        return self.interval < other.interval 
+
+    def __ge__(self, other):
+        return (self > other) or (self == other)
+
+    def __le__(self, other):
+        return (self < other) or (self == other)
 
     @property
     def text_fragment(self):
@@ -118,10 +145,10 @@ class SyncMapFragment(object):
 
         Possible values are:
 
-        * :data:`~aeneas.syncmap.fragment.SyncMapFragment.FRAGMENT_TYPE_REGULAR`
-        * :data:`~aeneas.syncmap.fragment.SyncMapFragment.FRAGMENT_TYPE_HEAD`
-        * :data:`~aeneas.syncmap.fragment.SyncMapFragment.FRAGMENT_TYPE_TAIL`
-        * :data:`~aeneas.syncmap.fragment.SyncMapFragment.FRAGMENT_TYPE_SILENCE`
+        * :data:`~aeneas.syncmap.fragment.SyncMapFragment.REGULAR`
+        * :data:`~aeneas.syncmap.fragment.SyncMapFragment.HEAD`
+        * :data:`~aeneas.syncmap.fragment.SyncMapFragment.TAIL`
+        * :data:`~aeneas.syncmap.fragment.SyncMapFragment.SILENCE`
 
         :rtype: int
         """

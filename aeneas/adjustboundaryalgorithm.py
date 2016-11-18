@@ -34,16 +34,15 @@ This module contains the following classes:
 from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
-import numpy
 
 from aeneas.audiofilemfcc import AudioFileMFCC
 from aeneas.exacttiming import Decimal
 from aeneas.exacttiming import TimeInterval
-from aeneas.exacttiming import TimeIntervalList
 from aeneas.exacttiming import TimeValue
 from aeneas.logger import Loggable
 from aeneas.runtimeconfiguration import RuntimeConfiguration
 from aeneas.syncmap import SyncMapFragment
+from aeneas.syncmap import SyncMapFragmentList
 from aeneas.textfile import TextFile
 from aeneas.textfile import TextFragment
 from aeneas.tree import Tree
@@ -54,17 +53,6 @@ class AdjustBoundaryAlgorithm(Loggable):
     Enumeration and implementation of the available algorithms
     to adjust the boundary point between two consecutive fragments.
 
-    :param dict aba_parameters: a dictionary containing the algorithm and its parameters,
-                                as produced by ``aba_parameters()`` in ``TaskConfiguration``
-    :param boundary_indices: the current boundary indices,
-                             with respect to the audio file full MFCCs
-    :type  boundary_indices: :class:`numpy.ndarray` (1D)
-    :param real_wave_mfcc: the audio file MFCCs
-    :type  real_wave_mfcc: :class:`~aeneas.audiofilemfcc.AudioFileMFCC`
-    :param text_file: the text file containing the text fragments associated
-    :type  text_file: :class:`~aeneas.textfile.TextFile`
-    :param sync_root: the root of the sync map tree to which new nodes should be appended
-    :type  sync_root: :class:`~aeneas.tree.Tree`
     :param rconf: a runtime configuration
     :type  rconf: :class:`~aeneas.runtimeconfiguration.RuntimeConfiguration`
     :param logger: the logger object
@@ -239,51 +227,63 @@ class AdjustBoundaryAlgorithm(Loggable):
 
     TAG = u"AdjustBoundaryAlgorithm"
 
-    def __init__(
-            self,
-            aba_parameters,
-            boundary_indices,
-            real_wave_mfcc,
-            text_file,
-            sync_root,
-            rconf=None,
-            logger=None
+    def __init__(self, rconf=None, logger=None):
+        super(AdjustBoundaryAlgorithm, self).__init__(rconf=rconf, logger=logger)
+        self.smflist = None
+        self.mws = self.rconf.mws
+
+    def adjust(
+        self,
+        aba_parameters,
+        boundary_indices,
+        real_wave_mfcc,
+        text_file,
     ):
+        """
+        Adjust the boundaries of the text map
+        using the algorithm and parameters
+        specified in the constructor,
+        storing the sync map fragment list internally.
+
+        :param dict aba_parameters: a dictionary containing the algorithm and its parameters,
+                                    as produced by ``aba_parameters()`` in ``TaskConfiguration``
+        :param boundary_indices: the current boundary indices,
+                                 with respect to the audio file full MFCCs
+        :type  boundary_indices: :class:`numpy.ndarray` (1D)
+        :param real_wave_mfcc: the audio file MFCCs
+        :type  real_wave_mfcc: :class:`~aeneas.audiofilemfcc.AudioFileMFCC`
+        :param text_file: the text file containing the text fragments associated
+        :type  text_file: :class:`~aeneas.textfile.TextFile`
+
+        :rtype: list of :class:`~aeneas.syncmap.SyncMapFragmentList`
+        """
         if boundary_indices is None:
             raise TypeError(u"boundary_indices is None")
         if (real_wave_mfcc is None) or (not isinstance(real_wave_mfcc, AudioFileMFCC)):
             raise TypeError(u"real_wave_mfcc is None or not an AudioFileMFCC object")
         if (text_file is None) or (not isinstance(text_file, TextFile)):
             raise TypeError(u"text_file is None or not a TextFile object")
-        if (sync_root is None) or (not isinstance(sync_root, Tree)):
-            raise TypeError(u"sync_root is None or not a Tree object")
-        super(AdjustBoundaryAlgorithm, self).__init__(rconf=rconf, logger=logger)
-        self.aba_parameters = aba_parameters
-        self.real_wave_mfcc = real_wave_mfcc
-        self.boundary_indices = boundary_indices
-        self.text_file = text_file
-        self.sync_root = sync_root
-        self.intervals = None
 
-    def adjust(self):
-        """
-        Adjust the boundaries of the text map
-        using the algorithm and parameters
-        specified in the constructor,
-        and return a list of time intervals.
+        # save mws
+        self.mws = real_wave_mfcc.rconf.mws
 
-        :rtype: list of :class:`~aeneas.exacttiming.TimeInterval`
-        """
         # convert boundary indices to time intervals
-        self._boundary_indices_to_intervals()
+        self.intervals_to_fragment_list(
+            text_file=text_file,
+            end=real_wave_mfcc.audio_length,
+            boundary_indices=boundary_indices,
+        )
 
         # check no fragment has zero length, if requested
-        self._check_no_zero()
+        check, offset = aba_parameters["nozero"]
+        self._check_no_zero(check=check, offset=offset)
 
         # add silence intervals, if any
-        self._process_long_silences()
+        sil_min, sil_string = aba_parameters["silence"]
+        self._process_long_silences(sil_min, sil_string)
 
-        algorithm = self.aba_parameters["algorithm"][0]
+        # adjust using the right algorithm
+        algorithm, algo_parameters = aba_parameters["algorithm"]
         ALGORITHM_MAP = {
             self.AFTERCURRENT: self._adjust_aftercurrent,
             self.AUTO: self._adjust_auto,
@@ -294,143 +294,188 @@ class AdjustBoundaryAlgorithm(Loggable):
             self.RATEAGGRESSIVE: self._adjust_rate_aggressive,
         }
         if algorithm in ALGORITHM_MAP:
-            ALGORITHM_MAP[algorithm]()
+            ALGORITHM_MAP[algorithm](real_wave_mfcc, algo_parameters)
         else:
-            self._adjust_auto()
+            self._adjust_auto(real_wave_mfcc, algo_parameters)
 
         # ensure the HEAD interval starts at 0.000
-        self.intervals[0].begin = TimeValue("0.000")
+        self.smflist[0].begin = TimeValue("0.000")
         # ensure the TAIL interval ends at audio length
-        self.intervals[-1].end = self.real_wave_mfcc.audio_length
+        self.smflist[-1].end = real_wave_mfcc.audio_length
 
-        # append new nodes to sync_root
-        self._intervals_to_tree()
+        return self.smflist
 
-    def _intervals_to_tree(self):
-        self.log(u"Converting intervals to tree...")
-        fragments = (
-            [TextFragment(identifier=u"HEAD", language=None, lines=[u""])] +
-            self.text_file.fragments +
-            [TextFragment(identifier=u"TAIL", language=None, lines=[u""])]
-        )
-        for interval, fragment in zip(self.intervals, fragments):
-            sm_frag = SyncMapFragment(
-                text_fragment=fragment,
-                begin=interval.begin,
-                end=interval.end,
-                fragment_type=interval.interval_type
-            )
-            self.sync_root.add_child(Tree(value=sm_frag))
-        self.log(u"Converting intervals to tree... done")
-
-    def _boundary_indices_to_intervals(self):
+    def intervals_to_fragment_list(self, text_file, end, boundary_indices=None, time_values=None):
         """
-        Transform a list of time values into a list of intervals,
-        and store it internally.
+        Transform a list of boundary indices or time values
+        into a sync map fragment list and store it internally.
 
-        For example: [0,1,2,3,4] => [(0,1), (1,2), (2,3), (3,4)]
+        For example:
 
-        :param times: the time values
-        :type  times: list of :class:`~aeneas.exacttiming.TimeIntervals`
+            b_i=[1, 2, 3], end=4.567 => [(0.000, 1*mws), (1*mws, 2*mws), (2*mws, 3*mws), (3*mws, 4.567)]
+            time_values=[0.000, 1.000, 2.000, 3.456] => [(0.000, 1.000), (1.000, 2.000), (2.000, 3.456)]
+
+        :param text_file: the text file containing the text fragments associated
+        :type  text_file: :class:`~aeneas.textfile.TextFile`
+        :param time_values: the time values
+        :type  time_values: list of :class:`~aeneas.exacttiming.TimeValue`
         """
-        self.log(u"Converting boundary indices to intervals...")
-        self.intervals = TimeIntervalList(
-            begin=TimeValue("0.000"),
-            end=self.real_wave_mfcc.audio_length
-        )
-        times = self.boundary_indices * self.rconf.mws
-        self.intervals.add(TimeInterval(
-            begin=TimeValue("0.000"),
-            end=times[0],
-            interval_type=TimeInterval.HEAD
+        if (boundary_indices is None) and (time_values is None):
+            self.log_exc(u"Both boundary_indices and times are None", None, True, TypeError)
+        if boundary_indices is not None:
+            self.log(u"Converting boundary indices to fragment list...")
+            times = [TimeValue("0.000")] + list(boundary_indices * self.mws) + [end]
+        else:
+            self.log(u"Converting time intervals to fragment list...")
+            times = time_values
+
+        self.smflist = SyncMapFragmentList(begin=TimeValue("0.000"), end=end)
+        # HEAD
+        self.smflist.add(SyncMapFragment(
+            text_fragment=TextFragment(identifier=u"HEAD"),
+            begin=times[0],
+            end=times[1],
+            fragment_type=SyncMapFragment.HEAD
         ), sort=False)
-        for i in range(len(times) - 1):
-            self.intervals.add(TimeInterval(
+        # REGULAR
+        for i in range(1, len(times) - 2):
+            self.smflist.add(SyncMapFragment(
+                text_fragment=text_file.fragments[i - 1],
                 begin=times[i],
                 end=times[i + 1],
-                interval_type=TimeInterval.REGULAR
+                fragment_type=SyncMapFragment.REGULAR
             ), sort=False)
-        self.intervals.add(TimeInterval(
-            begin=times[len(times) - 1],
-            end=self.real_wave_mfcc.audio_length,
-            interval_type=TimeInterval.TAIL
+        # TAIL
+        self.smflist.add(SyncMapFragment(
+            text_fragment=TextFragment(identifier=u"TAIL"),
+            begin=times[len(times) - 2],
+            end=end,
+            fragment_type=SyncMapFragment.TAIL
         ), sort=False)
-        self.intervals.sort()
-        self.log(u"Converting boundary indices to intervals... done")
+        self.log(u"Converting to fragment list... done")
+        self.log(u"Sorting fragment list...")
+        self.smflist.sort()
+        self.log(u"Sorting fragment list... done")
+        return self.smflist
 
-    def _adjust_auto(self):
+    def append_fragment_list_to_sync_root(self, sync_root):
+        """
+        Append the sync map fragment list
+        to the given node from a sync map tree.
+
+        :param sync_root: the root of the sync map tree to which the new nodes should be appended
+        :type  sync_root: :class:`~aeneas.tree.Tree`
+        """
+        if (sync_root is None) or (not isinstance(sync_root, Tree)):
+            raise TypeError(u"sync_root is None or not a Tree object")
+
+        self.log(u"Appending fragment list to sync root...")
+        for fragment in self.smflist:
+            sync_root.add_child(Tree(value=fragment))
+        self.log(u"Appending fragment list to sync root... done")
+
+    # #####################################################
+    # NO ZERO AND LONG SILENCES FUNCTIONS
+    # #####################################################
+
+    def _check_no_zero(self, check, offset):
+        self.log(u"Called _check_no_zero")
+        if check:
+            self.log(u"Check requested: checking and fixing")
+            self.log([u"Offset is %.3f", offset])
+            # ignore HEAD and TAIL
+            max_index = len(self.smflist) - 1
+            self.smflist.fix_zero_length_intervals(
+                offset=offset,
+                min_index=1,
+                max_index=max_index
+            )
+            self.smflist[max_index].begin = self.smflist[max_index - 1].end
+        else:
+            self.log(u"Check not requested: returning")
+
+    def _process_long_silences(self, sil_min, sil_string):
+        self.log(u"Called _process_long_silences")
+        if sil_min is not None:
+            self.log(u"Processing long silences requested: fixing")
+            # TODO
+        else:
+            self.log(u"Processing long silences not requested: returning")
+
+    # #####################################################
+    # ADJUST FUNCTIONS
+    # #####################################################
+
+    def _adjust_auto(self, real_wave_mfcc, algo_parameters):
         """
         AUTO (do not modify)
         """
         self.log(u"Called _adjust_auto")
         self.log(u"Nothing to do, return unchanged")
 
-    def _adjust_offset(self):
+    def _adjust_offset(self, real_wave_mfcc, algo_parameters):
         """
         OFFSET
         """
         self.log(u"Called _adjust_offset")
-        # NOTE parameter is a TimeValue
-        offset = self.aba_parameters["algorithm"][1][0]
-        self._apply_offset(offset)
+        self._apply_offset(offset=algo_parameters[0])
 
-    def _adjust_percent(self):
+    def _adjust_percent(self, real_wave_mfcc, algo_parameters):
         """
         PERCENT
         """
-        def new_time(begin, end, current):
-            """ Compute new time """
-            # NOTE parameter is an int
-            percent = self.aba_parameters["algorithm"][1][0]
-            percent = max(min(Decimal(percent) / 100, 100), 0)
-            return (begin + (end + 1 - begin) * percent) * self.rconf.mws
+        def new_time(nsi):
+            """
+            The new boundary time value is ``percent``
+            of the nonspeech interval ``nsi``.
+            """
+            percent = Decimal(algo_parameters[0])
+            return nsi.percent_value(percent)
         self.log(u"Called _adjust_percent")
-        self._adjust_on_nonspeech(new_time)
+        self._adjust_on_nonspeech(real_wave_mfcc, new_time)
 
-    def _adjust_aftercurrent(self):
+    def _adjust_aftercurrent(self, real_wave_mfcc, algo_parameters):
         """
         AFTERCURRENT
         """
-        def new_time(begin, end, current):
-            """ Compute new time """
-            mws = self.rconf.mws
-            # NOTE parameter is a TimeValue
-            delay = self.aba_parameters["algorithm"][1][0]
-            delay = max(delay, TimeValue("0.000"))
-            tentative = begin * mws + delay
-            if tentative > (end + 1) * mws:
-                return current * mws
-            return tentative
+        def new_time(nsi):
+            """
+            The new boundary time value is ``delay`` after
+            the begin of the nonspeech interval ``nsi``.
+            If ``nsi`` has length less than ``delay``,
+            set the new boundary time to the end of ``nsi``.
+            """
+            delay = max(algo_parameters[0], TimeValue("0.000"))
+            return min(nsi.begin + delay, nsi.end)
         self.log(u"Called _adjust_aftercurrent")
-        self._adjust_on_nonspeech(new_time)
+        self._adjust_on_nonspeech(real_wave_mfcc, new_time)
 
-    def _adjust_beforenext(self):
+    def _adjust_beforenext(self, real_wave_mfcc, algo_parameters):
         """
         BEFORENEXT
         """
-        def new_time(begin, end, current):
-            """ Compute new time """
-            mws = self.rconf.mws
-            # NOTE parameter is a TimeValue
-            delay = self.aba_parameters["algorithm"][1][0]
-            delay = max(delay, TimeValue("0.000"))
-            tentative = (end + 1) * mws - delay
-            if tentative < begin * mws:
-                return current * mws
-            return tentative
+        def new_time(nsi):
+            """
+            The new boundary time value is ``delay`` before
+            the end of the nonspeech interval ``nsi``.
+            If ``nsi`` has length less than ``delay``,
+            set the new boundary time to the begin of ``nsi``.
+            """
+            delay = max(algo_parameters[0], TimeValue("0.000"))
+            return max(nsi.end - delay, nsi.begin)
         self.log(u"Called _adjust_beforenext")
-        self._adjust_on_nonspeech(new_time)
+        self._adjust_on_nonspeech(real_wave_mfcc, new_time)
 
-    def _adjust_rate(self):
+    def _adjust_rate(self, real_wave_mfcc, algo_parameters):
         self.log(u"Called _adjust_rate")
-        self._apply_rate(aggressive=False)
+        self._apply_rate(real_wave_mfcc, max_rate=algo_parameters[0], aggressive=False)
 
-    def _adjust_rate_aggressive(self):
+    def _adjust_rate_aggressive(self, real_wave_mfcc, algo_parameters):
         self.log(u"Called _adjust_rate_aggressive")
-        self._apply_rate(aggressive=True)
+        self._apply_rate(real_wave_mfcc, max_rate=algo_parameters[0], aggressive=True)
 
     # #####################################################
-    # HELPERS
+    # HELPER FUNCTIONS
     # #####################################################
 
     def _apply_offset(self, offset):
@@ -443,10 +488,10 @@ class AdjustBoundaryAlgorithm(Loggable):
         """
         if not isinstance(offset, TimeValue):
             self.log_exc(u"offset is not an instance of TimeValue", None, True, TypeError)
-        self.log([u"Applying offset %s", self.parameters[0]])
-        self.intervals.offset(offset)
+        self.log([u"Applying offset %s", offset])
+        self.smflist.offset(offset)
 
-    def _adjust_on_nonspeech(self, adjust_function):
+    def _adjust_on_nonspeech(self, real_wave_mfcc, adjust_function):
         """
         Apply the adjust function to each boundary point
         falling inside (extrema included) of a nonspeech interval.
@@ -458,42 +503,49 @@ class AdjustBoundaryAlgorithm(Loggable):
         The adjust function is not applied to the last boundary index
         to avoid anticipating the end of the audio file.
 
-        The adjust function takes three arguments: the begin and end
-        indices of the nonspeech interval, and the current boundary index.
+        The ``adjust function`` takes
+        the nonspeech interval as its only argument.
         """
         self.log(u"Called _adjust_on_nonspeech")
-        # TODO
+        # get nonspeech intervals
+        nonspeech_intervals = [TimeInterval(
+            begin=TimeValue(b * self.mws),
+            end=TimeValue(e * self.mws)
+        ) for b, e in real_wave_mfcc.intervals(speech=False, time=False)]
+        
+        # first pass: associate each fragment end point to an nsi, if possible
+        # TODO make tolerance a parameter
+        tolerance = 2 * self.mws
+        nsi_index = 0
+        frag_index = 0
+        nsi_counter = [(n, []) for n in nonspeech_intervals]
+        while (nsi_index < len(nonspeech_intervals)) and (frag_index < len(self.smflist)):
+            nsi = nonspeech_intervals[nsi_index]
+            nsi_shadow = nsi.shadow(tolerance)
+            frag = self.smflist[frag_index]
+            if frag.fragment_type == SyncMapFragment.REGULAR:
+                frag_end = frag.end
+                if nsi_shadow.contains(frag_end):
+                    nsi_counter[nsi_index][1].append(frag_index) 
+                    frag_index += 1
+                elif nsi_shadow.begin > frag_end:
+                    frag_index += 1
+                else:
+                    nsi_index += 1
+            else:
+                # fragment is not regular: just skip it
+                frag_index += 1
 
-    def _apply_rate(self, aggressive=False):
+        # second pass: for those nsi with exactly one end point, move it
+        for nsi, frags in nsi_counter:
+            if len(frags) == 1:
+                frag_index = frags[0]
+                self.smflist.move_end(index=frags[0], value=adjust_function(nsi))
+
+    def _apply_rate(self, real_wave_mfcc, max_rate, aggressive=False):
         self.log(u"Called _apply_rate")
         # if only one fragment, return unchanged
-        if len(self.text_file) <= 1:
-            self.log(u"Only one fragment, returning")
+        if len(self.smflist) <= 3:
+            self.log(u"Only one text fragment, returning")
             return
         # TODO
-
-    def _check_no_zero(self):
-        self.log(u"Called _check_no_zero")
-        if self.aba_parameters["nozero"][0]:
-            self.log(u"Check requested: checking and fixing")
-            offset = self.aba_parameters["nozero"][1]
-            self.log([u"Offset is %.3f", offset])
-            # ignore HEAD and TAIL
-            max_index = len(self.intervals) - 1
-            self.intervals.fix_zero_length_intervals(
-                offset=offset,
-                min_index=1,
-                max_index=max_index
-            )
-            self.intervals[max_index].begin = self.intervals[max_index - 1].end
-        else:
-            self.log(u"Check not requested: returning")
-
-    def _process_long_silences(self):
-        self.log(u"Called _process_long_silences")
-        sil_min, sil_string = self.aba_parameters["silence"]
-        if sil_min is not None:
-            self.log(u"Processing long silences requested: fixing")
-            # TODO
-        else:
-            self.log(u"Processing long silences not requested: returning")

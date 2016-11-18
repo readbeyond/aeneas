@@ -12,13 +12,16 @@ v1.7.0 (2016-11-??)
 #. Added Makefile files to C/C++ extensions, replacing previous Bash scripts
 #. Renamed ``aeneas.timevalue`` into ``aeneas.exacttiming``
 #. Added ``aeneas.exacttiming.TimeInterval`` class to represent time intervals and act upon them
+#. Added ``aeneas.syncmap.fragmentlist.SyncMapFragmentList`` class to represent a list of sync map fragments, sorted and with constraints
+#. Added tests for the above two new classes
 #. Changed ``config_string()`` to property in ``aeneas.configuration.Configuration``
 #. Added ``clone()`` method to ``aeneas.configuration.Configuration``
 #. Removed ``clone()`` method to ``aeneas.runtimeconfiguration.RuntimeConfiguration`` (now it inherits from ``Configuration``)
 #. Added ``clone()`` method to ``aeneas.tree.Tree``
 #. Added tests for ``Configuration`` and ``RuntimeConfiguration``
 #. Added more tests for ``Tree``
-#. Simplified ``ExecuteTask``, offloading some sub-tasks to ``SyncMap`` and ``AdjustBoundaryAlgorithm``
+#. Simplified ``ExecuteTask``, offloading some sub-tasks to ``SyncMap``, ``SyncMapFragmentList``, and ``AdjustBoundaryAlgorithm``
+#. Simplified ``AdjustBoundaryAlgorithm``
 
 v1.6.0.1 (2016-09-30)
 ---------------------

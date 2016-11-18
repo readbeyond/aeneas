@@ -24,6 +24,7 @@
 import unittest
 
 from aeneas.exacttiming import Decimal
+from aeneas.exacttiming import TimeInterval
 from aeneas.exacttiming import TimeValue
 from aeneas.language import Language
 from aeneas.syncmap import SyncMap
@@ -76,6 +77,65 @@ class TestSyncMap(unittest.TestCase):
         self.assertEqual(frag.audio_duration, 0)
         self.assertEqual(frag.chars, 0)
         self.assertIsNone(frag.rate)
+
+    def test_fragment_constructor_begin_end(self):
+        frag = SyncMapFragment(begin=TimeValue("1.000"), end=TimeValue("1.000"))
+        self.assertEqual(frag.audio_duration, 0)
+        self.assertEqual(frag.chars, 0)
+        self.assertIsNone(frag.rate)
+
+    def test_fragment_constructor_begin_end_nonzero(self):
+        frag = SyncMapFragment(begin=TimeValue("1.000"), end=TimeValue("3.000"))
+        self.assertEqual(frag.audio_duration, TimeValue("2.000"))
+        self.assertEqual(frag.chars, 0)
+        self.assertEqual(frag.rate, 0)
+
+    def test_fragment_constructor_interval(self):
+        interval = TimeInterval(begin=TimeValue("1.000"), end=TimeValue("1.000"))
+        frag = SyncMapFragment(interval=interval)
+        self.assertEqual(frag.audio_duration, 0)
+        self.assertEqual(frag.chars, 0)
+        self.assertIsNone(frag.rate)
+
+    def test_fragment_constructor_interval_nonzero(self):
+        interval = TimeInterval(begin=TimeValue("1.000"), end=TimeValue("3.000"))
+        frag = SyncMapFragment(interval=interval)
+        self.assertEqual(frag.audio_duration, TimeValue("2.000"))
+        self.assertEqual(frag.chars, 0)
+        self.assertEqual(frag.rate, 0)
+
+    def test_fragment_ordering(self):
+        t_0_0 = SyncMapFragment(begin=TimeValue("0.000"), end=TimeValue("0.000"))
+        t_0_1 = SyncMapFragment(begin=TimeValue("0.000"), end=TimeValue("1.000"))
+        t_0_3 = SyncMapFragment(begin=TimeValue("0.000"), end=TimeValue("3.000"))
+        q_0_3 = SyncMapFragment(begin=TimeValue("0.000"), end=TimeValue("3.000"))
+        t_2_2 = SyncMapFragment(begin=TimeValue("2.000"), end=TimeValue("2.000"))
+        q_2_2 = SyncMapFragment(begin=TimeValue("2.000"), end=TimeValue("2.000"))
+        self.assertTrue(t_0_0 <= t_0_0)
+        self.assertTrue(t_0_0 == t_0_0)
+        self.assertTrue(t_0_0 >= t_0_0)
+        self.assertFalse(t_0_0 != t_0_0)
+        self.assertTrue(t_0_1 <= t_0_1)
+        self.assertTrue(t_0_1 == t_0_1)
+        self.assertTrue(t_0_1 >= t_0_1)
+        self.assertTrue(t_0_0 < t_0_1)
+        self.assertTrue(t_0_0 < t_0_3)
+        self.assertTrue(t_0_0 < t_2_2)
+        self.assertTrue(t_0_0 <= t_0_1)
+        self.assertTrue(t_0_0 <= t_0_3)
+        self.assertTrue(t_0_0 <= t_2_2)
+        self.assertFalse(t_0_3 < q_0_3)
+        self.assertTrue(t_0_3 <= q_0_3)
+        self.assertTrue(t_0_3 == q_0_3)
+        self.assertTrue(t_0_3 >= q_0_3)
+        self.assertFalse(t_0_3 > q_0_3)
+        self.assertFalse(t_0_3 != q_0_3)
+        self.assertFalse(t_2_2 < q_2_2)
+        self.assertTrue(t_2_2 <= q_2_2)
+        self.assertTrue(t_2_2 == q_2_2)
+        self.assertTrue(t_2_2 >= q_2_2)
+        self.assertFalse(t_2_2 > q_2_2)
+        self.assertFalse(t_2_2 != q_2_2)
 
     def test_fragment_rate_none(self):
         text = TextFragment(lines=[u"Hello", u"World"])

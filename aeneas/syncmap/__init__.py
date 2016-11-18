@@ -30,6 +30,7 @@ This package contains the following classes:
 * :class:`~aeneas.syncmap.SyncMap`, represents a sync map as a tree of sync map fragments;
 * :class:`~aeneas.syncmap.format.SyncMapFormat`, an enumeration of the supported output formats;
 * :class:`~aeneas.syncmap.fragment.SyncMapFragment`, connects a text fragment with a ``begin`` and ``end`` time values;
+* :class:`~aeneas.syncmap.fragmentlist.SyncMapFragmentList`, a list of sync map fragments with order constraints;
 * :class:`~aeneas.syncmap.headtailformat.SyncMapHeadTailFormat`, an enumeration of the supported formats for the sync map head/tail.
 * :class:`~aeneas.syncmap.missingparametererror.SyncMapMissingParameterError`, an error raised when reading sync maps from file;
 """
@@ -46,6 +47,7 @@ import os
 from aeneas.logger import Loggable
 from aeneas.syncmap.format import SyncMapFormat
 from aeneas.syncmap.fragment import SyncMapFragment
+from aeneas.syncmap.fragmentlist import SyncMapFragmentList
 from aeneas.syncmap.headtailformat import SyncMapHeadTailFormat
 from aeneas.syncmap.missingparametererror import SyncMapMissingParameterError
 from aeneas.textfile import TextFragment
@@ -358,7 +360,7 @@ class SyncMap(Loggable):
             tail = tree.get_child(-1)
             # mark HEAD as REGULAR if needed
             if head_tail_format == SyncMapHeadTailFormat.ADD:
-                head.value.fragment_type = SyncMapFragment.FRAGMENT_TYPE_REGULAR
+                head.value.fragment_type = SyncMapFragment.REGULAR
                 self.log(u"Marked HEAD as REGULAR")
             # stretch first and last fragment timings if needed
             if head_tail_format == SyncMapHeadTailFormat.STRETCH:
@@ -368,11 +370,11 @@ class SyncMap(Loggable):
                 last.value.end = tail.value.end
             # mark TAIL as REGULAR if needed
             if head_tail_format == SyncMapHeadTailFormat.ADD:
-                tail.value.fragment_type = SyncMapFragment.FRAGMENT_TYPE_REGULAR
+                tail.value.fragment_type = SyncMapFragment.REGULAR
                 self.log(u"Marked TAIL as REGULAR")
             # remove all fragments that are not REGULAR
             for node in list(tree.dfs):
-                if (node.value is not None) and (node.value.fragment_type != SyncMapFragment.FRAGMENT_TYPE_REGULAR):
+                if (node.value is not None) and (node.value.fragment_type != SyncMapFragment.REGULAR):
                     node.remove()
 
         if sync_map_format is None:
