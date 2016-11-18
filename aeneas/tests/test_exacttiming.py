@@ -636,6 +636,51 @@ class TestExactTiming(unittest.TestCase):
                     i = TimeInterval(begin=TimeValue(b), end=TimeValue(e))
                     l.add(i)
 
+    def test_time_interval_list_add_not_sorted_bad_sequence(self):
+        params = [
+            [
+                ("1.000", "1.000"),
+                ("0.500", "1.500"),
+            ],
+            [
+                ("1.000", "2.000"),
+                ("1.500", "1.750"),
+            ],
+            [
+                ("1.000", "2.000"),
+                ("1.500", "1.500"),
+            ],
+            [
+                ("1.000", "2.000"),
+                ("0.500", "1.500"),
+            ],
+            [
+                ("1.000", "2.000"),
+                ("1.500", "2.500"),
+            ],
+            [
+                ("1.000", "2.000"),
+                ("0.500", "2.500"),
+            ],
+        ]
+        for seq in params:
+            l = TimeIntervalList(begin=TimeValue("0.000"), end=TimeValue("10.000"))
+            for b, e in seq:
+                i = TimeInterval(begin=TimeValue(b), end=TimeValue(e))
+                l.add(i, sort=False)
+            with self.assertRaises(ValueError):
+                l.sort()
+
+    def test_time_interval_list_add_sorted_bad(self):
+        l = TimeIntervalList(begin=TimeValue("0.000"), end=TimeValue("10.000"))
+        i = TimeInterval(begin=TimeValue("0.000"), end=TimeValue("0.000"))
+        l.add(i, sort=False)
+        i = TimeInterval(begin=TimeValue("1.000"), end=TimeValue("1.000"))
+        l.add(i, sort=False)
+        i = TimeInterval(begin=TimeValue("2.000"), end=TimeValue("2.000"))
+        with self.assertRaises(ValueError):
+            l.add(i, sort=True)
+
     def test_time_interval_list_add_sorted(self):
         params = [
             (
@@ -694,6 +739,70 @@ class TestExactTiming(unittest.TestCase):
             for b, e in ins:
                 i = TimeInterval(begin=TimeValue(b), end=TimeValue(e))
                 l.add(i)
+            for j, interval in enumerate(l.intervals):
+                b, e = exp[j]
+                exp_i = TimeInterval(begin=TimeValue(b), end=TimeValue(e))
+                self.assertTrue(interval == exp_i)
+
+    def test_time_interval_list_add_not_sorted(self):
+        params = [
+            (
+                [
+                    ("1.000", "1.000"),
+                    ("0.500", "0.500"),
+                    ("1.000", "1.000"),
+                ],
+                [
+                    ("0.500", "0.500"),
+                    ("1.000", "1.000"),
+                    ("1.000", "1.000"),
+                ]
+            ),
+            (
+                [
+                    ("1.000", "1.000"),
+                    ("0.500", "0.500"),
+                ],
+                [
+                    ("0.500", "0.500"),
+                    ("1.000", "1.000"),
+                ]
+            ),
+            (
+                [
+                    ("2.000", "2.000"),
+                    ("1.000", "2.000"),
+                    ("0.500", "0.500"),
+                ],
+                [
+                    ("0.500", "0.500"),
+                    ("1.000", "2.000"),
+                    ("2.000", "2.000"),
+                ]
+            ),
+            (
+                [
+                    ("2.000", "2.000"),
+                    ("0.500", "0.500"),
+                    ("2.000", "3.000"),
+                    ("1.000", "2.000"),
+                    ("0.500", "0.500"),
+                ],
+                [
+                    ("0.500", "0.500"),
+                    ("0.500", "0.500"),
+                    ("1.000", "2.000"),
+                    ("2.000", "2.000"),
+                    ("2.000", "3.000"),
+                ]
+            ),
+        ]
+        for ins, exp in params:
+            l = TimeIntervalList(begin=TimeValue("0.000"), end=TimeValue("10.000"))
+            for b, e in ins:
+                i = TimeInterval(begin=TimeValue(b), end=TimeValue(e))
+                l.add(i, sort=False)
+            l.sort()
             for j, interval in enumerate(l.intervals):
                 b, e = exp[j]
                 exp_i = TimeInterval(begin=TimeValue(b), end=TimeValue(e))

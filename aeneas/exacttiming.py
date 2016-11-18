@@ -39,6 +39,7 @@ from __future__ import absolute_import
 from __future__ import print_function
 from decimal import Decimal
 from decimal import InvalidOperation
+import bisect
 import sys
 
 
@@ -715,6 +716,7 @@ class TimeIntervalList(object):
                 raise ValueError(u"begin is bigger than end")
         self.begin = begin
         self.end = end
+        self.__sorted = True
         self.__intervals = []
 
     def __len__(self):
@@ -745,11 +747,45 @@ class TimeIntervalList(object):
         any existing interval in the list (except at its boundaries).
         Raises an error if not OK.
         """
-        # TODO log search
-        for i in self.intervals:
-            rel_pos = i.relative_position_of(interval)
+        # TODO bisect does not work if there is a configuration like:
+        #
+        #   *********** <- existing interval
+        #        ***    <- query interval
+        #
+        # one should probably do this by bisect
+        # over the begin and end lists separately
+        #
+        for existing_interval in self.intervals:
+            rel_pos = existing_interval.relative_position_of(interval)
             if rel_pos not in self.ALLOWED_POSITIONS:
                 raise ValueError(u"interval overlaps another already present interval")
+
+    def sort(self):
+        """
+        Sort the intervals, if they are not sorted already.
+
+        :raises ValueError: if ``interval`` does not respect the boundaries of the list
+                            or if it overlaps an existing interval
+        """
+        if not self.is_guaranteed_sorted:
+            self.__intervals = sorted(self.__intervals)
+            for i in range(len(self) - 1):
+                current_interval = self[i]
+                next_interval = self[i + 1]
+                if current_interval.relative_position_of(next_interval) not in self.ALLOWED_POSITIONS:
+                    raise ValueError(u"The list contains two time intervals overlapping in a forbidden way")
+            self.__sorted = True
+
+    @property
+    def is_guaranteed_sorted(self):
+        """
+        Return ``True`` if the intervals in the list are sorted,
+        and ``False`` if they might not (for example, because
+        an ``add(..., sort=False)`` operation was performed).
+
+        :rtype: bool
+        """
+        return self.__sorted
 
     def add(self, interval, sort=True):
         """
@@ -762,14 +798,20 @@ class TimeIntervalList(object):
         :param bool sort: if ``True`` ensure that after the insertion the list is kept sorted
         :raises TypeError: if ``interval`` is not an instance of ``TimeInterval``
         :raises ValueError: if ``interval`` does not respect the boundaries of the list
-                            or if it overlaps an existing interval
+                            or if it overlaps an existing interval,
+                            or if ``sort=True`` but the list is not guaranteed sorted
         """
         self._check_boundaries(interval)
-        self._check_overlap(interval)
-        # TODO log insertion
-        self.__intervals.append(interval)
         if sort:
-            self.__intervals = sorted(self.__intervals)
+            if not self.is_guaranteed_sorted:
+                raise ValueError(u"Unable to add with sort=True if the list is not guaranteed sorted")
+            # insert sorted, on the right if there is a tie
+            self._check_overlap(interval)
+            bisect.insort(self.__intervals, interval)
+        else:
+            # just append at the end
+            self.__intervals.append(interval)
+            self.__sorted = False
 
     @property
     def intervals(self):
@@ -809,17 +851,17 @@ class TimeIntervalList(object):
         i = min_index
         while i < max_index:
             if self[i].has_zero_length:
-                moves = [(i, "E", offset)]
+                moves = [(i, "ENLARGE", offset)]
                 slack = offset
                 j = i + 1
                 while (j < max_index) and (self[j].length < slack):
                     if self[j].has_zero_length:
-                        moves.append((j, "E", offset))
+                        moves.append((j, "ENLARGE", offset))
                         slack += offset
                     else:
-                        moves.append((j, "M", None))
+                        moves.append((j, "MOVE", None))
                     j += 1
-                fixable = True
+                fixable = False
                 if (j == max_index) and (self[j - 1].end + slack <= self.end):
                     current_time = self[j - 1].end + slack
                     fixable = True
@@ -828,15 +870,14 @@ class TimeIntervalList(object):
                     current_time = self[j].begin
                     fixable = True
                 if fixable:
-                    for index, t, q in moves[::-1]:
-                        if t == "M":
-                            self[index].move_end_at(current_time)
-                        else:
-                            self[index].move_end_at(current_time)
-                            self[index].enlarge(q)
+                    for index, move_type, move_amount in moves[::-1]:
+                        self[index].move_end_at(current_time)
+                        if move_type == "ENLARGE":
+                            self[index].enlarge(move_amount)
                         current_time = self[index].begin
                 else:
-                    # TODO log?
+                    # TODO log this failure?
+                    # unable to fix
                     pass
                 i = j - 1
             i += 1

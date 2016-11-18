@@ -343,18 +343,19 @@ class AdjustBoundaryAlgorithm(Loggable):
             begin=TimeValue("0.000"),
             end=times[0],
             interval_type=TimeInterval.HEAD
-        ))
+        ), sort=False)
         for i in range(len(times) - 1):
             self.intervals.add(TimeInterval(
                 begin=times[i],
                 end=times[i + 1],
                 interval_type=TimeInterval.REGULAR
-            ))
+            ), sort=False)
         self.intervals.add(TimeInterval(
             begin=times[len(times) - 1],
             end=self.real_wave_mfcc.audio_length,
             interval_type=TimeInterval.TAIL
-        ))
+        ), sort=False)
+        self.intervals.sort()
         self.log(u"Converting boundary indices to intervals... done")
 
     def _adjust_auto(self):
