@@ -503,14 +503,14 @@ Example::
 .. versionadded:: 1.0.4
 """
 
-PPN_TASK_ADJUST_BOUNDARY_SILENCE_MIN = "task_adjust_boundary_silence_min"
+PPN_TASK_ADJUST_BOUNDARY_NONSPEECH_MIN = "task_adjust_boundary_nonspeech_min"
 """
 If greater than zero, create a new sync map fragment
 for each nonspeech interval
 with duration greater than or equal to this value.
 
-The text to be associated with these silence intervals
-can be specified with ``task_adjust_boundary_silence_string``.
+The text to be associated with these nonspeech intervals
+can be specified with ``task_adjust_boundary_nonspeech_string``.
 
 Usage: config string, TXT config file, XML config file
 
@@ -518,18 +518,18 @@ Values: float
 
 Example::
 
-    task_adjust_boundary_silence_min=0.500
+    task_adjust_boundary_nonspeech_min=0.500
 
 .. versionadded:: 1.7.0
 """
 
-PPN_TASK_ADJUST_BOUNDARY_SILENCE_STRING = "task_adjust_boundary_silence_string"
+PPN_TASK_ADJUST_BOUNDARY_NONSPEECH_STRING = "task_adjust_boundary_nonspeech_string"
 """
-Specify the text to be associated with silence intervals
+Specify the text to be associated with nonspeech intervals
 of length greater than or equal to
-the value provided in ``task_adjust_boundary_silence_min``.
+the value provided in ``task_adjust_boundary_nonspeech_min``.
 
-Use the string ``PPV_TASK_ADJUST_BOUNDARY_SILENCE_REMOVE``
+Use the string ``PPV_TASK_ADJUST_BOUNDARY_NONSPEECH_REMOVE``
 to remove these intervals from the output sync map.
 
 Usage: config string, TXT config file, XML config file
@@ -538,9 +538,9 @@ Values: string
 
 Example::
 
-    task_adjust_boundary_silence_string=REMOVE
-    task_adjust_boundary_silence_string=(sil)
-    task_adjust_boundary_silence_string=<sil>
+    task_adjust_boundary_nonspeech_string=REMOVE
+    task_adjust_boundary_nonspeech_string=(sil)
+    task_adjust_boundary_nonspeech_string=<sil>
 
 .. versionadded:: 1.7.0
 """
@@ -1053,10 +1053,10 @@ Example::
 
 """
 
-PPV_TASK_ADJUST_BOUNDARY_SILENCE_REMOVE = "REMOVE"
+PPV_TASK_ADJUST_BOUNDARY_NONSPEECH_REMOVE = "REMOVE"
 """
 Use this string as the value of
-the ``PPN_TASK_ADJUST_BOUNDARY_SILENCE_STRING`` parameter
+the ``PPN_TASK_ADJUST_BOUNDARY_NONSPEECH_STRING`` parameter
 to remove long nonspeech intervals from the output sync map.
 
 .. versionadded:: 1.7.0

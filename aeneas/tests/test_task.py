@@ -255,11 +255,11 @@ class TestTask(unittest.TestCase):
     def test_tc_adjust_boundary_rate_value(self):
         self.setter("aba_rate_value", u"22.5", 22.5)
 
-    def test_tc_adjust_boundary_silence_min(self):
-        self.setter("aba_silence_min", 1.000, 1.000)
+    def test_tc_adjust_boundary_nonspeech_min(self):
+        self.setter("aba_nonspeech_min", 1.000, 1.000)
 
-    def test_tc_adjust_boundary_silence_string(self):
-        self.setter("aba_silence_string", "REMOVE", "REMOVE")
+    def test_tc_adjust_boundary_nonspeech_string(self):
+        self.setter("aba_nonspeech_string", "REMOVE", "REMOVE")
 
     def test_tc_is_audio_file_detect_head_max(self):
         self.setter("i_a_head_max", u"10.000", 10.0)

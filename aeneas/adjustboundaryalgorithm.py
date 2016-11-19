@@ -279,8 +279,8 @@ class AdjustBoundaryAlgorithm(Loggable):
         self._check_no_zero(check=check, offset=offset)
 
         # add silence intervals, if any
-        sil_min, sil_string = aba_parameters["silence"]
-        self._process_long_silences(sil_min, sil_string)
+        ns_min, ns_string = aba_parameters["nonspeech"]
+        self._process_long_nonspeech(ns_min, ns_string)
 
         # adjust using the right algorithm
         algorithm, algo_parameters = aba_parameters["algorithm"]
@@ -375,7 +375,7 @@ class AdjustBoundaryAlgorithm(Loggable):
         self.log(u"Appending fragment list to sync root... done")
 
     # #####################################################
-    # NO ZERO AND LONG SILENCES FUNCTIONS
+    # NO ZERO AND LONG NONSPEECH FUNCTIONS
     # #####################################################
 
     def _check_no_zero(self, check, offset):
@@ -394,13 +394,13 @@ class AdjustBoundaryAlgorithm(Loggable):
         else:
             self.log(u"Check not requested: returning")
 
-    def _process_long_silences(self, sil_min, sil_string):
-        self.log(u"Called _process_long_silences")
-        if sil_min is not None:
-            self.log(u"Processing long silences requested: fixing")
+    def _process_long_nonspeech(self, ns_min, ns_string):
+        self.log(u"Called _process_long_nonspeech")
+        if ns_min is not None:
+            self.log(u"Processing long nonspeech intervals requested: fixing")
             # TODO
         else:
-            self.log(u"Processing long silences not requested: returning")
+            self.log(u"Processing long nonspeech intervals not requested: returning")
 
     # #####################################################
     # ADJUST FUNCTIONS
@@ -507,15 +507,12 @@ class AdjustBoundaryAlgorithm(Loggable):
         the nonspeech interval as its only argument.
         """
         self.log(u"Called _adjust_on_nonspeech")
-        # get nonspeech intervals
-        nonspeech_intervals = [TimeInterval(
-            begin=TimeValue(b * self.mws),
-            end=TimeValue(e * self.mws)
-        ) for b, e in real_wave_mfcc.intervals(speech=False, time=False)]
-        
-        # first pass: associate each fragment end point to an nsi, if possible
-        # TODO make tolerance a parameter
-        tolerance = 2 * self.mws
+        self.log(u"  Getting nonspeech intervals...")
+        nonspeech_intervals = real_wave_mfcc.intervals(speech=False, time=True)
+        self.log(u"  Getting nonspeech intervals... done")
+
+        self.log(u"  First pass: associate each fragment end point to an nsi, if possible")
+        tolerance = self.rconf[RuntimeConfiguration.ABA_NONSPEECH_TOLERANCE]
         nsi_index = 0
         frag_index = 0
         nsi_counter = [(n, []) for n in nonspeech_intervals]
@@ -523,24 +520,56 @@ class AdjustBoundaryAlgorithm(Loggable):
             nsi = nonspeech_intervals[nsi_index]
             nsi_shadow = nsi.shadow(tolerance)
             frag = self.smflist[frag_index]
+            self.log([u"    nsi:        %s", nsi])
+            self.log([u"    nsi shadow: %s", nsi_shadow])
             if frag.fragment_type == SyncMapFragment.REGULAR:
                 frag_end = frag.end
+                self.log(u"      REGULAR => examining it")
+                self.log([u"        %.3f vs %s", frag_end, nsi_shadow])
                 if nsi_shadow.contains(frag_end):
-                    nsi_counter[nsi_index][1].append(frag_index) 
+                    #
+                    #      *************** nsi shadow
+                    #      | *********** | nsi
+                    # *****|***X         | frag (X=frag_end)
+                    #
+                    self.log(u"        Contained => register and go to next fragment")
+                    nsi_counter[nsi_index][1].append(frag_index)
                     frag_index += 1
                 elif nsi_shadow.begin > frag_end:
+                    #
+                    #      *************** nsi shadow
+                    #      | *********** | nsi
+                    # **X  |             | frag (X=frag_end)
+                    #
+                    self.log(u"        Before => go to next fragment")
                     frag_index += 1
                 else:
+                    #
+                    #       ***************    nsi shadow
+                    #       | *********** |    nsi
+                    #       |        *****|**X frag (X=frag_end)
+                    #
+                    self.log(u"        After => go to next nsi")
                     nsi_index += 1
             else:
-                # fragment is not regular: just skip it
+                self.log(u"      Not REGULAR => go to next fragment")
                 frag_index += 1
+        self.log(u"  First pass: done")
 
-        # second pass: for those nsi with exactly one end point, move it
+        self.log(u"  Second pass: move end point on good nsi")
         for nsi, frags in nsi_counter:
+            self.log([u"    Examining nsi %s", nsi])
             if len(frags) == 1:
                 frag_index = frags[0]
-                self.smflist.move_end(index=frags[0], value=adjust_function(nsi))
+                new_value = adjust_function(nsi)
+                self.log([u"      Only one index:   %d", frag_index])
+                self.log([u"      New value:        %.3f", new_value])
+                self.log([u"      Current interval: %s", self.smflist[frag_index].interval])
+                self.smflist.move_end(index=frags[0], value=new_value)
+                self.log([u"      New interval:     %s", self.smflist[frag_index].interval])
+            else:
+                self.log(u"      Skip it")
+        self.log(u"  Second pass: done")
 
     def _apply_rate(self, real_wave_mfcc, max_rate, aggressive=False):
         self.log(u"Called _apply_rate")

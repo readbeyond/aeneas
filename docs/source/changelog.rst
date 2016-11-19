@@ -10,6 +10,8 @@ v1.7.0 (2016-11-??)
 #. Fixed typos in ``SyncMapFormat`` docstrings
 #. Added ``safety_checks`` parameter to ``RuntimeConfiguration`` that can disable to trade safety for speed (issue #117)
 #. Added Makefile files to C/C++ extensions, replacing previous Bash scripts
+#. Simplified ``ExecuteTask``, offloading some sub-tasks to ``SyncMap``, ``SyncMapFragmentList``, and ``AdjustBoundaryAlgorithm``
+#. Simplified ``AdjustBoundaryAlgorithm``
 #. Renamed ``aeneas.timevalue`` into ``aeneas.exacttiming``
 #. Added ``aeneas.exacttiming.TimeInterval`` class to represent time intervals and act upon them
 #. Added ``aeneas.syncmap.fragmentlist.SyncMapFragmentList`` class to represent a list of sync map fragments, sorted and with constraints
@@ -18,10 +20,12 @@ v1.7.0 (2016-11-??)
 #. Added ``clone()`` method to ``aeneas.configuration.Configuration``
 #. Removed ``clone()`` method to ``aeneas.runtimeconfiguration.RuntimeConfiguration`` (now it inherits from ``Configuration``)
 #. Added ``clone()`` method to ``aeneas.tree.Tree``
+#. Renamed ``os_task_file_no_zero`` (``PPN_OS_TASK_FILE_NO_ZERO``) to ``task_adjust_boundary_no_zero`` (``PPN_TASK_ADJUST_BOUNDARY_NO_ZERO``) in ``TaskConfiguration``
+#. Added ``PPN_TASK_ADJUST_BOUNDARY_NONSPEECH_MIN`` and ``PPN_TASK_ADJUST_BOUNDARY_NONSPEECH_STRING`` to ``TaskConfiguration``
+#. Added ``ABA_NONSPEECH_TOLERANCE`` parameter to ``RuntimeConfiguration``
 #. Added tests for ``Configuration`` and ``RuntimeConfiguration``
 #. Added more tests for ``Tree``
-#. Simplified ``ExecuteTask``, offloading some sub-tasks to ``SyncMap``, ``SyncMapFragmentList``, and ``AdjustBoundaryAlgorithm``
-#. Simplified ``AdjustBoundaryAlgorithm``
+#. Added tests for ``SyncMapFragmentList``
 
 v1.6.0.1 (2016-09-30)
 ---------------------

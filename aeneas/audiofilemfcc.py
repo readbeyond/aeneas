@@ -38,6 +38,7 @@ from aeneas.audiofile import AudioFile
 from aeneas.logger import Loggable
 from aeneas.mfcc import MFCC
 from aeneas.runtimeconfiguration import RuntimeConfiguration
+from aeneas.exacttiming import TimeInterval
 from aeneas.exacttiming import TimeValue
 from aeneas.vad import VAD
 import aeneas.globalfunctions as gf
@@ -382,20 +383,24 @@ class AudioFileMFCC(Loggable):
 
         :param bool speech: if ``True``, return speech intervals,
                             otherwise return nonspeech intervals
-        :param bool time: if ``True``, return values in seconds (:class:`~aeneas.exacttiming.TimeValue`),
-                          otherwise in indices (int)
+        :param bool time: if ``True``, return :class:`~aeneas.exacttiming.TimeInterval` objects,
+                          otherwise return indices (int)
         :rtype: list of pairs (see above)
         """
         self._ensure_mfcc_mask()
         if speech:
-            self.log(u"Converting speech runs to intervals")
+            self.log(u"Converting speech runs to intervals...")
             intervals = self.__speech_intervals
         else:
-            self.log(u"Converting nonspeech runs to intervals")
+            self.log(u"Converting nonspeech runs to intervals...")
             intervals = self.__nonspeech_intervals
         if time:
             mws = self.rconf.mws
-            return [(i[0] * mws, (i[1] + 1) * mws) for i in intervals]
+            intervals = [TimeInterval(
+                begin=(b * mws),
+                end=((e + 1) * mws)
+            ) for b, e in intervals]
+        self.log(u"Converting... done")
         return intervals
 
     def inside_nonspeech(self, index):

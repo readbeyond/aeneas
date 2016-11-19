@@ -323,7 +323,7 @@ class TimeInterval(object):
         return (self < other) or (self == other)
 
     def __repr__(self):
-        return u"%s %s" % (self.begin, self.end)
+        return u"[%s, %s]" % (self.begin, self.end)
 
     @property
     def length(self):

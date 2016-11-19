@@ -50,6 +50,16 @@ class RuntimeConfiguration(Configuration):
     :raises: KeyError: if trying to access a key not listed above
     """
 
+    ABA_NONSPEECH_TOLERANCE = "aba_nonspeech_tolerance"
+    """
+    Tolerance, in seconds, for considering a given time value
+    inside a nonspeech interval.
+
+    Default: ``0.080`` seconds.
+
+    .. versionadded:: 1.7.0
+    """
+
     ALLOW_UNLISTED_LANGUAGES = "allow_unlisted_languages"
     """
     If ``True``, allow using a language code
@@ -716,6 +726,7 @@ class RuntimeConfiguration(Configuration):
     #      about external (user rconf) and internal (lib code) key names
     #      although the functionality might be useful in the future
     FIELDS = [
+        (ABA_NONSPEECH_TOLERANCE, ("0.080", TimeValue, [])),
         (ALLOW_UNLISTED_LANGUAGES, (False, bool, [])),
 
         (C_EXTENSIONS, (True, bool, [])),

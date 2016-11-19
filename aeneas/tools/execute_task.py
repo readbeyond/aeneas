@@ -345,7 +345,7 @@ class ExecuteTaskCLI(AbstractCLIProgram):
     }
 
     PARAMETERS = [
-        u"  task_language                           : language (*)",
+        u"  task_language                           : language (REQ, *)",
         u"",
         u"  is_audio_file_detect_head_max           : detect audio head, at most this many seconds",
         u"  is_audio_file_detect_head_min           : detect audio head, at least this many seconds",
@@ -355,7 +355,7 @@ class ExecuteTaskCLI(AbstractCLIProgram):
         u"  is_audio_file_process_length            : process this many seconds of the audio file",
         u"  is_audio_file_tail_length               : ignore this many seconds from the end of the audio file",
         u"",
-        u"  is_text_type                            : input text format (*)",
+        u"  is_text_type                            : input text format (REQ, *)",
         u"  is_text_mplain_word_separator           : word separator (mplain)",
         u"  is_text_munparsed_l1_id_regex           : regex matching level 1 id attributes (munparsed)",
         u"  is_text_munparsed_l2_id_regex           : regex matching level 2 id attributes (munparsed)",
@@ -366,11 +366,10 @@ class ExecuteTaskCLI(AbstractCLIProgram):
         u"  is_text_file_ignore_regex               : ignore text matched by regex for audio alignment purposes",
         u"  is_text_file_transliterate_map          : apply the given transliteration map for audio alignment purposes",
         u"",
-        u"  os_task_file_format                     : output sync map format (*)",
+        u"  os_task_file_format                     : output sync map format (REQ, *)",
         u"  os_task_file_id_regex                   : id regex for the output sync map (subtitles, plain)",
         u"  os_task_file_head_tail_format           : format audio head/tail (*)",
         u"  os_task_file_levels                     : output the specified levels (mplain)",
-        u"  os_task_file_no_zero                    : if True, do not allow zero-length fragments",
         u"  os_task_file_smil_audio_ref             : value for the audio ref (smil, smilh, smilm)",
         u"  os_task_file_smil_page_ref              : value for the text ref (smil, smilh, smilm)",
         u"",
@@ -378,8 +377,12 @@ class ExecuteTaskCLI(AbstractCLIProgram):
         u"  task_adjust_boundary_aftercurrent_value : offset value, in seconds (aftercurrent)",
         u"  task_adjust_boundary_beforenext_value   : offset value, in seconds (beforenext)",
         u"  task_adjust_boundary_offset_value       : offset value, in seconds (offset)",
-        u"  task_adjust_boundary_percent_value      : percent value, in [0..100], (percent)",
+        u"  task_adjust_boundary_percent_value      : percent value, integer in [0..100], (percent)",
         u"  task_adjust_boundary_rate_value         : max rate, in characters/s (rate, rateaggressive)",
+        u"",
+        u"  task_adjust_boundary_no_zero            : if True, do not allow zero-length fragments",
+        u"  task_adjust_boundary_nonspeech_min      : minimum long nonspeech duration, in seconds",
+        u"  task_adjust_boundary_nonspeech_string   : replace long nonspeech with this string ('REMOVE' deletes them)",
     ]
 
     VALUES = {
@@ -688,7 +691,8 @@ class ExecuteTaskCLI(AbstractCLIProgram):
         """
         Print the list of parameters and exit.
         """
-        self.print_info(u"You can use --list-values=PARAM on parameters marked by (*)")
+        self.print_info(u"You can use --list-values=PARAM on parameters marked by '*'")
+        self.print_info(u"Parameters marked by 'REQ' are required")
         self.print_info(u"Available parameters:")
         self.print_generic(u"\n" + u"\n".join(self.PARAMETERS) + u"\n")
         return self.HELP_EXIT_CODE

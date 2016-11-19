@@ -278,8 +278,8 @@ class TaskConfiguration(Configuration):
     * :data:`~aeneas.globalconstants.PPN_TASK_ADJUST_BOUNDARY_OFFSET_VALUE`       or ``aba_offset_value``
     * :data:`~aeneas.globalconstants.PPN_TASK_ADJUST_BOUNDARY_PERCENT_VALUE`      or ``aba_percent_value``
     * :data:`~aeneas.globalconstants.PPN_TASK_ADJUST_BOUNDARY_RATE_VALUE`         or ``aba_rate_value``
-    * :data:`~aeneas.globalconstants.PPN_TASK_ADJUST_BOUNDARY_SILENCE_MIN`        or ``aba_silence_min``
-    * :data:`~aeneas.globalconstants.PPN_TASK_ADJUST_BOUNDARY_SILENCE_STRING`     or ``aba_silence_string``
+    * :data:`~aeneas.globalconstants.PPN_TASK_ADJUST_BOUNDARY_NONSPEECH_MIN`      or ``aba_nonspeech_min``
+    * :data:`~aeneas.globalconstants.PPN_TASK_ADJUST_BOUNDARY_NONSPEECH_STRING`   or ``aba_nonspeech_string``
     * :data:`~aeneas.globalconstants.PPN_TASK_IS_AUDIO_FILE_DETECT_HEAD_MAX`      or ``i_a_head_max``
     * :data:`~aeneas.globalconstants.PPN_TASK_IS_AUDIO_FILE_DETECT_HEAD_MIN`      or ``i_a_head_min``
     * :data:`~aeneas.globalconstants.PPN_TASK_IS_AUDIO_FILE_DETECT_TAIL_MAX`      or ``i_a_tail_max``
@@ -323,8 +323,8 @@ class TaskConfiguration(Configuration):
         (gc.PPN_TASK_ADJUST_BOUNDARY_NO_ZERO, (None, bool, ["aba_no_zero"])),
         (gc.PPN_TASK_ADJUST_BOUNDARY_PERCENT_VALUE, (None, int, ["aba_percent_value"])),
         (gc.PPN_TASK_ADJUST_BOUNDARY_RATE_VALUE, (None, Decimal, ["aba_rate_value"])),
-        (gc.PPN_TASK_ADJUST_BOUNDARY_SILENCE_MIN, (None, TimeValue, ["aba_silence_min"])),
-        (gc.PPN_TASK_ADJUST_BOUNDARY_SILENCE_STRING, (None, None, ["aba_silence_string"])),
+        (gc.PPN_TASK_ADJUST_BOUNDARY_NONSPEECH_MIN, (None, TimeValue, ["aba_nonspeech_min"])),
+        (gc.PPN_TASK_ADJUST_BOUNDARY_NONSPEECH_STRING, (None, None, ["aba_nonspeech_string"])),
         (gc.PPN_TASK_IS_AUDIO_FILE_DETECT_HEAD_MAX, (None, TimeValue, ["i_a_head_max"])),
         (gc.PPN_TASK_IS_AUDIO_FILE_DETECT_HEAD_MIN, (None, TimeValue, ["i_a_head_min"])),
         (gc.PPN_TASK_IS_AUDIO_FILE_DETECT_TAIL_MAX, (None, TimeValue, ["i_a_tail_max"])),
@@ -366,7 +366,7 @@ class TaskConfiguration(Configuration):
         Available keys:
 
         * ``algorithm``, tuple: (string, list)
-        * ``silence``, tuple: (TimeValue or None, string)
+        * ``nonspeech``, tuple: (TimeValue or None, string)
         * ``nozero``, tuple: (bool, TimeValue)
 
         :rtype: dict
@@ -381,11 +381,11 @@ class TaskConfiguration(Configuration):
             AdjustBoundaryAlgorithm.RATEAGGRESSIVE: [self[gc.PPN_TASK_ADJUST_BOUNDARY_RATE_VALUE]]
         }
         aba_algorithm = self[gc.PPN_TASK_ADJUST_BOUNDARY_ALGORITHM] or AdjustBoundaryAlgorithm.AUTO
-        sil_min = self[gc.PPN_TASK_ADJUST_BOUNDARY_SILENCE_MIN]
-        sil_string = self[gc.PPN_TASK_ADJUST_BOUNDARY_SILENCE_STRING]
+        ns_min = self[gc.PPN_TASK_ADJUST_BOUNDARY_NONSPEECH_MIN]
+        ns_string = self[gc.PPN_TASK_ADJUST_BOUNDARY_NONSPEECH_STRING]
         no_zero = self[gc.PPN_TASK_ADJUST_BOUNDARY_NO_ZERO] or False
         return {
             "algorithm": (aba_algorithm, ABA_MAP[aba_algorithm]),
-            "silence": (sil_min, sil_string),
+            "nonspeech": (ns_min, ns_string),
             "nozero": (no_zero, TimeValue("0.001"))
         }
