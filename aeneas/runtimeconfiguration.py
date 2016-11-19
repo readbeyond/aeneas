@@ -60,6 +60,15 @@ class RuntimeConfiguration(Configuration):
     .. versionadded:: 1.7.0
     """
 
+    ABA_NO_ZERO_DURATION = "aba_no_zero_duration"
+    """
+    Offset, in seconds, to be added to fragments with zero length.
+
+    Default: ``0.001`` seconds.
+
+    .. versionadded:: 1.7.0
+    """
+
     ALLOW_UNLISTED_LANGUAGES = "allow_unlisted_languages"
     """
     If ``True``, allow using a language code
@@ -727,6 +736,7 @@ class RuntimeConfiguration(Configuration):
     #      although the functionality might be useful in the future
     FIELDS = [
         (ABA_NONSPEECH_TOLERANCE, ("0.080", TimeValue, [])),
+        (ABA_NO_ZERO_DURATION, ("0.001", TimeValue, [])),
         (ALLOW_UNLISTED_LANGUAGES, (False, bool, [])),
 
         (C_EXTENSIONS, (True, bool, [])),

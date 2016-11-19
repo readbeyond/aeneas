@@ -452,7 +452,7 @@ class TestSyncMapFragmentList(unittest.TestCase):
                 exp_s = SyncMapFragment(interval=exp_i)
                 self.assertTrue(fragment == exp_s)
 
-    def test_time_interval_list_fix_zero_length_intervals(self):
+    def test_time_interval_list_fix_zero_length_fragments(self):
         params = [
             (
                 [
@@ -607,14 +607,14 @@ class TestSyncMapFragmentList(unittest.TestCase):
                 i = TimeInterval(begin=TimeValue(b), end=TimeValue(e))
                 s = SyncMapFragment(interval=i)
                 l.add(s)
-            l.fix_zero_length_intervals()
+            l.fix_zero_length_fragments()
             for j, fragment in enumerate(l.fragments):
                 b, e = exp[j]
                 exp_i = TimeInterval(begin=TimeValue(b), end=TimeValue(e))
                 exp_s = SyncMapFragment(interval=exp_i)
                 self.assertTrue(fragment == exp_s)
 
-    def test_time_interval_list_fix_zero_length_intervals_middle(self):
+    def test_time_interval_list_fix_zero_length_fragments_middle(self):
         params = [
             (
                 [
@@ -801,7 +801,7 @@ class TestSyncMapFragmentList(unittest.TestCase):
                 i = TimeInterval(begin=TimeValue(b), end=TimeValue(e))
                 s = SyncMapFragment(interval=i)
                 l.add(s)
-            l.fix_zero_length_intervals(min_index=1, max_index=(len(l) - 1))
+            l.fix_zero_length_fragments(min_index=1, max_index=(len(l) - 1))
             for j, fragment in enumerate(l.fragments):
                 b, e = exp[j]
                 exp_i = TimeInterval(begin=TimeValue(b), end=TimeValue(e))

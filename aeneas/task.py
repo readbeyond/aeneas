@@ -367,7 +367,7 @@ class TaskConfiguration(Configuration):
 
         * ``algorithm``, tuple: (string, list)
         * ``nonspeech``, tuple: (TimeValue or None, string)
-        * ``nozero``, tuple: (bool, TimeValue)
+        * ``nozero``, bool
 
         :rtype: dict
         """
@@ -383,9 +383,9 @@ class TaskConfiguration(Configuration):
         aba_algorithm = self[gc.PPN_TASK_ADJUST_BOUNDARY_ALGORITHM] or AdjustBoundaryAlgorithm.AUTO
         ns_min = self[gc.PPN_TASK_ADJUST_BOUNDARY_NONSPEECH_MIN]
         ns_string = self[gc.PPN_TASK_ADJUST_BOUNDARY_NONSPEECH_STRING]
-        no_zero = self[gc.PPN_TASK_ADJUST_BOUNDARY_NO_ZERO] or False
+        nozero = self[gc.PPN_TASK_ADJUST_BOUNDARY_NO_ZERO] or False
         return {
             "algorithm": (aba_algorithm, ABA_MAP[aba_algorithm]),
             "nonspeech": (ns_min, ns_string),
-            "nozero": (no_zero, TimeValue("0.001"))
+            "nozero": nozero
         }

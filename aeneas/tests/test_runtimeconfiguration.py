@@ -89,6 +89,8 @@ class TestRuntimeConfiguration(unittest.TestCase):
 
     def test_set_rconf_string(self):
         params = [
+            (u"aba_nonspeech_tolerance=0.040", "aba_nonspeech_tolerance", TimeValue("0.040")),
+            (u"aba_no_zero_duration=0.040", "aba_no_zero_duration", TimeValue("0.040")),
             (u"allow_unlisted_languages=True", "allow_unlisted_languages", True),
             (u"c_extensions=False", "c_extensions", False),
             (u"cdtw=False", "cdtw", False),

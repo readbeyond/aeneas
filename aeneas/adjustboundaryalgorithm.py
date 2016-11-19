@@ -275,12 +275,11 @@ class AdjustBoundaryAlgorithm(Loggable):
         )
 
         # check no fragment has zero length, if requested
-        check, offset = aba_parameters["nozero"]
-        self._check_no_zero(check=check, offset=offset)
+        self._process_zero_length(check=aba_parameters["nozero"])
 
-        # add silence intervals, if any
+        # add nonspeech intervals, if any
         ns_min, ns_string = aba_parameters["nonspeech"]
-        self._process_long_nonspeech(ns_min, ns_string)
+        self._process_long_nonspeech(ns_min, ns_string, real_wave_mfcc)
 
         # adjust using the right algorithm
         algorithm, algo_parameters = aba_parameters["algorithm"]
@@ -378,27 +377,45 @@ class AdjustBoundaryAlgorithm(Loggable):
     # NO ZERO AND LONG NONSPEECH FUNCTIONS
     # #####################################################
 
-    def _check_no_zero(self, check, offset):
-        self.log(u"Called _check_no_zero")
+    def _process_zero_length(self, check):
+        """
+        If ``check`` is ``True``, modify the sync map fragment list
+        so that no fragment will have zero length.
+        """
+        self.log(u"Called _process_zero_length")
         if check:
-            self.log(u"Check requested: checking and fixing")
-            self.log([u"Offset is %.3f", offset])
+            self.log(u"Processing zero length intervals requested")
+            self.log(u"  Checking and fixing...")
+            duration = self.rconf[RuntimeConfiguration.ABA_NO_ZERO_DURATION]
+            self.log([u"  No zero duration: %.3f", duration])
             # ignore HEAD and TAIL
             max_index = len(self.smflist) - 1
-            self.smflist.fix_zero_length_intervals(
-                offset=offset,
+            self.smflist.fix_zero_length_fragments(
+                duration=duration,
                 min_index=1,
                 max_index=max_index
             )
             self.smflist[max_index].begin = self.smflist[max_index - 1].end
+            self.log(u"  Checking and fixing... done")
         else:
-            self.log(u"Check not requested: returning")
+            self.log(u"Processing zero length intervals not requested: returning")
 
-    def _process_long_nonspeech(self, ns_min, ns_string):
+    def _process_long_nonspeech(self, ns_min, ns_string, real_wave_mfcc):
         self.log(u"Called _process_long_nonspeech")
         if ns_min is not None:
-            self.log(u"Processing long nonspeech intervals requested: fixing")
-            # TODO
+            self.log(u"Processing long nonspeech intervals requested")
+            self.log(u"  Checking and fixing...")
+            tolerance = self.rconf[RuntimeConfiguration.ABA_NONSPEECH_TOLERANCE]
+            self.log([u"    Tolerance: %.3f", tolerance])
+            long_nonspeech_intervals = [i for i in real_wave_mfcc.intervals(speech=False, time=True) if i.length >= ns_min]
+            pairs = self.smflist.fragments_ending_inside_nonspeech_intervals(long_nonspeech_intervals, tolerance)
+            # ignore HEAD and TAIL
+            max_index = len(self.smflist) - 1
+            pairs = [(n, i) for (n, i) in pairs if (i >= 1) and (i < max_index)]
+            self.smflist.inject_long_nonspeech_fragments(pairs, ns_string)
+            max_index = len(self.smflist) - 1
+            self.smflist[max_index].begin = self.smflist[max_index - 1].end
+            self.log(u"  Checking and fixing... done")
         else:
             self.log(u"Processing long nonspeech intervals not requested: returning")
 
@@ -467,10 +484,16 @@ class AdjustBoundaryAlgorithm(Loggable):
         self._adjust_on_nonspeech(real_wave_mfcc, new_time)
 
     def _adjust_rate(self, real_wave_mfcc, algo_parameters):
+        """
+        RATE
+        """
         self.log(u"Called _adjust_rate")
         self._apply_rate(real_wave_mfcc, max_rate=algo_parameters[0], aggressive=False)
 
     def _adjust_rate_aggressive(self, real_wave_mfcc, algo_parameters):
+        """
+        RATEAGGRESSIVE
+        """
         self.log(u"Called _adjust_rate_aggressive")
         self._apply_rate(real_wave_mfcc, max_rate=algo_parameters[0], aggressive=True)
 
@@ -511,64 +534,20 @@ class AdjustBoundaryAlgorithm(Loggable):
         nonspeech_intervals = real_wave_mfcc.intervals(speech=False, time=True)
         self.log(u"  Getting nonspeech intervals... done")
 
-        self.log(u"  First pass: associate each fragment end point to an nsi, if possible")
+        self.log(u"  First pass: find pairs of adjacent fragments transitioning inside nonspeech")
         tolerance = self.rconf[RuntimeConfiguration.ABA_NONSPEECH_TOLERANCE]
-        nsi_index = 0
-        frag_index = 0
-        nsi_counter = [(n, []) for n in nonspeech_intervals]
-        while (nsi_index < len(nonspeech_intervals)) and (frag_index < len(self.smflist)):
-            nsi = nonspeech_intervals[nsi_index]
-            nsi_shadow = nsi.shadow(tolerance)
-            frag = self.smflist[frag_index]
-            self.log([u"    nsi:        %s", nsi])
-            self.log([u"    nsi shadow: %s", nsi_shadow])
-            if frag.fragment_type == SyncMapFragment.REGULAR:
-                frag_end = frag.end
-                self.log(u"      REGULAR => examining it")
-                self.log([u"        %.3f vs %s", frag_end, nsi_shadow])
-                if nsi_shadow.contains(frag_end):
-                    #
-                    #      *************** nsi shadow
-                    #      | *********** | nsi
-                    # *****|***X         | frag (X=frag_end)
-                    #
-                    self.log(u"        Contained => register and go to next fragment")
-                    nsi_counter[nsi_index][1].append(frag_index)
-                    frag_index += 1
-                elif nsi_shadow.begin > frag_end:
-                    #
-                    #      *************** nsi shadow
-                    #      | *********** | nsi
-                    # **X  |             | frag (X=frag_end)
-                    #
-                    self.log(u"        Before => go to next fragment")
-                    frag_index += 1
-                else:
-                    #
-                    #       ***************    nsi shadow
-                    #       | *********** |    nsi
-                    #       |        *****|**X frag (X=frag_end)
-                    #
-                    self.log(u"        After => go to next nsi")
-                    nsi_index += 1
-            else:
-                self.log(u"      Not REGULAR => go to next fragment")
-                frag_index += 1
+        self.log([u"    Tolerance: %.3f", tolerance])
+        pairs = self.smflist.fragments_ending_inside_nonspeech_intervals(nonspeech_intervals, tolerance)
         self.log(u"  First pass: done")
 
-        self.log(u"  Second pass: move end point on good nsi")
-        for nsi, frags in nsi_counter:
-            self.log([u"    Examining nsi %s", nsi])
-            if len(frags) == 1:
-                frag_index = frags[0]
-                new_value = adjust_function(nsi)
-                self.log([u"      Only one index:   %d", frag_index])
-                self.log([u"      New value:        %.3f", new_value])
-                self.log([u"      Current interval: %s", self.smflist[frag_index].interval])
-                self.smflist.move_end(index=frags[0], value=new_value)
-                self.log([u"      New interval:     %s", self.smflist[frag_index].interval])
-            else:
-                self.log(u"      Skip it")
+        self.log(u"  Second pass: move end point of good pairs")
+        for nsi, frag_index, in pairs:
+            new_value = adjust_function(nsi)
+            self.log([u"    Current interval: %s", self.smflist[frag_index].interval])
+            self.log([u"    New value:        %.3f", new_value])
+            self.smflist.move_transition_point(frag_index, new_value)
+            self.log([u"    New interval:     %s", self.smflist[frag_index].interval])
+            self.log(u"    ")
         self.log(u"  Second pass: done")
 
     def _apply_rate(self, real_wave_mfcc, max_rate, aggressive=False):

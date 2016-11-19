@@ -22,7 +22,7 @@ v1.7.0 (2016-11-??)
 #. Added ``clone()`` method to ``aeneas.tree.Tree``
 #. Renamed ``os_task_file_no_zero`` (``PPN_OS_TASK_FILE_NO_ZERO``) to ``task_adjust_boundary_no_zero`` (``PPN_TASK_ADJUST_BOUNDARY_NO_ZERO``) in ``TaskConfiguration``
 #. Added ``PPN_TASK_ADJUST_BOUNDARY_NONSPEECH_MIN`` and ``PPN_TASK_ADJUST_BOUNDARY_NONSPEECH_STRING`` to ``TaskConfiguration``
-#. Added ``ABA_NONSPEECH_TOLERANCE`` parameter to ``RuntimeConfiguration``
+#. Added ``ABA_NONSPEECH_TOLERANCE`` and ``ABA_NO_ZERO_DURATION`` parameters to ``RuntimeConfiguration``
 #. Added tests for ``Configuration`` and ``RuntimeConfiguration``
 #. Added more tests for ``Tree``
 #. Added tests for ``SyncMapFragmentList``

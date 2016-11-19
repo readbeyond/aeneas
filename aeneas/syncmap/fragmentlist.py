@@ -28,6 +28,8 @@ import bisect
 from aeneas.exacttiming import TimeInterval
 from aeneas.exacttiming import TimeValue
 from aeneas.syncmap.fragment import SyncMapFragment
+from aeneas.textfile import TextFragment
+import aeneas.globalconstants as gc
 
 
 class SyncMapFragmentList(object):
@@ -188,12 +190,31 @@ class SyncMapFragmentList(object):
             self.__fragments.append(fragment)
             self.__sorted = False
 
-    def move_end(self, index, value):
-        if (value < self.begin) or (value > self.end) or (index < 0) or (index + 1 >= len(self)):
+    def move_transition_point(self, fragment_index, value):
+        """
+        Change the transition point between fragment ``fragment_index``
+        and the next fragment to the time value ``value``.
+
+        This method fails silently without changing the fragment list
+        if at least one of the following conditions holds:
+
+        * ``fragment_index`` is negative
+        * ``fragment_index`` is the last or the second-to-last
+        * ``value`` is after the current end of the next fragment
+        * the current fragment and the next one are not adjacent
+
+        The above conditions ensures that the move makes sense
+        and keeps the list sorted.
+
+        :param int fragment_index: the fragment index whose end should be moved
+        :param value: the new transition point
+        :type  value: :class:`~aeneas.exacttiming.TimeValue`
+        """
+        if (fragment_index < 0) or (fragment_index > (len(self) - 3)):
             # fails silently
             return
-        current_fragment = self[index]
-        next_fragment = self[index + 1]
+        current_fragment = self[fragment_index]
+        next_fragment = self[fragment_index + 1]
         if (value > next_fragment.end) or (not current_fragment.interval.is_adjacent_before(next_fragment.interval)):
             # fails silently
             return
@@ -227,24 +248,121 @@ class SyncMapFragmentList(object):
                 max_end_value=self.end
             )
 
-    def fix_zero_length_intervals(self, offset=TimeValue("0.001"), min_index=None, max_index=None):
+    def fragments_ending_inside_nonspeech_intervals(
+        self,
+        nonspeech_intervals,
+        tolerance
+    ):
         """
-        min_index included, max_index excluded.
+        Determine a list of pairs (nonspeech interval, fragment index),
+        such that the nonspeech interval contains exactly one fragment
+        ending inside it (within the given tolerance) and
+        adjacent to the next fragment.
 
-        Note: this function assumes that intervals are consecutive.
+        :param nonspeech_intervals: the list of nonspeech intervals to be examined
+        :type  nonspeech_intervals: list of :class:`~aeneas.exacttiming.TimeInterval`
+        :param tolerance: the tolerance to be applied when checking if the end point
+                          falls within a given nonspeech interval
+        :type  tolerance: :class:`~aeneas.exacttiming.TimeValue`
+        :rtype: list of (:class:`~aeneas.exacttiming.TimeInterval`, int)
+        """
+        nsi_index = 0
+        frag_index = 0
+        nsi_counter = [(n, []) for n in nonspeech_intervals]
+        while (nsi_index < len(nonspeech_intervals)) and (frag_index < len(self) - 1):
+            nsi = nonspeech_intervals[nsi_index]
+            nsi_shadow = nsi.shadow(tolerance)
+            frag = self[frag_index]
+            if frag.fragment_type == SyncMapFragment.REGULAR:
+                if nsi_shadow.contains(frag.end):
+                    #
+                    #      *************** nsi shadow
+                    #      | *********** | nsi
+                    # *****|***X         | frag (X=frag.end)
+                    #
+                    nsi_counter[nsi_index][1].append(frag_index)
+                    frag_index += 1
+                elif nsi_shadow.begin > frag.end:
+                    #
+                    #      *************** nsi shadow
+                    #      | *********** | nsi
+                    # **X  |             | frag (X=frag.end)
+                    #
+                    frag_index += 1
+                else:
+                    #
+                    #       ***************    nsi shadow
+                    #       | *********** |    nsi
+                    #       |        *****|**X frag (X=frag.end)
+                    #
+                    nsi_index += 1
+            else:
+                frag_index += 1
+        return [(n, c[0]) for (n, c) in nsi_counter if len(c) == 1]
+
+    def inject_long_nonspeech_fragments(self, pairs, replacement_string):
+        """
+        Inject nonspeech fragments corresponding to the given intervals
+        in this fragment list.
+
+        :param list pairs: list of ``(TimeInterval, int)`` pairs,
+                           each identifying a nonspeech interval and
+                           the corresponding fragment index ending inside it
+        :param string replacement_string: the string to be applied to the nonspeech intervals
+        """
+        # set the appropriate type and text
+        if replacement_string in [None, gc.PPV_TASK_ADJUST_BOUNDARY_NONSPEECH_REMOVE]:
+            fragment_type = SyncMapFragment.NONSPEECH
+            lines = []
+        else:
+            fragment_type = SyncMapFragment.REGULAR
+            lines = [replacement_string]
+        # first, make room for the nonspeech intervals
+        for nsi, index in pairs:
+            self[index].interval.end = nsi.begin
+            self[index + 1].interval.begin = nsi.end
+        # then, append the nonspeech intervals
+        for i, (nsi, index) in enumerate(pairs, 1):
+            identifier = u"n%06d" % i
+            self.add(SyncMapFragment(
+                text_fragment=TextFragment(
+                    identifier=identifier,
+                    language=None,
+                    lines=lines,
+                    filtered_lines=lines
+                ),
+                interval=nsi,
+                fragment_type=fragment_type
+            ), sort=False)
+        # sort the list
+        self.sort()
+
+    def fix_zero_length_fragments(self, duration=TimeValue("0.001"), min_index=None, max_index=None):
+        """
+        Fix fragments with zero length,
+        enlarging them to have length ``duration``,
+        reclaiming the difference from the next fragment(s),
+        or moving the next fragment(s) forward.
+
+        This function assumes the fragments to be adjacent.
+
+        :param duration: set the zero length fragments to have this duration
+        :type  duration: :class:`~aeneas.exacttiming.TimeValue`
+        :param int min_index: examine fragments with index greater than or equal to this index (i.e., included)
+        :param int max_index: examine fragments with index smaller than this index (i.e., excluded)
         """
         min_index = min_index or 0
         max_index = max_index or len(self)
         i = min_index
         while i < max_index:
             if self[i].interval.has_zero_length:
-                moves = [(i, "ENLARGE", offset)]
-                slack = offset
+                moves = [(i, "ENLARGE", duration)]
+                slack = duration
                 j = i + 1
                 while (j < max_index) and (self[j].interval.length < slack):
                     if self[j].interval.has_zero_length:
-                        moves.append((j, "ENLARGE", offset))
-                        slack += offset
+                        moves.append((j, "ENLARGE", duration))
+                        slack += duration
                     else:
                         moves.append((j, "MOVE", None))
                     j += 1
@@ -262,10 +380,8 @@ class SyncMapFragmentList(object):
                         if move_type == "ENLARGE":
                             self[index].interval.enlarge(move_amount)
                         current_time = self[index].interval.begin
-                else:
-                    # TODO log this failure?
-                    # unable to fix
-                    pass
+                # else:
+                #     # unable to fix
+                #     pass
                 i = j - 1
             i += 1
-

@@ -55,8 +55,8 @@ class SyncMapFragment(object):
     TAIL = 2
     """ Tail fragment """
 
-    SILENCE = 3
-    """ (Long) Silence fragment """
+    NONSPEECH = 3
+    """ (Long) nonspeech fragment """
 
     def __init__(
             self,
@@ -104,7 +104,7 @@ class SyncMapFragment(object):
     def __lt__(self, other):
         if not isinstance(other, SyncMapFragment):
             return False
-        return self.interval < other.interval 
+        return self.interval < other.interval
 
     def __ge__(self, other):
         return (self > other) or (self == other)
@@ -148,7 +148,7 @@ class SyncMapFragment(object):
         * :data:`~aeneas.syncmap.fragment.SyncMapFragment.REGULAR`
         * :data:`~aeneas.syncmap.fragment.SyncMapFragment.HEAD`
         * :data:`~aeneas.syncmap.fragment.SyncMapFragment.TAIL`
-        * :data:`~aeneas.syncmap.fragment.SyncMapFragment.SILENCE`
+        * :data:`~aeneas.syncmap.fragment.SyncMapFragment.NONSPEECH`
 
         :rtype: int
         """
