@@ -904,7 +904,7 @@ class TestSyncMapFragmentList(unittest.TestCase):
                     ("1.001", "1.002"),
                     ("1.002", "1.003"),
                     ("1.003", "1.005"),
-                    ("1.002", "9.999"),     # NOTE: this will be fixed later in ABA
+                    ("1.005", "9.999"),
                 ],
             ),
             (
@@ -965,6 +965,7 @@ class TestSyncMapFragmentList(unittest.TestCase):
                 b, e = exp[j]
                 exp_i = TimeInterval(begin=TimeValue(b), end=TimeValue(e))
                 exp_s = SyncMapFragment(interval=exp_i)
+                # print("%s (expected: %s)" % (fragment.interval, exp_i))
                 self.assertTrue(fragment == exp_s)
 
 

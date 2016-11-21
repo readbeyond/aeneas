@@ -74,33 +74,33 @@ class TestSyncMap(unittest.TestCase):
 
     def test_fragment_constructor(self):
         frag = SyncMapFragment()
-        self.assertEqual(frag.audio_duration, 0)
+        self.assertEqual(frag.length, 0)
         self.assertEqual(frag.chars, 0)
         self.assertIsNone(frag.rate)
 
     def test_fragment_constructor_begin_end(self):
         frag = SyncMapFragment(begin=TimeValue("1.000"), end=TimeValue("1.000"))
-        self.assertEqual(frag.audio_duration, 0)
+        self.assertEqual(frag.length, 0)
         self.assertEqual(frag.chars, 0)
         self.assertIsNone(frag.rate)
 
     def test_fragment_constructor_begin_end_nonzero(self):
         frag = SyncMapFragment(begin=TimeValue("1.000"), end=TimeValue("3.000"))
-        self.assertEqual(frag.audio_duration, TimeValue("2.000"))
+        self.assertEqual(frag.length, TimeValue("2.000"))
         self.assertEqual(frag.chars, 0)
         self.assertEqual(frag.rate, 0)
 
     def test_fragment_constructor_interval(self):
         interval = TimeInterval(begin=TimeValue("1.000"), end=TimeValue("1.000"))
         frag = SyncMapFragment(interval=interval)
-        self.assertEqual(frag.audio_duration, 0)
+        self.assertEqual(frag.length, 0)
         self.assertEqual(frag.chars, 0)
         self.assertIsNone(frag.rate)
 
     def test_fragment_constructor_interval_nonzero(self):
         interval = TimeInterval(begin=TimeValue("1.000"), end=TimeValue("3.000"))
         frag = SyncMapFragment(interval=interval)
-        self.assertEqual(frag.audio_duration, TimeValue("2.000"))
+        self.assertEqual(frag.length, TimeValue("2.000"))
         self.assertEqual(frag.chars, 0)
         self.assertEqual(frag.rate, 0)
 
@@ -140,14 +140,14 @@ class TestSyncMap(unittest.TestCase):
     def test_fragment_rate_none(self):
         text = TextFragment(lines=[u"Hello", u"World"])
         frag = SyncMapFragment(text_fragment=text)
-        self.assertEqual(frag.audio_duration, 0)
+        self.assertEqual(frag.length, 0)
         self.assertEqual(frag.chars, 10)
         self.assertIsNone(frag.rate)
 
     def test_fragment_rate_valid(self):
         text = TextFragment(lines=[u"Hello", u"World"])
         frag = SyncMapFragment(text_fragment=text, begin=TimeValue("1.234"), end=TimeValue("6.234"))
-        self.assertEqual(frag.audio_duration, 5)
+        self.assertEqual(frag.length, 5)
         self.assertEqual(frag.chars, 10)
         self.assertEqual(frag.rate, 2.000)
         self.assertEqual(frag.rate, Decimal("2.000"))
@@ -155,7 +155,7 @@ class TestSyncMap(unittest.TestCase):
     def test_fragment_rate_zero(self):
         text = TextFragment(lines=[u"Hello", u"World"])
         frag = SyncMapFragment(text_fragment=text, begin=TimeValue("1.234"), end=TimeValue("1.234"))
-        self.assertEqual(frag.audio_duration, 0)
+        self.assertEqual(frag.length, 0)
         self.assertEqual(frag.chars, 10)
         self.assertIsNone(frag.rate, None)
 

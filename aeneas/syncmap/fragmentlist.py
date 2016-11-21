@@ -102,6 +102,20 @@ class SyncMapFragmentList(Loggable):
 
     def __setitem__(self, index, value):
         self.__fragments[index] = value
+    
+    def _is_valid_index(self, index):
+        """
+        Return ``True`` if and only if the given ``index``
+        is valid.
+        """
+        if isinstance(index, int):
+            return (index >= 0) and (index < len(self))
+        if isinstance(index, list):
+            valid = True
+            for i in index:
+                valid = valid or self._is_valid_index(i)
+            return valid
+        return False
 
     def _check_boundaries(self, fragment):
         """
@@ -175,6 +189,55 @@ class SyncMapFragmentList(Loggable):
         for fragment in self.__fragments:
             yield fragment
 
+    @property
+    def regular_fragments(self):
+        """
+        Iterates through the regular fragments in the list
+        (which are sorted).
+
+        :rtype: generator of (int, :class:`~aeneas.syncmap.SyncMapFragment`)
+        """
+        for i, fragment in enumerate(self.__fragments):
+            if fragment.fragment_type == SyncMapFragment.REGULAR:
+                yield (i, fragment)
+
+    @property
+    def nonspeech_fragments(self):
+        """
+        Iterates through the nonspeech fragments in the list
+        (which are sorted).
+
+        :rtype: generator of (int, :class:`~aeneas.syncmap.SyncMapFragment`)
+        """
+        for i, fragment in enumerate(self.__fragments):
+            if fragment.fragment_type == SyncMapFragment.NONSPEECH:
+                yield (i, fragment)
+
+    def remove(self, indices):
+        """
+        Remove the fragments corresponding to the given list of indices.
+
+        :param indices: the list of indices to be removed
+        :type  indices: list of int
+        :raises ValueError: if one of the indices is not valid
+        """
+        if not self._is_valid_index(indices):
+            self.log_exc(u"The given list of indices is not valid", None, True, ValueError)
+        new_fragments = []
+        sorted_indices = sorted(indices)
+        i = 0
+        j = 0
+        while (i < len(self)) and (j < len(sorted_indices)):
+            if i != sorted_indices[j]:
+                new_fragments.append(self[i])
+            else:
+                j += 1
+            i += 1
+        while i < len(self):
+            new_fragments.append(self[i])
+            i += 1
+        self.__fragments = new_fragments
+
     def sort(self):
         """
         Sort the fragments in the list.
@@ -190,13 +253,36 @@ class SyncMapFragmentList(Loggable):
         self.log(u"Sorting... done")
         self.log(u"Checking relative positions...")
         for i in range(len(self) - 1):
-            if self[i].interval.relative_position_of(self[i + 1].interval) not in self.ALLOWED_POSITIONS:
+            current_interval = self[i].interval
+            next_interval = self[i + 1].interval
+            if current_interval.relative_position_of(next_interval) not in self.ALLOWED_POSITIONS:
                 self.log(u"Found overlapping fragments:")
-                self.log([u"  Index %d => %s", i, self[i].interval])
-                self.log([u"  Index %d => %s", i + 1, self[i + 1].interval])
+                self.log([u"  Index %d => %s", i, current_interval])
+                self.log([u"  Index %d => %s", i + 1, next_interval])
                 self.log_exc(u"The list contains two fragments overlapping in a forbidden way", None, True, ValueError)
         self.log(u"Checking relative positions... done")
         self.__sorted = True
+
+    def remove_nonspeech_fragments(self, zero_length_only=False):
+        """
+        Remove ``NONSPEECH`` fragments from the list.
+
+        If ``zero_length_only`` is ``True``, remove only
+        those fragments with zero length,
+        and make all the others ``REGULAR``.
+
+        :param bool zero_length_only: remove only zero length NONSPEECH fragments
+        """
+        self.log(u"Removing nonspeech fragments...")
+        nonspeech = list(self.nonspeech_fragments)
+        if zero_length_only:
+            nonspeech = [(i, f) for i, f in nonspeech if f.has_zero_length]
+        nonspeech_indices = [i for i, f in nonspeech]
+        self.remove(nonspeech_indices)
+        if zero_length_only:
+            for i, f in list(self.nonspeech_fragments):
+                f.fragment_type = SyncMapFragment.REGULAR
+        self.log(u"Removing nonspeech fragments... done")
 
     def has_zero_length_fragments(self, min_index=None, max_index=None):
         """
@@ -211,7 +297,7 @@ class SyncMapFragmentList(Loggable):
         :rtype: bool
         """
         min_index, max_index = self._check_min_max_indices(min_index, max_index)
-        zero = [i for i in range(min_index, max_index) if self[i].interval.has_zero_length]
+        zero = [i for i in range(min_index, max_index) if self[i].has_zero_length]
         self.log([u"Fragments with zero length: %s", zero])
         return (len(zero) > 0)
 
@@ -228,10 +314,12 @@ class SyncMapFragmentList(Loggable):
         """
         min_index, max_index = self._check_min_max_indices(min_index, max_index)
         for i in range(min_index, max_index - 1):
-            if not self[i].interval.is_adjacent_before(self[i + 1].interval):
+            current_interval = self[i].interval
+            next_interval = self[i + 1].interval
+            if not current_interval.is_adjacent_before(next_interval):
                 self.log(u"Found non adjacent fragments")
-                self.log([u"  Index %d => %s", i, self[i].interval])
-                self.log([u"  Index %d => %s", i + 1, self[i + 1].interval])
+                self.log([u"  Index %d => %s", i, current_interval])
+                self.log([u"  Index %d => %s", i + 1, next_interval])
                 return False
         return True
 
@@ -399,14 +487,12 @@ class SyncMapFragmentList(Loggable):
         :param string replacement_string: the string to be applied to the nonspeech intervals
         """
         self.log(u"Called inject_long_nonspeech_fragments")
-        # set the appropriate type and text
+        # set the appropriate fragment text
         if replacement_string in [None, gc.PPV_TASK_ADJUST_BOUNDARY_NONSPEECH_REMOVE]:
             self.log(u"  Remove long nonspeech")
-            fragment_type = SyncMapFragment.NONSPEECH
             lines = []
         else:
             self.log([u"  Replace long nonspeech with '%s'", replacement_string])
-            fragment_type = SyncMapFragment.REGULAR
             lines = [replacement_string]
         # first, make room for the nonspeech intervals
         self.log(u"  First pass: making room...")
@@ -425,14 +511,14 @@ class SyncMapFragmentList(Loggable):
                     filtered_lines=lines
                 ),
                 interval=nsi,
-                fragment_type=fragment_type
+                fragment_type=SyncMapFragment.NONSPEECH
             ), sort=False)
         self.log(u"  Second pass: append nonspeech intervals... done")
         self.log(u"  Third pass: sorting...")
         self.sort()
         self.log(u"  Third pass: sorting... done")
 
-    def fix_zero_length_fragments(self, duration=TimeValue("0.001"), min_index=None, max_index=None):
+    def fix_zero_length_fragments(self, duration=TimeValue("0.001"), min_index=None, max_index=None, ensure_adjacent=True):
         """
         Fix fragments with zero length,
         enlarging them to have length ``duration``,
@@ -451,19 +537,39 @@ class SyncMapFragmentList(Loggable):
         self.log(u"Called fix_zero_length_fragments")
         self.log([u"  Duration %.3f", duration])
         min_index, max_index = self._check_min_max_indices(min_index, max_index)
+        if len(self) < 1:
+            self.log(u"The list has no fragments: returning")
+            return
         if not self.has_adjacent_fragments_only(min_index, max_index):
             self.log_warn(u"There are non adjacent fragments: aborting")
             return
+        original_first_begin = None
+        if (
+                (ensure_adjacent) and
+                (min_index > 0) and
+                (self[min_index - 1].interval.is_adjacent_before(self[min_index].interval))
+        ):
+            original_first_begin = self[min_index].begin
+            self.log([u"Original first was adjacent with previous, starting at %.3f", original_first_begin])
+        original_last_end = None
+        if (
+                (ensure_adjacent) and
+                (len(self) > 1) and
+                (max_index < len(self)) and
+                (self[max_index - 1].interval.is_adjacent_before(self[max_index].interval))
+        ):
+            original_last_end = self[max_index - 1].end
+            self.log([u"Original last was adjacent with next, ending at %.3f", original_last_end])
         i = min_index
         while i < max_index:
-            if self[i].interval.has_zero_length:
+            if self[i].has_zero_length:
                 self.log([u"  Fragment %d (%s) has zero length => ENLARGE", i, self[i].interval])
                 moves = [(i, "ENLARGE", duration)]
                 slack = duration
                 j = i + 1
                 self.log([u"  Entered while with j == %d", j])
                 while (j < max_index) and (self[j].interval.length < slack):
-                    if self[j].interval.has_zero_length:
+                    if self[j].has_zero_length:
                         self.log([u"  Fragment %d (%s) has zero length => ENLARGE", j, self[j].interval])
                         moves.append((j, "ENLARGE", duration))
                         slack += duration
@@ -492,3 +598,72 @@ class SyncMapFragmentList(Loggable):
                     self.log([u"Unable to fix fragment %d (%s)", i, self[i].interval])
                 i = j - 1
             i += 1
+        if original_first_begin is not None:
+            if self[min_index].begin != self[min_index - 1].end:
+                self.log(u"First fragment begin moved, restoring adjacency")
+                self.log([u"  Original was %.3f", original_first_begin])
+                self.log([u"  New      is  %.3f", self[min_index - 1].end])
+                self[min_index].begin = self[min_index - 1].end
+        if original_last_end is not None:
+            if self[max_index].begin != self[max_index - 1].end:
+                self.log(u"Last fragment end moved, restoring adjacency")
+                self.log([u"  Original was %.3f", original_last_end])
+                self.log([u"  New      is  %.3f", self[max_index].begin])
+                self[max_index].begin = self[max_index - 1].end
+
+    def fix_fragment_rate(self, fragment_index, max_rate, aggressive=False):
+        def fix_pair(current_index, donor_index):
+            self.log(u"Called fix_pair")
+            if (
+                (current_index < 0) or
+                (current_index >= len(self)) or
+                (donor_index < 0) or
+                (donor_index >= len(self)) or
+                (abs(current_index - donor_index) > 1)
+            ):
+                self.log(u"Invalid index, returning False")
+                return False
+            donor_is_previous = donor_index < current_index
+            current_fragment = self[current_index]
+            donor_fragment = self[donor_index]
+            if (current_fragment.rate is not None) and (current_fragment.rate <= max_rate):
+                self.log(u"Current fragment rate is already <= max_rate, returning True")
+                return True
+            if donor_is_previous:
+                if not donor_fragment.interval.is_non_zero_before_non_zero(current_fragment.interval):
+                    self.log(u"donor fragment is not adjacent before current fragment, returning False")
+                    return False
+            else:
+                if not current_fragment.interval.is_non_zero_before_non_zero(donor_fragment.interval):
+                    self.log(u"current fragment is not adjacent before donor fragment, returning False")
+                    return False
+
+            self.log(u"Current and donor fragments are adjacent and not zero length")
+            current_lack = current_fragment.rate_lack(max_rate)
+            donor_slack = donor_fragment.rate_slack(max_rate)
+            self.log([u"Current lack %.3f", current_lack])
+            self.log([u"Donor  slack %.3f", donor_slack])
+            if donor_slack <= 0:
+                self.log(u"Donor has no slack, returning False")
+                return False
+            self.log(u"Donor has some slack")
+            effective_slack = min(current_lack, donor_slack)
+            if donor_is_previous:
+                self.move_transition_point(donor_index, donor_fragment.end - effective_slack)
+            else:
+                self.move_transition_point(current_index, current_fragment.end + effective_slack)
+            if effective_slack == current_lack:
+                self.log(u"Current lack can be fully stolen from donor")
+                return True
+            else:
+                self.log(u"Current lack can be partially stolen from donor")
+                return False
+
+        # try fixing rate stealing slack from the previous fragment
+        if fix_pair(fragment_index, fragment_index - 1):
+            return True
+        # if aggressive, try fixing rate stealing slack from the next fragment
+        if aggressive:
+            return fix_pair(fragment_index, fragment_index + 1)
+        # cannot be fixed
+        return False

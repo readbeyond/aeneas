@@ -56,7 +56,7 @@ class SyncMapFragment(object):
     """ Tail fragment """
 
     NONSPEECH = 3
-    """ (Long) nonspeech fragment """
+    """ Nonspeech fragment (not head nor tail) """
 
     def __init__(
             self,
@@ -212,7 +212,7 @@ class SyncMapFragment(object):
         self.interval.end = end
 
     @property
-    def audio_duration(self):
+    def length(self):
         """
         The audio duration of this sync map fragment,
         as end time minus begin time.
@@ -222,6 +222,18 @@ class SyncMapFragment(object):
         if self.interval is None:
             return TimeValue("0.000")
         return self.interval.length
+
+    @property
+    def has_zero_length(self):
+        """
+        Returns ``True`` if this sync map fragment has zero length,
+        that is, if its begin and end values coincide.
+
+        :rtype: bool
+
+        .. versionadded:: 1.7.0
+        """
+        return self.length == TimeValue("0.000")
 
     @property
     def chars(self):
@@ -242,10 +254,63 @@ class SyncMapFragment(object):
         """
         The rate, in characters/second, of this fragment.
 
-        :rtype: None or Decimal
+        If the fragment is not ``REGULAR`` or its duration is zero,
+        return ``None``.
+
+        :rtype: ``None`` or :class:`~aeneas.exacttiming.Decimal`
 
         .. versionadded:: 1.2.0
         """
-        if self.audio_duration == TimeValue("0.000"):
+        if (
+            (self.fragment_type != self.REGULAR) or
+            (self.has_zero_length)
+        ):
             return None
-        return Decimal(self.chars / self.audio_duration)
+        return Decimal(self.chars / self.length)
+
+    def rate_lack(self, max_rate):
+        """
+        The time interval that this fragment lacks
+        to respect the given max rate.
+
+        A positive value means that the current fragment
+        is faster than the max rate (bad).
+        A negative or zero value means that the current fragment
+        has rate slower or equal to the max rate (good).
+
+        Always return ``0.000`` for fragments that are not ``REGULAR``.
+
+        :param max_rate: the maximum rate (characters/second)
+        :type  max_rate: :class:`~aeneas.exacttiming.Decimal`
+        :rtype: :class:`~aeneas.exacttiming.TimeValue`
+
+        .. versionadded:: 1.7.0
+        """
+        if self.fragment_type == self.REGULAR:
+            return self.chars / max_rate - self.length
+        return TimeValue("0.000")
+
+    def rate_slack(self, max_rate):
+        """
+        The maximum time interval that can be stolen to this fragment
+        while keeping it respecting the given max rate.
+
+        For ``REGULAR`` fragments this value is
+        the opposite of the ``rate_lack``.
+        For ``NONSPEECH`` fragments this value is equal to
+        the length of the fragment.
+        For ``HEAD`` and ``TAIL`` fragments this value is ``0.000``,
+        meaning that they cannot be stolen.
+        
+        :param max_rate: the maximum rate (characters/second)
+        :type  max_rate: :class:`~aeneas.exacttiming.Decimal`
+        :rtype: :class:`~aeneas.exacttiming.TimeValue`
+
+        .. versionadded:: 1.7.0
+        """
+        if self.fragment_type == self.REGULAR:
+            return -self.rate_lack(max_rate)
+        elif self.fragment_type == self.NONSPEECH:
+            return self.length
+        else:
+            return TimeValue("0.000")

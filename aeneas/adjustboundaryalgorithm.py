@@ -46,6 +46,7 @@ from aeneas.syncmap import SyncMapFragmentList
 from aeneas.textfile import TextFile
 from aeneas.textfile import TextFragment
 from aeneas.tree import Tree
+import aeneas.globalconstants as gc
 
 
 class AdjustBoundaryAlgorithm(Loggable):
@@ -297,11 +298,8 @@ class AdjustBoundaryAlgorithm(Loggable):
         else:
             self._adjust_auto(real_wave_mfcc, algo_parameters)
 
-        # ensure the HEAD interval starts at 0.000
-        self.smflist[0].begin = TimeValue("0.000")
-        # ensure the TAIL interval ends at audio length
-        self.smflist[-1].end = real_wave_mfcc.audio_length
-
+        # set HEAD/TAIL and remove NONSPEECH fragments and return
+        self._smooth_fragment_list(real_wave_mfcc.audio_length, ns_string)
         return self.smflist
 
     def intervals_to_fragment_list(self, text_file, end, boundary_indices=None, time_values=None):
@@ -387,36 +385,27 @@ class AdjustBoundaryAlgorithm(Loggable):
         """
         If ``check`` is ``True``, modify the sync map fragment list
         so that no fragment will have zero length.
-
-        Return ``True`` if afterwards the list
-        does not have fragments with zero length.
-
-        :rtype: bool
         """
         self.log(u"Called _process_zero_length")
-        if check:
-            self.log(u"Processing zero length intervals requested")
-            self.log(u"  Checking and fixing...")
-            duration = self.rconf[RuntimeConfiguration.ABA_NO_ZERO_DURATION]
-            self.log([u"  No zero duration: %.3f", duration])
-            # ignore HEAD and TAIL
-            max_index = len(self.smflist) - 1
-            self.smflist.fix_zero_length_fragments(
-                duration=duration,
-                min_index=1,
-                max_index=max_index
-            )
-            # TODO remove this check
-            self.smflist[max_index].begin = self.smflist[max_index - 1].end
-            self.log(u"  Checking and fixing... done")
-            if self.smflist.has_zero_length_fragments(1, max_index):
-                self.log_warn(u"  The fragment list still has fragments with zero length")
-                return False
-            else:
-                self.log(u"  The fragment list does not have fragments with zero length")
-        else:
+        if not check:
             self.log(u"Processing zero length intervals not requested: returning")
-        return True
+            return
+        self.log(u"Processing zero length intervals requested")
+        self.log(u"  Checking and fixing...")
+        duration = self.rconf[RuntimeConfiguration.ABA_NO_ZERO_DURATION]
+        self.log([u"  No zero duration: %.3f", duration])
+        # ignore HEAD and TAIL
+        max_index = len(self.smflist) - 1
+        self.smflist.fix_zero_length_fragments(
+            duration=duration,
+            min_index=1,
+            max_index=max_index
+        )
+        self.log(u"  Checking and fixing... done")
+        if self.smflist.has_zero_length_fragments(1, max_index):
+            self.log_warn(u"  The fragment list still has fragments with zero length")
+        else:
+            self.log(u"  The fragment list does not have fragments with zero length")
 
     def _process_long_nonspeech(self, ns_min, ns_string, real_wave_mfcc):
         self.log(u"Called _process_long_nonspeech")
@@ -428,18 +417,28 @@ class AdjustBoundaryAlgorithm(Loggable):
             long_nonspeech_intervals = [i for i in real_wave_mfcc.intervals(speech=False, time=True) if i.length >= ns_min]
             pairs = self.smflist.fragments_ending_inside_nonspeech_intervals(long_nonspeech_intervals, tolerance)
             # ignore HEAD and TAIL
+            min_index = 1
             max_index = len(self.smflist) - 1
-            pairs = [(n, i) for (n, i) in pairs if (i >= 1) and (i < max_index)]
+            pairs = [(n, i) for (n, i) in pairs if (i >= min_index) and (i < max_index)]
             self.smflist.inject_long_nonspeech_fragments(pairs, ns_string)
-            #
-            # TODO remove this check
-            # # NOTE here the list might have more intervals than before
-            # max_index = len(self.smflist) - 1
-            # self.smflist[max_index].begin = self.smflist[max_index - 1].end
-            #
             self.log(u"  Checking and fixing... done")
         else:
             self.log(u"Processing long nonspeech intervals not requested: returning")
+
+    def _smooth_fragment_list(self, real_wave_mfcc_audio_length, ns_string):
+        """
+        Remove NONSPEECH fragments from list if needed,
+        and set HEAD/TAIL begin/end.
+        """
+        self.log(u"Called _smooth_fragment_list")
+        self.smflist[0].begin = TimeValue("0.000")
+        self.smflist[-1].end = real_wave_mfcc_audio_length
+        if ns_string in [None, gc.PPV_TASK_ADJUST_BOUNDARY_NONSPEECH_REMOVE]:
+            self.log(u"Remove all NONSPEECH fragments")
+            self.smflist.remove_nonspeech_fragments(zero_length_only=False)
+        else:
+            self.log(u"Remove NONSPEECH fragments with zero length only")
+            self.smflist.remove_nonspeech_fragments(zero_length_only=True)
 
     # #####################################################
     # ADJUST FUNCTIONS
@@ -510,14 +509,14 @@ class AdjustBoundaryAlgorithm(Loggable):
         RATE
         """
         self.log(u"Called _adjust_rate")
-        self._apply_rate(real_wave_mfcc, max_rate=algo_parameters[0], aggressive=False)
+        self._apply_rate(max_rate=algo_parameters[0], aggressive=False)
 
     def _adjust_rate_aggressive(self, real_wave_mfcc, algo_parameters):
         """
         RATEAGGRESSIVE
         """
         self.log(u"Called _adjust_rate_aggressive")
-        self._apply_rate(real_wave_mfcc, max_rate=algo_parameters[0], aggressive=True)
+        self._apply_rate(max_rate=algo_parameters[0], aggressive=True)
 
     # #####################################################
     # HELPER FUNCTIONS
@@ -572,10 +571,39 @@ class AdjustBoundaryAlgorithm(Loggable):
             self.log(u"")
         self.log(u"  Second pass: done")
 
-    def _apply_rate(self, real_wave_mfcc, max_rate, aggressive=False):
+    def _apply_rate(self, max_rate, aggressive=False):
+        """
+        Try to adjust the rate (characters/second)
+        of the fragments of the list,
+        so that it does not exceed the given ``max_rate``.
+
+        This is done by testing whether some slack
+        can be borrowed from the fragment before
+        the faster current one.
+
+        If ``aggressive`` is ``True``,
+        the slack might be retrieved from the fragment after
+        the faster current one,
+        if the previous fragment could not contribute enough slack.
+        """
         self.log(u"Called _apply_rate")
-        # if only one fragment, return unchanged
-        if len(self.smflist) <= 3:
-            self.log(u"Only one text fragment, returning")
+        self.log([u"  Aggressive: %s", aggressive])
+        self.log([u"  Max rate:   %.3f", max_rate])
+        regular_fragments = list(self.smflist.regular_fragments)
+        if len(regular_fragments) <= 1:
+            self.log(u"  The list contains at most one regular fragment, returning")
             return
-        # TODO
+        faster_fragments = [(i, f) for i, f in regular_fragments if (f.rate is not None) and (f.rate > max_rate)]
+        if len(faster_fragments) == 0:
+            self.log(u"  No regular fragment faster than max rate, returning")
+            return
+        self.log_warn(u"  Some fragments have rate faster than max rate:")
+        self.log([u"  %s", [i for i, f in faster_fragments]])
+        self.log(u"Fixing rate for faster fragments...")
+        for frag_index, fragment in faster_fragments:
+            self.smflist.fix_fragment_rate(frag_index, max_rate, aggressive=aggressive)
+        self.log(u"Fixing rate for faster fragments... done")
+        faster_fragments = [(i, f) for i, f in regular_fragments if (f.rate is not None) and (f.rate > max_rate)]
+        if len(faster_fragments) > 0:
+            self.log_warn(u"  Some fragments still have rate faster than max rate:")
+            self.log([u"  %s", [i for i, f in faster_fragments]])

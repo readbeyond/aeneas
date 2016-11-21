@@ -14,6 +14,9 @@ v1.7.0 (2016-11-??)
 #. Simplified ``AdjustBoundaryAlgorithm``
 #. Renamed ``aeneas.timevalue`` into ``aeneas.exacttiming``
 #. Added ``aeneas.exacttiming.TimeInterval`` class to represent time intervals and act upon them
+#. Renamed ``audio_duration`` into ``length`` in ``SyncMapFragment``
+#. Added ``has_zero_length`` in ``SyncMapFragment``
+#. Added comparison functions to ``SyncMapFragment``, based on ``TimeInterval``
 #. Added ``aeneas.syncmap.fragmentlist.SyncMapFragmentList`` class to represent a list of sync map fragments, sorted and with constraints
 #. Added tests for the above two new classes
 #. Changed ``config_string()`` to property in ``aeneas.configuration.Configuration``
