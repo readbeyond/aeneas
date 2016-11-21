@@ -35,10 +35,13 @@ class TestSyncMapFragmentList(unittest.TestCase):
 
     def test_time_interval_list_bad(self):
         params = [
+            (None, None, TypeError),
+            ("0.000", None, TypeError),
             (0.000, None, TypeError),
             (0.000, 5.000, TypeError),
             ("0.000", None, TypeError),
             ("0.000", "5.000", TypeError),
+            (TimeValue("0.000"), None, TypeError),
             (TimeValue("-5.000"), TimeValue("5.000"), ValueError),
             (TimeValue("5.000"), TimeValue("0.000"), ValueError),
         ]
@@ -48,8 +51,6 @@ class TestSyncMapFragmentList(unittest.TestCase):
 
     def test_time_interval_list_good(self):
         params = [
-            (None, None),
-            ("0.000", None),
             ("0.000", "0.000"),
             ("0.000", "5.000"),
             ("1.000", "5.000"),
@@ -69,7 +70,7 @@ class TestSyncMapFragmentList(unittest.TestCase):
             (TimeValue("0.000"), TimeValue("5.000")),
             TimeInterval(begin=TimeValue("0.000"), end=TimeValue("5.000"))
         ]
-        l = SyncMapFragmentList()
+        l = SyncMapFragmentList(begin=TimeValue("0.000"), end=TimeValue("10.000"))
         for p in params:
             with self.assertRaises(TypeError):
                 l.add(p)
@@ -318,6 +319,164 @@ class TestSyncMapFragmentList(unittest.TestCase):
                 exp_i = TimeInterval(begin=TimeValue(b), end=TimeValue(e))
                 exp_s = SyncMapFragment(interval=exp_i)
                 self.assertTrue(fragment == exp_s)
+
+    def test_time_interval_list_has_zero_length_fragments(self):
+        params = [
+            (
+                [
+                    ("0.000", "0.000"),
+                    ("0.000", "0.000"),
+                    ("0.000", "0.000"),
+                ],
+                True,
+                True
+            ),
+            (
+                [
+                    ("0.000", "1.000"),
+                    ("1.000", "1.000"),
+                    ("1.000", "1.000"),
+                ],
+                True,
+                True
+            ),
+            (
+                [
+                    ("0.000", "0.000"),
+                    ("0.000", "0.000"),
+                    ("0.000", "1.000"),
+                ],
+                True,
+                True
+            ),
+            (
+                [
+                    ("0.000", "0.000"),
+                    ("0.000", "1.000"),
+                    ("1.000", "1.000"),
+                ],
+                True,
+                False
+            ),
+            (
+                [
+                    ("0.000", "1.000"),
+                    ("1.000", "2.000"),
+                    ("2.000", "3.000"),
+                ],
+                False,
+                False
+            ),
+            (
+                [
+                    ("0.000", "0.000"),
+                    ("0.000", "1.000"),
+                    ("1.000", "1.000"),
+                    ("1.000", "2.000"),
+                    ("2.000", "2.000"),
+                ],
+                True,
+                True
+            ),
+            (
+                [
+                    ("0.000", "0.000"),
+                    ("0.000", "1.000"),
+                    ("1.000", "1.500"),
+                    ("1.500", "2.000"),
+                    ("2.000", "2.000"),
+                ],
+                True,
+                False,
+            ),
+        ]
+        for frags, exp, exp_inside in params:
+            l = SyncMapFragmentList(begin=TimeValue("0.000"), end=TimeValue("10.000"))
+            for b, e in frags:
+                i = TimeInterval(begin=TimeValue(b), end=TimeValue(e))
+                s = SyncMapFragment(interval=i)
+                l.add(s)
+            self.assertEqual(l.has_zero_length_fragments(), exp)
+            self.assertEqual(l.has_zero_length_fragments(min_index=1, max_index=len(l) - 1), exp_inside)
+
+    def test_time_interval_list_has_adjacent_fragments_only(self):
+        params = [
+            (
+                [
+                    ("0.000", "0.000"),
+                    ("0.000", "0.000"),
+                    ("0.000", "0.000"),
+                ],
+                True,
+                True
+            ),
+            (
+                [
+                    ("0.000", "1.000"),
+                    ("1.000", "1.000"),
+                    ("1.000", "1.000"),
+                ],
+                True,
+                True
+            ),
+            (
+                [
+                    ("0.000", "0.000"),
+                    ("0.000", "0.000"),
+                    ("0.000", "1.000"),
+                ],
+                True,
+                True
+            ),
+            (
+                [
+                    ("0.000", "0.000"),
+                    ("0.000", "1.000"),
+                    ("1.000", "1.000"),
+                ],
+                True,
+                True
+            ),
+            (
+                [
+                    ("0.000", "1.000"),
+                    ("1.000", "2.000"),
+                    ("2.000", "3.000"),
+                ],
+                True,
+                True
+            ),
+            (
+                [
+                    ("0.000", "0.000"),
+                    ("0.000", "1.000"),
+                    ("1.000", "1.000"),
+                    ("1.000", "2.000"),
+                    ("2.000", "2.000"),
+                ],
+                True,
+                True
+            ),
+            (
+                [
+                    ("0.000", "0.000"),
+                    ("0.000", "1.000"),
+                    ("1.000", "1.500"),
+                    ("1.500", "2.000"),
+                    ("2.000", "2.000"),
+                ],
+                True,
+                True,
+            ),
+        ]
+        for frags, exp, exp_inside in params:
+            l = SyncMapFragmentList(begin=TimeValue("0.000"), end=TimeValue("10.000"))
+            for b, e in frags:
+                i = TimeInterval(begin=TimeValue(b), end=TimeValue(e))
+                s = SyncMapFragment(interval=i)
+                l.add(s)
+            self.assertEqual(l.has_adjacent_fragments_only(), exp)
+            self.assertEqual(l.has_adjacent_fragments_only(min_index=1, max_index=len(l) - 1), exp_inside)
 
     def test_time_interval_list_offset(self):
         params = [

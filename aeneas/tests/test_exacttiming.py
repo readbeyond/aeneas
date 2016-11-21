@@ -538,6 +538,27 @@ class TestExactTiming(unittest.TestCase):
         params = [
             (("1.000", "1.000"), ("0.000", "2.000"), False),
             (("1.000", "1.000"), ("0.999", "2.000"), False),
+            (("1.000", "1.000"), ("1.000", "1.000"), True),
+            (("1.000", "1.000"), ("1.000", "2.000"), True),
+            (("1.000", "1.000"), ("1.001", "2.000"), False),
+            (("1.000", "1.000"), ("2.000", "2.000"), False),
+            (("0.000", "1.000"), ("0.000", "2.000"), False),
+            (("0.000", "1.000"), ("0.999", "2.000"), False),
+            (("0.000", "1.000"), ("1.000", "1.000"), True),
+            (("0.000", "1.000"), ("1.000", "2.000"), True),
+            (("0.000", "1.000"), ("1.001", "2.000"), False),
+            (("0.000", "1.000"), ("2.000", "2.000"), False),
+        ]
+        for ti1, ti2, exp in params:
+            ti1 = TimeInterval(begin=TimeValue(ti1[0]), end=TimeValue(ti1[1]))
+            ti2 = TimeInterval(begin=TimeValue(ti2[0]), end=TimeValue(ti2[1]))
+            self.assertEqual(ti1.is_adjacent_before(ti2), exp)
+            self.assertEqual(ti2.is_adjacent_after(ti1), exp)
+
+    def test_time_interval_non_zero_before_non_zero(self):
+        params = [
+            (("1.000", "1.000"), ("0.000", "2.000"), False),
+            (("1.000", "1.000"), ("0.999", "2.000"), False),
             (("1.000", "1.000"), ("1.000", "1.000"), False),
             (("1.000", "1.000"), ("1.000", "2.000"), False),
             (("1.000", "1.000"), ("1.001", "2.000"), False),
@@ -552,8 +573,8 @@ class TestExactTiming(unittest.TestCase):
         for ti1, ti2, exp in params:
             ti1 = TimeInterval(begin=TimeValue(ti1[0]), end=TimeValue(ti1[1]))
             ti2 = TimeInterval(begin=TimeValue(ti2[0]), end=TimeValue(ti2[1]))
-            self.assertEqual(ti1.is_adjacent_before(ti2), exp)
-            self.assertEqual(ti2.is_adjacent_after(ti1), exp)
+            self.assertEqual(ti1.is_non_zero_before_non_zero(ti2), exp)
+            self.assertEqual(ti2.is_non_zero_after_non_zero(ti1), exp)
 
 
 if __name__ == "__main__":

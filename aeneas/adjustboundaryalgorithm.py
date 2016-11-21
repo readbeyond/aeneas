@@ -327,16 +327,22 @@ class AdjustBoundaryAlgorithm(Loggable):
         else:
             self.log(u"Converting time intervals to fragment list...")
             times = time_values
-
-        self.smflist = SyncMapFragmentList(begin=TimeValue("0.000"), end=end)
-        # HEAD
+        begin = TimeValue("0.000")
+        self.log([u"  Creating SyncMapFragmentList with begin %.3f and end %.3f", begin, end])
+        self.smflist = SyncMapFragmentList(
+            begin=begin,
+            end=end,
+            rconf=self.rconf,
+            logger=self.logger
+        )
+        self.log(u"  Creating HEAD fragment")
         self.smflist.add(SyncMapFragment(
             text_fragment=TextFragment(identifier=u"HEAD"),
             begin=times[0],
             end=times[1],
             fragment_type=SyncMapFragment.HEAD
         ), sort=False)
-        # REGULAR
+        self.log(u"  Creating REGULAR fragments")
         for i in range(1, len(times) - 2):
             self.smflist.add(SyncMapFragment(
                 text_fragment=text_file.fragments[i - 1],
@@ -344,7 +350,7 @@ class AdjustBoundaryAlgorithm(Loggable):
                 end=times[i + 1],
                 fragment_type=SyncMapFragment.REGULAR
             ), sort=False)
-        # TAIL
+        self.log(u"  Creating TAIL fragment")
         self.smflist.add(SyncMapFragment(
             text_fragment=TextFragment(identifier=u"TAIL"),
             begin=times[len(times) - 2],
@@ -381,6 +387,11 @@ class AdjustBoundaryAlgorithm(Loggable):
         """
         If ``check`` is ``True``, modify the sync map fragment list
         so that no fragment will have zero length.
+
+        Return ``True`` if afterwards the list
+        does not have fragments with zero length.
+
+        :rtype: bool
         """
         self.log(u"Called _process_zero_length")
         if check:
@@ -395,10 +406,17 @@ class AdjustBoundaryAlgorithm(Loggable):
                 min_index=1,
                 max_index=max_index
             )
+            # TODO remove this check
             self.smflist[max_index].begin = self.smflist[max_index - 1].end
             self.log(u"  Checking and fixing... done")
+            if self.smflist.has_zero_length_fragments(1, max_index):
+                self.log_warn(u"  The fragment list still has fragments with zero length")
+                return False
+            else:
+                self.log(u"  The fragment list does not have fragments with zero length")
         else:
             self.log(u"Processing zero length intervals not requested: returning")
+        return True
 
     def _process_long_nonspeech(self, ns_min, ns_string, real_wave_mfcc):
         self.log(u"Called _process_long_nonspeech")
@@ -413,8 +431,12 @@ class AdjustBoundaryAlgorithm(Loggable):
             max_index = len(self.smflist) - 1
             pairs = [(n, i) for (n, i) in pairs if (i >= 1) and (i < max_index)]
             self.smflist.inject_long_nonspeech_fragments(pairs, ns_string)
-            max_index = len(self.smflist) - 1
-            self.smflist[max_index].begin = self.smflist[max_index - 1].end
+            #
+            # TODO remove this check
+            # # NOTE here the list might have more intervals than before
+            # max_index = len(self.smflist) - 1
+            # self.smflist[max_index].begin = self.smflist[max_index - 1].end
+            #
             self.log(u"  Checking and fixing... done")
         else:
             self.log(u"Processing long nonspeech intervals not requested: returning")
@@ -547,7 +569,7 @@ class AdjustBoundaryAlgorithm(Loggable):
             self.log([u"    New value:        %.3f", new_value])
             self.smflist.move_transition_point(frag_index, new_value)
             self.log([u"    New interval:     %s", self.smflist[frag_index].interval])
-            self.log(u"    ")
+            self.log(u"")
         self.log(u"  Second pass: done")
 
     def _apply_rate(self, real_wave_mfcc, max_rate, aggressive=False):

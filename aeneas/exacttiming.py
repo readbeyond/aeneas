@@ -597,7 +597,7 @@ class TimeInterval(object):
         """
         return self.intersection(other) is not None
 
-    def is_adjacent_before(self, other):
+    def is_non_zero_before_non_zero(self, other):
         """
         Return ``True`` if this time interval ends
         when the given other time interval begins,
@@ -605,13 +605,12 @@ class TimeInterval(object):
 
         :param other: the other interval
         :type  other: :class:`~aeneas.exacttiming.TimeInterval`
+        :raises TypeError: if ``other`` is not an instance of ``TimeInterval``
         :rtype: bool
         """
-        if not isinstance(other, TimeInterval):
-            raise TypeError(u"other is not an instance of TimeInterval")
-        return (self.end == other.begin) and (not self.has_zero_length) and (not other.has_zero_length)
+        return self.is_adjacent_before(other) and (not self.has_zero_length) and (not other.has_zero_length)
 
-    def is_adjacent_after(self, other):
+    def is_non_zero_after_non_zero(self, other):
         """
         Return ``True`` if this time interval begins
         when the given other time interval ends,
@@ -619,6 +618,33 @@ class TimeInterval(object):
 
         :param other: the other interval
         :type  other: :class:`~aeneas.exacttiming.TimeInterval`
+        :raises TypeError: if ``other`` is not an instance of ``TimeInterval``
+        :rtype: bool
+        """
+        return other.is_non_zero_before_non_zero(self)
+
+    def is_adjacent_before(self, other):
+        """
+        Return ``True`` if this time interval ends
+        when the given other time interval begins.
+
+        :param other: the other interval
+        :type  other: :class:`~aeneas.exacttiming.TimeInterval`
+        :raises TypeError: if ``other`` is not an instance of ``TimeInterval``
+        :rtype: bool
+        """
+        if not isinstance(other, TimeInterval):
+            raise TypeError(u"other is not an instance of TimeInterval")
+        return (self.end == other.begin)
+
+    def is_adjacent_after(self, other):
+        """
+        Return ``True`` if this time interval begins
+        when the given other time interval ends.
+
+        :param other: the other interval
+        :type  other: :class:`~aeneas.exacttiming.TimeInterval`
+        :raises TypeError: if ``other`` is not an instance of ``TimeInterval``
         :rtype: bool
         """
         return other.is_adjacent_before(self)
