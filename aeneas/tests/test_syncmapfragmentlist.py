@@ -320,6 +320,47 @@ class TestSyncMapFragmentList(unittest.TestCase):
                 exp_s = SyncMapFragment(interval=exp_i)
                 self.assertTrue(fragment == exp_s)
 
+    def test_time_interval_list_clone(self):
+        params = [
+            [
+                ("1.000", "1.000"),
+                ("0.500", "0.500"),
+                ("1.000", "1.000"),
+            ],
+            [
+                ("1.000", "1.000"),
+                ("0.500", "0.500"),
+            ],
+            [
+                ("2.000", "2.000"),
+                ("1.000", "2.000"),
+                ("0.500", "0.500"),
+            ],
+            [
+                ("2.000", "2.000"),
+                ("0.500", "0.500"),
+                ("2.000", "3.000"),
+                ("1.000", "2.000"),
+                ("0.500", "0.500"),
+            ],
+        ]
+        for ins in params:
+            l = SyncMapFragmentList(begin=TimeValue("0.000"), end=TimeValue("10.000"))
+            for b, e in ins:
+                i = TimeInterval(begin=TimeValue(b), end=TimeValue(e))
+                s = SyncMapFragment(interval=i)
+                l.add(s)
+            c = l.clone()
+            self.assertNotEqual(id(l), id(c))
+            self.assertEqual(len(l), len(c))
+            for j, fragment in enumerate(l.fragments):
+                self.assertNotEqual(id(l[j]), id(c[j]))
+                self.assertEqual(l[j], c[j])
+                fragment.fragment_type = SyncMapFragment.NONSPEECH
+                self.assertNotEqual(l[j].fragment_type, c[j].fragment_type)
+                self.assertEqual(l[j].fragment_type, SyncMapFragment.NONSPEECH)
+                self.assertEqual(c[j].fragment_type, SyncMapFragment.REGULAR)
+
     def test_time_interval_list_has_zero_length_fragments(self):
         params = [
             (
@@ -965,7 +1006,6 @@ class TestSyncMapFragmentList(unittest.TestCase):
                 b, e = exp[j]
                 exp_i = TimeInterval(begin=TimeValue(b), end=TimeValue(e))
                 exp_s = SyncMapFragment(interval=exp_i)
-                # print("%s (expected: %s)" % (fragment.interval, exp_i))
                 self.assertTrue(fragment == exp_s)
 
 

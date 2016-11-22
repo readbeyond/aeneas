@@ -23,7 +23,8 @@
 
 from __future__ import absolute_import
 from __future__ import print_function
-import bisect
+from copy import deepcopy
+from bisect import insort
 
 from aeneas.exacttiming import TimeInterval
 from aeneas.exacttiming import TimeValue
@@ -165,6 +166,14 @@ class SyncMapFragmentList(Loggable):
         if max_index > len(self):
             self.log_exc(u"max_index is bigger than the number of intervals in the list", None, True, ValueError)
         return min_index, max_index
+
+    def clone(self):
+        """
+        Return a deep copy of this configuration object.
+
+        :rtype: :class:`~aeneas.syncmap.fragmentlist.SyncMapFragmentList`
+        """
+        return deepcopy(self)
 
     @property
     def is_guaranteed_sorted(self):
@@ -343,7 +352,7 @@ class SyncMapFragmentList(Loggable):
             if not self.is_guaranteed_sorted:
                 self.log_exc(u"Unable to add with sort=True if the list is not guaranteed sorted", None, True, ValueError)
             self._check_overlap(fragment)
-            bisect.insort(self.__fragments, fragment)
+            insort(self.__fragments, fragment)
             # self.log(u"Inserted and kept sorted flag true")
         else:
             self.__fragments.append(fragment)

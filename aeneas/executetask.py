@@ -33,12 +33,13 @@ This module contains the following classes:
 from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
-import numpy
 
 from aeneas.adjustboundaryalgorithm import AdjustBoundaryAlgorithm
 from aeneas.audiofile import AudioFile
 from aeneas.audiofilemfcc import AudioFileMFCC
 from aeneas.dtw import DTWAligner
+from aeneas.exacttiming import TimeInterval
+from aeneas.exacttiming import TimeValue
 from aeneas.ffmpegwrapper import FFMPEGWrapper
 from aeneas.logger import Loggable
 from aeneas.runtimeconfiguration import RuntimeConfiguration
@@ -50,8 +51,6 @@ from aeneas.synthesizer import Synthesizer
 from aeneas.task import Task
 from aeneas.textfile import TextFileFormat
 from aeneas.textfile import TextFragment
-from aeneas.exacttiming import TimeInterval
-from aeneas.exacttiming import TimeValue
 from aeneas.tree import Tree
 import aeneas.globalfunctions as gf
 
@@ -526,10 +525,12 @@ class ExecuteTask(Loggable):
         # boundary_indices contains the boundary indices in the all_mfcc of real_wave_mfcc
         # starting with the (head-1st fragment) and ending with (-1th fragment-tail)
         aba_parameters = self.task.configuration.aba_parameters()
-        self.log([u"ABA parameters: %s", aba_parameters])
         if not adjust_boundaries:
             self.log(u"Forced running algorithm: 'auto'")
             aba_parameters["algorithm"] = (AdjustBoundaryAlgorithm.AUTO, [])
+            aba_parameters["nozero"] = False
+            aba_parameters["nonspeech"] = (None, None)
+        self.log([u"ABA parameters: %s", aba_parameters])
         aba = AdjustBoundaryAlgorithm(rconf=self.rconf, logger=self.logger)
         aba.adjust(
             aba_parameters=aba_parameters,

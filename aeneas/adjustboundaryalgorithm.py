@@ -265,8 +265,11 @@ class AdjustBoundaryAlgorithm(Loggable):
         if (text_file is None) or (not isinstance(text_file, TextFile)):
             raise TypeError(u"text_file is None or not a TextFile object")
 
-        # save mws
+        # save parameters
         self.mws = real_wave_mfcc.rconf.mws
+        nozero = aba_parameters["nozero"]
+        ns_min, ns_string = aba_parameters["nonspeech"]
+        algorithm, algo_parameters = aba_parameters["algorithm"]
 
         # convert boundary indices to time intervals
         self.intervals_to_fragment_list(
@@ -274,29 +277,29 @@ class AdjustBoundaryAlgorithm(Loggable):
             end=real_wave_mfcc.audio_length,
             boundary_indices=boundary_indices,
         )
+        smflist_copy = self.smflist.clone()
 
-        # check no fragment has zero length, if requested
-        self._process_zero_length(check=aba_parameters["nozero"])
+        try:
+            # check no fragment has zero length, if requested
+            self._process_zero_length(nozero)
 
-        # add nonspeech intervals, if any
-        ns_min, ns_string = aba_parameters["nonspeech"]
-        self._process_long_nonspeech(ns_min, ns_string, real_wave_mfcc)
+            # add nonspeech intervals, if any
+            self._process_long_nonspeech(ns_min, ns_string, real_wave_mfcc)
 
-        # adjust using the right algorithm
-        algorithm, algo_parameters = aba_parameters["algorithm"]
-        ALGORITHM_MAP = {
-            self.AFTERCURRENT: self._adjust_aftercurrent,
-            self.AUTO: self._adjust_auto,
-            self.BEFORENEXT: self._adjust_beforenext,
-            self.OFFSET: self._adjust_offset,
-            self.PERCENT: self._adjust_percent,
-            self.RATE: self._adjust_rate,
-            self.RATEAGGRESSIVE: self._adjust_rate_aggressive,
-        }
-        if algorithm in ALGORITHM_MAP:
+            # adjust using the right algorithm
+            ALGORITHM_MAP = {
+                self.AFTERCURRENT: self._adjust_aftercurrent,
+                self.AUTO: self._adjust_auto,
+                self.BEFORENEXT: self._adjust_beforenext,
+                self.OFFSET: self._adjust_offset,
+                self.PERCENT: self._adjust_percent,
+                self.RATE: self._adjust_rate,
+                self.RATEAGGRESSIVE: self._adjust_rate_aggressive,
+            }
             ALGORITHM_MAP[algorithm](real_wave_mfcc, algo_parameters)
-        else:
-            self._adjust_auto(real_wave_mfcc, algo_parameters)
+        except Exception as exc:
+            self.log_exc(u"An unexpected error occurred while running adjust, restoring smflist_copy", exc, False, None)
+            self.smflist = smflist_copy
 
         # set HEAD/TAIL and remove NONSPEECH fragments and return
         self._smooth_fragment_list(real_wave_mfcc.audio_length, ns_string)
@@ -381,13 +384,13 @@ class AdjustBoundaryAlgorithm(Loggable):
     # NO ZERO AND LONG NONSPEECH FUNCTIONS
     # #####################################################
 
-    def _process_zero_length(self, check):
+    def _process_zero_length(self, nozero):
         """
-        If ``check`` is ``True``, modify the sync map fragment list
+        If ``nozero`` is ``True``, modify the sync map fragment list
         so that no fragment will have zero length.
         """
         self.log(u"Called _process_zero_length")
-        if not check:
+        if not nozero:
             self.log(u"Processing zero length intervals not requested: returning")
             return
         self.log(u"Processing zero length intervals requested")

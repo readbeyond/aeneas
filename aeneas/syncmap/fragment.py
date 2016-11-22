@@ -58,6 +58,9 @@ class SyncMapFragment(object):
     NONSPEECH = 3
     """ Nonspeech fragment (not head nor tail) """
 
+    NOT_REGULAR_TYPES = [HEAD, TAIL, NONSPEECH]
+    """ Types of fragment different than ``REGULAR`` """
+
     def __init__(
             self,
             text_fragment=None,
