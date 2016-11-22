@@ -102,7 +102,7 @@ class SyncMapFragmentList(Loggable):
 
     def __setitem__(self, index, value):
         self.__fragments[index] = value
-    
+
     def _is_valid_index(self, index):
         """
         Return ``True`` if and only if the given ``index``

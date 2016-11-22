@@ -38,6 +38,7 @@ from aeneas.executetask import ExecuteTask
 from aeneas.idsortingalgorithm import IDSortingAlgorithm
 from aeneas.language import Language
 from aeneas.runtimeconfiguration import RuntimeConfiguration
+from aeneas.syncmap import SyncMapFragment
 from aeneas.syncmap import SyncMapFormat
 from aeneas.syncmap import SyncMapHeadTailFormat
 from aeneas.task import Task
@@ -636,7 +637,7 @@ class ExecuteTaskCLI(AbstractCLIProgram):
                 gf.delete_file(None, audio_file_path)
 
         if print_zero:
-            zero_duration = [l for l in task.sync_map.fragments_tree.vleaves_not_empty if l.begin == l.end]
+            zero_duration = [l for l in task.sync_map_vleaves(SyncMapFragment.REGULAR) if l.begin == l.end]
             if len(zero_duration) > 0:
                 self.print_warning(u"Fragments with zero duration:")
                 for fragment in zero_duration:
@@ -644,17 +645,17 @@ class ExecuteTaskCLI(AbstractCLIProgram):
 
         if print_rates:
             self.print_info(u"Fragments with rates:")
-            for fragment in task.sync_map.fragments_tree.vleaves_not_empty:
-                self.print_generic(u"  %s (rate: %.3f chars/s)" % (fragment, fragment.rate))
+            for fragment in task.sync_map_vleaves(SyncMapFragment.REGULAR):
+                self.print_generic(u"  %s (rate: %.3f chars/s)" % (fragment, fragment.rate or 0.0))
 
         if print_faster_rate:
             max_rate = task.configuration["aba_rate_value"]
             if max_rate is not None:
-                faster = [l for l in task.sync_map.fragments_tree.vleaves_not_empty if l.rate >= max_rate + Decimal("0.001")]
+                faster = [l for l in task.sync_map_vleaves(SyncMapFragment.REGULAR) if l.rate >= max_rate + Decimal("0.001")]
                 if len(faster) > 0:
                     self.print_warning(u"Fragments with rate greater than %.3f:" % max_rate)
                     for fragment in faster:
-                        self.print_generic(u"  %s (rate: %.3f chars/s)" % (fragment, fragment.rate))
+                        self.print_generic(u"  %s (rate: %.3f chars/s)" % (fragment, fragment.rate or 0.0))
 
         return self.NO_ERROR_EXIT_CODE
 

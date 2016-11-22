@@ -301,7 +301,7 @@ class SyncMapFragment(object):
         the length of the fragment.
         For ``HEAD`` and ``TAIL`` fragments this value is ``0.000``,
         meaning that they cannot be stolen.
-        
+
         :param max_rate: the maximum rate (characters/second)
         :type  max_rate: :class:`~aeneas.exacttiming.Decimal`
         :rtype: :class:`~aeneas.exacttiming.TimeValue`

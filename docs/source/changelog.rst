@@ -12,6 +12,7 @@ v1.7.0 (2016-11-??)
 #. Added Makefile files to C/C++ extensions, replacing previous Bash scripts
 #. Simplified ``ExecuteTask``, offloading some sub-tasks to ``SyncMap``, ``SyncMapFragmentList``, and ``AdjustBoundaryAlgorithm``
 #. Simplified ``AdjustBoundaryAlgorithm``
+#. Added method ``sync_map_vleaves`` in ``Task``
 #. Renamed ``aeneas.timevalue`` into ``aeneas.exacttiming``
 #. Added ``aeneas.exacttiming.TimeInterval`` class to represent time intervals and act upon them
 #. Renamed ``audio_duration`` into ``length`` in ``SyncMapFragment``
