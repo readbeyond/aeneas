@@ -641,12 +641,12 @@ class ExecuteTaskCLI(AbstractCLIProgram):
             if len(zero_duration) > 0:
                 self.print_warning(u"Fragments with zero duration:")
                 for fragment in zero_duration:
-                    self.print_generic(u"  %s" % fragment)
+                    self.print_generic(u"  %s" % (fragment.pretty_print))
 
         if print_rates:
             self.print_info(u"Fragments with rates:")
             for fragment in task.sync_map_vleaves(SyncMapFragment.REGULAR):
-                self.print_generic(u"  %s (rate: %.3f chars/s)" % (fragment, fragment.rate or 0.0))
+                self.print_generic(u"  %s\t%.3f" % (fragment.pretty_print, fragment.rate or 0.0))
 
         if print_faster_rate:
             max_rate = task.configuration["aba_rate_value"]
@@ -655,7 +655,7 @@ class ExecuteTaskCLI(AbstractCLIProgram):
                 if len(faster) > 0:
                     self.print_warning(u"Fragments with rate greater than %.3f:" % max_rate)
                     for fragment in faster:
-                        self.print_generic(u"  %s (rate: %.3f chars/s)" % (fragment, fragment.rate or 0.0))
+                        self.print_generic(u"  %s\t%.3f" % (fragment.pretty_print, fragment.rate or 0.0))
 
         return self.NO_ERROR_EXIT_CODE
 

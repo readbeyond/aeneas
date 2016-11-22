@@ -177,6 +177,49 @@ class SyncMapFragment(object):
         self.__confidence = confidence
 
     @property
+    def pretty_print(self):
+        """
+        Pretty print representation of this fragment,
+        as ``(identifier, begin, end, text)``.
+
+        :rtype: string
+
+        .. versionadded:: 1.7.0
+        """
+        return u"%s\t%.3f\t%.3f\t%s" % (
+            (self.identifier or u""),
+            (self.begin if self.begin is not None else TimeValue("-2.000")),
+            (self.end if self.end is not None else TimeValue("-1.000")),
+            (self.text or u"")
+        )
+
+    @property
+    def identifier(self):
+        """
+        The identifier of this sync map fragment.
+
+        :rtype: string
+
+        .. versionadded:: 1.7.0
+        """
+        if self.text_fragment is None:
+            return None
+        return self.text_fragment.identifier
+
+    @property
+    def text(self):
+        """
+        The text of this sync map fragment.
+
+        :rtype: string
+
+        .. versionadded:: 1.7.0
+        """
+        if self.text_fragment is None:
+            return None
+        return self.text_fragment.text
+
+    @property
     def begin(self):
         """
         The begin time of this sync map fragment.
