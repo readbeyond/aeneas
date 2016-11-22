@@ -7,6 +7,9 @@ syncmap
 .. automodule:: aeneas.syncmap.fragment
     :members:
 
+.. automodule:: aeneas.syncmap.fragmentlist
+    :members:
+
 .. automodule:: aeneas.syncmap.format
     :members:
 

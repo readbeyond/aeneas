@@ -119,10 +119,10 @@ class ExecuteTaskCLI(AbstractCLIProgram):
             u"show": True
         },
         u"--example-faster-rate": {
-            u"description": u"input: plain text (plain), output: SRT, print faster than 14.0 chars/s",
+            u"description": u"input: plain text (plain), output: SRT, print faster than 12.0 chars/s",
             u"audio": AUDIO_FILE,
             u"text": gf.relative_path("res/plain.txt", __file__),
-            u"config": u"task_language=eng|is_text_type=plain|os_task_file_format=srt|task_adjust_boundary_algorithm=rate|task_adjust_boundary_rate_value=14.000",
+            u"config": u"task_language=eng|is_text_type=plain|os_task_file_format=srt|task_adjust_boundary_algorithm=rate|task_adjust_boundary_rate_value=12.000",
             u"syncmap": "output/sonnet.faster.srt",
             u"options": u"--faster-rate",
             u"show": False
@@ -227,7 +227,7 @@ class ExecuteTaskCLI(AbstractCLIProgram):
             u"show": True
         },
         u"--example-mws": {
-            u"description": u"input: plain text, output: JSON, resolution: 0.500s",
+            u"description": u"input: plain text, output: JSON, resolution: 0.500 s",
             u"audio": AUDIO_FILE,
             u"text": gf.relative_path("res/plain.txt", __file__),
             u"config": u"task_language=eng|is_text_type=plain|os_task_file_format=json",
@@ -280,6 +280,33 @@ class ExecuteTaskCLI(AbstractCLIProgram):
             u"options": u"--rates",
             u"show": False
         },
+        u"--example-remove-nonspeech": {
+            u"description": u"input: plain text (plain), output: SRT, remove nonspeech >=0.500 s",
+            u"audio": AUDIO_FILE,
+            u"text": gf.relative_path("res/plain.txt", __file__),
+            u"config": u"task_language=eng|is_text_type=plain|os_task_file_format=srt|task_adjust_boundary_nonspeech_min=0.500|task_adjust_boundary_nonspeech_string=REMOVE",
+            u"syncmap": "output/sonnet.remove.nonspeech.srt",
+            u"options": u"",
+            u"show": False
+        },
+        u"--example-remove-nonspeech-rateaggressive": {
+            u"description": u"input: plain text (plain), output: SRT, remove nonspeech >=0.500 s, max rate 14.0 chars/s, print rates",
+            u"audio": AUDIO_FILE,
+            u"text": gf.relative_path("res/plain.txt", __file__),
+            u"config": u"task_language=eng|is_text_type=plain|os_task_file_format=srt|task_adjust_boundary_nonspeech_min=0.500|task_adjust_boundary_nonspeech_string=REMOVE|task_adjust_boundary_algorithm=rateaggressive|task_adjust_boundary_rate_value=14.000",
+            u"syncmap": "output/sonnet.remove.nonspeech.rateaggressive.srt",
+            u"options": u"--rates",
+            u"show": False
+        },
+        u"--example-replace-nonspeech": {
+            u"description": u"input: plain text (plain), output: AUD, replace nonspeech >=0.500 s with (sil)",
+            u"audio": AUDIO_FILE,
+            u"text": gf.relative_path("res/plain.txt", __file__),
+            u"config": u"task_language=eng|is_text_type=plain|os_task_file_format=aud|task_adjust_boundary_nonspeech_min=0.500|task_adjust_boundary_nonspeech_string=(sil)",
+            u"syncmap": "output/sonnet.sil.aud",
+            u"options": u"",
+            u"show": False
+        },
         u"--example-sd": {
             u"description": u"input: plain text, output: TSV, head/tail detection",
             u"audio": AUDIO_FILE,
@@ -304,6 +331,15 @@ class ExecuteTaskCLI(AbstractCLIProgram):
             u"text": gf.relative_path("res/page.xhtml", __file__),
             u"config": u"task_language=eng|is_text_type=unparsed|is_text_unparsed_id_regex=f[0-9]+|is_text_unparsed_id_sort=numeric|os_task_file_format=smil|os_task_file_smil_audio_ref=p001.mp3|os_task_file_smil_page_ref=p001.xhtml",
             u"syncmap": "output/sonnet.smil",
+            u"options": u"",
+            u"show": True
+        },
+        u"--example-textgrid": {
+            u"description": u"input: parsed text, output: TextGrid",
+            u"audio": AUDIO_FILE,
+            u"text": gf.relative_path("res/parsed.txt", __file__),
+            u"config": u"task_language=eng|is_text_type=parsed|os_task_file_format=textgrid",
+            u"syncmap": "output/sonnet.textgrid",
             u"options": u"",
             u"show": True
         },
@@ -383,7 +419,7 @@ class ExecuteTaskCLI(AbstractCLIProgram):
         u"",
         u"  task_adjust_boundary_no_zero            : if True, do not allow zero-length fragments",
         u"  task_adjust_boundary_nonspeech_min      : minimum long nonspeech duration, in seconds",
-        u"  task_adjust_boundary_nonspeech_string   : replace long nonspeech with this string ('REMOVE' deletes them)",
+        u"  task_adjust_boundary_nonspeech_string   : replace long nonspeech with this string (or specify 'REMOVE')",
     ]
 
     VALUES = {
@@ -501,6 +537,8 @@ class ExecuteTaskCLI(AbstractCLIProgram):
                     elif key == u"--example-py":
                         self.rconf[RuntimeConfiguration.C_EXTENSIONS] = False
                     elif key == u"--example-rates":
+                        print_rates = True
+                    elif key == u"--example-remove-nonspeech-rateaggressive":
                         print_rates = True
                     elif key == u"--example-youtube":
                         download_from_youtube = True

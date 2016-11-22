@@ -167,6 +167,21 @@ class TestExecuteTaskCLI(unittest.TestCase):
             ("", "--example-rates")
         ], 0)
 
+    def test_example_remove_nonspeech(self):
+        self.execute([
+            ("", "--example-remove-nonspeech")
+        ], 0)
+
+    def test_example_remove_nonspeech_rateaggressive(self):
+        self.execute([
+            ("", "--example-remove-nonspeech-rateaggressive")
+        ], 0)
+
+    def test_example_replace_nonspeech(self):
+        self.execute([
+            ("", "--example-replace-nonspeech")
+        ], 0)
+
     def test_example_sd(self):
         self.execute([
             ("", "--example-sd")
@@ -180,6 +195,11 @@ class TestExecuteTaskCLI(unittest.TestCase):
     def test_example_srt(self):
         self.execute([
             ("", "--example-srt")
+        ], 0)
+
+    def test_example_textgrid(self):
+        self.execute([
+            ("", "--example-textgrid")
         ], 0)
 
     def test_example_tsv(self):

@@ -3,7 +3,7 @@
 **aeneas** is a Python/C library and a set of tools to automagically synchronize audio and text (aka forced alignment).
 
 * Version: 1.7.0
-* Date: 2016-11-??
+* Date: 2016-12-??
 * Developed by: [ReadBeyond](http://www.readbeyond.it/)
 * Lead Developer: [Alberto Pettarin](http://www.albertopettarin.it/)
 * License: the GNU Affero General Public License Version 3 (AGPL v3)
@@ -243,7 +243,7 @@ which explains how to use the built-in command line tools.
 * Output an HTML file for fine tuning the sync map manually (`finetuneas` project)
 * Execution parameters tunable at runtime
 * Code suitable for Web app deployment (e.g., on-demand cloud computing)
-* Extensive test suite including 800+ unit/integration/performance tests, that run and must pass before each release
+* Extensive test suite including 1,000+ unit/integration/performance tests, that run and must pass before each release
 
 
 ## Limitations and Missing Features 

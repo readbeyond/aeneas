@@ -596,7 +596,7 @@ class AdjustBoundaryAlgorithm(Loggable):
         if len(regular_fragments) <= 1:
             self.log(u"  The list contains at most one regular fragment, returning")
             return
-        faster_fragments = [(i, f) for i, f in regular_fragments if (f.rate is not None) and (f.rate > max_rate)]
+        faster_fragments = [(i, f) for i, f in regular_fragments if (f.rate is not None) and (f.rate >= max_rate + Decimal("0.001"))]
         if len(faster_fragments) == 0:
             self.log(u"  No regular fragment faster than max rate, returning")
             return
@@ -606,7 +606,7 @@ class AdjustBoundaryAlgorithm(Loggable):
         for frag_index, fragment in faster_fragments:
             self.smflist.fix_fragment_rate(frag_index, max_rate, aggressive=aggressive)
         self.log(u"Fixing rate for faster fragments... done")
-        faster_fragments = [(i, f) for i, f in regular_fragments if (f.rate is not None) and (f.rate > max_rate)]
+        faster_fragments = [(i, f) for i, f in regular_fragments if (f.rate is not None) and (f.rate >= max_rate + Decimal("0.001"))]
         if len(faster_fragments) > 0:
             self.log_warn(u"  Some fragments still have rate faster than max rate:")
             self.log([u"  %s", [i for i, f in faster_fragments]])

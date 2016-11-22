@@ -263,7 +263,7 @@ Supported Features
 -  Execution parameters tunable at runtime
 -  Code suitable for Web app deployment (e.g., on-demand cloud
    computing)
--  Extensive test suite including 800+ unit/integration/performance
+-  Extensive test suite including 1,000+ unit/integration/performance
    tests, that run and must pass before each release
 
 Limitations and Missing Features

@@ -77,9 +77,9 @@ Clearly, you can also manipulate objects programmatically.
         # process Task
         ExecuteTask(task).execute()
 
-        # print short fragments
-        for fragment in task.sync_map.fragments_tree.vleaves_not_empty:
-            if fragment.end - fragment.begin < 5.0:
+        # print fragments with a duration < 5 seconds
+        for fragment in task.sync_map_vleaves:
+            if fragment.length < 5.0:
                 print(fragment)
 
 Instead of passing around configuration strings,
@@ -140,9 +140,10 @@ This choice might change in the future.
 Depending on what ``aeneas`` classes you want to use,
 you might need to install the following optional dependencies:
 
-* ``requests`` (for using :class:`~aeneas.ttswrappers.nuancettswrapper.NuanceTTSWrapper`)
-* ``Pillow`` (for using :mod:`~aeneas.plotter`)
-* ``youtube-dl`` and ``pafy`` (for using :class:`~aeneas.downloader.Downloader`)
+* ``requests`` (for using the Nuance TTS API wrapper)
+* ``Pillow`` (for plotting waveforms with :mod:`~aeneas.plotter`)
+* ``tgt`` (for outputting sync maps to TextGrid format)
+* ``youtube-dl`` and ``pafy`` (for downloading audio from Internet with :class:`~aeneas.downloader.Downloader`)
 
 
 
@@ -224,7 +225,7 @@ The Python C/C++ extensions included in ``aeneas`` are:
     
     Currently :mod:`aeneas.cwave` is not used.
     It will be enabled in a future version of ``aeneas``.
-    
+
 
 
 Concepts

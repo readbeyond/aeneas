@@ -47,8 +47,6 @@ class SyncMapFragmentList(Loggable):
     clipping, offsetting, moving fragment boundaries,
     and fixing fragments with zero length.
 
-    .. versionadded:: 1.7.0
-
     :param begin: the begin time
     :type  begin: :class:`~aeneas.exacttiming.TimeValue`
     :param end: the end time
