@@ -180,7 +180,7 @@ class TestSyncMap(unittest.TestCase):
             self.assertEqual(frag.length, 5)
             self.assertEqual(frag.chars, 0)
             self.assertIsNone(frag.rate)
-        
+
     def test_fragment_not_regular_rate_zero_length(self):
         for t in SyncMapFragment.NOT_REGULAR_TYPES:
             text = TextFragment()
@@ -228,7 +228,7 @@ class TestSyncMap(unittest.TestCase):
                 self.assertEqual(frag.rate_lack(Decimal(r)), TimeValue(e_zero))
                 frag = SyncMapFragment(text_fragment=text, fragment_type=t, begin=TimeValue("0.000"), end=TimeValue("1.000"))
                 self.assertEqual(frag.rate_lack(Decimal(r)), TimeValue(e_nonzero))
-    
+
     def test_fragment_nonspeech_rate_slack(self):
         params = [
             ("20.000", "0.000", "1.000"),

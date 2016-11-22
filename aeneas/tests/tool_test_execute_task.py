@@ -61,11 +61,41 @@ class TestExecuteTaskCLI(unittest.TestCase):
     def test_list_parameters(self):
         self.execute([("", "--list-parameters")], 2)
 
-    def test_list_values(self):
-        self.execute([("", "--list-values=is_text_type")], 2)
+    def test_list_values_help(self):
+        self.execute([("", "--list-values=?")], 2)
 
     def test_list_values_bad(self):
         self.execute([("", "--list-values=foo")], 2)
+
+    def test_list_values_espeak(self):
+        self.execute([("", "--list-values=espeak")], 2)
+
+    def test_list_values_espeakng(self):
+        self.execute([("", "--list-values=espeak-ng")], 2)
+
+    def test_list_values_festival(self):
+        self.execute([("", "--list-values=festival")], 2)
+
+    def test_list_values_nuance(self):
+        self.execute([("", "--list-values=nuance")], 2)
+
+    def test_list_values_task_language(self):
+        self.execute([("", "--list-values=task_language")], 2)
+
+    def test_list_values_is_text_type(self):
+        self.execute([("", "--list-values=is_text_type")], 2)
+
+    def test_list_values_is_text_unparsed_id_sort(self):
+        self.execute([("", "--list-values=is_text_unparsed_id_sort")], 2)
+
+    def test_list_values_os_task_file_format(self):
+        self.execute([("", "--list-values=os_task_file_format")], 2)
+
+    def test_list_values_os_task_file_head_tail_format(self):
+        self.execute([("", "--list-values=os_task_file_head_tail_format")], 2)
+
+    def test_list_values_task_adjust_boundary_algorithm(self):
+        self.execute([("", "--list-values=task_adjust_boundary_algorithm")], 2)
 
     def test_exec_json(self):
         self.execute([
@@ -128,6 +158,15 @@ class TestExecuteTaskCLI(unittest.TestCase):
             ("", "-r=\"c_extensions=False\"")
         ], 0)
 
+    def test_exec_srt_no_cdtw(self):
+        self.execute([
+            ("in", "../tools/res/audio.mp3"),
+            ("in", "../tools/res/subtitles.txt"),
+            ("", "task_language=eng|is_text_type=subtitles|os_task_file_format=srt"),
+            ("out", "sonnet.srt"),
+            ("", "-r=\"cdtw=False\"")
+        ], 0)
+
     def test_exec_srt_no_cew(self):
         self.execute([
             ("in", "../tools/res/audio.mp3"),
@@ -137,6 +176,15 @@ class TestExecuteTaskCLI(unittest.TestCase):
             ("", "-r=\"cew=False\"")
         ], 0)
 
+    def test_exec_srt_no_cfw(self):
+        self.execute([
+            ("in", "../tools/res/audio.mp3"),
+            ("in", "../tools/res/subtitles.txt"),
+            ("", "task_language=eng|is_text_type=subtitles|os_task_file_format=srt"),
+            ("out", "sonnet.srt"),
+            ("", "-r=\"cfw=False\"")
+        ], 0)
+
     def test_exec_srt_no_cmfcc(self):
         self.execute([
             ("in", "../tools/res/audio.mp3"),
@@ -144,15 +192,6 @@ class TestExecuteTaskCLI(unittest.TestCase):
             ("", "task_language=eng|is_text_type=subtitles|os_task_file_format=srt"),
             ("out", "sonnet.srt"),
             ("", "-r=\"cmfcc=False\"")
-        ], 0)
-
-    def test_exec_srt_no_cdtw(self):
-        self.execute([
-            ("in", "../tools/res/audio.mp3"),
-            ("in", "../tools/res/subtitles.txt"),
-            ("", "task_language=eng|is_text_type=subtitles|os_task_file_format=srt"),
-            ("out", "sonnet.srt"),
-            ("", "-r=\"cdtw=False\"")
         ], 0)
 
     def test_exec_srt_cew_subprocess(self):

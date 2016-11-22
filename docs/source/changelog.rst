@@ -30,6 +30,8 @@ v1.7.0 (2016-11-??)
 #. Added tests for ``Configuration`` and ``RuntimeConfiguration``
 #. Added more tests for ``Tree``
 #. Added tests for ``SyncMapFragmentList``
+#. Added map from language code to human-readable name for TTS wrappers and for ``Language``, usable by ``aeneas.tools.execute_task``
+#. Marked Afrikaans (``afr``) language as tested
 
 v1.6.0.1 (2016-09-30)
 ---------------------

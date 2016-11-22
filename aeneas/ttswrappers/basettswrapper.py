@@ -216,6 +216,16 @@ class BaseTTSWrapper(Loggable):
     supported by the TTS engine they wrap.
     """
 
+    CODE_TO_HUMAN = {}
+    """
+    Map from voice code to human-readable name.
+    """
+
+    CODE_TO_HUMAN_LIST = []
+    """
+    List of all language codes with their human-readable names.
+    """
+
     OUTPUT_AUDIO_FORMAT = None
     """
     A tuple ``(codec, channels, rate)``

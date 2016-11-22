@@ -106,15 +106,30 @@ class FESTIVALTTSWrapper(BaseTTSWrapper):
         CES: CES,
         CYM: CYM,
         ENG: ENG,
-        ENG_GBR: ENG_GBR,
-        ENG_SCT: ENG_SCT,
-        ENG_USA: ENG_USA,
         SPA: SPA,
         FIN: FIN,
         ITA: ITA,
-        RUS: RUS
+        RUS: RUS,
+        ENG_GBR: ENG_GBR,
+        ENG_SCT: ENG_SCT,
+        ENG_USA: ENG_USA,
     }
     DEFAULT_LANGUAGE = ENG
+
+    CODE_TO_HUMAN = {
+        CES: u"Czech",
+        CYM: u"Welsh",
+        ENG: u"English",
+        FIN: u"Finnish",
+        ITA: u"Italian",
+        RUS: u"Russian",
+        SPA: u"Spanish",
+        ENG_GBR: u"English (GB)",
+        ENG_SCT: u"English (Scotland)",
+        ENG_USA: u"English (USA)",
+    }
+
+    CODE_TO_HUMAN_LIST = sorted([u"%s\t%s" % (k, CODE_TO_HUMAN[k]) for k in CODE_TO_HUMAN.keys()])
 
     VOICE_CODE_TO_SUBPROCESS = {
         CES: u"(language_czech)",

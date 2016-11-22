@@ -172,32 +172,11 @@ class NuanceTTSWrapper(BaseTTSWrapper):
     YUE = Language.YUE
     """ Yue Chinese """
 
-    NLD_BEL = "nld-BEL"
-    """ Dutch (Belgium) """
-
-    FRA_CAN = "fra-CAN"
-    """ French (Canada) """
-
     CMN_CHN = "cmn-CHN"
     """ Mandarin Chinese (China) """
 
     CMN_TWN = "cmn-TWN"
     """ Mandarin Chinese (Taiwan) """
-
-    POR_BRA = "por-BRA"
-    """ Portuguese (Brazil) """
-
-    POR_PRT = "por-PRT"
-    """ Portuguese (Portugal) """
-
-    SPA_ESP = "spa-ESP"
-    """ Spanish (Castillian) """
-
-    SPA_COL = "spa-COL"
-    """ Spanish (Colombia) """
-
-    SPA_MEX = "spa-MEX"
-    """ Spanish (Mexico) """
 
     ENG_AUS = "eng-AUS"
     """ English (Australia) """
@@ -220,23 +199,80 @@ class NuanceTTSWrapper(BaseTTSWrapper):
     ENG_USA = "eng-USA"
     """ English (USA) """
 
+    FRA_CAN = "fra-CAN"
+    """ French (Canada) """
+
+    NLD_BEL = "nld-BEL"
+    """ Dutch (Belgium) """
+
+    POR_BRA = "por-BRA"
+    """ Portuguese (Brazil) """
+
+    POR_PRT = "por-PRT"
+    """ Portuguese (Portugal) """
+
+    SPA_COL = "spa-COL"
+    """ Spanish (Colombia) """
+
+    SPA_ESP = "spa-ESP"
+    """ Spanish (Castillian) """
+
+    SPA_MEX = "spa-MEX"
+    """ Spanish (Mexico) """
+
+    CODE_TO_HUMAN = {
+        ARA: u"Arabic",
+        CAT: u"Catalan",
+        CES: u"Czech",
+        CMN: u"Mandarin Chinese",
+        DAN: u"Danish",
+        DEU: u"German",
+        ELL: u"Greek (Modern)",
+        ENG: u"English",
+        EUS: u"Basque",
+        FIN: u"Finnish",
+        FRA: u"French",
+        GLG: u"Galician",
+        HEB: u"Hebrew",
+        HIN: u"Hindi",
+        HUN: u"Hungarian",
+        IND: u"Indonesian",
+        ITA: u"Italian",
+        JPN: u"Japanese",
+        KOR: u"Korean",
+        NLD: u"Dutch",
+        NOR: u"Norwegian",
+        POL: u"Polish",
+        POR: u"Portuguese",
+        RON: u"Romanian",
+        RUS: u"Russian",
+        SLK: u"Slovak",
+        SPA: u"Spanish",
+        SWE: u"Swedish",
+        THA: u"Thai",
+        TUR: u"Turkish",
+        YUE: u"Yue Chinese",
+        CMN_CHN: u"Mandarin Chinese (China)",
+        CMN_TWN: u"Mandarin Chinese (Taiwan)",
+        ENG_AUS: u"English (Australia)",
+        ENG_GBR: u"English (GB)",
+        ENG_IND: u"English (India)",
+        ENG_IRL: u"English (Ireland)",
+        ENG_SCT: u"English (Scotland)",
+        ENG_USA: u"English (USA)",
+        ENG_ZAF: u"English (South Africa)",
+        FRA_CAN: u"French (Canada)",
+        NLD_BEL: u"Dutch (Belgium)",
+        POR_BRA: u"Portuguese (Brazil)",
+        POR_PRT: u"Portuguese (Portugal)",
+        SPA_COL: u"Spanish (Colombia)",
+        SPA_ESP: u"Spanish (Castillian)",
+        SPA_MEX: u"Spanish (Mexico)",
+    }
+
+    CODE_TO_HUMAN_LIST = sorted([u"%s\t%s" % (k, CODE_TO_HUMAN[k]) for k in CODE_TO_HUMAN.keys()])
+
     LANGUAGE_TO_VOICE_CODE = {
-        CMN_CHN: "Tian-Tian",   # F
-        CMN_TWN: "Mei-Jia",     # F
-        FRA_CAN: "Amelie",      # F, F: Chantal, M: Nicolas
-        ENG_AUS: "Karen",       # F, M: Lee
-        ENG_GBR: "Kate",        # F, F: Serena, M: Daniel, Oliver
-        ENG_IND: "Veena",       # F
-        ENG_IRL: "Moira",       # F
-        ENG_SCT: "Fiona",       # F
-        ENG_USA: "Ava",         # F, F: Allison, Samantha, Susan, Zoe, M: Tom
-        ENG_ZAF: "Tessa",       # F
-        NLD_BEL: "Ellen",       # F
-        POR_BRA: "Luciana",     # F, M: Felipe
-        POR_PRT: "Catarina",    # F, F: Joana
-        SPA_COL: "Soledad",     # F, M: Carlos
-        SPA_ESP: "Monica",      # F, F (Valencian): Empar
-        SPA_MEX: "Angelica",    # F, F: Paulina, M: Juan
         ARA: "Laila",           # F, M: Maged, Tarik
         CAT: "Montserrat",      # F, M: Jordi
         CES: "Iveta",           # F, F: Zuzana
@@ -268,6 +304,22 @@ class NuanceTTSWrapper(BaseTTSWrapper):
         THA: "Kanya",           # F
         TUR: "Yelda",           # F, M: Cem
         YUE: "Sin-Ji",          # F
+        CMN_CHN: "Tian-Tian",   # F
+        CMN_TWN: "Mei-Jia",     # F
+        FRA_CAN: "Amelie",      # F, F: Chantal, M: Nicolas
+        ENG_AUS: "Karen",       # F, M: Lee
+        ENG_GBR: "Kate",        # F, F: Serena, M: Daniel, Oliver
+        ENG_IND: "Veena",       # F
+        ENG_IRL: "Moira",       # F
+        ENG_SCT: "Fiona",       # F
+        ENG_USA: "Ava",         # F, F: Allison, Samantha, Susan, Zoe, M: Tom
+        ENG_ZAF: "Tessa",       # F
+        NLD_BEL: "Ellen",       # F
+        POR_BRA: "Luciana",     # F, M: Felipe
+        POR_PRT: "Catarina",    # F, F: Joana
+        SPA_COL: "Soledad",     # F, M: Carlos
+        SPA_ESP: "Monica",      # F, F (Valencian): Empar
+        SPA_MEX: "Angelica",    # F, F: Paulina, M: Juan
     }
     DEFAULT_LANGUAGE = ENG_GBR
 

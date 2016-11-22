@@ -387,11 +387,11 @@ class ExecuteTaskCLI(AbstractCLIProgram):
     ]
 
     VALUES = {
-        "espeak": sorted(ESPEAKTTSWrapper.LANGUAGE_TO_VOICE_CODE.keys()),
-        "espeak-ng": sorted(ESPEAKNGTTSWrapper.LANGUAGE_TO_VOICE_CODE.keys()),
-        "festival": sorted(FESTIVALTTSWrapper.LANGUAGE_TO_VOICE_CODE.keys()),
-        "nuance": sorted(NuanceTTSWrapper.LANGUAGE_TO_VOICE_CODE.keys()),
-        "task_language": Language.ALLOWED_VALUES,
+        "espeak": ESPEAKTTSWrapper.CODE_TO_HUMAN_LIST,
+        "espeak-ng": ESPEAKNGTTSWrapper.CODE_TO_HUMAN_LIST,
+        "festival": FESTIVALTTSWrapper.CODE_TO_HUMAN_LIST,
+        "nuance": NuanceTTSWrapper.CODE_TO_HUMAN_LIST,
+        "task_language": Language.CODE_TO_HUMAN_LIST,
         "is_text_type": TextFileFormat.ALLOWED_VALUES,
         "is_text_unparsed_id_sort": IDSortingAlgorithm.ALLOWED_VALUES,
         "os_task_file_format": SyncMapFormat.ALLOWED_VALUES,
@@ -710,12 +710,12 @@ class ExecuteTaskCLI(AbstractCLIProgram):
         """
         if parameter in self.VALUES:
             self.print_info(u"Available values for parameter '%s':" % parameter)
-            self.print_generic(u", ".join(self.VALUES[parameter]))
+            self.print_generic(u"\n".join(self.VALUES[parameter]))
             return self.HELP_EXIT_CODE
         if parameter not in [u"?", u""]:
             self.print_error(u"Invalid parameter name '%s'" % parameter)
         self.print_info(u"Parameters for which values can be listed:")
-        self.print_generic(u", ".join(sorted(self.VALUES.keys())))
+        self.print_generic(u"\n".join(sorted(self.VALUES.keys())))
         return self.HELP_EXIT_CODE
 
 
