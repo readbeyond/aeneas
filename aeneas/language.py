@@ -400,8 +400,8 @@ class Language(object):
     }
     """ Map from language code to human-readable name """
 
-    ALLOWED_VALUES = sorted(list(CODE_TO_HUMAN.keys()))
+    ALLOWED_VALUES = sorted(CODE_TO_HUMAN.keys())
     """ List of all the allowed values """
 
-    CODE_TO_HUMAN_LIST = sorted([u"%s\t%s" % (k, CODE_TO_HUMAN[k]) for k in CODE_TO_HUMAN.keys()])
+    CODE_TO_HUMAN_LIST = sorted([u"%s\t%s" % (k, v) for k, v in CODE_TO_HUMAN.items()])
     """ List of all language codes with their human-readable names """

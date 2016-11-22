@@ -810,7 +810,7 @@ class ESPEAKNGTTSWrapper(BaseTTSWrapper):
         ZH_YUE: u"Yue Chinese (not tested)",
     }
 
-    CODE_TO_HUMAN_LIST = sorted([u"%s\t%s" % (k, CODE_TO_HUMAN[k]) for k in CODE_TO_HUMAN.keys()])
+    CODE_TO_HUMAN_LIST = sorted([u"%s\t%s" % (k, v) for k, v in CODE_TO_HUMAN.items()])
 
     LANGUAGE_TO_VOICE_CODE = {
         AF: "af",

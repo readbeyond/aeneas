@@ -382,7 +382,7 @@ class TimeInterval(object):
         """
         if not isinstance(percent, Decimal):
             raise TypeError(u"percent is not an instance of Decimal")
-        percent = max(min(percent, 100), 0) / 100
+        percent = Decimal(max(min(percent, 100), 0) / 100)
         return self.begin + self.length * percent
 
     def offset(self, offset, allow_negative=False, min_begin_value=None, max_end_value=None):

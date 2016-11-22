@@ -34,7 +34,7 @@ class TestConfiguration(unittest.TestCase):
 
     def test_set_config_string_bad(self):
         with self.assertRaises(TypeError):
-            c = Configuration("not a unicode string")
+            c = Configuration(b"not a unicode string")
 
     def test_set_config_string_good(self):
         c = Configuration(u"foo=bar")
