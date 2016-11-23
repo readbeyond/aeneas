@@ -13,8 +13,16 @@
 
 usage() {
     echo ""
-    echo "Usage: bash $0 [python2.7|python3.4|python3.5|pypy] [all|nonet|fast|tool|long|net]"
+    echo "Usage: bash $0 [python2.7|python3.4|python3.5|pypy] [all|nonet|fast|tool|long|net|clean]"
     echo ""
+}
+
+clean() {
+    echo "[INFO] Cleaning $1 ..."
+    cd $1
+    rm -rf tests
+    cd .. 
+    echo "[INFO] Cleaning $1 ... done"
 }
 
 copy_tests() {
@@ -96,7 +104,7 @@ then
 fi
 
 # check the action argument
-if [ "$ACTION" != "all" ] && [ "$ACTION" != "nonet" ] && [ "$ACTION" != "fast" ] && [ "$ACTION" != "tool" ] && [ "$ACTION" != "long" ] && [ "$ACTION" != "net" ]
+if [ "$ACTION" != "all" ] && [ "$ACTION" != "nonet" ] && [ "$ACTION" != "fast" ] && [ "$ACTION" != "tool" ] && [ "$ACTION" != "long" ] && [ "$ACTION" != "net" ] && [ "$ACTION" != "clean" ]
 then
     usage
     exit 1
@@ -111,6 +119,11 @@ fi
 
 # remove log file, if already existing
 rm -f $L
+
+if [ "$ACTION" == "clean" ]
+then
+    clean $D
+fi
 
 if [ "$ACTION" == "all" ]
 then

@@ -13,7 +13,7 @@
 
 usage() {
     echo ""
-    echo "Usage: bash $0 [python2.7|python3.4|python3.5|pypy] [uninstall|install|deps|tests|full]"
+    echo "Usage: bash $0 [python2.7|python3.4|python3.5|pypy] [uninstall|install|deps|sdist|tests|full]"
     echo ""
 }
 
@@ -32,10 +32,8 @@ create() {
         echo "[INFO] Creating venv $1 ..."
         # create virtualenv
         virtualenv -p "$2" "$1"
-        # create symlink for testing sdist tar.gz
-        cd $1
-        ln -s "../install_aeneas_from_sdist_tar_gz.sh" "install_aeneas_from_sdist_tar_gz.sh"
-        cd ..
+        # create output directory to run examples
+        mkdir output
         echo "[INFO] Creating venv $1 ... done"
     fi
 }
@@ -61,6 +59,86 @@ deps() {
     fi
 }
 
+sdist() {
+    #
+    # # check that we are running in a venv
+    # python -c 'import sys; sys.exit(0) if hasattr(sys, "real_prefix") else sys.exit(1)'
+    # if [ "$?" -eq 1 ]
+    # then
+    #     # not in venv
+    # else
+    #     # in venv
+    # fi
+    # echo ""
+    #
+    if [ ! -e "$1" ]
+    then
+        echo "[INFO] venv $1 does not exist."
+        echo "[INFO] Use 'install' or 'full' to create it."
+    else
+       
+        cd $1
+        source bin/activate
+        
+        echo "[INFO] Uninstalling aeneas..."
+        rm -f *.tar.gz
+        rm -rf output
+        mkdir output
+        pip uninstall aeneas -y
+        echo "[INFO] Uninstalling aeneas... done"
+        
+        deactivate
+        cd ..
+       
+        if [ "$2" == "--remove" ]
+        then
+            echo "[INFO] Uninstall only: returning."
+            return
+        fi
+
+        if [ "$2" != "" ]
+        then
+            if [ -e $2 ]
+            then
+                echo "[INFO] Copying file $2"
+                cp $2 $1
+            else
+                echo "[ERRO] File $2 not found, aborting!"
+                return
+            fi
+        else
+            if [ -e ../dist/*.tar.gz ]
+            then
+                echo "[INFO] Copying file from ../dist/"
+                cp ../dist/*.tar.gz $1
+            else
+                echo "[ERRO] No .tar.gz found in the dist/ directory, aborting!"
+                return
+            fi
+        fi
+
+        cd $1
+        source bin/activate
+
+        echo "[INFO] Installing aeneas..."
+        pip install numpy
+        pip install *.tar.gz
+        rm -f *.tar.gz
+        echo "[INFO] Installing aeneas... done"
+
+        echo "[INFO] Diagnostics..."
+        python -m aeneas.diagnostics
+        echo "[INFO] Diagnostics... done"
+
+        echo "[INFO] Testing CFW..."
+        python -c 'import aeneas.globalfunctions as gf; print(gf.can_run_c_extension("cfw"))'
+        echo "[INFO] Testing CFW... done"
+
+        deactivate
+        cd ..
+    fi
+}
+
 copytests() {
     if [ ! -e "$1" ]
     then
@@ -74,6 +152,7 @@ copytests() {
         # delete old stuff, if any 
         rm -rf tests
         mkdir tests
+        mkdir tests/output
         
         # copy current code locally and set it up
         cp -r ../../aeneas ../../setup.py ../../setupmeta.py ../../run_all_unit_tests.py tests/
@@ -113,7 +192,7 @@ then
 fi
 
 # check the action argument
-if [ "$ACTION" != "uninstall" ] && [ "$ACTION" != "install" ] && [ "$ACTION" != "deps" ] && [ "$ACTION" != "tests" ] && [ "$ACTION" != "full" ]
+if [ "$ACTION" != "uninstall" ] && [ "$ACTION" != "install" ] && [ "$ACTION" != "deps" ] && [ "$ACTION" != "sdist" ] && [ "$ACTION" != "tests" ] && [ "$ACTION" != "full" ]
 then
     usage
     exit 1
@@ -132,6 +211,16 @@ fi
 if [ "$ACTION" == "deps" ]
 then
     deps $D
+fi
+
+if [ "$ACTION" == "sdist" ]
+then
+    ARCHIVE=""
+    if [ "$#" -ge 3 ]
+    then
+        ARCHIVE=$3
+    fi
+    sdist $D $ARCHIVE $STOP
 fi
 
 if [ "$ACTION" == "tests" ]

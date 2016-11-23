@@ -282,6 +282,8 @@ No copy rights were harmed in the making of this project.
 
 * **April 2016**: the Fruch Foundation kindly sponsored the development and documentation of v1.5.0
 
+* **December 2016**: the [Centro Internazionale Del Libro Parlato "Adriano Sernagiotto"](http://www.libroparlato.org/) (Feltre, BL, Italy) partially sponsored the development of v1.7.0
+
 ### Supporting
 
 Would you like supporting the development of **aeneas**?

@@ -43,27 +43,42 @@ Note: the above will perform a ``pip install -U ...`` (upgrade).
 
 ### Install new version of aeneas from the sdist archive
 
+To install from ``../dist/aeneas*.tar.gz``:
+
 ```bash
 $ bash manage_venvs.sh python3.5 install
-$ cd venv_python3.5
-$ source bin/activate
-$ bash install_aeneas_from_sdist_tar_gz.sh
-$ deactivate
-$ cd ..
-``` 
+$ bash manage_venvs.sh python3.5 sdist
+```
+
+To install from file ``/tmp/foo.tar.gz``:
+
+```bash
+$ bash manage_venvs.sh python3.5 install
+$ bash manage_venvs.sh python3.5 sdist /tmp/foo.tar.gz
+```
 
 This procedure will:
 
-1. create the venv, if not already existing
+1. create the venv
 2. activate the venv
 3. uninstall ``aeneas``, if already installed
-4. copy the sdist tar.gz archive and install it
-5. perform a couple of quick tests
-6. deactivate the venv
+4. copy the sdist archive inside the venv and install it
+5. delete the sdist archive inside the venv
+6. perform the diagnostic tests
+7. deactivate the venv
 
-Note: if you want to uninstall ``aeneas`` from the venv, run
-``bash install_aeneas_from_sdist_tar_gz.sh --remove``:
-steps 4 and 5 will be skipped.
+To uninstall ``aeneas`` from the venv:
+
+```bash
+$ bash manage_venvs.sh python3.5 sdist --remove
+```
+
+To force building the ``cfw`` extension:
+
+```bash
+$ bash manage_venvs.sh python3.5 install
+$ AENEAS_FORCE_CFW=True bash manage_venvs.sh python3.5 sdist
+```
 
 ### Manual testing
 
