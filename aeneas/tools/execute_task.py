@@ -239,7 +239,7 @@ class ExecuteTaskCLI(AbstractCLIProgram):
             u"description": u"input: multilevel plain text (mplain), output: JSON, no zero duration",
             u"audio": AUDIO_FILE,
             u"text": gf.relative_path("res/mplain.txt", __file__),
-            u"config": u"task_language=eng|is_text_type=mplain|os_task_file_format=json|os_task_file_no_zero=True",
+            u"config": u"task_language=eng|is_text_type=mplain|os_task_file_format=json|task_adjust_boundary_no_zero=True",
             u"syncmap": "output/sonnet.nozero.json",
             u"options": u"--zero",
             u"show": False

@@ -200,7 +200,7 @@ class ExecuteTask(Loggable):
             # compute alignment, outputting a tree of time intervals
             self._set_synthesizer()
             sync_root = Tree()
-            self._execute_inner(real_wave_mfcc, self.task.text_file, sync_root=sync_root, adjust_boundaries=True, log=True)
+            self._execute_inner(real_wave_mfcc, self.task.text_file, sync_root=sync_root, force_aba_auto=False, log=True)
             self._clear_cache_synthesizer()
 
             # create syncmap and add it to task
@@ -225,7 +225,7 @@ class ExecuteTask(Loggable):
         # TODO the following code assumes 3 levels: generalize this
         level_rconfs = [None, self.rconf.clone(), self.rconf.clone(), self.rconf.clone()]
         level_mfccs = [None, None, None, None]
-        level_abas = [None, True, True, False]
+        force_aba_autos = [None, False, False, True]
         for i in range(1, len(level_rconfs)):
             level_rconfs[i].set_granularity(i)
             self.log([u"Level %d mws: %.3f", i, level_rconfs[i].mws])
@@ -269,7 +269,7 @@ class ExecuteTask(Loggable):
             for i in range(1, number_levels):
                 self._step_begin(u"compute alignment level %d" % i)
                 self.rconf = level_rconfs[i]
-                text_files, sync_roots = self._execute_level(i, level_mfccs[i], text_files, sync_roots, level_abas[i])
+                text_files, sync_roots = self._execute_level(i, level_mfccs[i], text_files, sync_roots, force_aba_autos[i])
                 self._step_end()
 
             # restore original rconf, and create syncmap and add it to task
@@ -283,7 +283,7 @@ class ExecuteTask(Loggable):
         except Exception as exc:
             self._step_failure(exc)
 
-    def _execute_level(self, level, audio_file_mfcc, text_files, sync_roots, aba):
+    def _execute_level(self, level, audio_file_mfcc, text_files, sync_roots, force_aba_auto=False):
         """
         Compute the alignment for all the nodes in the given level.
 
@@ -299,7 +299,7 @@ class ExecuteTask(Loggable):
         :param list sync_roots: a list of :class:`~aeneas.tree.Tree` objects,
                                 each representing a SyncMapFragment tree,
                                 one for each element in ``text_files``
-        :param bool aba: if ``True``, execute the adjust boundary algorithm
+        :param bool force_aba_auto: if ``True``, do not run aba algorithm
         :rtype: (list, list)
         """
         self._set_synthesizer()
@@ -322,7 +322,7 @@ class ExecuteTask(Loggable):
                     audio_file_mfcc.set_head_middle_tail(head_length=begin, middle_length=(end - begin))
                 else:
                     self.log(u"  No begin or end to set")
-                self._execute_inner(audio_file_mfcc, text_file, sync_root=sync_root, adjust_boundaries=aba, log=False)
+                self._execute_inner(audio_file_mfcc, text_file, sync_root=sync_root, force_aba_auto=force_aba_auto, log=False)
             # store next level roots
             next_level_text_files.extend(text_file.children_not_empty)
             # we added head and tail, we must not pass them to the next level
@@ -330,7 +330,7 @@ class ExecuteTask(Loggable):
         self._clear_cache_synthesizer()
         return (next_level_text_files, next_level_sync_roots)
 
-    def _execute_inner(self, audio_file_mfcc, text_file, sync_root=None, adjust_boundaries=True, log=True):
+    def _execute_inner(self, audio_file_mfcc, text_file, sync_root=None, force_aba_auto=False, log=True):
         """
         Align a subinterval of the given AudioFileMFCC
         with the given TextFile.
@@ -350,7 +350,7 @@ class ExecuteTask(Loggable):
         :type  text_file: :class:`~aeneas.textfile.TextFile`
         :param sync_root: the tree node to which fragments should be appended
         :type  sync_root: :class:`~aeneas.tree.Tree`
-        :param bool adjust_boundaries: if ``True``, execute the adjust boundary algorithm
+        :param bool force_aba_auto: if ``True``, do not run aba algorithm
         :param bool log: if ``True``, log steps
         :rtype: :class:`~aeneas.tree.Tree`
         """
@@ -368,7 +368,7 @@ class ExecuteTask(Loggable):
         self._step_end(log=log)
 
         self._step_begin(u"adjust boundaries", log=log)
-        self._adjust_boundaries(indices, text_file, audio_file_mfcc, sync_root, adjust_boundaries)
+        self._adjust_boundaries(indices, text_file, audio_file_mfcc, sync_root, force_aba_auto)
         self._step_end(log=log)
 
     def _load_audio_file(self):
@@ -512,7 +512,7 @@ class ExecuteTask(Loggable):
         self.log(u"Computing boundary indices... done")
         return boundary_indices
 
-    def _adjust_boundaries(self, boundary_indices, text_file, real_wave_mfcc, sync_root, adjust_boundaries=True):
+    def _adjust_boundaries(self, boundary_indices, text_file, real_wave_mfcc, sync_root, force_aba_auto=False):
         """
         Adjust boundaries as requested by the user.
 
@@ -525,11 +525,11 @@ class ExecuteTask(Loggable):
         # boundary_indices contains the boundary indices in the all_mfcc of real_wave_mfcc
         # starting with the (head-1st fragment) and ending with (-1th fragment-tail)
         aba_parameters = self.task.configuration.aba_parameters()
-        if not adjust_boundaries:
+        if force_aba_auto:
             self.log(u"Forced running algorithm: 'auto'")
             aba_parameters["algorithm"] = (AdjustBoundaryAlgorithm.AUTO, [])
-            aba_parameters["nozero"] = False
-            aba_parameters["nonspeech"] = (None, None)
+            # note that the other aba settings (nonspeech and nozero)
+            # remain as specified by the user
         self.log([u"ABA parameters: %s", aba_parameters])
         aba = AdjustBoundaryAlgorithm(rconf=self.rconf, logger=self.logger)
         aba.adjust(

@@ -73,6 +73,12 @@ $ # run only run_vad tool tests
 $ python run_all_unit_tests.py -t run_vad
 ```
 
+The
+[``venvs``](https://github.com/readbeyond/aeneas/blob/master/venvs/)
+directory contains some scripts to automate
+the creation and management of virtual enviroments
+for testing purposes.
+
 ### Release Process
 
 Before releasing a new version of ``aeneas``,
