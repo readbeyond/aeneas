@@ -5,7 +5,7 @@ aeneas
 synchronize audio and text (aka forced alignment).
 
 -  Version: 1.7.0
--  Date: 2016-11-??
+-  Date: 2016-12-??
 -  Developed by: `ReadBeyond <http://www.readbeyond.it/>`__
 -  Lead Developer: `Alberto Pettarin <http://www.albertopettarin.it/>`__
 -  License: the GNU Affero General Public License Version 3 (AGPL v3)
@@ -235,10 +235,10 @@ Supported Features
 -  Input audio file formats: all those readable by ``ffmpeg``
 -  Output sync map formats: AUD, CSV, EAF, JSON, SMIL, SRT, SSV, SUB,
    TEXTGRID, TSV, TTML, TXT, VTT, XML
--  Confirmed working on 37 languages: ARA, BUL, CAT, CYM, CES, DAN, DEU,
-   ELL, ENG, EPO, EST, FAS, FIN, FRA, GLE, GRC, HRV, HUN, ISL, ITA, JPN,
-   LAT, LAV, LIT, NLD, NOR, RON, RUS, POL, POR, SLK, SPA, SRP, SWA, SWE,
-   TUR, UKR
+-  Confirmed working on 38 languages: AFR, ARA, BUL, CAT, CYM, CES, DAN,
+   DEU, ELL, ENG, EPO, EST, FAS, FIN, FRA, GLE, GRC, HRV, HUN, ISL, ITA,
+   JPN, LAT, LAV, LIT, NLD, NOR, RON, RUS, POL, POR, SLK, SPA, SRP, SWA,
+   SWE, TUR, UKR
 -  MFCC and DTW computed via Python C extensions to reduce the
    processing time
 -  Several built-in TTS engine wrappers: eSpeak (default), eSpeak-ng,
@@ -263,7 +263,7 @@ Supported Features
 -  Execution parameters tunable at runtime
 -  Code suitable for Web app deployment (e.g., on-demand cloud
    computing)
--  Extensive test suite including 800+ unit/integration/performance
+-  Extensive test suite including 1,000+ unit/integration/performance
    tests, that run and must pass before each release
 
 Limitations and Missing Features
@@ -315,6 +315,10 @@ Sponsors
 
 -  **April 2016**: the Fruch Foundation kindly sponsored the development
    and documentation of v1.5.0
+
+-  **December 2016**: the `Centro Internazionale Del Libro Parlato
+   "Adriano Sernagiotto" <http://www.libroparlato.org/>`__ (Feltre, BL,
+   Italy) partially sponsored the development of v1.7.0
 
 Supporting
 ~~~~~~~~~~

@@ -34,14 +34,19 @@ This module contains the following classes:
 from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
-import numpy
 
 from aeneas.audiofilemfcc import AudioFileMFCC
+from aeneas.exacttiming import Decimal
+from aeneas.exacttiming import TimeInterval
+from aeneas.exacttiming import TimeValue
 from aeneas.logger import Loggable
 from aeneas.runtimeconfiguration import RuntimeConfiguration
+from aeneas.syncmap import SyncMapFragment
+from aeneas.syncmap import SyncMapFragmentList
 from aeneas.textfile import TextFile
-from aeneas.timevalue import Decimal
-from aeneas.timevalue import TimeValue
+from aeneas.textfile import TextFragment
+from aeneas.tree import Tree
+import aeneas.globalconstants as gc
 
 
 class AdjustBoundaryAlgorithm(Loggable):
@@ -49,21 +54,10 @@ class AdjustBoundaryAlgorithm(Loggable):
     Enumeration and implementation of the available algorithms
     to adjust the boundary point between two consecutive fragments.
 
-    :param algorithm: the algorithm to be used
-    :type  algorithm: :class:`~aeneas.adjustboundaryalgorithm.AdjustBoundaryAlgorithm`
-    :param list parameters: a list of additional parameters to be passed to the algorithm
-    :param boundary_indices: the current boundary indices,
-                             with respect to the audio file full MFCCs
-    :type  boundary_indices: :class:`numpy.ndarray` (1D)
-    :param real_wave_mfcc: the audio file MFCCs
-    :type  real_wave_mfcc: :class:`~aeneas.audiofilemfcc.AudioFileMFCC`
-    :param text_file: the text file containing the text fragments associated
-    :type  text_file: :class:`~aeneas.textfile.TextFile`
     :param rconf: a runtime configuration
     :type  rconf: :class:`~aeneas.runtimeconfiguration.RuntimeConfiguration`
     :param logger: the logger object
     :type  logger: :class:`~aeneas.logger.Logger`
-    :raises: ValueError: if the value of ``algorithm`` is not allowed
     :raises: TypeError: if one of ``boundary_indices``, ``real_wave_mfcc``,
                         or ``text_file`` is ``None`` or it has a wrong type
     """
@@ -234,245 +228,317 @@ class AdjustBoundaryAlgorithm(Loggable):
 
     TAG = u"AdjustBoundaryAlgorithm"
 
-    def __init__(
-            self,
-            algorithm,
-            parameters,
-            boundary_indices,
-            real_wave_mfcc,
-            text_file,
-            rconf=None,
-            logger=None
+    def __init__(self, rconf=None, logger=None):
+        super(AdjustBoundaryAlgorithm, self).__init__(rconf=rconf, logger=logger)
+        self.smflist = None
+        self.mws = self.rconf.mws
+
+    def adjust(
+        self,
+        aba_parameters,
+        boundary_indices,
+        real_wave_mfcc,
+        text_file,
     ):
-        if algorithm not in self.ALLOWED_VALUES:
-            raise ValueError(u"Algorithm value not allowed")
+        """
+        Adjust the boundaries of the text map
+        using the algorithm and parameters
+        specified in the constructor,
+        storing the sync map fragment list internally.
+
+        :param dict aba_parameters: a dictionary containing the algorithm and its parameters,
+                                    as produced by ``aba_parameters()`` in ``TaskConfiguration``
+        :param boundary_indices: the current boundary indices,
+                                 with respect to the audio file full MFCCs
+        :type  boundary_indices: :class:`numpy.ndarray` (1D)
+        :param real_wave_mfcc: the audio file MFCCs
+        :type  real_wave_mfcc: :class:`~aeneas.audiofilemfcc.AudioFileMFCC`
+        :param text_file: the text file containing the text fragments associated
+        :type  text_file: :class:`~aeneas.textfile.TextFile`
+
+        :rtype: list of :class:`~aeneas.syncmap.SyncMapFragmentList`
+        """
         if boundary_indices is None:
             raise TypeError(u"boundary_indices is None")
         if (real_wave_mfcc is None) or (not isinstance(real_wave_mfcc, AudioFileMFCC)):
             raise TypeError(u"real_wave_mfcc is None or not an AudioFileMFCC object")
         if (text_file is None) or (not isinstance(text_file, TextFile)):
             raise TypeError(u"text_file is None or not a TextFile object")
-        super(AdjustBoundaryAlgorithm, self).__init__(rconf=rconf, logger=logger)
-        self.algorithm = algorithm
-        self.parameters = parameters
-        self.real_wave_mfcc = real_wave_mfcc
-        self.boundary_indices = boundary_indices
-        self.text_file = text_file
-        self.intervals = []
 
-    def to_time_map(self):
-        """
-        Adjust the boundaries of the text map
-        using the algorithm and parameters
-        specified in the constructor,
-        and return a list of time intervals.
+        # save parameters
+        self.mws = real_wave_mfcc.rconf.mws
+        nozero = aba_parameters["nozero"]
+        ns_min, ns_string = aba_parameters["nonspeech"]
+        algorithm, algo_parameters = aba_parameters["algorithm"]
 
-        :rtype: list of intervals
+        # convert boundary indices to time intervals
+        self.intervals_to_fragment_list(
+            text_file=text_file,
+            end=real_wave_mfcc.audio_length,
+            boundary_indices=boundary_indices,
+        )
+        smflist_copy = self.smflist.clone()
+
+        try:
+            # check no fragment has zero length, if requested
+            self._process_zero_length(nozero)
+
+            # add nonspeech intervals, if any
+            self._process_long_nonspeech(ns_min, ns_string, real_wave_mfcc)
+
+            # adjust using the right algorithm
+            ALGORITHM_MAP = {
+                self.AFTERCURRENT: self._adjust_aftercurrent,
+                self.AUTO: self._adjust_auto,
+                self.BEFORENEXT: self._adjust_beforenext,
+                self.OFFSET: self._adjust_offset,
+                self.PERCENT: self._adjust_percent,
+                self.RATE: self._adjust_rate,
+                self.RATEAGGRESSIVE: self._adjust_rate_aggressive,
+            }
+            ALGORITHM_MAP[algorithm](real_wave_mfcc, algo_parameters)
+        except Exception as exc:
+            self.log_exc(u"An unexpected error occurred while running adjust, restoring smflist_copy", exc, False, None)
+            self.smflist = smflist_copy
+
+        # set HEAD/TAIL and remove NONSPEECH fragments and return
+        self._smooth_fragment_list(real_wave_mfcc.audio_length, ns_string)
+        return self.smflist
+
+    def intervals_to_fragment_list(self, text_file, end, boundary_indices=None, time_values=None):
         """
-        if self.algorithm == self.AUTO:
-            self._adjust_auto()
-        elif self.algorithm == self.AFTERCURRENT:
-            self._adjust_aftercurrent()
-        elif self.algorithm == self.BEFORENEXT:
-            self._adjust_beforenext()
-        elif self.algorithm == self.OFFSET:
-            self._adjust_offset()
-        elif self.algorithm == self.PERCENT:
-            self._adjust_percent()
-        elif self.algorithm == self.RATE:
-            self._adjust_rate(False)
-        elif self.algorithm == self.RATEAGGRESSIVE:
-            self._adjust_rate(True)
+        Transform a list of boundary indices or time values
+        into a sync map fragment list and store it internally.
+
+        For example:
+
+            b_i=[1, 2, 3], end=4.567 => [(0.000, 1*mws), (1*mws, 2*mws), (2*mws, 3*mws), (3*mws, 4.567)]
+            time_values=[0.000, 1.000, 2.000, 3.456] => [(0.000, 1.000), (1.000, 2.000), (2.000, 3.456)]
+
+        :param text_file: the text file containing the text fragments associated
+        :type  text_file: :class:`~aeneas.textfile.TextFile`
+        :param time_values: the time values
+        :type  time_values: list of :class:`~aeneas.exacttiming.TimeValue`
+        """
+        if (boundary_indices is None) and (time_values is None):
+            self.log_exc(u"Both boundary_indices and times are None", None, True, TypeError)
+        if boundary_indices is not None:
+            self.log(u"Converting boundary indices to fragment list...")
+            times = [TimeValue("0.000")] + list(boundary_indices * self.mws) + [end]
         else:
-            self._adjust_auto()
-        return self.intervals
+            self.log(u"Converting time intervals to fragment list...")
+            times = time_values
+        begin = TimeValue("0.000")
+        self.log([u"  Creating SyncMapFragmentList with begin %.3f and end %.3f", begin, end])
+        self.smflist = SyncMapFragmentList(
+            begin=begin,
+            end=end,
+            rconf=self.rconf,
+            logger=self.logger
+        )
+        self.log(u"  Creating HEAD fragment")
+        self.smflist.add(SyncMapFragment(
+            text_fragment=TextFragment(identifier=u"HEAD"),
+            begin=times[0],
+            end=times[1],
+            fragment_type=SyncMapFragment.HEAD
+        ), sort=False)
+        self.log(u"  Creating REGULAR fragments")
+        for i in range(1, len(times) - 2):
+            self.smflist.add(SyncMapFragment(
+                text_fragment=text_file.fragments[i - 1],
+                begin=times[i],
+                end=times[i + 1],
+                fragment_type=SyncMapFragment.REGULAR
+            ), sort=False)
+        self.log(u"  Creating TAIL fragment")
+        self.smflist.add(SyncMapFragment(
+            text_fragment=TextFragment(identifier=u"TAIL"),
+            begin=times[len(times) - 2],
+            end=end,
+            fragment_type=SyncMapFragment.TAIL
+        ), sort=False)
+        self.log(u"Converting to fragment list... done")
+        self.log(u"Sorting fragment list...")
+        self.smflist.sort()
+        self.log(u"Sorting fragment list... done")
+        return self.smflist
 
-    def _adjust_auto(self):
+    def append_fragment_list_to_sync_root(self, sync_root):
+        """
+        Append the sync map fragment list
+        to the given node from a sync map tree.
+
+        :param sync_root: the root of the sync map tree to which the new nodes should be appended
+        :type  sync_root: :class:`~aeneas.tree.Tree`
+        """
+        if (sync_root is None) or (not isinstance(sync_root, Tree)):
+            raise TypeError(u"sync_root is None or not a Tree object")
+
+        self.log(u"Appending fragment list to sync root...")
+        for fragment in self.smflist:
+            sync_root.add_child(Tree(value=fragment))
+        self.log(u"Appending fragment list to sync root... done")
+
+    # #####################################################
+    # NO ZERO AND LONG NONSPEECH FUNCTIONS
+    # #####################################################
+
+    def _process_zero_length(self, nozero):
+        """
+        If ``nozero`` is ``True``, modify the sync map fragment list
+        so that no fragment will have zero length.
+        """
+        self.log(u"Called _process_zero_length")
+        if not nozero:
+            self.log(u"Processing zero length intervals not requested: returning")
+            return
+        self.log(u"Processing zero length intervals requested")
+        self.log(u"  Checking and fixing...")
+        duration = self.rconf[RuntimeConfiguration.ABA_NO_ZERO_DURATION]
+        self.log([u"  No zero duration: %.3f", duration])
+        # ignore HEAD and TAIL
+        max_index = len(self.smflist) - 1
+        self.smflist.fix_zero_length_fragments(
+            duration=duration,
+            min_index=1,
+            max_index=max_index
+        )
+        self.log(u"  Checking and fixing... done")
+        if self.smflist.has_zero_length_fragments(1, max_index):
+            self.log_warn(u"  The fragment list still has fragments with zero length")
+        else:
+            self.log(u"  The fragment list does not have fragments with zero length")
+
+    def _process_long_nonspeech(self, ns_min, ns_string, real_wave_mfcc):
+        self.log(u"Called _process_long_nonspeech")
+        if ns_min is not None:
+            self.log(u"Processing long nonspeech intervals requested")
+            self.log(u"  Checking and fixing...")
+            tolerance = self.rconf[RuntimeConfiguration.ABA_NONSPEECH_TOLERANCE]
+            self.log([u"    Tolerance: %.3f", tolerance])
+            long_nonspeech_intervals = [i for i in real_wave_mfcc.intervals(speech=False, time=True) if i.length >= ns_min]
+            pairs = self.smflist.fragments_ending_inside_nonspeech_intervals(long_nonspeech_intervals, tolerance)
+            # ignore HEAD and TAIL
+            min_index = 1
+            max_index = len(self.smflist) - 1
+            pairs = [(n, i) for (n, i) in pairs if (i >= min_index) and (i < max_index)]
+            self.smflist.inject_long_nonspeech_fragments(pairs, ns_string)
+            self.log(u"  Checking and fixing... done")
+        else:
+            self.log(u"Processing long nonspeech intervals not requested: returning")
+
+    def _smooth_fragment_list(self, real_wave_mfcc_audio_length, ns_string):
+        """
+        Remove NONSPEECH fragments from list if needed,
+        and set HEAD/TAIL begin/end.
+        """
+        self.log(u"Called _smooth_fragment_list")
+        self.smflist[0].begin = TimeValue("0.000")
+        self.smflist[-1].end = real_wave_mfcc_audio_length
+        if ns_string in [None, gc.PPV_TASK_ADJUST_BOUNDARY_NONSPEECH_REMOVE]:
+            self.log(u"Remove all NONSPEECH fragments")
+            self.smflist.remove_nonspeech_fragments(zero_length_only=False)
+        else:
+            self.log(u"Remove NONSPEECH fragments with zero length only")
+            self.smflist.remove_nonspeech_fragments(zero_length_only=True)
+
+    # #####################################################
+    # ADJUST FUNCTIONS
+    # #####################################################
+
+    def _adjust_auto(self, real_wave_mfcc, algo_parameters):
         """
         AUTO (do not modify)
         """
         self.log(u"Called _adjust_auto")
-        self._apply_offset(TimeValue("0.000"))
+        self.log(u"Nothing to do, return unchanged")
 
-    def _adjust_offset(self):
+    def _adjust_offset(self, real_wave_mfcc, algo_parameters):
         """
         OFFSET
         """
         self.log(u"Called _adjust_offset")
-        # NOTE self.parameters[0] is TimeValue
-        self._apply_offset(self.parameters[0])
+        self._apply_offset(offset=algo_parameters[0])
 
-    def _adjust_percent(self):
+    def _adjust_percent(self, real_wave_mfcc, algo_parameters):
         """
         PERCENT
         """
-        def new_time(begin, end, current):
-            """ Compute new time """
-            # NOTE self.parameters[0] is an int
-            percent = max(min(Decimal(self.parameters[0]) / 100, 100), 0)
-            return (begin + (end + 1 - begin) * percent) * self.rconf.mws
+        def new_time(nsi):
+            """
+            The new boundary time value is ``percent``
+            of the nonspeech interval ``nsi``.
+            """
+            percent = Decimal(algo_parameters[0])
+            return nsi.percent_value(percent)
         self.log(u"Called _adjust_percent")
-        self._adjust_on_nonspeech(new_time)
+        self._adjust_on_nonspeech(real_wave_mfcc, new_time)
 
-    def _adjust_aftercurrent(self):
+    def _adjust_aftercurrent(self, real_wave_mfcc, algo_parameters):
         """
         AFTERCURRENT
         """
-        def new_time(begin, end, current):
-            """ Compute new time """
-            mws = self.rconf.mws
-            # NOTE self.parameters[0] is TimeValue
-            delay = max(self.parameters[0], TimeValue("0.000"))
-            tentative = begin * mws + delay
-            if tentative > (end + 1) * mws:
-                return current * mws
-            return tentative
+        def new_time(nsi):
+            """
+            The new boundary time value is ``delay`` after
+            the begin of the nonspeech interval ``nsi``.
+            If ``nsi`` has length less than ``delay``,
+            set the new boundary time to the end of ``nsi``.
+            """
+            delay = max(algo_parameters[0], TimeValue("0.000"))
+            return min(nsi.begin + delay, nsi.end)
         self.log(u"Called _adjust_aftercurrent")
-        self._adjust_on_nonspeech(new_time)
+        self._adjust_on_nonspeech(real_wave_mfcc, new_time)
 
-    def _adjust_beforenext(self):
+    def _adjust_beforenext(self, real_wave_mfcc, algo_parameters):
         """
         BEFORENEXT
         """
-        def new_time(begin, end, current):
-            """ Compute new time """
-            mws = self.rconf.mws
-            # NOTE self.parameters[0] is TimeValue
-            delay = max(self.parameters[0], TimeValue("0.000"))
-            tentative = (end + 1) * mws - delay
-            if tentative < begin * mws:
-                return current * mws
-            return tentative
+        def new_time(nsi):
+            """
+            The new boundary time value is ``delay`` before
+            the end of the nonspeech interval ``nsi``.
+            If ``nsi`` has length less than ``delay``,
+            set the new boundary time to the begin of ``nsi``.
+            """
+            delay = max(algo_parameters[0], TimeValue("0.000"))
+            return max(nsi.end - delay, nsi.begin)
         self.log(u"Called _adjust_beforenext")
-        self._adjust_on_nonspeech(new_time)
+        self._adjust_on_nonspeech(real_wave_mfcc, new_time)
 
-    def _adjust_rate(self, aggressive=False):
+    def _adjust_rate(self, real_wave_mfcc, algo_parameters):
+        """
+        RATE
+        """
         self.log(u"Called _adjust_rate")
-        # if only one fragment, return unchanged
-        if len(self.text_file) <= 1:
-            self.log(u"Only one fragment, returning")
-            self._apply_offset(TimeValue("0.000"))
-            return
+        self._apply_rate(max_rate=algo_parameters[0], aggressive=False)
 
-        # compute fragments too fast
-        mws = self.rconf.mws
-        # NOTE self.parameters[0] is Decimal
-        max_rate = self.parameters[0]
-        times = self.boundary_indices * mws
-        durations = numpy.diff(times)
-        lengths = numpy.array([f.chars for f in self.text_file.fragments])
-        # compute rates, dealing with division by zero
-        with numpy.errstate(divide="ignore", invalid="ignore"):
-            rates = numpy.divide(lengths, durations)
-            rates[rates == numpy.inf] = 0
-            rates = numpy.nan_to_num(rates)
-        faster = numpy.where(rates > max_rate)[0]
-
-        # if no fragment is faster, return unchanged
-        if len(faster) == 0:
-            self.log([u"No fragment faster than max rate %.3f", max_rate])
-            self._apply_offset(TimeValue("0.000"))
-            return
-
-        # try fixing faster fragments
-        for index in faster:
-            self.log([u"Fragment %d has rate %.3f", index, rates[index]])
-            fixed = False
-
-            # first, try moving begin time back
-            if index > 0:
-                self.log(u"  Trying to move begin time back...")
-                lacking = lengths[index] / max_rate - durations[index]
-                self.log([u"  Overflow current fragment: %.3f", lacking])
-                slack = durations[index - 1] - lengths[index - 1] / max_rate
-                self.log([u"  Slack previous fragment:   %.3f", slack])
-                if slack >= lacking:
-                    self.log([u"  Moving begin time:         %.3f => %.3f", times[index], times[index] - lacking])
-                    self.log(u"  Complete fix (slack >= lacking)")
-                    times[index] -= lacking
-                    durations[index - 1] -= lacking
-                    durations[index] += lacking
-                    rates[index - 1] = lengths[index - 1] / durations[index - 1]
-                    rates[index] = lengths[index] / durations[index]
-                    fixed = True
-                elif slack > 0:
-                    self.log([u"  Moving begin time:         %.3f => %.3f", times[index], times[index] - slack])
-                    self.log(u"  Partial fix (slack < lacking but slack > 0)")
-                    times[index] -= slack
-                    durations[index - 1] -= slack
-                    durations[index] += slack
-                    rates[index - 1] = lengths[index - 1] / durations[index - 1]
-                    rates[index] = lengths[index] / durations[index]
-                else:
-                    self.log(u"  Cannot move begin time back (slack <= 0)")
-
-            # if aggressive and not completely fixed, try moving end time forward
-            if (aggressive) and (not fixed) and (index < len(self.text_file) - 1):
-                self.log(u"  Trying to move end time forward...")
-                lacking = lengths[index] / max_rate - durations[index]
-                self.log([u"  Overflow current fragment: %.3f", lacking])
-                slack = durations[index + 1] - lengths[index + 1] / max_rate
-                self.log([u"  Slack next fragment:       %.3f", slack])
-                if slack >= lacking:
-                    self.log([u"  Moving end time:           %.3f => %.3f", times[index + 1], times[index + 1] + lacking])
-                    self.log(u"  Complete fix (slack >= lacking)")
-                    times[index + 1] += lacking
-                    durations[index] += lacking
-                    durations[index + 1] -= lacking
-                    rates[index] = lengths[index] / durations[index]
-                    rates[index + 1] = lengths[index + 1] / durations[index + 1]
-                    fixed = True
-                elif slack > 0:
-                    self.log([u"  Moving end time:           %.3f => %.3f", times[index + 1], times[index + 1] + slack])
-                    self.log(u"  Partial fix (slack < lacking but slack > 0)")
-                    times[index + 1] += slack
-                    durations[index] += slack
-                    durations[index + 1] -= slack
-                    rates[index] = lengths[index] / durations[index]
-                    rates[index + 1] = lengths[index + 1] / durations[index + 1]
-                else:
-                    self.log(u"  Cannot move end time forward (slack <= 0)")
-
-            # if not completely fixed, log warning
-            if not fixed:
-                self.log_warn([u"Fragment %d is faster and could not be fixed", index])
-
-        # create intervals and return
-        self._times_to_intervals(times)
-
-    def _times_to_intervals(self, times):
+    def _adjust_rate_aggressive(self, real_wave_mfcc, algo_parameters):
         """
-        Transform a list of time values into a list of intervals.
-
-        For example: [0,1,2,3,4] => [[0,1], [1,2], [2,3], [3,4]]
-
-        :param times: the time values
-        :type  times: list of :class:`~aeneas.timevalue.TimeValue`
+        RATEAGGRESSIVE
         """
-        self.log(u"Converting times to intervals...")
-        intervals = [[times[i], times[i + 1]] for i in range(len(times) - 1)]
-        self.log(u"Converting times to intervals... done")
-        self.log(u"Adding head and tail...")
-        self.intervals = [[TimeValue("0.000"), intervals[0][0]]] + intervals + [[intervals[-1][1], self.real_wave_mfcc.audio_length]]
-        self.log(u"Adding head and tail... done")
+        self.log(u"Called _adjust_rate_aggressive")
+        self._apply_rate(max_rate=algo_parameters[0], aggressive=True)
+
+    # #####################################################
+    # HELPER FUNCTIONS
+    # #####################################################
 
     def _apply_offset(self, offset):
         """
         Apply the given offset (negative, zero, or positive)
-        to all times.
+        to all time intervals.
 
         :param offset: the offset, in seconds
-        :type  offset: :class:`~aeneas.timevalue.TimeValue`
+        :type  offset: :class:`~aeneas.exacttiming.TimeValue`
         """
-        times = (self.boundary_indices * self.rconf.mws) + offset
-        if numpy.min(times) < TimeValue("0.000"):
-            self.log_warn(u"After applying offset some boundary times are negative")
-        if numpy.max(times) > self.real_wave_mfcc.audio_length:
-            self.log_warn(u"After applying offset some boundary times are beyond audio file duration")
-        times = numpy.clip(times, TimeValue("0.000"), self.real_wave_mfcc.audio_length)
-        self._times_to_intervals(times)
+        if not isinstance(offset, TimeValue):
+            self.log_exc(u"offset is not an instance of TimeValue", None, True, TypeError)
+        self.log([u"Applying offset %s", offset])
+        self.smflist.offset(offset)
 
-    def _adjust_on_nonspeech(self, adjust_function):
+    def _adjust_on_nonspeech(self, real_wave_mfcc, adjust_function):
         """
         Apply the adjust function to each boundary point
         falling inside (extrema included) of a nonspeech interval.
@@ -484,79 +550,63 @@ class AdjustBoundaryAlgorithm(Loggable):
         The adjust function is not applied to the last boundary index
         to avoid anticipating the end of the audio file.
 
-        The adjust function takes three arguments: the begin and end
-        indices of the nonspeech interval, and the current boundary index.
+        The ``adjust function`` takes
+        the nonspeech interval as its only argument.
         """
         self.log(u"Called _adjust_on_nonspeech")
-        mws = self.rconf.mws
-        nonspeech_intervals = self.real_wave_mfcc.intervals(speech=False, time=False)
-        #
-        # first iteration
-        # nonspeech_counter[i] is the number of boundary indices
-        # falling in the i-th nonspeech interval
-        #
-        self.log(u"  First iteration...")
-        nonspeech_counter = numpy.zeros(len(nonspeech_intervals), dtype=int)
-        i = 0   # index of current boundary_index
-        j = 0   # index of current nonspeech_interval
-        while i < len(self.boundary_indices):
-            # current boundary index
-            cbi = self.boundary_indices[i]
-            # current nonspeech interval
-            # with the property that it ends at an index >= cbi - 1
-            while (j < len(nonspeech_intervals)) and (nonspeech_intervals[j][1] < cbi - 1):
-                j += 1
-            if j >= len(nonspeech_intervals):
-                break
-            cni = nonspeech_intervals[j]
-            self.log([u"FI Current boundary index:     %d %.3f", cbi, cbi * mws])
-            self.log([u"FI Current nonspeech interval: %d %d", cni[0], cni[1]])
-            if (cbi - 1 >= cni[0]) and (cbi - 1 <= cni[1]):
-                self.log(u"FI  Current boundary index is inside nonspeech")
-                nonspeech_counter[j] += 1
-            i += 1
-        self.log(u"  First iteration... done")
-        #
-        # second iteration
-        # we adjust the time value only for those boundary indices that
-        # 1. fall within a nonspeech interval and,
-        # 2. each is the only boundary index falling in that nonspeech interval
-        # all the other boundary indices are returned unchanged
-        #
-        self.log(u"  Second iteration...")
-        times = numpy.zeros(len(self.boundary_indices), dtype=TimeValue)
-        i = 0
-        j = 0
-        while i < len(self.boundary_indices):
-            # current boundary index
-            cbi = self.boundary_indices[i]
-            # current nonspeech interval
-            # with the property that it ends at an index >= cbi - 1
-            while (j < len(nonspeech_intervals)) and (nonspeech_intervals[j][1] < cbi - 1):
-                j += 1
-            if j >= len(nonspeech_intervals):
-                break
-            cni = nonspeech_intervals[j]
-            self.log([u"SI Current boundary index:     %d %.3f", cbi, cbi * mws])
-            self.log([u"SI Current nonspeech interval: %d %d", cni[0], cni[1]])
-            if (
-                    (cbi - 1 >= cni[0]) and
-                    (cbi - 1 <= cni[1]) and
-                    (nonspeech_counter[j] == 1) and (i < len(self.boundary_indices) - 1)
-            ):
-                # falling inside and unique and not last => adjust
-                times[i] = adjust_function(cni[0], cni[1], cbi)
-                self.log([u"SI  Adjusted cbi %d : %.3f => %.3f", cbi, cbi * mws, times[i]])
-            else:
-                # not falling inside or not unique or last => do not adjust
-                times[i] = cbi * mws
-                self.log([u"SI  Not adjusted cbi %d : %.3f => %.3f", cbi, times[i], times[i]])
-            i += 1
-        while i < len(self.boundary_indices):
-            # complete with remaining indices
-            cbi = self.boundary_indices[i]
-            times[i] = cbi * mws
-            self.log([u"Not adjusting %d %.3f", cbi, times[i]])
-            i += 1
-        self.log(u"  Second iteration... done")
-        self._times_to_intervals(times)
+        self.log(u"  Getting nonspeech intervals...")
+        nonspeech_intervals = real_wave_mfcc.intervals(speech=False, time=True)
+        self.log(u"  Getting nonspeech intervals... done")
+
+        self.log(u"  First pass: find pairs of adjacent fragments transitioning inside nonspeech")
+        tolerance = self.rconf[RuntimeConfiguration.ABA_NONSPEECH_TOLERANCE]
+        self.log([u"    Tolerance: %.3f", tolerance])
+        pairs = self.smflist.fragments_ending_inside_nonspeech_intervals(nonspeech_intervals, tolerance)
+        self.log(u"  First pass: done")
+
+        self.log(u"  Second pass: move end point of good pairs")
+        for nsi, frag_index, in pairs:
+            new_value = adjust_function(nsi)
+            self.log([u"    Current interval: %s", self.smflist[frag_index].interval])
+            self.log([u"    New value:        %.3f", new_value])
+            self.smflist.move_transition_point(frag_index, new_value)
+            self.log([u"    New interval:     %s", self.smflist[frag_index].interval])
+            self.log(u"")
+        self.log(u"  Second pass: done")
+
+    def _apply_rate(self, max_rate, aggressive=False):
+        """
+        Try to adjust the rate (characters/second)
+        of the fragments of the list,
+        so that it does not exceed the given ``max_rate``.
+
+        This is done by testing whether some slack
+        can be borrowed from the fragment before
+        the faster current one.
+
+        If ``aggressive`` is ``True``,
+        the slack might be retrieved from the fragment after
+        the faster current one,
+        if the previous fragment could not contribute enough slack.
+        """
+        self.log(u"Called _apply_rate")
+        self.log([u"  Aggressive: %s", aggressive])
+        self.log([u"  Max rate:   %.3f", max_rate])
+        regular_fragments = list(self.smflist.regular_fragments)
+        if len(regular_fragments) <= 1:
+            self.log(u"  The list contains at most one regular fragment, returning")
+            return
+        faster_fragments = [(i, f) for i, f in regular_fragments if (f.rate is not None) and (f.rate >= max_rate + Decimal("0.001"))]
+        if len(faster_fragments) == 0:
+            self.log(u"  No regular fragment faster than max rate, returning")
+            return
+        self.log_warn(u"  Some fragments have rate faster than max rate:")
+        self.log([u"  %s", [i for i, f in faster_fragments]])
+        self.log(u"Fixing rate for faster fragments...")
+        for frag_index, fragment in faster_fragments:
+            self.smflist.fix_fragment_rate(frag_index, max_rate, aggressive=aggressive)
+        self.log(u"Fixing rate for faster fragments... done")
+        faster_fragments = [(i, f) for i, f in regular_fragments if (f.rate is not None) and (f.rate >= max_rate + Decimal("0.001"))]
+        if len(faster_fragments) > 0:
+            self.log_warn(u"  Some fragments still have rate faster than max rate:")
+            self.log([u"  %s", [i for i, f in faster_fragments]])

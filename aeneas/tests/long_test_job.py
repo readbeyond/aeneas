@@ -85,5 +85,5 @@ class TestExecuteJob(unittest.TestCase):
         self.execute("res/container/job.zip")
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     unittest.main()

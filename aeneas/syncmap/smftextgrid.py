@@ -29,7 +29,7 @@ from __future__ import absolute_import
 from __future__ import print_function
 
 from aeneas.syncmap.smfbase import SyncMapFormatBase
-from aeneas.timevalue import TimeValue
+from aeneas.exacttiming import TimeValue
 import aeneas.globalfunctions as gf
 
 

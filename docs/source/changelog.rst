@@ -1,15 +1,41 @@
 Changelog
 =========
 
-v1.7.0 (2016-11-??)
+v1.7.0 (2016-12-??)
 -------------------
 
 #. Moved syncmap I/O functions in ``aeneas.syncmap`` subpackage
 #. Added two new output formats: ``TEXTGRID`` (Praat long TextGrid) and ``TEXTGRID_SHORT`` (Praat short TextGrid)
 #. More robust and generic reading of SRT-like files, especially WebVTT
 #. Fixed typos in ``SyncMapFormat`` docstrings
-#. Added ``safety_checks`` parameter to ``RuntimeConfiguration`` that can disable to trade safety for speed (issue #117)
+#. Added ``safety_checks`` parameter to ``RuntimeConfiguration`` that can be disabled to trade safety for speed (issue #117)
 #. Added Makefile files to C/C++ extensions, replacing previous Bash scripts
+#. Simplified ``ExecuteTask``, offloading some sub-tasks to ``SyncMap``, ``SyncMapFragmentList``, and ``AdjustBoundaryAlgorithm``
+#. Simplified ``AdjustBoundaryAlgorithm``
+#. Added method ``sync_map_vleaves`` in ``Task`` for quick access to sync map fragments (vleaves)
+#. Renamed ``aeneas.timevalue`` into ``aeneas.exacttiming``
+#. Added ``aeneas.exacttiming.TimeInterval`` class to represent time intervals and act upon them
+#. Renamed ``audio_duration`` into ``length`` in ``SyncMapFragment`` for consistency with ``TimeInterval``
+#. Added tests for ``TimeInterval``
+#. Added ``has_zero_length`` in ``SyncMapFragment``
+#. Added comparison functions to ``SyncMapFragment``, based on ``TimeInterval``
+#. Added ``aeneas.syncmap.fragmentlist.SyncMapFragmentList`` class to represent a list of sync map fragments, sorted and with positional/timing constraints
+#. Added tests for ``SyncMapFragmentList``
+#. Changed ``config_string()`` to property in ``aeneas.configuration.Configuration``
+#. Added ``clone()`` method to ``aeneas.configuration.Configuration``
+#. Removed ``clone()`` method to ``aeneas.runtimeconfiguration.RuntimeConfiguration`` (now it inherits from ``Configuration``)
+#. Added ``clone()`` method to ``aeneas.tree.Tree``
+#. Added more tests for ``Tree``
+#. Renamed ``os_task_file_no_zero`` (``PPN_OS_TASK_FILE_NO_ZERO``) to ``task_adjust_boundary_no_zero`` (``PPN_TASK_ADJUST_BOUNDARY_NO_ZERO``) in ``TaskConfiguration``
+#. Added ``PPN_TASK_ADJUST_BOUNDARY_NONSPEECH_MIN`` and ``PPN_TASK_ADJUST_BOUNDARY_NONSPEECH_STRING`` to ``TaskConfiguration``
+#. Added ``ABA_NONSPEECH_TOLERANCE`` and ``ABA_NO_ZERO_DURATION`` parameters to ``RuntimeConfiguration``
+#. Added more tests for ``Configuration`` and ``RuntimeConfiguration``
+#. Added map from language code to human-readable name for TTS wrappers and for ``Language``, usable by ``aeneas.tools.execute_task``
+#. Marked Afrikaans (``afr``) language as tested
+#. Added more examples to ``aeneas.tools.execute_task``
+#. Added more tool tests
+#. Added ``wiki/TESTING.md``
+#. Added ``venvs`` directory with scripts to automate testing with virtual environments
 
 v1.6.0.1 (2016-09-30)
 ---------------------

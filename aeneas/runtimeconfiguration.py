@@ -34,7 +34,7 @@ from __future__ import absolute_import
 from __future__ import print_function
 
 from aeneas.configuration import Configuration
-from aeneas.timevalue import TimeValue
+from aeneas.exacttiming import TimeValue
 
 
 class RuntimeConfiguration(Configuration):
@@ -48,6 +48,25 @@ class RuntimeConfiguration(Configuration):
     :raises: TypeError: if ``config_string`` is not ``None`` and
                         it is not a Unicode string
     :raises: KeyError: if trying to access a key not listed above
+    """
+
+    ABA_NONSPEECH_TOLERANCE = "aba_nonspeech_tolerance"
+    """
+    Tolerance, in seconds, for considering a given time value
+    inside a nonspeech interval.
+
+    Default: ``0.080`` seconds.
+
+    .. versionadded:: 1.7.0
+    """
+
+    ABA_NO_ZERO_DURATION = "aba_no_zero_duration"
+    """
+    Offset, in seconds, to be added to fragments with zero length.
+
+    Default: ``0.001`` seconds.
+
+    .. versionadded:: 1.7.0
     """
 
     ALLOW_UNLISTED_LANGUAGES = "allow_unlisted_languages"
@@ -716,6 +735,8 @@ class RuntimeConfiguration(Configuration):
     #      about external (user rconf) and internal (lib code) key names
     #      although the functionality might be useful in the future
     FIELDS = [
+        (ABA_NONSPEECH_TOLERANCE, ("0.080", TimeValue, [])),
+        (ABA_NO_ZERO_DURATION, ("0.001", TimeValue, [])),
         (ALLOW_UNLISTED_LANGUAGES, (False, bool, [])),
 
         (C_EXTENSIONS, (True, bool, [])),
@@ -788,19 +809,6 @@ class RuntimeConfiguration(Configuration):
     def __init__(self, config_string=None):
         super(RuntimeConfiguration, self).__init__(config_string)
 
-    def clone(self):
-        """
-        Return a new configuration object
-        that contains a copy of this configuration object.
-
-        :rtype: :class:`~aeneas.runtimeconfiguration.RuntimeConfiguration`
-        """
-        new_rconf = RuntimeConfiguration()
-        new_rconf.data = dict(self.data)
-        new_rconf.types = dict(self.types)
-        new_rconf.aliases = dict(self.aliases)
-        return new_rconf
-
     @property
     def safety_checks(self):
         """
@@ -832,7 +840,7 @@ class RuntimeConfiguration(Configuration):
         :data:`~aeneas.runtimeconfiguration.RuntimeConfiguration.MFCC_WINDOW_SHIFT`
         key stored in this configuration object.
 
-        :rtype: :class:`~aeneas.timevalue.TimeValue`
+        :rtype: :class:`~aeneas.exacttiming.TimeValue`
         """
         return self[self.MFCC_WINDOW_SHIFT]
 
@@ -843,7 +851,7 @@ class RuntimeConfiguration(Configuration):
         :data:`~aeneas.runtimeconfiguration.RuntimeConfiguration.MFCC_WINDOW_LENGTH`
         key stored in this configuration object.
 
-        :rtype: :class:`~aeneas.timevalue.TimeValue`
+        :rtype: :class:`~aeneas.exacttiming.TimeValue`
         """
         return self[self.MFCC_WINDOW_LENGTH]
 

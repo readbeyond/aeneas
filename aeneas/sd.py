@@ -42,9 +42,9 @@ from aeneas.dtw import DTWAligner
 from aeneas.logger import Loggable
 from aeneas.runtimeconfiguration import RuntimeConfiguration
 from aeneas.synthesizer import Synthesizer
-from aeneas.timevalue import Decimal
-from aeneas.timevalue import TimeValue
-from aeneas.timevalue import InvalidOperation
+from aeneas.exacttiming import Decimal
+from aeneas.exacttiming import TimeValue
+from aeneas.exacttiming import InvalidOperation
 import aeneas.globalfunctions as gf
 
 
@@ -135,7 +135,7 @@ class SD(Loggable):
         containing the fragments in the text file.
 
         Return the audio interval as a tuple of two
-        :class:`~aeneas.timevalue.TimeValue` objects,
+        :class:`~aeneas.exacttiming.TimeValue` objects,
         representing the begin and end time, in seconds,
         with respect to the full wave duration.
 
@@ -143,14 +143,14 @@ class SD(Loggable):
         (``0.0`` for min, ``10.0`` for max) will be used.
 
         :param min_head_length: estimated minimum head length
-        :type  min_head_length: :class:`~aeneas.timevalue.TimeValue`
+        :type  min_head_length: :class:`~aeneas.exacttiming.TimeValue`
         :param max_head_length: estimated maximum head length
-        :type  max_head_length: :class:`~aeneas.timevalue.TimeValue`
+        :type  max_head_length: :class:`~aeneas.exacttiming.TimeValue`
         :param min_tail_length: estimated minimum tail length
-        :type  min_tail_length: :class:`~aeneas.timevalue.TimeValue`
+        :type  min_tail_length: :class:`~aeneas.exacttiming.TimeValue`
         :param max_tail_length: estimated maximum tail length
-        :type  max_tail_length: :class:`~aeneas.timevalue.TimeValue`
-        :rtype: (:class:`~aeneas.timevalue.TimeValue`, :class:`~aeneas.timevalue.TimeValue`)
+        :type  max_tail_length: :class:`~aeneas.exacttiming.TimeValue`
+        :rtype: (:class:`~aeneas.exacttiming.TimeValue`, :class:`~aeneas.exacttiming.TimeValue`)
         :raises: TypeError: if one of the parameters is not ``None`` or a number
         :raises: ValueError: if one of the parameters is negative
         """
@@ -174,10 +174,10 @@ class SD(Loggable):
         Detect the audio head, returning its duration, in seconds.
 
         :param min_head_length: estimated minimum head length
-        :type  min_head_length: :class:`~aeneas.timevalue.TimeValue`
+        :type  min_head_length: :class:`~aeneas.exacttiming.TimeValue`
         :param max_head_length: estimated maximum head length
-        :type  max_head_length: :class:`~aeneas.timevalue.TimeValue`
-        :rtype: :class:`~aeneas.timevalue.TimeValue`
+        :type  max_head_length: :class:`~aeneas.exacttiming.TimeValue`
+        :rtype: :class:`~aeneas.exacttiming.TimeValue`
         :raises: TypeError: if one of the parameters is not ``None`` or a number
         :raises: ValueError: if one of the parameters is negative
         """
@@ -188,10 +188,10 @@ class SD(Loggable):
         Detect the audio tail, returning its duration, in seconds.
 
         :param min_tail_length: estimated minimum tail length
-        :type  min_tail_length: :class:`~aeneas.timevalue.TimeValue`
+        :type  min_tail_length: :class:`~aeneas.exacttiming.TimeValue`
         :param max_tail_length: estimated maximum tail length
-        :type  max_tail_length: :class:`~aeneas.timevalue.TimeValue`
-        :rtype: :class:`~aeneas.timevalue.TimeValue`
+        :type  max_tail_length: :class:`~aeneas.exacttiming.TimeValue`
+        :rtype: :class:`~aeneas.exacttiming.TimeValue`
         :raises: TypeError: if one of the parameters is not ``None`` or a number
         :raises: ValueError: if one of the parameters is negative
         """
@@ -207,10 +207,10 @@ class SD(Loggable):
         Return the duration of the head or tail, in seconds.
 
         :param min_length: estimated minimum length
-        :type  min_length: :class:`~aeneas.timevalue.TimeValue`
+        :type  min_length: :class:`~aeneas.exacttiming.TimeValue`
         :param max_length: estimated maximum length
-        :type  max_length: :class:`~aeneas.timevalue.TimeValue`
-        :rtype: :class:`~aeneas.timevalue.TimeValue`
+        :type  max_length: :class:`~aeneas.exacttiming.TimeValue`
+        :rtype: :class:`~aeneas.exacttiming.TimeValue`
         :raises: TypeError: if one of the parameters is not ``None`` or a number
         :raises: ValueError: if one of the parameters is negative
         """

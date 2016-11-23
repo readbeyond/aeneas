@@ -348,5 +348,5 @@ class TestValidator(unittest.TestCase):
         self.container("res/validator/job_xml_config_not_root_nested", True)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     unittest.main()

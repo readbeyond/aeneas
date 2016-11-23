@@ -167,7 +167,7 @@ PKG_SCRIPTS = [
 
 ##############################################################################
 #
-# probably you should not edit the metadata below this line
+# do not edit the metadata below this line
 #
 ##############################################################################
 

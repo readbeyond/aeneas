@@ -353,7 +353,7 @@ class AbstractCLIProgram(Loggable):
         self.logger = Logger(tee=self.verbose, tee_show_datetime=self.very_verbose)
         self.log([u"Formal arguments: %s", self.formal_arguments])
         self.log([u"Actual arguments: %s", self.actual_arguments])
-        self.log([u"Runtime configuration: '%s'", self.rconf.config_string()])
+        self.log([u"Runtime configuration: '%s'", self.rconf.config_string])
 
         # perform command
         exit_code = self.perform_command()

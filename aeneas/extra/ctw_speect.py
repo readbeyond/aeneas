@@ -35,7 +35,7 @@ import speect.audio_riff
 
 from aeneas.audiofile import AudioFile
 from aeneas.language import Language
-from aeneas.timevalue import TimeValue
+from aeneas.exacttiming import TimeValue
 from aeneas.ttswrappers.basettswrapper import BaseTTSWrapper
 import aeneas.globalfunctions as gf
 

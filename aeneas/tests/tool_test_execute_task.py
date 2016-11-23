@@ -44,29 +44,6 @@ class TestExecuteTaskCLI(unittest.TestCase):
         gf.delete_directory(output_path)
         self.assertEqual(exit_code, expected_exit_code)
 
-    def test_help(self):
-        self.execute([], 2)
-        self.execute([("", "-h")], 2)
-        self.execute([("", "--help")], 2)
-        self.execute([("", "--version")], 2)
-
-    def test_examples(self):
-        self.execute([("", "-e")], 2)
-        self.execute([("", "--examples")], 2)
-
-    def test_examples_all(self):
-        self.execute([("", "-e")], 2)
-        self.execute([("", "--examples-all")], 2)
-
-    def test_list_parameters(self):
-        self.execute([("", "--list-parameters")], 2)
-
-    def test_list_values(self):
-        self.execute([("", "--list-values=is_text_type")], 2)
-
-    def test_list_values_bad(self):
-        self.execute([("", "--list-values=foo")], 2)
-
     def test_exec_json(self):
         self.execute([
             ("in", "../tools/res/audio.mp3"),
@@ -128,6 +105,15 @@ class TestExecuteTaskCLI(unittest.TestCase):
             ("", "-r=\"c_extensions=False\"")
         ], 0)
 
+    def test_exec_srt_no_cdtw(self):
+        self.execute([
+            ("in", "../tools/res/audio.mp3"),
+            ("in", "../tools/res/subtitles.txt"),
+            ("", "task_language=eng|is_text_type=subtitles|os_task_file_format=srt"),
+            ("out", "sonnet.srt"),
+            ("", "-r=\"cdtw=False\"")
+        ], 0)
+
     def test_exec_srt_no_cew(self):
         self.execute([
             ("in", "../tools/res/audio.mp3"),
@@ -137,6 +123,15 @@ class TestExecuteTaskCLI(unittest.TestCase):
             ("", "-r=\"cew=False\"")
         ], 0)
 
+    def test_exec_srt_no_cfw(self):
+        self.execute([
+            ("in", "../tools/res/audio.mp3"),
+            ("in", "../tools/res/subtitles.txt"),
+            ("", "task_language=eng|is_text_type=subtitles|os_task_file_format=srt"),
+            ("out", "sonnet.srt"),
+            ("", "-r=\"cfw=False\"")
+        ], 0)
+
     def test_exec_srt_no_cmfcc(self):
         self.execute([
             ("in", "../tools/res/audio.mp3"),
@@ -144,15 +139,6 @@ class TestExecuteTaskCLI(unittest.TestCase):
             ("", "task_language=eng|is_text_type=subtitles|os_task_file_format=srt"),
             ("out", "sonnet.srt"),
             ("", "-r=\"cmfcc=False\"")
-        ], 0)
-
-    def test_exec_srt_no_cdtw(self):
-        self.execute([
-            ("in", "../tools/res/audio.mp3"),
-            ("in", "../tools/res/subtitles.txt"),
-            ("", "task_language=eng|is_text_type=subtitles|os_task_file_format=srt"),
-            ("out", "sonnet.srt"),
-            ("", "-r=\"cdtw=False\"")
         ], 0)
 
     def test_exec_srt_cew_subprocess(self):
@@ -345,229 +331,6 @@ class TestExecuteTaskCLI(unittest.TestCase):
         ], 0)
         gf.delete_directory(tmp_path)
 
-    def test_example_aftercurrent(self):
-        self.execute([
-            ("", "--example-aftercurrent")
-        ], 0)
-
-    def test_example_beforenext(self):
-        self.execute([
-            ("", "--example-beforenext")
-        ], 0)
-
-    def test_example_cewsubprocess(self):
-        self.execute([
-            ("", "--example-cewsubprocess")
-        ], 0)
-
-    def test_example_ctw_espeak(self):
-        self.execute([
-            ("", "--example-ctw-espeak")
-        ], 0)
-
-    def test_example_ctw_speect(self):
-        # unable to run speect with Python 3,
-        # perform the test only on Python 2
-        if gf.PY2:
-            self.execute([
-                ("", "--example-ctw-speect")
-            ], 0)
-
-    def test_example_eaf(self):
-        self.execute([
-            ("", "--example-eaf")
-        ], 0)
-
-    def test_example_faster_rate(self):
-        self.execute([
-            ("", "--example-faster-rate")
-        ], 0)
-
-    def test_example_festival(self):
-        self.execute([
-            ("", "--example-festival")
-        ], 0)
-
-    def test_example_flatten_12(self):
-        self.execute([
-            ("", "--example-flatten-12")
-        ], 0)
-
-    def test_example_flatten_2(self):
-        self.execute([
-            ("", "--example-flatten-2")
-        ], 0)
-
-    def test_example_flatten_3(self):
-        self.execute([
-            ("", "--example-flatten-3")
-        ], 0)
-
-    def test_example_head_tail(self):
-        self.execute([
-            ("", "--example-head-tail")
-        ], 0)
-
-    def test_example_json(self):
-        self.execute([
-            ("", "--example-json")
-        ], 0)
-
-    def test_example_mplain_json(self):
-        self.execute([
-            ("", "--example-mplain-json")
-        ], 0)
-
-    def test_example_mplain_smil(self):
-        self.execute([
-            ("", "--example-mplain-smil")
-        ], 0)
-
-    def test_example_multilevel_tts(self):
-        self.execute([
-            ("", "--example-multilevel-tts")
-        ], 0)
-
-    def test_example_munparsed_json(self):
-        self.execute([
-            ("", "--example-munparsed-json")
-        ], 0)
-
-    def test_example_munparsed_smil(self):
-        self.execute([
-            ("", "--example-munparsed-smil")
-        ], 0)
-
-    def test_example_mws(self):
-        self.execute([
-            ("", "--example-mws")
-        ], 0)
-
-    def test_example_no_zero(self):
-        self.execute([
-            ("", "--example-no-zero")
-        ], 0)
-
-    def test_example_offset(self):
-        self.execute([
-            ("", "--example-offset")
-        ], 0)
-
-    def test_example_percent(self):
-        self.execute([
-            ("", "--example-percent")
-        ], 0)
-
-    def test_example_py(self):
-        self.execute([
-            ("", "--example-py")
-        ], 0)
-
-    def test_example_rates(self):
-        self.execute([
-            ("", "--example-rates")
-        ], 0)
-
-    def test_example_sd(self):
-        self.execute([
-            ("", "--example-sd")
-        ], 0)
-
-    def test_example_smil(self):
-        self.execute([
-            ("", "--example-smil")
-        ], 0)
-
-    def test_example_srt(self):
-        self.execute([
-            ("", "--example-srt")
-        ], 0)
-
-    def test_example_tsv(self):
-        self.execute([
-            ("", "--example-tsv")
-        ], 0)
-
-    def test_example_words(self):
-        self.execute([
-            ("", "--example-words")
-        ], 0)
-
-    def test_example_words_festival_cache(self):
-        self.execute([
-            ("", "--example-words-festival-cache")
-        ], 0)
-
-    def test_exec_srt_max_audio_length(self):
-        self.execute([
-            ("in", "../tools/res/audio.mp3"),
-            ("in", "../tools/res/subtitles.txt"),
-            ("", "task_language=eng|is_text_type=subtitles|os_task_file_format=srt"),
-            ("out", "sonnet.srt"),
-            ("", "-r=\"task_max_audio_length=5.0\"")
-        ], 1)
-
-    def test_exec_srt_max_text_length(self):
-        self.execute([
-            ("in", "../tools/res/audio.mp3"),
-            ("in", "../tools/res/subtitles.txt"),
-            ("", "task_language=eng|is_text_type=subtitles|os_task_file_format=srt"),
-            ("out", "sonnet.srt"),
-            ("", "-r=\"task_max_text_length=5\"")
-        ], 1)
-
-    def test_exec_cannot_read_1(self):
-        self.execute([
-            ("", "/foo/bar/baz.mp3"),
-            ("in", "../tools/res/subtitles.txt"),
-            ("", "task_language=eng|is_text_type=subtitles|os_task_file_format=srt"),
-            ("out", "sonnet.srt")
-        ], 1)
-
-    def test_exec_cannot_read_2(self):
-        self.execute([
-            ("in", "../tools/res/audio.mp3"),
-            ("", "/foo/bar/baz.txt"),
-            ("", "task_language=eng|is_text_type=subtitles|os_task_file_format=srt"),
-            ("out", "sonnet.srt")
-        ], 1)
-
-    def test_exec_cannot_write(self):
-        self.execute([
-            ("in", "../tools/res/audio.mp3"),
-            ("in", "../tools/res/subtitles.txt"),
-            ("", "task_language=eng|is_text_type=subtitles|os_task_file_format=srt"),
-            ("", "/foo/bar/baz.srt")
-        ], 1)
-
-    def test_exec_missing_1(self):
-        self.execute([
-            ("in", "../tools/res/subtitles.txt"),
-            ("", "task_language=eng|is_text_type=subtitles|os_task_file_format=srt"),
-            ("out", "sonnet.srt")
-        ], 2)
-
-    def test_exec_missing_2(self):
-        self.execute([
-            ("in", "../tools/res/audio.mp3"),
-            ("", "task_language=eng|is_text_type=subtitles|os_task_file_format=srt"),
-            ("out", "sonnet.srt")
-        ], 2)
-
-    def test_exec_missing_3(self):
-        self.execute([
-            ("in", "../tools/res/audio.mp3"),
-            ("in", "../tools/res/subtitles.txt"),
-            ("out", "sonnet.srt")
-        ], 2)
-
-    def test_exec_missing_4(self):
-        self.execute([
-            ("in", "../tools/res/audio.mp3"),
-            ("in", "../tools/res/subtitles.txt"),
-            ("", "task_language=eng|is_text_type=subtitles|os_task_file_format=srt")
-        ], 2)
-
     # NOTE disabling these ones as they require a network connection
     def zzz_test_exec_youtube(self):
         self.execute([
@@ -588,11 +351,6 @@ class TestExecuteTaskCLI(unittest.TestCase):
             ("", "--largest-audio")
         ], 0)
 
-    def zzz_test_example_youtube(self):
-        self.execute([
-            ("", "--example-youtube")
-        ], 0)
 
-
-if __name__ == '__main__':
+if __name__ == "__main__":
     unittest.main()

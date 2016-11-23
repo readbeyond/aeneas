@@ -49,7 +49,7 @@ import sys
 
 from aeneas.logger import Loggable
 from aeneas.runtimeconfiguration import RuntimeConfiguration
-from aeneas.timevalue import TimeValue
+from aeneas.exacttiming import TimeValue
 import aeneas.globalfunctions as gf
 
 

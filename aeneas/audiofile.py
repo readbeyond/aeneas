@@ -45,7 +45,7 @@ from aeneas.ffmpegwrapper import FFMPEGPathError
 from aeneas.ffmpegwrapper import FFMPEGWrapper
 from aeneas.logger import Loggable
 from aeneas.runtimeconfiguration import RuntimeConfiguration
-from aeneas.timevalue import TimeValue
+from aeneas.exacttiming import TimeValue
 from aeneas.wavfile import read as scipywavread
 from aeneas.wavfile import write as scipywavwrite
 import aeneas.globalfunctions as gf
@@ -256,7 +256,7 @@ class AudioFile(Loggable):
         """
         The length of the audio file, in seconds.
 
-        :rtype: :class:`~aeneas.timevalue.TimeValue`
+        :rtype: :class:`~aeneas.exacttiming.TimeValue`
         """
         return self.__audio_length
 
@@ -568,11 +568,11 @@ class AudioFile(Loggable):
         If audio data is not loaded, load it and then slice it.
 
         :param begin: the start position, in seconds
-        :type  begin: :class:`~aeneas.timevalue.TimeValue`
+        :type  begin: :class:`~aeneas.exacttiming.TimeValue`
         :param length: the  position, in seconds
-        :type  length: :class:`~aeneas.timevalue.TimeValue`
+        :type  length: :class:`~aeneas.exacttiming.TimeValue`
         :raises: TypeError: if one of the arguments is not ``None``
-                            or :class:`~aeneas.timevalue.TimeValue`
+                            or :class:`~aeneas.exacttiming.TimeValue`
 
         .. versionadded:: 1.2.0
         """

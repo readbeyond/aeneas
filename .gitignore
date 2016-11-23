@@ -10,10 +10,10 @@ bak
 build
 dist
 docs/build
-venvs
 tmp
 
 # service scripts
+zzz
 zzz_*.py
 zzz_*.sh
 zzz_long_tests

@@ -77,9 +77,9 @@ Clearly, you can also manipulate objects programmatically.
         # process Task
         ExecuteTask(task).execute()
 
-        # print short fragments
-        for fragment in task.sync_map.fragments_tree.vleaves_not_empty:
-            if fragment.end - fragment.begin < 5.0:
+        # print fragments with a duration < 5 seconds
+        for fragment in task.sync_map_vleaves:
+            if fragment.length < 5.0:
                 print(fragment)
 
 Instead of passing around configuration strings,
@@ -95,13 +95,13 @@ using the library functions and constants.
         #!/usr/bin/env python
         # coding=utf-8
 
+        from aeneas.exacttiming import TimeValue
         from aeneas.executetask import ExecuteTask
         from aeneas.language import Language
         from aeneas.syncmap import SyncMapFormat
         from aeneas.task import Task
         from aeneas.task import TaskConfiguration
         from aeneas.textfile import TextFileFormat
-        from aeneas.timevalue import TimeValue
         import aeneas.globalconstants as gc
 
         # create Task object
@@ -140,9 +140,10 @@ This choice might change in the future.
 Depending on what ``aeneas`` classes you want to use,
 you might need to install the following optional dependencies:
 
-* ``requests`` (for using :class:`~aeneas.ttswrappers.nuancettswrapper.NuanceTTSWrapper`)
-* ``Pillow`` (for using :mod:`~aeneas.plotter`)
-* ``youtube-dl`` and ``pafy`` (for using :class:`~aeneas.downloader.Downloader`)
+* ``requests`` (for using the Nuance TTS API wrapper)
+* ``Pillow`` (for plotting waveforms with :mod:`~aeneas.plotter`)
+* ``tgt`` (for outputting sync maps to TextGrid format)
+* ``youtube-dl`` and ``pafy`` (for downloading audio from Internet with :class:`~aeneas.downloader.Downloader`)
 
 
 
@@ -224,7 +225,7 @@ The Python C/C++ extensions included in ``aeneas`` are:
     
     Currently :mod:`aeneas.cwave` is not used.
     It will be enabled in a future version of ``aeneas``.
-    
+
 
 
 Concepts
@@ -333,11 +334,11 @@ Miscellanea
   and properly dispose of them in your code.
 * Wherever possible, ``NumPy`` views are used to avoid data copying.
   Similarly, built-in ``NumPy`` functions are used to improve run time. 
-* To avoid numerical issues, always use :class:`~aeneas.timevalue.TimeValue`
+* To avoid numerical issues, always use :class:`~aeneas.exacttiming.TimeValue`
   to hold time values with arbitrary precision.
   Note that doing so incurs in a negligible execution slow down,
   because the heaviest computations are done with integer ``NumPy`` indices and arrays
-  and the transformation to :class:`~aeneas.timevalue.TimeValue` takes place
+  and the transformation to :class:`~aeneas.exacttiming.TimeValue` takes place
   only when the sync map is output to file.
 
 
@@ -373,6 +374,7 @@ and the following modules:
     diagnostics
     downloader
     dtw
+    exacttiming
     executejob
     executetask
     ffmpegwrapper
@@ -392,7 +394,6 @@ and the following modules:
     synthesizer
     task
     textfile
-    timevalue
     vad
     validator
 

@@ -337,6 +337,8 @@ class TextFragment(object):
 
         :rtype: string
         """
+        if self.lines is None:
+            return u""
         return u" ".join(self.lines)
 
     @property
@@ -368,6 +370,8 @@ class TextFragment(object):
 
         :rtype: string
         """
+        if self.filtered_lines is None:
+            return u""
         return u" ".join(self.filtered_lines)
 
     @property

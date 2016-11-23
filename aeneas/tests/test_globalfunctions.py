@@ -26,7 +26,7 @@ import os
 import sys
 import unittest
 
-from aeneas.timevalue import TimeValue
+from aeneas.exacttiming import TimeValue
 import aeneas.globalconstants as gc
 import aeneas.globalfunctions as gf
 
@@ -756,5 +756,5 @@ class TestGlobalFunctions(unittest.TestCase):
         pass
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     unittest.main()

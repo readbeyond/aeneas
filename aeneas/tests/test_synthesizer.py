@@ -23,13 +23,13 @@
 
 import unittest
 
+from aeneas.exacttiming import TimeValue
 from aeneas.language import Language
 from aeneas.logger import Logger
 from aeneas.runtimeconfiguration import RuntimeConfiguration
 from aeneas.synthesizer import Synthesizer
 from aeneas.textfile import TextFile
 from aeneas.textfile import TextFileFormat
-from aeneas.timevalue import TimeValue
 import aeneas.globalfunctions as gf
 
 
@@ -94,5 +94,5 @@ class TestSynthesizer(unittest.TestCase):
         self.perform("res/inputtext/sonnet_plain.txt", 4, TimeValue("10.000"), quit_after=TimeValue("10.000"), backwards=True)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     unittest.main()

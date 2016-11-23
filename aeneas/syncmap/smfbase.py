@@ -62,9 +62,9 @@ class SyncMapFormatBase(Loggable):
         :param lines: the lines of the text
         :type lines: list of string
         :param begin: the begin time
-        :type begin: :class:`~aeneas.timevalue.TimeValue`
+        :type begin: :class:`~aeneas.exacttiming.TimeValue`
         :param end: the end time
-        :type end: :class:`~aeneas.timevalue.TimeValue`
+        :type end: :class:`~aeneas.exacttiming.TimeValue`
         :param language: the language
         :type language: string
         """

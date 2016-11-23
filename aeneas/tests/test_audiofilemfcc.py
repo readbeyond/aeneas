@@ -27,7 +27,7 @@ import unittest
 from aeneas.audiofile import AudioFile
 from aeneas.audiofile import AudioFileUnsupportedFormatError
 from aeneas.audiofilemfcc import AudioFileMFCC
-from aeneas.timevalue import TimeValue
+from aeneas.exacttiming import TimeValue
 import aeneas.globalfunctions as gf
 
 
@@ -365,5 +365,5 @@ class TestAudioFileMFCC(unittest.TestCase):
         self.assertNotEqual(pre, audiofile.masked_middle_length)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     unittest.main()

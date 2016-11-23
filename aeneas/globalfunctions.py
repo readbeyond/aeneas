@@ -38,7 +38,7 @@ import tempfile
 import uuid
 
 import aeneas.globalconstants as gc
-from aeneas.timevalue import TimeValue
+from aeneas.exacttiming import TimeValue
 
 
 # RUNTIME CONSTANTS
@@ -560,7 +560,7 @@ def time_from_ttml(string):
     and return a time value.
 
     :param string string: the string to be parsed
-    :rtype: :class:`~aeneas.timevalue.TimeValue`
+    :rtype: :class:`~aeneas.exacttiming.TimeValue`
     """
     if (string is None) or (len(string) < 2):
         return 0
@@ -594,7 +594,7 @@ def time_from_ssmmm(string):
     Parse the given ``SS.mmm`` string and return a time value.
 
     :param string string: the string to be parsed
-    :rtype: :class:`~aeneas.timevalue.TimeValue`
+    :rtype: :class:`~aeneas.exacttiming.TimeValue`
     """
     if (string is None) or (len(string) < 1):
         return TimeValue("0.000")
@@ -626,7 +626,7 @@ def time_from_hhmmssmmm(string, decimal_separator="."):
 
     :param string string: the string to be parsed
     :param string decimal_separator: the decimal separator to be used
-    :rtype: :class:`~aeneas.timevalue.TimeValue`
+    :rtype: :class:`~aeneas.exacttiming.TimeValue`
     """
     if decimal_separator == ",":
         pattern = HHMMSS_MMM_PATTERN_COMMA
@@ -690,7 +690,7 @@ def time_from_srt(string):
     Parse the given ``HH:MM:SS,mmm`` string and return a time value.
 
     :param string string: the string to be parsed
-    :rtype: :class:`~aeneas.timevalue.TimeValue`
+    :rtype: :class:`~aeneas.exacttiming.TimeValue`
     """
     return time_from_hhmmssmmm(string, decimal_separator=",")
 

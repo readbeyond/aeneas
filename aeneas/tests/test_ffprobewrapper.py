@@ -92,5 +92,5 @@ class TestFFPROBEWrapper(unittest.TestCase):
             self.assertIsNotNone(properties["duration"])
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     unittest.main()

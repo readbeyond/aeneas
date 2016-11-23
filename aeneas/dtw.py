@@ -213,7 +213,7 @@ class DTWAligner(Loggable):
         :param synt_anchors: the anchor time values (in seconds) of the synthesized fragments,
                              each representing the begin time in the synthesized wave
                              of the corresponding fragment
-        :type  synt_anchors: list of :class:`~aeneas.timevalue.TimeValue`
+        :type  synt_anchors: list of :class:`~aeneas.exacttiming.TimeValue`
 
         Return the list of boundary indices.
 
