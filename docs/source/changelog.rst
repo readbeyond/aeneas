@@ -35,6 +35,7 @@ v1.7.0 (2016-12-??)
 #. Added more examples to ``aeneas.tools.execute_task``
 #. Added more tool tests
 #. Added ``wiki/TESTING.md``
+#. Added ``venvs`` directory with scripts to automate testing with virtual environments
 
 v1.6.0.1 (2016-09-30)
 ---------------------

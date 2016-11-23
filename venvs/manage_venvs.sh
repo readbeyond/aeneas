@@ -76,7 +76,7 @@ copytests() {
         mkdir tests
         
         # copy current code locally and set it up
-        cp -r ../../aeneas ../../*.py tests/
+        cp -r ../../aeneas ../../setup.py ../../setupmeta.py ../../run_all_unit_tests.py tests/
         cd tests
         pip install numpy
         python setup.py build_ext --inplace
