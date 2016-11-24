@@ -232,9 +232,6 @@ class DTWAligner(Loggable):
         mws = self.rconf.mws
         sample_rate = self.rconf.sample_rate
         samples_per_mws = mws * sample_rate
-        print(samples_per_mws)
-        print(type(samples_per_mws))
-        print(samples_per_mws.is_integer)
         if samples_per_mws.is_integer:
             anchor_indices = numpy.array([int(a[0] / mws) for a in synt_anchors])
         else:
