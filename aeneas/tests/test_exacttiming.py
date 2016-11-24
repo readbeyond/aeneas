@@ -162,6 +162,43 @@ class TestExactTiming(unittest.TestCase):
         self.check_numpy(n1 + tv1, n2)
         self.check_numpy(n1 * tv1, n3)
 
+    def test_is_integer(self):
+        for v, e in [
+            ("0", True),
+            ("0.0", True),
+            ("0.00", True),
+            ("0.000", True),
+            ("0.0000000", True),
+            ("1", True),
+            ("1.0", True),
+            ("1.00", True),
+            ("1.000", True),
+            ("1.000000", True),
+            ("-1", True),
+            ("-1.0", True),
+            ("-1.00", True),
+            ("-1.000", True),
+            ("-1.000000", True),
+            ("0.1", False),
+            ("0.01", False),
+            ("0.001", False),
+            ("0.000001", False),
+            ("-0.1", False),
+            ("-0.01", False),
+            ("-0.001", False),
+            ("-0.000001", False),
+            ("1.1", False),
+            ("1.01", False),
+            ("1.001", False),
+            ("1.000001", False),
+            ("-1.1", False),
+            ("-1.01", False),
+            ("-1.001", False),
+            ("-1.000001", False),
+        ]:
+            v = TimeValue(v)
+            self.assertEqual(v.is_integer, e)
+
     def test_product_is_integer(self):
         for m, s, e in [
             ("0.001", 16000, True),
@@ -186,6 +223,7 @@ class TestExactTiming(unittest.TestCase):
             prod = TimeValue(m) * s
             self.assertTrue(isinstance(prod, TimeValue))
             self.assertEqual(int(prod) == prod, e)
+            self.assertEqual(prod.is_integer, e)
 
     def test_time_interval_bad_type(self):
         params = [
