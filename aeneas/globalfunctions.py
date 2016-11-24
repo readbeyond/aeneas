@@ -776,6 +776,15 @@ def is_windows():
     return os.name == "nt"
 
 
+def is_narrow_build():
+    """
+    Return ``True`` if running on a Python narrow build.
+
+    :rtype: bool
+    """
+    return sys.maxunicode == 65535
+
+
 def fix_slash(path):
     """
     On non-POSIX OSes, change the slashes in ``path``

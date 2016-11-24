@@ -1221,6 +1221,13 @@ class TransliterationMap(Loggable):
 
     def transliterate(self, string):
         result = []
+        #
+        # NOTE on Python 2 narrow builds,
+        #      this iterator is not 100% correct
+        #      because an Unicode character above 0x10000
+        #      is "split" into two characters,
+        #      and hence it cannot be found as a key of the map
+        #
         for char in string:
             try:
                 result.append(self.trans_map[char])
