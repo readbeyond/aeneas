@@ -1172,7 +1172,11 @@ def safe_unichr(codepoint):
     :rtype: string
     """
     if PY2:
-        return unichr(codepoint)
+        # COMMENTED return unichr(codepoint)
+        # NOTE the above does not work on Python narrow builds,
+        #      (e.g., Mac OS X brew python)
+        #      while the following works for both wide and narrow builds
+        return ("\\U%08x" % codepoint).decode("unicode-escape")
     return chr(codepoint)
 
 
