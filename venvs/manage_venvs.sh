@@ -33,7 +33,7 @@ create() {
         # create virtualenv
         virtualenv -p "$2" "$1"
         # create output directory to run examples
-        mkdir output
+        mkdir $1/output
         echo "[INFO] Creating venv $1 ... done"
     fi
 }
@@ -158,7 +158,17 @@ copytests() {
         cp -r ../../aeneas ../../setup.py ../../setupmeta.py ../../run_all_unit_tests.py tests/
         cd tests
         pip install numpy
-        python setup.py build_ext --inplace
+        OS=`uname`
+        if [ "$OS" == "Darwin" ]
+        then
+            # Mac OS X
+            # add /usr/local/lib to path, otherwise cew cannot be built
+            python setup.py build_ext --inplace --rpath=/usr/local/lib
+        else
+            # Linux
+            # espeak lib should be globally visible
+            python setup.py build_ext --inplace
+        fi
         cd ..
 
         deactivate
