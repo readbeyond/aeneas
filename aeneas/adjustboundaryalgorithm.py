@@ -344,13 +344,19 @@ class AdjustBoundaryAlgorithm(Loggable):
             fragment_type=SyncMapFragment.HEAD
         ), sort=False)
         self.log(u"  Creating REGULAR fragments")
+        # NOTE text_file.fragments() returns a list,
+        #      so we cache a copy here instead of
+        #      calling it once per loop
+        fragments = text_file.fragments
         for i in range(1, len(times) - 2):
+            self.log([u"    Adding fragment %d ...", i])
             self.smflist.add(SyncMapFragment(
-                text_fragment=text_file.fragments[i - 1],
+                text_fragment=fragments[i - 1],
                 begin=times[i],
                 end=times[i + 1],
                 fragment_type=SyncMapFragment.REGULAR
             ), sort=False)
+            self.log([u"    Adding fragment %d ... done", i])
         self.log(u"  Creating TAIL fragment")
         self.smflist.add(SyncMapFragment(
             text_fragment=TextFragment(identifier=u"TAIL"),
