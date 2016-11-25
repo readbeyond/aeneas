@@ -53,6 +53,16 @@ class TimeValue(Decimal):
     def __repr__(self):
         return super(TimeValue, self).__repr__().replace("Decimal", "TimeValue")
 
+    @property
+    def is_integer(self):
+        """
+        Return ``True`` if this time value represents
+        an integer.
+
+        :rtype: bool
+        """
+        return self == int(self)
+
     # NOTE overriding so that the result
     #      is still an instance of TimeValue
 

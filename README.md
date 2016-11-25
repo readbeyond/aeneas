@@ -45,12 +45,14 @@ To eat the world's due, by the grave and thee.        => [00:00:48.080, 00:00:53
 
 ![Waveform with aligned labels, detail](wiki/align.png)
 
-This synchronization map can be output to file in several formats:
-EAF for research purposes,
-SMIL for EPUB 3,
-SBV/SRT/SUB/TTML/VTT for closed captioning,
-JSON for Web usage,
-or raw AUD/CSV/SSV/TSV/TXT/XML for further processing.
+This synchronization map can be output to file
+in several formats, depending on its application:
+
+* research: Audacity (AUD), ELAN (EAF), TextGrid;
+* digital publishing: SMIL for EPUB 3;
+* closed captioning: SubRip (SRT), SubViewer (SBV/SUB), TTML, WebVTT (VTT);
+* Web: JSON;
+* further processing: CSV, SSV, TSV, TXT, XML.
 
 
 ## System Requirements, Supported Platforms and Installation
@@ -70,7 +72,7 @@ or raw AUD/CSV/SSV/TSV/TXT/XML for further processing.
 **aeneas** has been developed and tested on **Debian 64bit**,
 which is the **only supported OS** at the moment.
 Nevertheless, **aeneas** has been confirmed to work on
-other Linux distributions, OS X, and Windows.
+other Linux distributions, Mac OS X, and Windows.
 See the
 [PLATFORMS file](https://github.com/readbeyond/aeneas/blob/master/wiki/PLATFORMS.md)
 for the details.
@@ -242,7 +244,7 @@ which explains how to use the built-in command line tools.
 * Automated detection of audio head/tail
 * Output an HTML file for fine tuning the sync map manually (`finetuneas` project)
 * Execution parameters tunable at runtime
-* Code suitable for Web app deployment (e.g., on-demand cloud computing)
+* Code suitable for Web app deployment (e.g., on-demand cloud computing instances)
 * Extensive test suite including 1,000+ unit/integration/performance tests, that run and must pass before each release
 
 
@@ -282,7 +284,7 @@ No copy rights were harmed in the making of this project.
 
 * **April 2016**: the Fruch Foundation kindly sponsored the development and documentation of v1.5.0
 
-* **December 2016**: the [Centro Internazionale Del Libro Parlato "Adriano Sernagiotto"](http://www.libroparlato.org/) (Feltre, BL, Italy) partially sponsored the development of v1.7.0
+* **December 2016**: the [Centro Internazionale Del Libro Parlato "Adriano Sernagiotto"](http://www.libroparlato.org/) (Feltre, Italy) partially sponsored the development of v1.7.0
 
 ### Supporting
 
@@ -293,8 +295,7 @@ I accept sponsorships to
 * fix bugs,
 * add new features,
 * improve the quality and the performance of the code,
-* port the code to other languages/platforms,
-* support of third party installations, and
+* port the code to other languages/platforms, and
 * improve the documentation.
 
 Feel free to

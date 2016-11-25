@@ -709,8 +709,12 @@ class TestGlobalFunctions(unittest.TestCase):
             (90, u"Z"),
             (0x20, u"\u0020"),
             (0x200, u"\u0200"),
-            (0x2000, u"\u2000")
+            (0x2000, u"\u2000"),
         ]
+        if gf.PY2:
+            tests.append((0x20000, "\\U00020000".decode("unicode-escape")))
+        else:
+            tests.append((0x20000, "\U00020000"))
         for test in tests:
             self.assertEqual(gf.safe_unichr(test[0]), test[1])
 

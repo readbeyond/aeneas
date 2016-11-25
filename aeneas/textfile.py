@@ -1221,6 +1221,15 @@ class TransliterationMap(Loggable):
 
     def transliterate(self, string):
         result = []
+        #
+        # NOTE on Python 2 narrow builds,
+        #      this iterator is not 100% correct
+        #      because an Unicode character above 0x10000
+        #      is "split" into two characters,
+        #      and hence it cannot be found as a key of the map
+        #
+        if gf.is_py2_narrow_build():
+            self.log_warn(u"Running on a Python 2 narrow build: be aware that Unicode chars above 0x10000 cannot be replaced correctly.")
         for char in string:
             try:
                 result.append(self.trans_map[char])
@@ -1233,6 +1242,8 @@ class TransliterationMap(Loggable):
         """
         Read the map file at path.
         """
+        if gf.is_py2_narrow_build():
+            self.log_warn(u"Running on a Python 2 narrow build: be aware that Unicode chars above 0x10000 cannot be replaced correctly.")
         self.trans_map = {}
         with io.open(self.file_path, "r", encoding="utf-8") as file_obj:
             contents = file_obj.read().replace(u"\t", u" ")

@@ -39,8 +39,8 @@ static PyObject *synthesize_multiple(PyObject *self, PyObject *args) {
     PyObject *fragments;
 
     char const *output_file_path;
-    float const quit_after;
-    int const backwards;
+    float quit_after = 0.0;
+    int backwards = 0;
     struct FRAGMENT_INFO *fragments_synt;
 
     int sample_rate; // int because espeak lib returns it as such

@@ -545,12 +545,16 @@ class TestTextFile(unittest.TestCase):
         self.filter_transliterate([u"TUTTE"], [u"wwwwE"])
 
     def test_filter_transliterate_replace_codepoint_length(self):
-        self.filter_transliterate([u"x" + u"\u0008" + u"z"], [u"xaz"])
-        self.filter_transliterate([u"x" + u"\u0088" + u"z"], [u"xaz"])
-        self.filter_transliterate([u"x" + u"\u0888" + u"z"], [u"xaz"])
-        self.filter_transliterate([u"x" + u"\u8888" + u"z"], [u"xaz"])
-        self.filter_transliterate([u"x" + u"\U00088888" + u"z"], [u"xaz"])
-        self.filter_transliterate([u"x" + u"\U00108888" + u"z"], [u"xaz"])
+        self.filter_transliterate([u"x" + gf.safe_unichr(0x0008) + u"z"], [u"xaz"])
+        self.filter_transliterate([u"x" + gf.safe_unichr(0x0088) + u"z"], [u"xaz"])
+        self.filter_transliterate([u"x" + gf.safe_unichr(0x0888) + u"z"], [u"xaz"])
+        self.filter_transliterate([u"x" + gf.safe_unichr(0x8888) + u"z"], [u"xaz"])
+        if gf.is_py2_narrow_build():
+            # NOTE Python 2 narrow builds cannot handle codepoints above 0x10000 correctly
+            pass
+        else:
+            self.filter_transliterate([u"x" + gf.safe_unichr(0x88888) + u"z"], [u"xaz"])
+            self.filter_transliterate([u"x" + gf.safe_unichr(0x108888) + u"z"], [u"xaz"])
 
 
 if __name__ == "__main__":

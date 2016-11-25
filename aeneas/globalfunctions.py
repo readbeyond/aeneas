@@ -776,6 +776,15 @@ def is_windows():
     return os.name == "nt"
 
 
+def is_py2_narrow_build():
+    """
+    Return ``True`` if running on a Python 2 narrow build.
+
+    :rtype: bool
+    """
+    return (PY2) and (sys.maxunicode == 65535)
+
+
 def fix_slash(path):
     """
     On non-POSIX OSes, change the slashes in ``path``
@@ -1171,7 +1180,9 @@ def safe_unichr(codepoint):
     :param int codepoint: the codepoint
     :rtype: string
     """
-    if PY2:
+    if is_py2_narrow_build():
+        return ("\\U%08x" % codepoint).decode("unicode-escape")
+    elif PY2:
         return unichr(codepoint)
     return chr(codepoint)
 

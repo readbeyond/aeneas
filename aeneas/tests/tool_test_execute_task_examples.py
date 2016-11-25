@@ -28,6 +28,11 @@ from aeneas.tools.execute_task import ExecuteTaskCLI
 import aeneas.globalfunctions as gf
 
 
+# TODO actually parse this file to know what extras
+#      (festival, speect, etc.) are available to test
+EXTRA_TESTS = os.path.exists(os.path.join(os.path.expanduser("~"), ".aeneas.conf"))
+
+
 class TestExecuteTaskCLI(unittest.TestCase):
 
     def execute(self, parameters, expected_exit_code):
@@ -60,9 +65,21 @@ class TestExecuteTaskCLI(unittest.TestCase):
         ], 0)
 
     def test_example_ctw_espeak(self):
+        if not EXTRA_TESTS:
+            return
         self.execute([
             ("", "--example-ctw-espeak")
         ], 0)
+
+    def test_example_ctw_speect(self):
+        if not EXTRA_TESTS:
+            return
+        # unable to run speect with Python 3,
+        # perform the test only on Python 2
+        if gf.PY2:
+            self.execute([
+                ("", "--example-ctw-speect")
+            ], 0)
 
     def test_example_eaf(self):
         self.execute([
@@ -75,6 +92,8 @@ class TestExecuteTaskCLI(unittest.TestCase):
         ], 0)
 
     def test_example_festival(self):
+        if not EXTRA_TESTS:
+            return
         self.execute([
             ("", "--example-festival")
         ], 0)
@@ -115,6 +134,8 @@ class TestExecuteTaskCLI(unittest.TestCase):
         ], 0)
 
     def test_example_multilevel_tts(self):
+        if not EXTRA_TESTS:
+            return
         self.execute([
             ("", "--example-multilevel-tts")
         ], 0)
@@ -205,6 +226,8 @@ class TestExecuteTaskCLI(unittest.TestCase):
         ], 0)
 
     def test_example_words_festival_cache(self):
+        if not EXTRA_TESTS:
+            return
         self.execute([
             ("", "--example-words-festival-cache")
         ], 0)
@@ -214,15 +237,6 @@ class TestExecuteTaskCLI(unittest.TestCase):
         self.execute([
             ("", "--example-youtube")
         ], 0)
-
-    # NOTE disabling this one as it requires speect
-    def zzz_test_example_ctw_speect(self):
-        # unable to run speect with Python 3,
-        # perform the test only on Python 2
-        if gf.PY2:
-            self.execute([
-                ("", "--example-ctw-speect")
-            ], 0)
 
 
 if __name__ == "__main__":
