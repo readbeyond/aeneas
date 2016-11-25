@@ -776,13 +776,13 @@ def is_windows():
     return os.name == "nt"
 
 
-def is_narrow_build():
+def is_py2_narrow_build():
     """
-    Return ``True`` if running on a Python narrow build.
+    Return ``True`` if running on a Python 2 narrow build.
 
     :rtype: bool
     """
-    return sys.maxunicode == 65535
+    return (PY2) and (sys.maxunicode == 65535)
 
 
 def fix_slash(path):
@@ -1180,12 +1180,10 @@ def safe_unichr(codepoint):
     :param int codepoint: the codepoint
     :rtype: string
     """
-    if PY2:
-        # COMMENTED return unichr(codepoint)
-        # NOTE the above does not work on Python narrow builds,
-        #      (e.g., Mac OS X brew python)
-        #      while the following works for both wide and narrow builds
+    if is_py2_narrow_build():
         return ("\\U%08x" % codepoint).decode("unicode-escape")
+    elif PY2:
+        return unichr(codepoint)
     return chr(codepoint)
 
 
