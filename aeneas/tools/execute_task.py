@@ -361,6 +361,15 @@ class ExecuteTaskCLI(AbstractCLIProgram):
             u"options": u"",
             u"show": True
         },
+        u"--example-words-multilevel": {
+            u"description": u"input: mplain text (multilevel), output: AUD, levels to output: 3",
+            u"audio": AUDIO_FILE,
+            u"text": gf.relative_path("res/mplain.txt", __file__),
+            u"config": u"task_language=eng|is_text_type=mplain|os_task_file_format=aud|os_task_file_levels=3",
+            u"syncmap": "output/sonnet.words.multilevel.aud",
+            u"options": u"",
+            u"show": False
+        },
         u"--example-words-festival-cache": {
             u"description": u"input: single word granularity plain text, output: AUD, tts engine: Festival, TTS cache on",
             u"audio": AUDIO_FILE,

@@ -284,6 +284,17 @@ class RuntimeConfiguration(Configuration):
     .. versionadded:: 1.4.1
     """
 
+    MFCC_MASK_NONSPEECH = "mfcc_mask_nonspeech"
+    """
+    If ``True``, computes the DTW path ignoring nonspeech frames.
+    Setting this parameter to ``True`` might help aligning
+    at word level granularity.
+
+    Default: ``False``.
+
+    .. versionadded:: 1.7.0
+    """
+
     MFCC_WINDOW_LENGTH = "mfcc_window_length"
     """
     Length of the window for extracting MFCCs, in seconds.
@@ -306,6 +317,16 @@ class RuntimeConfiguration(Configuration):
     .. versionadded:: 1.4.1
     """
 
+    MFCC_MASK_NONSPEECH_L1 = "mfcc_mask_nonspeech_l1"
+    """
+    If ``True``, computes the DTW path ignoring nonspeech frames
+    at level 1 (paragraph).
+
+    Default: ``False``.
+
+    .. versionadded:: 1.7.0
+    """
+
     MFCC_WINDOW_LENGTH_L1 = "mfcc_window_length_l1"
     """
     Length of the window, in seconds,
@@ -313,7 +334,7 @@ class RuntimeConfiguration(Configuration):
     It is usual to set it between 1.5 and 4 times
     the value of ``MFCC_WINDOW_SHIFT_L1``.
 
-    Default: ``0.500``.
+    Default: ``0.100``.
 
     .. versionadded:: 1.5.0
     """
@@ -325,9 +346,19 @@ class RuntimeConfiguration(Configuration):
     This parameter is basically the time step
     of the synchronization map output at level 1.
 
-    Default: ``0.200``.
+    Default: ``0.040``.
 
     .. versionadded:: 1.5.0
+    """
+
+    MFCC_MASK_NONSPEECH_L2 = "mfcc_mask_nonspeech_l2"
+    """
+    If ``True``, computes the DTW path ignoring nonspeech frames
+    at level 2 (sentence).
+
+    Default: ``False``.
+
+    .. versionadded:: 1.7.0
     """
 
     MFCC_WINDOW_LENGTH_L2 = "mfcc_window_length_l2"
@@ -337,7 +368,7 @@ class RuntimeConfiguration(Configuration):
     It is usual to set it between 1.5 and 4 times
     the value of ``MFCC_WINDOW_SHIFT_L2``.
 
-    Default: ``0.100``.
+    Default: ``0.050``.
 
     .. versionadded:: 1.5.0
     """
@@ -349,9 +380,19 @@ class RuntimeConfiguration(Configuration):
     This parameter is basically the time step
     of the synchronization map output at level 2.
 
-    Default: ``0.040``.
+    Default: ``0.020``.
 
     .. versionadded:: 1.5.0
+    """
+
+    MFCC_MASK_NONSPEECH_L3 = "mfcc_mask_nonspeech_l3"
+    """
+    If ``True``, computes the DTW path ignoring nonspeech frames
+    at level 3 (word).
+
+    Default: ``False``.
+
+    .. versionadded:: 1.7.0
     """
 
     MFCC_WINDOW_LENGTH_L3 = "mfcc_window_length_l3"
@@ -379,15 +420,62 @@ class RuntimeConfiguration(Configuration):
     """
 
     MFCC_GRANULARITY_MAP = {
-        1: (MFCC_WINDOW_LENGTH_L1, MFCC_WINDOW_SHIFT_L1),
-        2: (MFCC_WINDOW_LENGTH_L2, MFCC_WINDOW_SHIFT_L2),
-        3: (MFCC_WINDOW_LENGTH_L3, MFCC_WINDOW_SHIFT_L3),
+        1: (MFCC_MASK_NONSPEECH_L1, MFCC_WINDOW_LENGTH_L1, MFCC_WINDOW_SHIFT_L1),
+        2: (MFCC_MASK_NONSPEECH_L2, MFCC_WINDOW_LENGTH_L2, MFCC_WINDOW_SHIFT_L2),
+        3: (MFCC_MASK_NONSPEECH_L3, MFCC_WINDOW_LENGTH_L3, MFCC_WINDOW_SHIFT_L3),
     }
     """
-    Map level numbers to ``MFCC_WINDOW_LENGTH_*``
-    and ``MFCC_WINDOW_SHIFT_*`` keys.
+    Map level numbers to
+    ``MFCC_MASK_NONSPEECH_*``,
+    ``MFCC_WINDOW_LENGTH_*``,
+    and ``MFCC_WINDOW_SHIFT_*``
+    keys.
 
     .. versionadded:: 1.5.0
+    """
+
+    MFCC_MASK_EXTEND_SPEECH_INTERVAL_AFTER = "mfcc_mask_extend_speech_after"
+    """
+    Extend to the right (after/future)
+    a speech interval found by the VAD algorithm,
+    by this many frames, when masking nonspeech out.
+
+    Default: ``0``.
+
+    .. versionadded:: 1.7.0
+    """
+
+    MFCC_MASK_EXTEND_SPEECH_INTERVAL_BEFORE = "mfcc_mask_extend_speech_before"
+    """
+    Extend to the left (before/past)
+    a speech interval found by the VAD algorithm,
+    by this many frames, when masking nonspeech out.
+
+    Default: ``0``.
+
+    .. versionadded:: 1.7.0
+    """
+
+    MFCC_MASK_LOG_ENERGY_THRESHOLD = "mfcc_mask_log_energy_threshold"
+    """
+    Threshold for the VAD algorithm to decide
+    that a given frame contains speech, when masking nonspeech out.
+    Note that this is the log10 of the energy coefficient.
+
+    Default: ``0.699`` = ``log10(5)``, that is, a frame must have
+    an energy at least 5 times higher than the minimum
+    to be considered a speech frame.
+
+    .. versionadded:: 1.7.0
+    """
+
+    MFCC_MASK_MIN_NONSPEECH_LENGTH = "mfcc_mask_min_nonspeech_length"
+    """
+    Minimum length, in frames, of a nonspeech interval to be masked out.
+
+    Default: ``1``.
+
+    .. versionadded:: 1.7.0
     """
 
     NUANCE_TTS_API_ID = "nuance_tts_api_id"
@@ -764,13 +852,23 @@ class RuntimeConfiguration(Configuration):
         (MFCC_LOWER_FREQUENCY, (133.3333, float, [])),
         (MFCC_UPPER_FREQUENCY, (6855.4976, float, [])),
         (MFCC_EMPHASIS_FACTOR, (0.970, float, [])),
+
+        (MFCC_MASK_NONSPEECH, (False, bool, [])),
         (MFCC_WINDOW_LENGTH, ("0.100", TimeValue, [])),
         (MFCC_WINDOW_SHIFT, ("0.040", TimeValue, [])),
 
-        (MFCC_WINDOW_LENGTH_L1, ("0.500", TimeValue, [])),
-        (MFCC_WINDOW_SHIFT_L1, ("0.200", TimeValue, [])),
-        (MFCC_WINDOW_LENGTH_L2, ("0.100", TimeValue, [])),
-        (MFCC_WINDOW_SHIFT_L2, ("0.040", TimeValue, [])),
+        (MFCC_MASK_EXTEND_SPEECH_INTERVAL_AFTER, (0, int, [])),
+        (MFCC_MASK_EXTEND_SPEECH_INTERVAL_BEFORE, (0, int, [])),
+        (MFCC_MASK_LOG_ENERGY_THRESHOLD, (0.699, float, [])),
+        (MFCC_MASK_MIN_NONSPEECH_LENGTH, (1, int, [])),
+
+        (MFCC_MASK_NONSPEECH_L1, (False, bool, [])),
+        (MFCC_WINDOW_LENGTH_L1, ("0.100", TimeValue, [])),
+        (MFCC_WINDOW_SHIFT_L1, ("0.040", TimeValue, [])),
+        (MFCC_MASK_NONSPEECH_L2, (False, bool, [])),
+        (MFCC_WINDOW_LENGTH_L2, ("0.050", TimeValue, [])),
+        (MFCC_WINDOW_SHIFT_L2, ("0.020", TimeValue, [])),
+        (MFCC_MASK_NONSPEECH_L3, (False, bool, [])),
         (MFCC_WINDOW_LENGTH_L3, ("0.020", TimeValue, [])),
         (MFCC_WINDOW_SHIFT_L3, ("0.005", TimeValue, [])),
 
@@ -834,6 +932,17 @@ class RuntimeConfiguration(Configuration):
         return self[self.FFMPEG_SAMPLE_RATE]
 
     @property
+    def mmn(self):
+        """
+        Return the value of the
+        :data:`~aeneas.runtimeconfiguration.RuntimeConfiguration.MFCC_MASK_NONSPEECH`
+        key stored in this configuration object.
+
+        :rtype: bool
+        """
+        return self[self.MFCC_MASK_NONSPEECH]
+
+    @property
     def mws(self):
         """
         Return the value of the
@@ -894,7 +1003,8 @@ class RuntimeConfiguration(Configuration):
         :param int level: the desired granularity level
         """
         if level in self.MFCC_GRANULARITY_MAP.keys():
-            length_key, shift_key = self.MFCC_GRANULARITY_MAP[level]
+            mask_key, length_key, shift_key = self.MFCC_GRANULARITY_MAP[level]
+            self[self.MFCC_MASK_NONSPEECH] = self[mask_key]
             self[self.MFCC_WINDOW_LENGTH] = self[length_key]
             self[self.MFCC_WINDOW_SHIFT] = self[shift_key]
 

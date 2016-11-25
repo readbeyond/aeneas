@@ -581,10 +581,25 @@ class AudioFileMFCC(Loggable):
         self.is_reversed = not self.is_reversed
         self.log(u"Reversing...done")
 
-    def run_vad(self):
+    def run_vad(
+        self,
+        log_energy_threshold=None,
+        min_nonspeech_length=None,
+        extend_before=None,
+        extend_after=None
+    ):
         """
         Determine which frames contain speech and nonspeech,
         and store the resulting boolean mask internally.
+
+        The four parameters might be ``None``:
+        in this case, the corresponding RuntimeConfiguration values
+        are applied.
+
+        :param float log_energy_threshold: the minimum log energy threshold to consider a frame as speech
+        :param int min_nonspeech_length: the minimum length, in frames, of a nonspeech interval
+        :param int extend_before: extend each speech interval by this number of frames to the left (before)
+        :param int extend_after: extend each speech interval by this number of frames to the right (after)
         """
         def _compute_runs(array):
             """
@@ -601,7 +616,13 @@ class AudioFileMFCC(Loggable):
         self.log(u"Creating VAD object")
         vad = VAD(rconf=self.rconf, logger=self.logger)
         self.log(u"Running VAD...")
-        self.__mfcc_mask = vad.run_vad(self.__mfcc[0])
+        self.__mfcc_mask = vad.run_vad(
+            wave_energy=self.__mfcc[0],
+            log_energy_threshold=log_energy_threshold,
+            min_nonspeech_length=min_nonspeech_length,
+            extend_before=extend_before,
+            extend_after=extend_after
+        )
         self.__mfcc_mask_map = (numpy.where(self.__mfcc_mask))[0]
         self.log(u"Running VAD... done")
         self.log(u"Storing speech and nonspeech intervals...")
