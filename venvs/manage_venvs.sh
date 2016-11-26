@@ -190,6 +190,12 @@ fi
 EX=$1
 ACTION=$2
 
+# replace e.g. "venv_python2.7" with "python2.7"
+if [ "${EX:0:5}" == "venv_" ]
+then
+    EX=`echo ${EX:5} | tr -d "/"`
+fi
+
 # venv directory name
 D="venv_$EX"
 
