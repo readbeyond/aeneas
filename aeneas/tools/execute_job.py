@@ -32,9 +32,10 @@ from __future__ import print_function
 import sys
 
 from aeneas.executejob import ExecuteJob
+from aeneas.job import JobConfiguration
 from aeneas.runtimeconfiguration import RuntimeConfiguration
-from aeneas.validator import Validator
 from aeneas.tools.abstract_cli_program import AbstractCLIProgram
+from aeneas.validator import Validator
 import aeneas.globalfunctions as gf
 
 
@@ -49,11 +50,14 @@ class ExecuteJobCLI(AbstractCLIProgram):
     OUTPUT_DIRECTORY = "output/"
     CONFIG_STRING = u"is_hierarchy_type=flat|is_hierarchy_prefix=assets/|is_text_file_relative_path=.|is_text_file_name_regex=.*\.xhtml|is_text_type=unparsed|is_audio_file_relative_path=.|is_audio_file_name_regex=.*\.mp3|is_text_unparsed_id_regex=f[0-9]+|is_text_unparsed_id_sort=numeric|os_job_file_name=demo_sync_job_output|os_job_file_container=zip|os_job_file_hierarchy_type=flat|os_job_file_hierarchy_prefix=assets/|os_task_file_name=\\$PREFIX.xhtml.smil|os_task_file_format=smil|os_task_file_smil_page_ref=\\$PREFIX.xhtml|os_task_file_smil_audio_ref=../Audio/\\$PREFIX.mp3|job_language=eng|job_description=Demo Sync Job"
 
+    PARAMETERS = JobConfiguration.parameters(sort=True, as_strings=True)
+
     NAME = gf.file_name_without_extension(__file__)
 
     HELP = {
         "description": u"Execute a Job, passed as a container.",
         "synopsis": [
+            (u"--list-parameters", False),
             (u"CONTAINER OUTPUT_DIR [CONFIG_STRING]", True)
         ],
         "examples": [
@@ -73,8 +77,12 @@ class ExecuteJobCLI(AbstractCLIProgram):
 
         :rtype: int
         """
+        if self.has_option([u"--list-parameters"]):
+            return self.print_parameters()
+
         if len(self.actual_arguments) < 2:
             return self.print_help()
+
         container_path = self.actual_arguments[0]
         output_directory_path = self.actual_arguments[1]
         config_string = None
@@ -136,6 +144,14 @@ class ExecuteJobCLI(AbstractCLIProgram):
             self.print_error(u"%s" % exc)
 
         return self.ERROR_EXIT_CODE
+
+    def print_parameters(self):
+        """
+        Print the list of parameters and exit.
+        """
+        self.print_info(u"Available parameters:")
+        self.print_generic(u"\n" + u"\n".join(self.PARAMETERS) + u"\n")
+        return self.HELP_EXIT_CODE
 
 
 def main():

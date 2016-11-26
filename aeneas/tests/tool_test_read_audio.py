@@ -48,6 +48,7 @@ class TestReadAudioCLI(unittest.TestCase):
         self.execute([], 2)
         self.execute([("", "-h")], 2)
         self.execute([("", "--help")], 2)
+        self.execute([("", "--help-rconf")], 2)
         self.execute([("", "--version")], 2)
 
     def test_read_audio(self):

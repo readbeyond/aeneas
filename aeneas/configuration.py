@@ -35,6 +35,8 @@ from __future__ import absolute_import
 from __future__ import print_function
 from copy import deepcopy
 
+from aeneas.exacttiming import Decimal
+from aeneas.exacttiming import TimeValue
 import aeneas.globalconstants as gc
 import aeneas.globalfunctions as gf
 
@@ -68,12 +70,12 @@ class Configuration(object):
     FIELDS = [
         #
         # in subclasses, create fields like this:
-        # (field_name, (default_value, conversion_function, [alias1, alias2, ...]))
+        # (field_name, (default_value, conversion_function, [alias1, alias2, ...], human_description))
         #
         # examples:
-        # (gc.FOO, (None, None, ["foo"]))
-        # (gc.BAR, (0.0, float, ["bar", "barrr"]))
-        # (gc.BAZ, (None, TimeValue, ["baz"]))
+        # (gc.FOO, (None, None, ["foo"], u"path to foo"))
+        # (gc.BAR, (0.0, float, ["bar", "barrr"], u"bar threshold"))
+        # (gc.BAZ, (None, TimeValue, ["baz"], u"duration, in seconds, of baz"))
         #
     ]
     """
@@ -97,16 +99,22 @@ class Configuration(object):
         self.data = {}
         self.types = {}
         self.aliases = {}
+        self.desc = {}
         for (field, info) in self.FIELDS:
-            (fdefault, ftype, faliases) = info
+            (fdefault, ftype, faliases, fdesc) = info
             self.data[field] = fdefault
             self.types[field] = ftype
+            self.desc[field] = fdesc
             for alias in faliases:
                 self.aliases[alias] = field
 
         if config_string is not None:
             # strip leading/trailing " or ' characters
-            if (len(config_string) > 0) and (config_string[0] == config_string[-1]) and (config_string[0] in [u"\"", u"'"]):
+            if (
+                (len(config_string) > 0) and
+                (config_string[0] == config_string[-1]) and
+                (config_string[0] in [u"\"", u"'"])
+            ):
                 config_string = config_string[1:-1]
             # populate values from config_string,
             # ignoring keys not present in FIELDS
@@ -168,3 +176,39 @@ class Configuration(object):
         return (gc.CONFIG_STRING_SEPARATOR_SYMBOL).join(
             [u"%s%s%s" % (fn, gc.CONFIG_STRING_ASSIGNMENT_SYMBOL, self.data[fn]) for fn in sorted(self.data.keys()) if self.data[fn] is not None]
         )
+
+    @classmethod
+    def parameters(cls, sort=True, as_strings=False):
+        """
+        Return a list of tuples ``(field, description, type, default)``,
+        one for each field of the configuration.
+
+        :param bool sort: if ``True``, return the list sorted by field
+        :param bool as_strings: if ``True``, return formatted strings instead
+        :rtype: list
+        """
+        def cft(ftype, fdefault):
+            """ Convert field type and default value to string """
+            if ftype is None:
+                return u""
+            if ftype in [TimeValue, Decimal, float]:
+                cftype = u"float"
+                cfdefault = u"%.3f" % ftype(fdefault) if fdefault is not None else u"None"
+            elif ftype == int:
+                cftype = u"int"
+                cfdefault = u"%d" % ftype(fdefault) if fdefault is not None else u"None"
+            elif ftype == bool:
+                cftype = u"bool"
+                cfdefault = u"%s" % fdefault if fdefault is not None else u"None"
+            else:
+                cftype = u"unknown"
+                cfdefault = u"%s" % fdefault if fdefault is not None else u"None"
+            return u" (%s, %s)" % (cftype, cfdefault)
+
+        parameters = [(field, fdesc, ftype, fdefault) for (field, (fdefault, ftype, faliases, fdesc)) in cls.FIELDS]
+        if sort:
+            parameters = sorted(parameters)
+        if as_strings:
+            l = max([len(t[0]) for t in parameters])
+            parameters = [u"%s : %s%s" % (f.ljust(l), d, cft(t, df)) for (f, d, t, df) in parameters]
+        return parameters
