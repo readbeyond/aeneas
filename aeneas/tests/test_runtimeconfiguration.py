@@ -41,6 +41,10 @@ class TestRuntimeConfiguration(unittest.TestCase):
         rconf = RuntimeConfiguration()
         self.assertEqual(rconf.sample_rate, 16000)
 
+    def test_mmn(self):
+        rconf = RuntimeConfiguration()
+        self.assertEqual(rconf.mmn, False)
+
     def test_mws(self):
         rconf = RuntimeConfiguration()
         self.assertEqual(rconf.mws, TimeValue("0.040"))
@@ -60,12 +64,15 @@ class TestRuntimeConfiguration(unittest.TestCase):
     def test_set_granularity(self):
         rconf = RuntimeConfiguration()
         rconf.set_granularity(level=1)
-        self.assertEqual(rconf.mwl, TimeValue("0.500"))
-        self.assertEqual(rconf.mws, TimeValue("0.200"))
-        rconf.set_granularity(level=2)
+        self.assertEqual(rconf.mmn, False)
         self.assertEqual(rconf.mwl, TimeValue("0.100"))
         self.assertEqual(rconf.mws, TimeValue("0.040"))
+        rconf.set_granularity(level=2)
+        self.assertEqual(rconf.mmn, False)
+        self.assertEqual(rconf.mwl, TimeValue("0.050"))
+        self.assertEqual(rconf.mws, TimeValue("0.020"))
         rconf.set_granularity(level=3)
+        self.assertEqual(rconf.mmn, False)
         self.assertEqual(rconf.mwl, TimeValue("0.020"))
         self.assertEqual(rconf.mws, TimeValue("0.005"))
 
@@ -110,6 +117,7 @@ class TestRuntimeConfiguration(unittest.TestCase):
             (u"mfcc_lower_frequency=120.0", "mfcc_lower_frequency", 120.0),
             (u"mfcc_upper_frequency=5000.0", "mfcc_upper_frequency", 5000.0),
             (u"mfcc_emphasis_factor=1.0", "mfcc_emphasis_factor", 1.0),
+            (u"mfcc_mask_nonspeech=True", "mfcc_mask_nonspeech", True),
             (u"mfcc_window_length=0.360", "mfcc_window_length", TimeValue("0.360")),
             (u"mfcc_window_shift=0.160", "mfcc_window_shift", TimeValue("0.160")),
             (u"mfcc_window_length_l1=0.360", "mfcc_window_length_l1", TimeValue("0.360")),
@@ -118,6 +126,10 @@ class TestRuntimeConfiguration(unittest.TestCase):
             (u"mfcc_window_shift_l2=0.160", "mfcc_window_shift_l2", TimeValue("0.160")),
             (u"mfcc_window_length_l3=0.360", "mfcc_window_length_l3", TimeValue("0.360")),
             (u"mfcc_window_shift_l3=0.160", "mfcc_window_shift_l3", TimeValue("0.160")),
+            (u"mfcc_mask_extend_speech_after=1", "mfcc_mask_extend_speech_after", 1),
+            (u"mfcc_mask_extend_speech_before=1", "mfcc_mask_extend_speech_before", 1),
+            (u"mfcc_mask_log_energy_threshold=0.750", "mfcc_mask_log_energy_threshold", 0.750),
+            (u"mfcc_mask_min_nonspeech_length=5", "mfcc_mask_min_nonspeech_length", 5),
             (u"nuance_tts_api_id=foo", "nuance_tts_api_id", "foo"),
             (u"nuance_tts_api_key=bar", "nuance_tts_api_key", "bar"),
             (u"nuance_tts_api_sleep=5.000", "nuance_tts_api_sleep", TimeValue("5.000")),

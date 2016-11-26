@@ -134,6 +134,10 @@ class TestTask(unittest.TestCase):
         self.assertIsNone(task.sync_map_file_path)
         self.assertIsNone(task.sync_map_file_path_absolute)
 
+    def test_task_sync_map_leaves_empty(self):
+        task = Task()
+        self.assertEqual(len(task.sync_map_leaves()), 0)
+
     def test_set_audio_file_path_absolute(self):
         task = Task()
         task.audio_file_path_absolute = gf.absolute_path("res/container/job/assets/p001.mp3", __file__)
@@ -221,6 +225,14 @@ class TestTask(unittest.TestCase):
         self.assertIsNotNone(path)
         self.assertEqual(path, output_file_path)
         gf.delete_file(handler, output_file_path)
+
+    def test_task_sync_map_leaves(self):
+        task = Task()
+        task.configuration = TaskConfiguration()
+        task.configuration["language"] = Language.ENG
+        task.configuration["o_format"] = SyncMapFormat.TXT
+        task.sync_map = self.dummy_sync_map()
+        self.assertEqual(len(task.sync_map_leaves()), 3)
 
     def test_tc_custom_id(self):
         self.setter("custom_id", u"customid", u"customid")

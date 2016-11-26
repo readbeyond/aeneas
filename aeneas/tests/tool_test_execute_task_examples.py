@@ -71,16 +71,6 @@ class TestExecuteTaskCLI(unittest.TestCase):
             ("", "--example-ctw-espeak")
         ], 0)
 
-    def test_example_ctw_speect(self):
-        if not EXTRA_TESTS:
-            return
-        # unable to run speect with Python 3,
-        # perform the test only on Python 2
-        if gf.PY2:
-            self.execute([
-                ("", "--example-ctw-speect")
-            ], 0)
-
     def test_example_eaf(self):
         self.execute([
             ("", "--example-eaf")
@@ -225,6 +215,11 @@ class TestExecuteTaskCLI(unittest.TestCase):
             ("", "--example-words")
         ], 0)
 
+    def test_example_words_multilevel(self):
+        self.execute([
+            ("", "--example-words-multilevel")
+        ], 0)
+
     def test_example_words_festival_cache(self):
         if not EXTRA_TESTS:
             return
@@ -232,11 +227,20 @@ class TestExecuteTaskCLI(unittest.TestCase):
             ("", "--example-words-festival-cache")
         ], 0)
 
-    # NOTE disabling these ones as they require a network connection
+    # NOTE disabling this test since it requires a network connection
     def zzz_test_example_youtube(self):
         self.execute([
             ("", "--example-youtube")
         ], 0)
+
+    # NOTE disabling this test since it requires a speect voice
+    def zzz_test_example_ctw_speect(self):
+        # unable to run speect with Python 3,
+        # perform the test only on Python 2
+        if gf.PY2:
+            self.execute([
+                ("", "--example-ctw-speect")
+            ], 0)
 
 
 if __name__ == "__main__":

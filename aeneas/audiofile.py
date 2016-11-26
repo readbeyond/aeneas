@@ -37,15 +37,15 @@ from __future__ import division
 from __future__ import print_function
 import numpy
 
+from aeneas.exacttiming import TimeValue
+from aeneas.ffmpegwrapper import FFMPEGPathError
+from aeneas.ffmpegwrapper import FFMPEGWrapper
 from aeneas.ffprobewrapper import FFPROBEParsingError
 from aeneas.ffprobewrapper import FFPROBEPathError
 from aeneas.ffprobewrapper import FFPROBEUnsupportedFormatError
 from aeneas.ffprobewrapper import FFPROBEWrapper
-from aeneas.ffmpegwrapper import FFMPEGPathError
-from aeneas.ffmpegwrapper import FFMPEGWrapper
 from aeneas.logger import Loggable
 from aeneas.runtimeconfiguration import RuntimeConfiguration
-from aeneas.exacttiming import TimeValue
 from aeneas.wavfile import read as scipywavread
 from aeneas.wavfile import write as scipywavwrite
 import aeneas.globalfunctions as gf

@@ -37,8 +37,8 @@ import sys
 import tempfile
 import uuid
 
-import aeneas.globalconstants as gc
 from aeneas.exacttiming import TimeValue
+import aeneas.globalconstants as gc
 
 
 # RUNTIME CONSTANTS

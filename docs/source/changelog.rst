@@ -36,6 +36,13 @@ v1.7.0 (2016-12-??)
 #. Added more tool tests
 #. Added ``wiki/TESTING.md``
 #. Added ``venvs`` directory with scripts to automate testing with virtual environments
+#. Added ``RuntimeConfiguration`` parameters to switch MFCC masking on
+#. Modified ``DTWAligner``, ``AudioFileMFCC``, ``ExecuteTask``, and ``VAD`` to allow MFCC masking
+#. Added field human-readable descriptions in ``Configuration`` and its subclasses
+#. Better ``--list-parameters`` in ``ExecuteTask``
+#. Added ``--list-parameters`` in ``ExecuteJob``
+#. Added ``--help-rconf`` option to all tools
+#. Added check in ``ExecuteTask`` on the consistency of the computed sync map
 
 v1.6.0.1 (2016-09-30)
 ---------------------

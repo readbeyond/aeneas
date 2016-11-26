@@ -39,12 +39,12 @@ import numpy
 
 from aeneas.audiofilemfcc import AudioFileMFCC
 from aeneas.dtw import DTWAligner
+from aeneas.exacttiming import Decimal
+from aeneas.exacttiming import InvalidOperation
+from aeneas.exacttiming import TimeValue
 from aeneas.logger import Loggable
 from aeneas.runtimeconfiguration import RuntimeConfiguration
 from aeneas.synthesizer import Synthesizer
-from aeneas.exacttiming import Decimal
-from aeneas.exacttiming import TimeValue
-from aeneas.exacttiming import InvalidOperation
 import aeneas.globalfunctions as gf
 
 

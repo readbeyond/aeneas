@@ -258,51 +258,52 @@ class AdjustBoundaryAlgorithm(Loggable):
 
         :rtype: list of :class:`~aeneas.syncmap.SyncMapFragmentList`
         """
+        self.log(u"Called adjust")
         if boundary_indices is None:
-            raise TypeError(u"boundary_indices is None")
-        if (real_wave_mfcc is None) or (not isinstance(real_wave_mfcc, AudioFileMFCC)):
-            raise TypeError(u"real_wave_mfcc is None or not an AudioFileMFCC object")
-        if (text_file is None) or (not isinstance(text_file, TextFile)):
-            raise TypeError(u"text_file is None or not a TextFile object")
+            self.log_exc(u"boundary_indices is None", None, True, TypeError)
+        if not isinstance(real_wave_mfcc, AudioFileMFCC):
+            self.log_exc(u"real_wave_mfcc is not an AudioFileMFCC object", None, True, TypeError)
+        if not isinstance(text_file, TextFile):
+            self.log_exc(u"text_file is not a TextFile object", None, True, TypeError)
 
-        # save parameters
         self.mws = real_wave_mfcc.rconf.mws
         nozero = aba_parameters["nozero"]
         ns_min, ns_string = aba_parameters["nonspeech"]
         algorithm, algo_parameters = aba_parameters["algorithm"]
 
-        # convert boundary indices to time intervals
+        self.log(u"  Converting boundary indices to fragment list...")
         self.intervals_to_fragment_list(
             text_file=text_file,
             end=real_wave_mfcc.audio_length,
             boundary_indices=boundary_indices,
         )
-        smflist_copy = self.smflist.clone()
+        self.log(u"  Converting boundary indices to fragment list... done")
 
-        try:
-            # check no fragment has zero length, if requested
-            self._process_zero_length(nozero)
+        self.log(u"  Processing fragments with zero length...")
+        self._process_zero_length(nozero)
+        self.log(u"  Processing fragments with zero length... done")
 
-            # add nonspeech intervals, if any
-            self._process_long_nonspeech(ns_min, ns_string, real_wave_mfcc)
+        self.log(u"  Processing nonspeech fragments...")
+        self._process_long_nonspeech(ns_min, ns_string, real_wave_mfcc)
+        self.log(u"  Processing nonspeech fragments... done")
 
-            # adjust using the right algorithm
-            ALGORITHM_MAP = {
-                self.AFTERCURRENT: self._adjust_aftercurrent,
-                self.AUTO: self._adjust_auto,
-                self.BEFORENEXT: self._adjust_beforenext,
-                self.OFFSET: self._adjust_offset,
-                self.PERCENT: self._adjust_percent,
-                self.RATE: self._adjust_rate,
-                self.RATEAGGRESSIVE: self._adjust_rate_aggressive,
-            }
-            ALGORITHM_MAP[algorithm](real_wave_mfcc, algo_parameters)
-        except Exception as exc:
-            self.log_exc(u"An unexpected error occurred while running adjust, restoring smflist_copy", exc, False, None)
-            self.smflist = smflist_copy
+        self.log(u"  Adjusting...")
+        ALGORITHM_MAP = {
+            self.AFTERCURRENT: self._adjust_aftercurrent,
+            self.AUTO: self._adjust_auto,
+            self.BEFORENEXT: self._adjust_beforenext,
+            self.OFFSET: self._adjust_offset,
+            self.PERCENT: self._adjust_percent,
+            self.RATE: self._adjust_rate,
+            self.RATEAGGRESSIVE: self._adjust_rate_aggressive,
+        }
+        ALGORITHM_MAP[algorithm](real_wave_mfcc, algo_parameters)
+        self.log(u"  Adjusting... done")
 
-        # set HEAD/TAIL and remove NONSPEECH fragments and return
+        self.log(u"  Smoothing...")
         self._smooth_fragment_list(real_wave_mfcc.audio_length, ns_string)
+        self.log(u"  Smoothing... done")
+
         return self.smflist
 
     def intervals_to_fragment_list(self, text_file, end, boundary_indices=None, time_values=None):
@@ -344,13 +345,19 @@ class AdjustBoundaryAlgorithm(Loggable):
             fragment_type=SyncMapFragment.HEAD
         ), sort=False)
         self.log(u"  Creating REGULAR fragments")
+        # NOTE text_file.fragments() returns a list,
+        #      so we cache a copy here instead of
+        #      calling it once per loop
+        fragments = text_file.fragments
         for i in range(1, len(times) - 2):
+            self.log([u"    Adding fragment %d ...", i])
             self.smflist.add(SyncMapFragment(
-                text_fragment=text_file.fragments[i - 1],
+                text_fragment=fragments[i - 1],
                 begin=times[i],
                 end=times[i + 1],
                 fragment_type=SyncMapFragment.REGULAR
             ), sort=False)
+            self.log([u"    Adding fragment %d ... done", i])
         self.log(u"  Creating TAIL fragment")
         self.smflist.add(SyncMapFragment(
             text_fragment=TextFragment(identifier=u"TAIL"),
@@ -372,8 +379,8 @@ class AdjustBoundaryAlgorithm(Loggable):
         :param sync_root: the root of the sync map tree to which the new nodes should be appended
         :type  sync_root: :class:`~aeneas.tree.Tree`
         """
-        if (sync_root is None) or (not isinstance(sync_root, Tree)):
-            raise TypeError(u"sync_root is None or not a Tree object")
+        if not isinstance(sync_root, Tree):
+            self.log_exc(u"sync_root is not a Tree object", None, True, TypeError)
 
         self.log(u"Appending fragment list to sync root...")
         for fragment in self.smflist:

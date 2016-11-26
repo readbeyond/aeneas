@@ -188,7 +188,10 @@ class ExecuteTask(Loggable):
         try:
             # load audio file, extract MFCCs from real wave, clear audio file
             self._step_begin(u"extract MFCC real wave")
-            real_wave_mfcc = self._extract_mfcc(file_path=self.task.audio_file_path_absolute, file_format=None)
+            real_wave_mfcc = self._extract_mfcc(
+                file_path=self.task.audio_file_path_absolute,
+                file_format=None,
+            )
             self._step_end()
 
             # compute head and/or tail and set it
@@ -200,12 +203,18 @@ class ExecuteTask(Loggable):
             # compute alignment, outputting a tree of time intervals
             self._set_synthesizer()
             sync_root = Tree()
-            self._execute_inner(real_wave_mfcc, self.task.text_file, sync_root=sync_root, force_aba_auto=False, log=True)
+            self._execute_inner(
+                real_wave_mfcc,
+                self.task.text_file,
+                sync_root=sync_root,
+                force_aba_auto=False,
+                log=True
+            )
             self._clear_cache_synthesizer()
 
             # create syncmap and add it to task
             self._step_begin(u"create sync map")
-            self.task.sync_map = SyncMap(tree=sync_root, rconf=self.rconf, logger=self.logger)
+            self._create_sync_map(sync_root=sync_root)
             self._step_end()
 
             # log total
@@ -228,8 +237,9 @@ class ExecuteTask(Loggable):
         force_aba_autos = [None, False, False, True]
         for i in range(1, len(level_rconfs)):
             level_rconfs[i].set_granularity(i)
-            self.log([u"Level %d mws: %.3f", i, level_rconfs[i].mws])
+            self.log([u"Level %d mmn: %s", i, level_rconfs[i].mmn])
             self.log([u"Level %d mwl: %.3f", i, level_rconfs[i].mwl])
+            self.log([u"Level %d mws: %.3f", i, level_rconfs[i].mws])
             level_rconfs[i].set_tts(i)
             self.log([u"Level %d tts: %s", i, level_rconfs[i].tts])
             self.log([u"Level %d tts_path: %s", i, level_rconfs[i].tts_path])
@@ -269,13 +279,19 @@ class ExecuteTask(Loggable):
             for i in range(1, number_levels):
                 self._step_begin(u"compute alignment level %d" % i)
                 self.rconf = level_rconfs[i]
-                text_files, sync_roots = self._execute_level(i, level_mfccs[i], text_files, sync_roots, force_aba_autos[i])
+                text_files, sync_roots = self._execute_level(
+                    level=i,
+                    audio_file_mfcc=level_mfccs[i],
+                    text_files=text_files,
+                    sync_roots=sync_roots,
+                    force_aba_auto=force_aba_autos[i],
+                )
                 self._step_end()
 
             # restore original rconf, and create syncmap and add it to task
             self._step_begin(u"create sync map")
             self.rconf = orig_rconf
-            self.task.sync_map = SyncMap(tree=sync_root, rconf=self.rconf, logger=self.logger)
+            self._create_sync_map(sync_root=sync_root)
             self._step_end()
 
             self._step_total()
@@ -299,7 +315,7 @@ class ExecuteTask(Loggable):
         :param list sync_roots: a list of :class:`~aeneas.tree.Tree` objects,
                                 each representing a SyncMapFragment tree,
                                 one for each element in ``text_files``
-        :param bool force_aba_auto: if ``True``, do not run aba algorithm
+        :param bool force_aba_auto: if ``True``, force using the AUTO ABA algorithm
         :rtype: (list, list)
         """
         self._set_synthesizer()
@@ -322,7 +338,13 @@ class ExecuteTask(Loggable):
                     audio_file_mfcc.set_head_middle_tail(head_length=begin, middle_length=(end - begin))
                 else:
                     self.log(u"  No begin or end to set")
-                self._execute_inner(audio_file_mfcc, text_file, sync_root=sync_root, force_aba_auto=force_aba_auto, log=False)
+                self._execute_inner(
+                    audio_file_mfcc,
+                    text_file,
+                    sync_root=sync_root,
+                    force_aba_auto=force_aba_auto,
+                    log=False
+                )
             # store next level roots
             next_level_text_files.extend(text_file.children_not_empty)
             # we added head and tail, we must not pass them to the next level
@@ -359,7 +381,10 @@ class ExecuteTask(Loggable):
         self._step_end(log=log)
 
         self._step_begin(u"extract MFCC synt wave", log=log)
-        synt_wave_mfcc = self._extract_mfcc(file_path=synt_path, file_format=synt_format)
+        synt_wave_mfcc = self._extract_mfcc(
+            file_path=synt_path,
+            file_format=synt_format,
+        )
         gf.delete_file(synt_handler, synt_path)
         self._step_end(log=log)
 
@@ -408,13 +433,23 @@ class ExecuteTask(Loggable):
 
         :rtype: :class:`~aeneas.audiofilemfcc.AudioFileMFCC`
         """
-        return AudioFileMFCC(
+        audio_file_mfcc = AudioFileMFCC(
             file_path=file_path,
             file_format=file_format,
             audio_file=audio_file,
             rconf=self.rconf,
             logger=self.logger
         )
+        if self.rconf.mmn:
+            self.log(u"Running VAD inside _extract_mfcc...")
+            audio_file_mfcc.run_vad(
+                log_energy_threshold=self.rconf[RuntimeConfiguration.MFCC_MASK_LOG_ENERGY_THRESHOLD],
+                min_nonspeech_length=self.rconf[RuntimeConfiguration.MFCC_MASK_MIN_NONSPEECH_LENGTH],
+                extend_before=self.rconf[RuntimeConfiguration.MFCC_MASK_EXTEND_SPEECH_INTERVAL_BEFORE],
+                extend_after=self.rconf[RuntimeConfiguration.MFCC_MASK_EXTEND_SPEECH_INTERVAL_AFTER]
+            )
+            self.log(u"Running VAD inside _extract_mfcc... done")
+        return audio_file_mfcc
 
     def _compute_head_process_tail(self, audio_file_mfcc):
         """
@@ -505,7 +540,12 @@ class ExecuteTask(Loggable):
         Return a list of boundary indices.
         """
         self.log(u"Creating DTWAligner...")
-        aligner = DTWAligner(real_wave_mfcc, synt_wave_mfcc, rconf=self.rconf, logger=self.logger)
+        aligner = DTWAligner(
+            real_wave_mfcc,
+            synt_wave_mfcc,
+            rconf=self.rconf,
+            logger=self.logger
+        )
         self.log(u"Creating DTWAligner... done")
         self.log(u"Computing boundary indices...")
         boundary_indices = aligner.compute_boundaries(synt_anchors)
@@ -553,3 +593,18 @@ class ExecuteTask(Loggable):
             time_values=[TimeValue("0.000"), interval.begin, interval.end, end],
         )
         aba.append_fragment_list_to_sync_root(sync_root=sync_root)
+
+    def _create_sync_map(self, sync_root):
+        """
+        If requested, check that the computed sync map is consistent.
+        Then, add it to the Task.
+        """
+        sync_map = SyncMap(tree=sync_root, rconf=self.rconf, logger=self.logger)
+        if self.rconf.safety_checks:
+            self.log(u"Running sanity check on computed sync map...")
+            if not sync_map.leaves_are_consistent:
+                self._step_failure(ValueError(u"The computed sync map contains inconsistent fragments"))
+            self.log(u"Running sanity check on computed sync map... passed")
+        else:
+            self.log(u"Not running sanity check on computed sync map")
+        self.task.sync_map = sync_map

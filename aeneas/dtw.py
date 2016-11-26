@@ -194,8 +194,19 @@ class DTWAligner(Loggable):
         self.log(u"Translating path to full wave indices...")
         real_indices = numpy.array([t[0] for t in wave_path])
         synt_indices = numpy.array([t[1] for t in wave_path])
-        # TODO this depends whether we are masking or not
-        real_indices += self.real_wave_mfcc.head_length
+        if self.rconf.mmn:
+            self.log(u"Translating real indices with masked_middle_map...")
+            real_indices = self.real_wave_mfcc.masked_middle_map[real_indices]
+            real_indices[0] = self.real_wave_mfcc.head_length
+            self.log(u"Translating real indices with masked_middle_map... done")
+            self.log(u"Translating synt indices with masked_middle_map...")
+            synt_indices = self.synt_wave_mfcc.masked_middle_map[synt_indices]
+            self.log(u"Translating synt indices with masked_middle_map... done")
+        else:
+            self.log(u"Translating real indices by adding head_length...")
+            real_indices += self.real_wave_mfcc.head_length
+            self.log(u"Translating real indices by adding head_length... done")
+            self.log(u"Nothing to do with synt indices")
         self.log(u"Translating path to full wave indices... done")
         return (real_indices, synt_indices)
 
@@ -235,7 +246,9 @@ class DTWAligner(Loggable):
         if samples_per_mws.is_integer:
             anchor_indices = numpy.array([int(a[0] / mws) for a in synt_anchors])
         else:
+            #
             # NOTE this is not elegant, but it saves the day for the user
+            #
             self.log_warn(u"The number of samples in each window shift is not an integer, time drift might occur.")
             anchor_indices = numpy.array([(int(a[0] * sample_rate / mws) / sample_rate) for a in synt_anchors])
         #
@@ -286,21 +299,31 @@ class DTWAligner(Loggable):
                 self.log(u"Selecting EXACT algorithm")
                 algorithm = DTWAlgorithm.EXACT
 
+        # select mask here
+        if self.rconf.mmn:
+            self.log(u"Using masked MFCC")
+            real_mfcc = self.real_wave_mfcc.masked_middle_mfcc
+            synt_mfcc = self.synt_wave_mfcc.masked_middle_mfcc
+        else:
+            self.log(u"Using unmasked MFCC")
+            real_mfcc = self.real_wave_mfcc.middle_mfcc
+            synt_mfcc = self.synt_wave_mfcc.middle_mfcc
+
         # execute the selected algorithm
         if algorithm == DTWAlgorithm.EXACT:
             self.log(u"Computing with EXACT algo")
             dtw = DTWExact(
-                self.real_wave_mfcc.middle_mfcc,
-                self.synt_wave_mfcc.middle_mfcc,
+                m1=real_mfcc,
+                m2=synt_mfcc,
                 rconf=self.rconf,
                 logger=self.logger
             )
         else:
             self.log(u"Computing with STRIPE algo")
             dtw = DTWStripe(
-                self.real_wave_mfcc.middle_mfcc,
-                self.synt_wave_mfcc.middle_mfcc,
-                delta,
+                m1=real_mfcc,
+                m2=synt_mfcc,
+                delta=delta,
                 rconf=self.rconf,
                 logger=self.logger
             )

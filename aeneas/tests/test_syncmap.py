@@ -32,6 +32,7 @@ from aeneas.syncmap import SyncMapFormat
 from aeneas.syncmap import SyncMapFragment
 from aeneas.syncmap import SyncMapMissingParameterError
 from aeneas.textfile import TextFragment
+from aeneas.tree import Tree
 import aeneas.globalconstants as gc
 import aeneas.globalfunctions as gf
 
@@ -72,6 +73,192 @@ class TestSyncMap(unittest.TestCase):
         syn = SyncMap()
         self.assertEqual(len(syn), 0)
 
+    def test_constructor_none(self):
+        syn = SyncMap(tree=None)
+        self.assertEqual(len(syn), 0)
+
+    def test_constructor_invalid(self):
+        with self.assertRaises(TypeError):
+            syn = SyncMap(tree=[])
+
+    def test_fragments_tree_not_given(self):
+        syn = SyncMap()
+        self.assertEqual(len(syn.fragments_tree), 0)
+
+    def test_fragments_tree_empty(self):
+        tree = Tree()
+        syn = SyncMap(tree=tree)
+        self.assertEqual(len(syn.fragments_tree), 0)
+
+    def test_fragments_tree_not_empty(self):
+        smf = SyncMapFragment()
+        child = Tree(value=smf)
+        tree = Tree()
+        tree.add_child(child)
+        syn = SyncMap(tree=tree)
+        self.assertEqual(len(syn.fragments_tree), 1)
+
+    def test_is_single_level_true_empty(self):
+        syn = SyncMap()
+        self.assertTrue(syn.is_single_level)
+
+    def test_is_single_level_true_not_empty(self):
+        smf = SyncMapFragment()
+        child = Tree(value=smf)
+        tree = Tree()
+        tree.add_child(child)
+        syn = SyncMap(tree=tree)
+        self.assertTrue(syn.is_single_level)
+
+    def test_is_single_level_false(self):
+        smf2 = SyncMapFragment()
+        child2 = Tree(value=smf2)
+        smf = SyncMapFragment()
+        child = Tree(value=smf)
+        child.add_child(child2)
+        tree = Tree()
+        tree.add_child(child)
+        syn = SyncMap(tree=tree)
+        self.assertFalse(syn.is_single_level)
+
+    def test_fragments_empty(self):
+        syn = SyncMap()
+        self.assertEqual(len(syn.fragments), 0)
+
+    def test_fragments(self):
+        syn = self.read("txt")
+        self.assertTrue(len(syn.fragments) > 0)
+
+    def test_leaves_empty(self):
+        syn = SyncMap()
+        self.assertEqual(len(syn.leaves()), 0)
+
+    def test_leaves(self):
+        syn = self.read("txt")
+        self.assertTrue(len(syn.leaves()) > 0)
+
+    def test_json_string(self):
+        syn = self.read("txt")
+        self.assertTrue(len(syn.json_string) > 0)
+
+    def test_clear(self):
+        syn = self.read("txt")
+        self.assertEqual(len(syn), 15)
+        syn.clear()
+        self.assertEqual(len(syn), 0)
+
+    def test_clone(self):
+        syn = self.read("txt")
+        text_first_fragment = syn.fragments[0].text
+        syn2 = syn.clone()
+        syn2.fragments[0].text_fragment.lines = [u"foo"]
+        text_first_fragment2 = syn2.fragments[0].text
+        self.assertEqual(syn.fragments[0].text, text_first_fragment)
+        self.assertNotEqual(syn2.fragments[0].text, text_first_fragment)
+        self.assertEqual(syn2.fragments[0].text, text_first_fragment2)
+
+    def test_has_adjacent_leaves_only_empty(self):
+        syn = SyncMap()
+        self.assertTrue(syn.has_adjacent_leaves_only)
+
+    def test_has_adjacent_leaves_only_not_empty(self):
+        syn = self.read("txt")
+        self.assertTrue(syn.has_adjacent_leaves_only)
+
+    def test_has_adjacent_leaves_only(self):
+        params = [
+            ([("0.000", "0.000"), ("0.000", "0.000")], True),
+            ([("0.000", "0.000"), ("0.000", "1.000")], True),
+            ([("0.000", "1.000"), ("1.000", "1.000")], True),
+            ([("0.000", "1.000"), ("1.000", "2.000")], True),
+            ([("0.000", "0.000"), ("1.000", "1.000")], False),
+            ([("0.000", "0.000"), ("1.000", "2.000")], False),
+            ([("0.000", "1.000"), ("2.000", "2.000")], False),
+            ([("0.000", "1.000"), ("2.000", "3.000")], False),
+        ]
+        for l, exp in params:
+            tree = Tree()
+            for b, e in l:
+                interval = TimeInterval(begin=TimeValue(b), end=TimeValue(e))
+                smf = SyncMapFragment(interval=interval)
+                child = Tree(value=smf)
+                tree.add_child(child, as_last=True)
+            syn = SyncMap(tree=tree)
+            self.assertEqual(syn.has_adjacent_leaves_only, exp)
+
+    def test_has_zero_length_leaves_empty(self):
+        syn = SyncMap()
+        self.assertFalse(syn.has_zero_length_leaves)
+
+    def test_has_zero_length_leaves_not_empty(self):
+        syn = self.read("txt")
+        self.assertFalse(syn.has_zero_length_leaves)
+
+    def test_has_zero_length_leaves(self):
+        params = [
+            ([("0.000", "0.000"), ("0.000", "0.000")], True),
+            ([("0.000", "0.000"), ("0.000", "1.000")], True),
+            ([("0.000", "1.000"), ("1.000", "1.000")], True),
+            ([("0.000", "1.000"), ("1.000", "2.000")], False),
+            ([("0.000", "0.000"), ("1.000", "1.000")], True),
+            ([("0.000", "0.000"), ("1.000", "2.000")], True),
+            ([("0.000", "1.000"), ("2.000", "2.000")], True),
+            ([("0.000", "1.000"), ("2.000", "3.000")], False),
+        ]
+        for l, exp in params:
+            tree = Tree()
+            for b, e in l:
+                interval = TimeInterval(begin=TimeValue(b), end=TimeValue(e))
+                smf = SyncMapFragment(interval=interval)
+                child = Tree(value=smf)
+                tree.add_child(child, as_last=True)
+            syn = SyncMap(tree=tree)
+            self.assertEqual(syn.has_zero_length_leaves, exp)
+
+    def test_leaves_are_consistent_empty(self):
+        syn = SyncMap()
+        self.assertTrue(syn.leaves_are_consistent)
+
+    def test_leaves_are_consistent_not_empty(self):
+        syn = self.read("txt")
+        self.assertTrue(syn.leaves_are_consistent)
+
+    def test_leaves_are_consistent(self):
+        params = [
+            ([("0.000", "0.000"), ("0.000", "0.000")], True),
+            ([("0.000", "0.000"), ("0.000", "1.000")], True),
+            ([("0.000", "1.000"), ("1.000", "1.000")], True),
+            ([("0.000", "1.000"), ("1.000", "2.000")], True),
+            ([("0.000", "0.000"), ("1.000", "1.000")], True),
+            ([("0.000", "0.000"), ("1.000", "2.000")], True),
+            ([("0.000", "1.000"), ("2.000", "2.000")], True),
+            ([("0.000", "1.000"), ("2.000", "3.000")], True),
+            ([("0.000", "1.000"), ("1.000", "1.000"), ("1.000", "2.000")], True),
+            ([("0.000", "1.000"), ("1.000", "1.000"), ("2.000", "2.000")], True),
+            ([("0.000", "1.000"), ("2.000", "3.000"), ("1.500", "1.500")], True),
+            ([("0.000", "1.000"), ("2.000", "3.000"), ("1.500", "1.750")], True),
+            ([("0.000", "1.000"), ("1.040", "2.000")], True),
+            ([("0.000", "1.000"), ("0.000", "0.500")], False),
+            ([("0.000", "1.000"), ("0.000", "1.000")], False),
+            ([("0.000", "1.000"), ("0.000", "1.500")], False),
+            ([("0.000", "1.000"), ("0.500", "0.500")], False),
+            ([("0.000", "1.000"), ("0.500", "0.750")], False),
+            ([("0.000", "1.000"), ("0.500", "1.000")], False),
+            ([("0.000", "1.000"), ("0.500", "1.500")], False),
+            ([("0.000", "1.000"), ("2.000", "2.000"), ("1.500", "2.500")], False),
+            ([("0.000", "1.000"), ("2.000", "3.000"), ("1.500", "2.500")], False),
+            ([("0.000", "1.000"), ("0.960", "2.000")], False),
+        ]
+        for l, exp in params:
+            tree = Tree()
+            for b, e in l:
+                interval = TimeInterval(begin=TimeValue(b), end=TimeValue(e))
+                smf = SyncMapFragment(interval=interval)
+                child = Tree(value=smf)
+                tree.add_child(child, as_last=True)
+            syn = SyncMap(tree=tree)
+            self.assertEqual(syn.leaves_are_consistent, exp)
+
     def test_append_none(self):
         syn = SyncMap()
         with self.assertRaises(TypeError):
@@ -97,30 +284,6 @@ class TestSyncMap(unittest.TestCase):
         with self.assertRaises(OSError):
             syn.read(SyncMapFormat.SRT, self.NOT_EXISTING_SRT)
 
-    def test_read(self):
-        for fmt in SyncMapFormat.ALLOWED_VALUES:
-            syn = self.read(fmt)
-            self.assertEqual(len(syn), 15)
-            ignored = str(syn)
-
-    def test_read_m(self):
-        for fmt in SyncMapFormat.ALLOWED_VALUES:
-            syn = self.read(fmt, multiline=True)
-            self.assertEqual(len(syn), 15)
-            ignored = str(syn)
-
-    def test_read_u(self):
-        for fmt in SyncMapFormat.ALLOWED_VALUES:
-            syn = self.read(fmt, utf8=True)
-            self.assertEqual(len(syn), 15)
-            ignored = str(syn)
-
-    def test_read_mu(self):
-        for fmt in SyncMapFormat.ALLOWED_VALUES:
-            syn = self.read(fmt, multiline=True, utf8=True)
-            self.assertEqual(len(syn), 15)
-            ignored = str(syn)
-
     def test_write_none(self):
         syn = SyncMap()
         with self.assertRaises(ValueError):
@@ -135,22 +298,6 @@ class TestSyncMap(unittest.TestCase):
         syn = SyncMap()
         with self.assertRaises(OSError):
             syn.write(SyncMapFormat.SRT, self.NOT_WRITEABLE_SRT)
-
-    def test_write(self):
-        for fmt in SyncMapFormat.ALLOWED_VALUES:
-            self.write(fmt)
-
-    def test_write_m(self):
-        for fmt in SyncMapFormat.ALLOWED_VALUES:
-            self.write(fmt, multiline=True)
-
-    def test_write_u(self):
-        for fmt in SyncMapFormat.ALLOWED_VALUES:
-            self.write(fmt, utf8=True)
-
-    def test_write_mu(self):
-        for fmt in SyncMapFormat.ALLOWED_VALUES:
-            self.write(fmt, multiline=True, utf8=True)
 
     def test_write_smil_no_both(self):
         fmt = SyncMapFormat.SMIL
