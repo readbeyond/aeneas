@@ -238,8 +238,8 @@ class ExecuteTask(Loggable):
         for i in range(1, len(level_rconfs)):
             level_rconfs[i].set_granularity(i)
             self.log([u"Level %d mmn: %s", i, level_rconfs[i].mmn])
-            self.log([u"Level %d mws: %.3f", i, level_rconfs[i].mws])
             self.log([u"Level %d mwl: %.3f", i, level_rconfs[i].mwl])
+            self.log([u"Level %d mws: %.3f", i, level_rconfs[i].mws])
             level_rconfs[i].set_tts(i)
             self.log([u"Level %d tts: %s", i, level_rconfs[i].tts])
             self.log([u"Level %d tts_path: %s", i, level_rconfs[i].tts_path])

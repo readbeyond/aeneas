@@ -35,11 +35,11 @@ from __future__ import print_function
 import numpy
 
 from aeneas.audiofile import AudioFile
+from aeneas.exacttiming import TimeInterval
+from aeneas.exacttiming import TimeValue
 from aeneas.logger import Loggable
 from aeneas.mfcc import MFCC
 from aeneas.runtimeconfiguration import RuntimeConfiguration
-from aeneas.exacttiming import TimeInterval
-from aeneas.exacttiming import TimeValue
 from aeneas.vad import VAD
 import aeneas.globalfunctions as gf
 

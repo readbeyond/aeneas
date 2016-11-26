@@ -35,10 +35,10 @@ import os
 from aeneas.adjustboundaryalgorithm import AdjustBoundaryAlgorithm
 from aeneas.audiofile import AudioFile
 from aeneas.configuration import Configuration
-from aeneas.logger import Loggable
-from aeneas.textfile import TextFile
 from aeneas.exacttiming import Decimal
 from aeneas.exacttiming import TimeValue
+from aeneas.logger import Loggable
+from aeneas.textfile import TextFile
 import aeneas.globalconstants as gc
 import aeneas.globalfunctions as gf
 

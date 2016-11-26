@@ -47,9 +47,9 @@ import io
 import subprocess
 import sys
 
+from aeneas.exacttiming import TimeValue
 from aeneas.logger import Loggable
 from aeneas.runtimeconfiguration import RuntimeConfiguration
-from aeneas.exacttiming import TimeValue
 import aeneas.globalfunctions as gf
 
 
