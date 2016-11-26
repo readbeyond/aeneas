@@ -78,7 +78,7 @@ Clearly, you can also manipulate objects programmatically.
         ExecuteTask(task).execute()
 
         # print fragments with a duration < 5 seconds
-        for fragment in task.sync_map_vleaves:
+        for fragment in task.sync_map_leaves():
             if fragment.length < 5.0:
                 print(fragment)
 

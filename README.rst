@@ -5,7 +5,7 @@ aeneas
 synchronize audio and text (aka forced alignment).
 
 -  Version: 1.7.0
--  Date: 2016-12-??
+-  Date: 2016-12-07
 -  Developed by: `ReadBeyond <http://www.readbeyond.it/>`__
 -  Lead Developer: `Alberto Pettarin <http://www.albertopettarin.it/>`__
 -  License: the GNU Affero General Public License Version 3 (AGPL v3)
@@ -256,8 +256,8 @@ Supported Features
 -  Download audio from a YouTube video
 -  In multilevel mode, recursive alignment from paragraph to sentence to
    word level
--  In multilevel mode, time resolution and/or TTS engine can be
-   specified for each level independently
+-  In multilevel mode, MFCC resolution, MFCC masking, DTW margin, and
+   TTS engine can be specified for each level independently
 -  Robust against misspelled/mispronounced words, local rearrangements
    of words, background noise/sporadic spikes
 -  Adjustable splitting times, including a max character/second

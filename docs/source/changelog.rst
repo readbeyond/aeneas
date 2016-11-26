@@ -36,13 +36,15 @@ v1.7.0 (2016-12-??)
 #. Added more tool tests
 #. Added ``wiki/TESTING.md``
 #. Added ``venvs`` directory with scripts to automate testing with virtual environments
-#. Added ``RuntimeConfiguration`` parameters to switch MFCC masking on
+#. Added ``RuntimeConfiguration`` parameters to switch MFCC masking on, including per level in multilevel tasks
 #. Modified ``DTWAligner``, ``AudioFileMFCC``, ``ExecuteTask``, and ``VAD`` to allow MFCC masking
 #. Added field human-readable descriptions in ``Configuration`` and its subclasses
 #. Better ``--list-parameters`` in ``ExecuteTask``
 #. Added ``--list-parameters`` in ``ExecuteJob``
 #. Added ``--help-rconf`` option to all tools
 #. Added check in ``ExecuteTask`` on the consistency of the computed sync map
+#. Added ``RuntimeConfiguration`` parameters ``DTW_MARGIN_L1``, ``DTW_MARGIN_L2``, ``DTW_MARGIN_L3``, to change DTW margin of each level
+#. Added ``FFMPEG_PARAMETERS_SAMPLE_48000`` to ``ffmpegwrapper.py``
 
 v1.6.0.1 (2016-09-30)
 ---------------------

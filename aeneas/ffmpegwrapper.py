@@ -72,6 +72,9 @@ class FFMPEGWrapper(Loggable):
     FFMPEG_SAMPLE_44100 = ["-ar", "44100"]
     """ Single parameter for ``ffmpeg``: 44100 Hz sampling """
 
+    FFMPEG_SAMPLE_48000 = ["-ar", "48000"]
+    """ Single parameter for ``ffmpeg``: 48000 Hz sampling """
+
     FFMPEG_MONO = ["-ac", "1"]
     """ Single parameter for ``ffmpeg``: mono (1 channel) """
 
@@ -134,11 +137,21 @@ class FFMPEGWrapper(Loggable):
     )
     """ Set of parameters for ``ffmpeg`` with 44100 Hz sampling """
 
+    FFMPEG_PARAMETERS_SAMPLE_48000 = (
+        FFMPEG_MONO +
+        FFMPEG_SAMPLE_48000 +
+        FFMPEG_OVERWRITE +
+        FFMPEG_PLAIN_HEADER +
+        FFMPEG_FORMAT_WAVE
+    )
+    """ Set of parameters for ``ffmpeg`` with 48000 Hz sampling """
+
     FFMPEG_PARAMETERS_MAP = {
         8000: FFMPEG_PARAMETERS_SAMPLE_8000,
         16000: FFMPEG_PARAMETERS_SAMPLE_16000,
         22050: FFMPEG_PARAMETERS_SAMPLE_22050,
-        44100: FFMPEG_PARAMETERS_SAMPLE_44100
+        44100: FFMPEG_PARAMETERS_SAMPLE_44100,
+        48000: FFMPEG_PARAMETERS_SAMPLE_48000
     }
     """ Map sample rate to parameter list """
 

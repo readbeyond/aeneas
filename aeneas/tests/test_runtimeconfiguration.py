@@ -41,6 +41,10 @@ class TestRuntimeConfiguration(unittest.TestCase):
         rconf = RuntimeConfiguration()
         self.assertEqual(rconf.sample_rate, 16000)
 
+    def test_dtw_margin(self):
+        rconf = RuntimeConfiguration()
+        self.assertEqual(rconf.dtw_margin, TimeValue("60.000"))
+
     def test_mmn(self):
         rconf = RuntimeConfiguration()
         self.assertEqual(rconf.mmn, False)
@@ -120,10 +124,16 @@ class TestRuntimeConfiguration(unittest.TestCase):
             (u"mfcc_mask_nonspeech=True", "mfcc_mask_nonspeech", True),
             (u"mfcc_window_length=0.360", "mfcc_window_length", TimeValue("0.360")),
             (u"mfcc_window_shift=0.160", "mfcc_window_shift", TimeValue("0.160")),
+            (u"dtw_margin_l1=100", "dtw_margin_l1", TimeValue("100")),
+            (u"mfcc_mask_nonspeech_l1=True", "mfcc_mask_nonspeech_l1", True),
             (u"mfcc_window_length_l1=0.360", "mfcc_window_length_l1", TimeValue("0.360")),
             (u"mfcc_window_shift_l1=0.160", "mfcc_window_shift_l1", TimeValue("0.160")),
+            (u"dtw_margin_l2=30", "dtw_margin_l2", TimeValue("30")),
+            (u"mfcc_mask_nonspeech_l2=True", "mfcc_mask_nonspeech_l2", True),
             (u"mfcc_window_length_l2=0.360", "mfcc_window_length_l2", TimeValue("0.360")),
             (u"mfcc_window_shift_l2=0.160", "mfcc_window_shift_l2", TimeValue("0.160")),
+            (u"dtw_margin_l3=10", "dtw_margin_l3", TimeValue("10")),
+            (u"mfcc_mask_nonspeech_l3=True", "mfcc_mask_nonspeech_l3", True),
             (u"mfcc_window_length_l3=0.360", "mfcc_window_length_l3", TimeValue("0.360")),
             (u"mfcc_window_shift_l3=0.160", "mfcc_window_shift_l3", TimeValue("0.160")),
             (u"mfcc_mask_extend_speech_after=1", "mfcc_mask_extend_speech_after", 1),

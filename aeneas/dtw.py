@@ -284,7 +284,7 @@ class DTWAligner(Loggable):
 
         # setup
         algorithm = self.rconf[RuntimeConfiguration.DTW_ALGORITHM]
-        delta = int(2 * self.rconf[RuntimeConfiguration.DTW_MARGIN] / self.rconf[RuntimeConfiguration.MFCC_WINDOW_SHIFT])
+        delta = int(2 * self.rconf.dtw_margin / self.rconf[RuntimeConfiguration.MFCC_WINDOW_SHIFT])
         mfcc2_length = self.synt_wave_mfcc.middle_length
         self.log([u"Requested algorithm: '%s'", algorithm])
         self.log([u"delta = %d", delta])
