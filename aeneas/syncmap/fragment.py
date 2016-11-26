@@ -162,6 +162,30 @@ class SyncMapFragment(object):
         self.__fragment_type = fragment_type
 
     @property
+    def is_head_or_tail(self):
+        """
+        Return ``True`` if the fragment
+        is HEAD or TAIL.
+
+        :rtype: bool
+
+        .. versionadded:: 1.7.0
+        """
+        return self.fragment_type in [self.HEAD, self.TAIL]
+
+    @property
+    def is_regular(self):
+        """
+        Return ``True`` if the fragment
+        is REGULAR.
+
+        :rtype: bool
+
+        .. versionadded:: 1.7.0
+        """
+        return self.fragment_type == self.REGULAR
+
+    @property
     def confidence(self):
         """
         The confidence of the audio timing, from ``0.0`` to ``1.0``.

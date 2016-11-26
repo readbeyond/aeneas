@@ -214,7 +214,7 @@ class ExecuteTask(Loggable):
 
             # create syncmap and add it to task
             self._step_begin(u"create sync map")
-            self.task.sync_map = SyncMap(tree=sync_root, rconf=self.rconf, logger=self.logger)
+            self._create_sync_map(sync_root=sync_root)
             self._step_end()
 
             # log total
@@ -291,7 +291,7 @@ class ExecuteTask(Loggable):
             # restore original rconf, and create syncmap and add it to task
             self._step_begin(u"create sync map")
             self.rconf = orig_rconf
-            self.task.sync_map = SyncMap(tree=sync_root, rconf=self.rconf, logger=self.logger)
+            self._create_sync_map(sync_root=sync_root)
             self._step_end()
 
             self._step_total()
@@ -593,3 +593,18 @@ class ExecuteTask(Loggable):
             time_values=[TimeValue("0.000"), interval.begin, interval.end, end],
         )
         aba.append_fragment_list_to_sync_root(sync_root=sync_root)
+
+    def _create_sync_map(self, sync_root):
+        """
+        If requested, check that the computed sync map is consistent.
+        Then, add it to the Task.
+        """
+        sync_map = SyncMap(tree=sync_root, rconf=self.rconf, logger=self.logger)
+        if self.rconf.safety_checks:
+            self.log(u"Running sanity check on computed sync map...")
+            if not sync_map.leaves_are_consistent:
+                self._step_failure(ValueError(u"The computed sync map contains inconsistent fragments"))
+            self.log(u"Running sanity check on computed sync map... passed")
+        else:
+            self.log(u"Not running sanity check on computed sync map")
+        self.task.sync_map = sync_map

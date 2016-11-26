@@ -61,6 +61,9 @@ class SyncMap(Loggable):
     A synchronization map, that is, a tree of
     :class:`~aeneas.syncmap.fragment.SyncMapFragment`
     objects.
+
+    :param tree: the tree of fragments; if ``None``, an empty one will be created
+    :type  tree: :class:`~aeneas.tree.Tree`
     """
 
     FINETUNEAS_REPLACEMENTS = [
@@ -96,7 +99,7 @@ class SyncMap(Loggable):
 
     def __init__(self, tree=None, rconf=None, logger=None):
         if (tree is not None) and (not isinstance(tree, Tree)):
-            self.log_exc(u"tree is not an instance of Tree", None, True, TypeError)
+            raise TypeError(u"tree is not an instance of Tree")
         super(SyncMap, self).__init__(rconf=rconf, logger=logger)
         if tree is None:
             tree = Tree()
@@ -140,12 +143,106 @@ class SyncMap(Loggable):
     def fragments(self):
         """
         The current list of sync map fragments
-        which are the children of the root node
+        which are (the values of) the children of the root node
         of the sync map tree.
 
         :rtype: list of :class:`~aeneas.syncmap.fragment.SyncMapFragment`
         """
         return self.fragments_tree.vchildren_not_empty
+
+    def leaves(self, fragment_type=None):
+        """
+        The current list of sync map fragments
+        which are (the values of) the leaves
+        of the sync map tree.
+
+        :rtype: list of :class:`~aeneas.syncmap.fragment.SyncMapFragment`
+
+        .. versionadded:: 1.7.0
+        """
+        leaves = self.fragments_tree.vleaves_not_empty
+        if fragment_type is None:
+            return leaves
+        return [l for l in leaves if l.fragment_type == fragment_type]
+
+    @property
+    def has_adjacent_leaves_only(self):
+        """
+        Return ``True`` if the sync map fragments
+        which are the leaves of the sync map tree
+        are all adjacent.
+
+        :rtype: bool
+
+        .. versionadded:: 1.7.0
+        """
+        leaves = self.leaves()
+        for i in range(len(leaves) - 1):
+            current_interval = leaves[i].interval
+            next_interval = leaves[i + 1].interval
+            if not current_interval.is_adjacent_before(next_interval):
+                return False
+        return True
+
+    @property
+    def has_zero_length_leaves(self):
+        """
+        Return ``True`` if there is at least one sync map fragment
+        which has zero length
+        among the leaves of the sync map tree.
+
+        :rtype: bool
+
+        .. versionadded:: 1.7.0
+        """
+        for l in self.leaves():
+            if l.has_zero_length:
+                return True
+        return False
+
+    @property
+    def leaves_are_consistent(self):
+        """
+        Return ``True`` if the sync map fragments
+        which are the leaves of the sync map tree
+        (except for HEAD and TAIL leaves)
+        are all consistent, that is,
+        their intervals do not overlap in forbidden ways.
+
+        :rtype: bool
+
+        .. versionadded:: 1.7.0
+        """
+        self.log(u"Checking if leaves are consistent")
+        leaves = self.leaves()
+        if len(leaves) < 1:
+            self.log(u"Empty leaves => return True")
+            return True
+        min_time = min([l.interval.begin for l in leaves])
+        self.log([u"  Min time: %.3f", min_time])
+        max_time = max([l.interval.end for l in leaves])
+        self.log([u"  Max time: %.3f", max_time])
+        self.log(u"  Creating SyncMapFragmentList...")
+        smf = SyncMapFragmentList(
+            begin=min_time,
+            end=max_time,
+            rconf=self.rconf,
+            logger=self.logger
+        )
+        self.log(u"  Creating SyncMapFragmentList... done")
+        self.log(u"  Sorting SyncMapFragmentList...")
+        result = True
+        not_head_tail = [l for l in leaves if not l.is_head_or_tail]
+        for l in not_head_tail:
+            smf.add(l, sort=False)
+        try:
+            smf.sort()
+            self.log(u"  Sorting completed => return True")
+        except ValueError:
+            self.log(u"  Exception while sorting => return False")
+            result = False
+        self.log(u"  Sorting SyncMapFragmentList... done")
+        return result
 
     @property
     def json_string(self):

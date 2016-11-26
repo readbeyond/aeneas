@@ -146,7 +146,7 @@ class Task(Loggable):
     def sync_map_file_path_absolute(self, sync_map_file_path_absolute):
         self.__sync_map_file_path_absolute = sync_map_file_path_absolute
 
-    def sync_map_vleaves(self, fragment_type=None):
+    def sync_map_leaves(self, fragment_type=None):
         """
         Return the list of non-empty leaves
         in the sync map associated with the task.
@@ -161,10 +161,7 @@ class Task(Loggable):
         """
         if (self.sync_map is None) or (self.sync_map.fragments_tree is None):
             return []
-        vleaves = [f for f in self.sync_map.fragments_tree.vleaves_not_empty]
-        if fragment_type is None:
-            return vleaves
-        return [l for l in vleaves if l.fragment_type == fragment_type]
+        return [f for f in self.sync_map.leaves(fragment_type)]
 
     def output_sync_map_file(self, container_root_path=None):
         """

@@ -42,6 +42,7 @@ v1.7.0 (2016-12-??)
 #. Better ``--list-parameters`` in ``ExecuteTask``
 #. Added ``--list-parameters`` in ``ExecuteJob``
 #. Added ``--help-rconf`` option to all tools
+#. Added check in ``ExecuteTask`` on the consistency of the computed sync map
 
 v1.6.0.1 (2016-09-30)
 ---------------------
