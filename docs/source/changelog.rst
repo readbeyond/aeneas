@@ -47,6 +47,7 @@ v1.7.0 (2016-12-??)
 #. Added ``RuntimeConfiguration`` parameters ``DTW_MARGIN_L1``, ``DTW_MARGIN_L2``, ``DTW_MARGIN_L3``, to change DTW margin of each level
 #. Added ``FFMPEG_PARAMETERS_SAMPLE_48000`` to ``ffmpegwrapper.py``
 #. Changed ``--rates`` to ``--rate`` in ``ExecuteTaskCLI``
+#. Fixes issue with ``gf.relative_path()`` in Windows, if executed from a drive different than install drive
 
 v1.6.0.1 (2016-09-30)
 ---------------------
