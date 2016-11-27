@@ -70,7 +70,6 @@ class TestBenchmarkExecuteTaskCLI(unittest.TestCase):
             ("in", "001m.mplain.txt"),
             ("", "task_language=eng|is_text_type=mplain|os_task_file_format=json"),
             ("out", "out.json"),
-            ("", "-r=\"\"")
         ], 0, 20)
 
     def test_001_plain_sentence(self):
@@ -79,7 +78,6 @@ class TestBenchmarkExecuteTaskCLI(unittest.TestCase):
             ("in", "001m.plain.sentence.txt"),
             ("", "task_language=eng|is_text_type=plain|os_task_file_format=json"),
             ("out", "out.json"),
-            ("", "-r=\"\"")
         ], 0, 5)
 
     def test_001_plain_word(self):
@@ -88,7 +86,6 @@ class TestBenchmarkExecuteTaskCLI(unittest.TestCase):
             ("in", "001m.plain.word.txt"),
             ("", "task_language=eng|is_text_type=plain|os_task_file_format=json"),
             ("out", "out.json"),
-            ("", "-r=\"\"")
         ], 0, 5)
 
     def test_005_mplain(self):
@@ -97,7 +94,6 @@ class TestBenchmarkExecuteTaskCLI(unittest.TestCase):
             ("in", "005m.mplain.txt"),
             ("", "task_language=eng|is_text_type=mplain|os_task_file_format=json"),
             ("out", "out.json"),
-            ("", "-r=\"\"")
         ], 0, 100)
 
     def test_005_plain_sentence(self):
@@ -106,7 +102,6 @@ class TestBenchmarkExecuteTaskCLI(unittest.TestCase):
             ("in", "005m.plain.sentence.txt"),
             ("", "task_language=eng|is_text_type=plain|os_task_file_format=json"),
             ("out", "out.json"),
-            ("", "-r=\"\"")
         ], 0, 20)
 
     def test_005_plain_word(self):
@@ -115,7 +110,6 @@ class TestBenchmarkExecuteTaskCLI(unittest.TestCase):
             ("in", "005m.plain.word.txt"),
             ("", "task_language=eng|is_text_type=plain|os_task_file_format=json"),
             ("out", "out.json"),
-            ("", "-r=\"\"")
         ], 0, 20)
 
     def test_010_mplain(self):
@@ -124,7 +118,6 @@ class TestBenchmarkExecuteTaskCLI(unittest.TestCase):
             ("in", "010m.mplain.txt"),
             ("", "task_language=eng|is_text_type=mplain|os_task_file_format=json"),
             ("out", "out.json"),
-            ("", "-r=\"\"")
         ], 0, 200)
 
     def test_010_plain_sentence(self):
@@ -133,7 +126,6 @@ class TestBenchmarkExecuteTaskCLI(unittest.TestCase):
             ("in", "010m.plain.sentence.txt"),
             ("", "task_language=eng|is_text_type=plain|os_task_file_format=json"),
             ("out", "out.json"),
-            ("", "-r=\"\"")
         ], 0, 40)
 
     def test_010_plain_word(self):
@@ -142,7 +134,6 @@ class TestBenchmarkExecuteTaskCLI(unittest.TestCase):
             ("in", "010m.plain.word.txt"),
             ("", "task_language=eng|is_text_type=plain|os_task_file_format=json"),
             ("out", "out.json"),
-            ("", "-r=\"\"")
         ], 0, 40)
 
     def test_020_mplain(self):
@@ -151,7 +142,6 @@ class TestBenchmarkExecuteTaskCLI(unittest.TestCase):
             ("in", "020m.mplain.txt"),
             ("", "task_language=eng|is_text_type=mplain|os_task_file_format=json"),
             ("out", "out.json"),
-            ("", "-r=\"\"")
         ], 0, 400)
 
     def test_020_plain_sentence(self):
@@ -160,7 +150,6 @@ class TestBenchmarkExecuteTaskCLI(unittest.TestCase):
             ("in", "020m.plain.sentence.txt"),
             ("", "task_language=eng|is_text_type=plain|os_task_file_format=json"),
             ("out", "out.json"),
-            ("", "-r=\"\"")
         ], 0, 60)
 
     def test_020_plain_word(self):
@@ -169,7 +158,6 @@ class TestBenchmarkExecuteTaskCLI(unittest.TestCase):
             ("in", "020m.plain.word.txt"),
             ("", "task_language=eng|is_text_type=plain|os_task_file_format=json"),
             ("out", "out.json"),
-            ("", "-r=\"\"")
         ], 0, 60)
 
     def test_030_mplain(self):
@@ -178,7 +166,6 @@ class TestBenchmarkExecuteTaskCLI(unittest.TestCase):
             ("in", "030m.mplain.txt"),
             ("", "task_language=eng|is_text_type=mplain|os_task_file_format=json"),
             ("out", "out.json"),
-            ("", "-r=\"\"")
         ], 0, 600)
 
     def test_030_plain_sentence(self):
@@ -187,7 +174,6 @@ class TestBenchmarkExecuteTaskCLI(unittest.TestCase):
             ("in", "030m.plain.sentence.txt"),
             ("", "task_language=eng|is_text_type=plain|os_task_file_format=json"),
             ("out", "out.json"),
-            ("", "-r=\"\"")
         ], 0, 90)
 
     def test_030_plain_word(self):
@@ -196,7 +182,6 @@ class TestBenchmarkExecuteTaskCLI(unittest.TestCase):
             ("in", "030m.plain.word.txt"),
             ("", "task_language=eng|is_text_type=plain|os_task_file_format=json"),
             ("out", "out.json"),
-            ("", "-r=\"\"")
         ], 0, 90)
 
     def test_060_mplain(self):
@@ -205,7 +190,6 @@ class TestBenchmarkExecuteTaskCLI(unittest.TestCase):
             ("in", "060m.mplain.txt"),
             ("", "task_language=eng|is_text_type=mplain|os_task_file_format=json"),
             ("out", "out.json"),
-            ("", "-r=\"\"")
         ], 0, 1200)
 
     def test_060_plain_sentence(self):
@@ -214,7 +198,6 @@ class TestBenchmarkExecuteTaskCLI(unittest.TestCase):
             ("in", "060m.plain.sentence.txt"),
             ("", "task_language=eng|is_text_type=plain|os_task_file_format=json"),
             ("out", "out.json"),
-            ("", "-r=\"\"")
         ], 0, 180)
 
     def test_060_plain_word(self):
@@ -223,7 +206,6 @@ class TestBenchmarkExecuteTaskCLI(unittest.TestCase):
             ("in", "060m.plain.word.txt"),
             ("", "task_language=eng|is_text_type=plain|os_task_file_format=json"),
             ("out", "out.json"),
-            ("", "-r=\"\"")
         ], 0, 180)
 
 

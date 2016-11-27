@@ -24,7 +24,6 @@
 import os
 import unittest
 
-from aeneas.syncmap.format import SyncMapFormat
 from aeneas.tools.execute_task import ExecuteTaskCLI
 import aeneas.globalfunctions as gf
 

@@ -1051,6 +1051,14 @@ def relative_path(path, from_file):
         return None
     abs_path_target = absolute_path(path, from_file)
     abs_path_cwd = os.getcwd()
+    if is_windows():
+        # NOTE on Windows, if the two paths are on different drives,
+        #      the notion of relative path is not defined:
+        #      return the absolute path of the target instead.
+        t_drive, t_tail = os.path.splitdrive(abs_path_target)
+        c_drive, c_tail = os.path.splitdrive(abs_path_cwd)
+        if t_drive != c_drive:
+            return abs_path_target
     return os.path.relpath(abs_path_target, start=abs_path_cwd)
 
 
