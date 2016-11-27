@@ -180,10 +180,43 @@ class RuntimeConfiguration(Configuration):
     """
     DTW aligner margin, in seconds, for the ``stripe`` algorithm.
 
-    Default: ``60``, corresponding to ``60s`` ahead and behind
-    (i.e., ``120s`` total margin).
+    Default: ``60``, corresponding to ``60 s`` ahead and behind
+    (i.e., ``120 s`` total margin).
 
     .. versionadded:: 1.4.1
+    """
+
+    DTW_MARGIN_L1 = "dtw_margin_l1"
+    """
+    DTW aligner margin, in seconds, for the ``stripe`` algorithm
+    at level 1 (paragraph).
+
+    Default: ``60``, corresponding to ``60 s`` ahead and behind
+    (i.e., ``120 s`` total margin).
+
+    .. versionadded:: 1.7.0
+    """
+
+    DTW_MARGIN_L2 = "dtw_margin_l2"
+    """
+    DTW aligner margin, in seconds, for the ``stripe`` algorithm
+    at level 2 (sentence).
+
+    Default: ``30``, corresponding to ``30 s`` ahead and behind
+    (i.e., ``60 s`` total margin).
+
+    .. versionadded:: 1.7.0
+    """
+
+    DTW_MARGIN_L3 = "dtw_margin_l3"
+    """
+    DTW aligner margin, in seconds, for the ``stripe`` algorithm
+    at level 3 (word).
+
+    Default: ``10``, corresponding to ``10 s`` ahead and behind
+    (i.e., ``20s`` total margin).
+
+    .. versionadded:: 1.7.0
     """
 
     FFMPEG_PATH = "ffmpeg_path"
@@ -420,12 +453,28 @@ class RuntimeConfiguration(Configuration):
     """
 
     MFCC_GRANULARITY_MAP = {
-        1: (MFCC_MASK_NONSPEECH_L1, MFCC_WINDOW_LENGTH_L1, MFCC_WINDOW_SHIFT_L1),
-        2: (MFCC_MASK_NONSPEECH_L2, MFCC_WINDOW_LENGTH_L2, MFCC_WINDOW_SHIFT_L2),
-        3: (MFCC_MASK_NONSPEECH_L3, MFCC_WINDOW_LENGTH_L3, MFCC_WINDOW_SHIFT_L3),
+        1: (
+            DTW_MARGIN_L1,
+            MFCC_MASK_NONSPEECH_L1,
+            MFCC_WINDOW_LENGTH_L1,
+            MFCC_WINDOW_SHIFT_L1
+        ),
+        2: (
+            DTW_MARGIN_L2,
+            MFCC_MASK_NONSPEECH_L2,
+            MFCC_WINDOW_LENGTH_L2,
+            MFCC_WINDOW_SHIFT_L2
+        ),
+        3: (
+            DTW_MARGIN_L3,
+            MFCC_MASK_NONSPEECH_L3,
+            MFCC_WINDOW_LENGTH_L3,
+            MFCC_WINDOW_SHIFT_L3
+        ),
     }
     """
     Map level numbers to
+    ``DTW_MARGIN_*``,
     ``MFCC_MASK_NONSPEECH_*``,
     ``MFCC_WINDOW_LENGTH_*``,
     and ``MFCC_WINDOW_SHIFT_*``
@@ -862,12 +911,15 @@ class RuntimeConfiguration(Configuration):
         (MFCC_MASK_LOG_ENERGY_THRESHOLD, (0.699, float, [], u"when masking MFCC, log energy threshold for speech")),
         (MFCC_MASK_MIN_NONSPEECH_LENGTH, (1, int, [], u"when masking MFCC, min nonspeech interval length, in frames")),
 
+        (DTW_MARGIN_L1, ("60.000", TimeValue, [], u"level 1 (para) DTW margin, in s")),
         (MFCC_MASK_NONSPEECH_L1, (False, bool, [], u"if True, mask MFCC nonspeech frames on level 1 (para)")),
         (MFCC_WINDOW_LENGTH_L1, ("0.100", TimeValue, [], u"level 1 (para) MFCC window length, in s")),
         (MFCC_WINDOW_SHIFT_L1, ("0.040", TimeValue, [], u"level 1 (para) MFCC window shift, in s")),
+        (DTW_MARGIN_L2, ("30.000", TimeValue, [], u"level 2 (sent) DTW margin, in s")),
         (MFCC_MASK_NONSPEECH_L2, (False, bool, [], u"if True, mask MFCC nonspeech frames on level 2 (sent)")),
         (MFCC_WINDOW_LENGTH_L2, ("0.050", TimeValue, [], u"level 2 (sent) MFCC window length, in s")),
         (MFCC_WINDOW_SHIFT_L2, ("0.020", TimeValue, [], u"level 2 (sent) MFCC window shift, in s")),
+        (DTW_MARGIN_L3, ("10.000", TimeValue, [], u"level 3 (word) DTW margin, in s")),
         (MFCC_MASK_NONSPEECH_L3, (False, bool, [], u"if True, mask MFCC nonspeech frames on level 3 (word)")),
         (MFCC_WINDOW_LENGTH_L3, ("0.020", TimeValue, [], u"level 3 (word) MFCC window length, in s")),
         (MFCC_WINDOW_SHIFT_L3, ("0.005", TimeValue, [], u"level 3 (word) MFCC window shift, in s")),
@@ -930,6 +982,17 @@ class RuntimeConfiguration(Configuration):
         :rtype: int
         """
         return self[self.FFMPEG_SAMPLE_RATE]
+
+    @property
+    def dtw_margin(self):
+        """
+        Return the value of the
+        :data:`~aeneas.runtimeconfiguration.RuntimeConfiguration.DTW_MARGIN`
+        key stored in this configuration object.
+
+        :rtype: :class:`~aeneas.exacttiming.TimeValue`
+        """
+        return self[self.DTW_MARGIN]
 
     @property
     def mmn(self):
@@ -1003,7 +1066,8 @@ class RuntimeConfiguration(Configuration):
         :param int level: the desired granularity level
         """
         if level in self.MFCC_GRANULARITY_MAP.keys():
-            mask_key, length_key, shift_key = self.MFCC_GRANULARITY_MAP[level]
+            margin_key, mask_key, length_key, shift_key = self.MFCC_GRANULARITY_MAP[level]
+            self[self.DTW_MARGIN] = self[margin_key]
             self[self.MFCC_MASK_NONSPEECH] = self[mask_key]
             self[self.MFCC_WINDOW_LENGTH] = self[length_key]
             self[self.MFCC_WINDOW_SHIFT] = self[shift_key]

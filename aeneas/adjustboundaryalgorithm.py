@@ -339,7 +339,10 @@ class AdjustBoundaryAlgorithm(Loggable):
         )
         self.log(u"  Creating HEAD fragment")
         self.smflist.add(SyncMapFragment(
-            text_fragment=TextFragment(identifier=u"HEAD"),
+            # NOTE lines and filtered lines MUST be set,
+            #      otherwise some output format might break
+            #      when adding HEAD/TAIL to output
+            text_fragment=TextFragment(identifier=u"HEAD", lines=[], filtered_lines=[]),
             begin=times[0],
             end=times[1],
             fragment_type=SyncMapFragment.HEAD
@@ -360,7 +363,10 @@ class AdjustBoundaryAlgorithm(Loggable):
             self.log([u"    Adding fragment %d ... done", i])
         self.log(u"  Creating TAIL fragment")
         self.smflist.add(SyncMapFragment(
-            text_fragment=TextFragment(identifier=u"TAIL"),
+            # NOTE lines and filtered lines MUST be set,
+            #      otherwise some output format might break
+            #      when adding HEAD/TAIL to output
+            text_fragment=TextFragment(identifier=u"TAIL", lines=[], filtered_lines=[]),
             begin=times[len(times) - 2],
             end=end,
             fragment_type=SyncMapFragment.TAIL

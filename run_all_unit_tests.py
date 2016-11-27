@@ -44,14 +44,13 @@ __status__ = "Production"
 __version__ = "1.7.0"
 
 TEST_DIRECTORY = "aeneas/tests"
-TEST_PATTERN = "test_*.py"
-TEST_PREFIX = "test_"
-LONG_PATTERN = "long_test_*.py"
-LONG_PREFIX = "long_test_"
-NET_PATTERN = "net_test_*.py"
-NET_PREFIX = "net_test_"
-TOOL_PATTERN = "tool_test_*.py"
-TOOL_PREFIX = "tool_test_"
+MAP = {
+    "fast": ("test_*.py", "test_"),
+    "bench": ("bench_test_*.py", "bench_test_"),
+    "long": ("long_test_*.py", "long_test_"),
+    "net": ("net_test_*.py", "net_test_"),
+    "tool": ("tool_test_*.py", "tool_test_")
+}
 
 
 class NOPStream(object):
@@ -73,28 +72,25 @@ def main():
     """ Perform tests """
     if ("--help" in sys.argv) or ("-h" in sys.argv):
         print("")
-        print("Usage: python %s [--long-tests|--net-tests|--tool-tests] [--sort] [--verbose]" % sys.argv[0])
+        print("Usage: python %s [--bench-tests|--long-tests|--net-tests|--tool-tests] [--sort] [--verbose]" % sys.argv[0])
         print("")
         sys.exit(0)
 
     sort_tests = ("--sort" in sys.argv) or ("-s" in sys.argv)
     verbose = ("--verbose" in sys.argv) or ("-v" in sys.argv)
-    long_tests = ("--long-tests" in sys.argv) or ("-l" in sys.argv)
-    net_tests = ("--net-tests" in sys.argv) or ("-n" in sys.argv)
-    tool_tests = ("--tool-tests" in sys.argv) or ("-t" in sys.argv)
 
-    if long_tests:
-        pattern = LONG_PATTERN
-        prefix = LONG_PREFIX
-    elif net_tests:
-        pattern = NET_PATTERN
-        prefix = NET_PREFIX
-    elif tool_tests:
-        pattern = TOOL_PATTERN
-        prefix = TOOL_PREFIX
+    if ("--bench-tests" in sys.argv) or ("-b" in sys.argv):
+        test_type = "bench"
+    elif ("--long-tests" in sys.argv) or ("-l" in sys.argv):
+        test_type = "long"
+    elif ("--net-tests" in sys.argv) or ("-n" in sys.argv):
+        test_type = "net"
+    elif ("--tool-tests" in sys.argv) or ("-t" in sys.argv):
+        test_type = "tool"
     else:
-        pattern = TEST_PATTERN
-        prefix = TEST_PREFIX
+        test_type = "fast"
+
+    pattern, prefix = MAP[test_type]
     all_files = [os.path.basename(f) for f in glob.glob(os.path.join(TEST_DIRECTORY, pattern))]
     cli_files = [arg for arg in sys.argv[1:] if not arg.startswith("-")]
     selected_files = []

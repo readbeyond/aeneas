@@ -355,9 +355,10 @@ Values: listed in :class:`~aeneas.language.Language`
 
 Example::
 
+    task_language=eng
     task_language=eng-GBR
     task_language=eng-USA
-    task_language=ita-ITA
+    task_language=ita
 
 """
 

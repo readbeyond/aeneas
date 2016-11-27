@@ -272,13 +272,13 @@ class ExecuteTaskCLI(AbstractCLIProgram):
             u"options": u"-r=\"c_extensions=False\"",
             u"show": False
         },
-        u"--example-rates": {
+        u"--example-rate": {
             u"description": u"input: plain text (plain), output: SRT, max rate 14.0 chars/s, print rates",
             u"audio": AUDIO_FILE,
             u"text": gf.relative_path("res/plain.txt", __file__),
             u"config": u"task_language=eng|is_text_type=plain|os_task_file_format=srt|task_adjust_boundary_algorithm=rate|task_adjust_boundary_rate_value=14.000",
             u"syncmap": "output/sonnet.rates.srt",
-            u"options": u"--rates",
+            u"options": u"--rate",
             u"show": False
         },
         u"--example-remove-nonspeech": {
@@ -296,7 +296,7 @@ class ExecuteTaskCLI(AbstractCLIProgram):
             u"text": gf.relative_path("res/plain.txt", __file__),
             u"config": u"task_language=eng|is_text_type=plain|os_task_file_format=srt|task_adjust_boundary_nonspeech_min=0.500|task_adjust_boundary_nonspeech_string=REMOVE|task_adjust_boundary_algorithm=rateaggressive|task_adjust_boundary_rate_value=14.000",
             u"syncmap": "output/sonnet.remove.nonspeech.rateaggressive.srt",
-            u"options": u"--rates",
+            u"options": u"--rate",
             u"show": False
         },
         u"--example-replace-nonspeech": {
@@ -428,7 +428,7 @@ class ExecuteTaskCLI(AbstractCLIProgram):
             u"--list-values : list all parameters for which values can be listed",
             u"--list-values=PARAM : list all allowed values for parameter PARAM",
             u"--output-html : output HTML file for fine tuning",
-            u"--rates : print rate of each fragment",
+            u"--rate : print rate of each fragment",
             u"--skip-validator : do not validate the given config string",
             u"--zero : print fragments with zero duration",
             u"-y, --youtube : download audio from YouTube video",
@@ -468,7 +468,7 @@ class ExecuteTaskCLI(AbstractCLIProgram):
         output_html = self.has_option(u"--output-html")
         validate = not self.has_option(u"--skip-validator")
         print_faster_rate = self.has_option(u"--faster-rate")
-        print_rates = self.has_option(u"--rates")
+        print_rates = self.has_option(u"--rate")
         print_zero = self.has_option(u"--zero")
 
         if demo:
@@ -507,7 +507,7 @@ class ExecuteTaskCLI(AbstractCLIProgram):
                         print_zero = True
                     elif key == u"--example-py":
                         self.rconf[RuntimeConfiguration.C_EXTENSIONS] = False
-                    elif key == u"--example-rates":
+                    elif key == u"--example-rate":
                         print_rates = True
                     elif key == u"--example-remove-nonspeech-rateaggressive":
                         print_rates = True

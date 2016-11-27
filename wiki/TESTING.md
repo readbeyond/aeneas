@@ -23,6 +23,7 @@ The following naming convention is used:
 * regular tests are specified in files with prefix ``test_``;
 * tests requiring network access have prefix ``net_test_``;
 * tests with long running time have prefix ``long_test_``;
+* tests included in the benchmark suite have prefix ``bench_test_``;
 * tests for ``aeneas.tools`` have prefix ``tool_test_``.
 
 ### Running the Tests
