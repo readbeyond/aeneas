@@ -13,7 +13,7 @@
 
 usage() {
     echo ""
-    echo "Usage: bash $0 [python2.7|python3.4|python3.5|pypy] [all|nonet|fast|bench|tool|long|net|clean]"
+    echo "Usage: bash $0 [python2.7|python3.4|python3.5|pypy] [all|nonet|noben|fast|bench|tool|long|net|clean]"
     echo ""
 }
 
@@ -116,7 +116,7 @@ then
 fi
 
 # check the action argument
-if [ "$ACTION" != "all" ] && [ "$ACTION" != "nonet" ] && [ "$ACTION" != "fast" ] && [ "$ACTION" != "bench" ] && [ "$ACTION" != "tool" ] && [ "$ACTION" != "long" ] && [ "$ACTION" != "net" ] && [ "$ACTION" != "clean" ]
+if [ "$ACTION" != "all" ] && [ "$ACTION" != "nonet" ] && [ "$ACTION" != "noben" ] && [ "$ACTION" != "fast" ] && [ "$ACTION" != "bench" ] && [ "$ACTION" != "tool" ] && [ "$ACTION" != "long" ] && [ "$ACTION" != "net" ] && [ "$ACTION" != "clean" ]
 then
     usage
     exit 1
@@ -158,6 +158,17 @@ then
     run_tool $L
     run_long $L
     run_bench $L
+    venv_deactivate $D
+    grep_log $L
+fi
+
+if [ "$ACTION" == "noben" ]
+then
+    copy_tests $EX
+    venv_activate $D
+    run_fast $L
+    run_tool $L
+    run_long $L
     venv_deactivate $D
     grep_log $L
 fi

@@ -588,8 +588,6 @@ class ExecuteTask(Loggable):
         aba = AdjustBoundaryAlgorithm(rconf=self.rconf, logger=self.logger)
         aba.intervals_to_fragment_list(
             text_file=text_file,
-            end=end,
-            boundary_indices=None,
             time_values=[TimeValue("0.000"), interval.begin, interval.end, end],
         )
         aba.append_fragment_list_to_sync_root(sync_root=sync_root)

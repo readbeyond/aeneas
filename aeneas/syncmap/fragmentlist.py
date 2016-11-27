@@ -434,28 +434,43 @@ class SyncMapFragmentList(Loggable):
         :rtype: list of (:class:`~aeneas.exacttiming.TimeInterval`, int)
         """
         self.log(u"Called fragments_ending_inside_nonspeech_intervals")
+        self.log([u"  List begin: %.3f", self.begin])
+        self.log([u"  List end:   %.3f", self.end])
         nsi_index = 0
         frag_index = 0
         nsi_counter = [(n, []) for n in nonspeech_intervals]
         # NOTE the last fragment is not eligible to be returned
         while (nsi_index < len(nonspeech_intervals)) and (frag_index < len(self) - 1):
             nsi = nonspeech_intervals[nsi_index]
+            if nsi.end > self.end:
+                self.log(u"    nsi ends after self.end => breaking")
+                break
             nsi_shadow = nsi.shadow(tolerance)
             frag = self[frag_index]
             self.log([u"  nsi        %s", nsi])
             self.log([u"  nsi_shadow %s", nsi_shadow])
             self.log([u"  frag       %s", frag.interval])
-            if frag.fragment_type in [SyncMapFragment.REGULAR, SyncMapFragment.NONSPEECH]:
-                self.log(u"    Fragment is REGULAR or NONSPEECH => inspecting it")
+            if not frag.is_head_or_tail:
+                self.log(u"    Fragment is not HEAD or TAIL => inspecting it")
                 if nsi_shadow.contains(frag.end):
-                    #
-                    #      *************** nsi shadow
-                    #      | *********** | nsi
-                    # *****|***X         | frag (X=frag.end)
-                    #
-                    nsi_counter[nsi_index][1].append(frag_index)
-                    frag_index += 1
-                    self.log(u"    nsi_shadow contains frag end => save it and go to next fragment")
+                    if nsi_shadow.contains(frag.begin):
+                        #
+                        #      *************** nsi shadow
+                        #      | *********** | nsi
+                        #      |   ***X      | frag (X=frag.end)
+                        #
+                        nsi_index += 1
+                        frag_index += 1
+                        self.log(u"    nsi_shadow entirely contains frag => skip to next fragment, nsi")
+                    else:
+                        #
+                        #      *************** nsi shadow
+                        #      | *********** | nsi
+                        # *****|***X         | frag (X=frag.end)
+                        #
+                        nsi_counter[nsi_index][1].append(frag_index)
+                        frag_index += 1
+                        self.log(u"    nsi_shadow contains frag end only => save it and go to next fragment")
                 elif nsi_shadow.begin > frag.end:
                     #
                     #      *************** nsi shadow

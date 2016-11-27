@@ -266,16 +266,17 @@ class AdjustBoundaryAlgorithm(Loggable):
         if not isinstance(text_file, TextFile):
             self.log_exc(u"text_file is not a TextFile object", None, True, TypeError)
 
-        self.mws = real_wave_mfcc.rconf.mws
         nozero = aba_parameters["nozero"]
         ns_min, ns_string = aba_parameters["nonspeech"]
         algorithm, algo_parameters = aba_parameters["algorithm"]
 
         self.log(u"  Converting boundary indices to fragment list...")
+        begin = real_wave_mfcc.middle_begin * real_wave_mfcc.rconf.mws
+        end = real_wave_mfcc.middle_end * real_wave_mfcc.rconf.mws
+        time_values = [begin] + list(boundary_indices * self.mws) + [end]
         self.intervals_to_fragment_list(
             text_file=text_file,
-            end=real_wave_mfcc.audio_length,
-            boundary_indices=boundary_indices,
+            time_values=time_values
         )
         self.log(u"  Converting boundary indices to fragment list... done")
 
@@ -306,30 +307,34 @@ class AdjustBoundaryAlgorithm(Loggable):
 
         return self.smflist
 
-    def intervals_to_fragment_list(self, text_file, end, boundary_indices=None, time_values=None):
+    def intervals_to_fragment_list(self, text_file, time_values):
         """
-        Transform a list of boundary indices or time values
+        Transform a list of at least 4 time values
+        (corresponding to at least 3 intervals)
         into a sync map fragment list and store it internally.
+        The first interval is a HEAD, the last is a TAIL.
 
         For example:
 
-            b_i=[1, 2, 3], end=4.567 => [(0.000, 1*mws), (1*mws, 2*mws), (2*mws, 3*mws), (3*mws, 4.567)]
             time_values=[0.000, 1.000, 2.000, 3.456] => [(0.000, 1.000), (1.000, 2.000), (2.000, 3.456)]
 
         :param text_file: the text file containing the text fragments associated
         :type  text_file: :class:`~aeneas.textfile.TextFile`
         :param time_values: the time values
         :type  time_values: list of :class:`~aeneas.exacttiming.TimeValue`
+        :raises: TypeError: if ``text_file`` is not an instance of :class:`~aeneas.textfile.TextFile`
+                            or ``time_values`` is not a list
+        :raises: ValueError: if ``time_values`` has length less than four
         """
-        if (boundary_indices is None) and (time_values is None):
-            self.log_exc(u"Both boundary_indices and times are None", None, True, TypeError)
-        if boundary_indices is not None:
-            self.log(u"Converting boundary indices to fragment list...")
-            times = [TimeValue("0.000")] + list(boundary_indices * self.mws) + [end]
-        else:
-            self.log(u"Converting time intervals to fragment list...")
-            times = time_values
-        begin = TimeValue("0.000")
+        if not isinstance(text_file, TextFile):
+            self.log_exc(u"text_file is not an instance of TextFile", None, True, TypeError)
+        if not isinstance(time_values, list):
+            self.log_exc(u"time_values is not a list", None, True, TypeError)
+        if len(time_values) < 4:
+            self.log_exc(u"time_values has length < 4", None, True, ValueError)
+        self.log(u"Converting time values to fragment list...")
+        begin = time_values[0]
+        end = time_values[-1]
         self.log([u"  Creating SyncMapFragmentList with begin %.3f and end %.3f", begin, end])
         self.smflist = SyncMapFragmentList(
             begin=begin,
@@ -343,8 +348,8 @@ class AdjustBoundaryAlgorithm(Loggable):
             #      otherwise some output format might break
             #      when adding HEAD/TAIL to output
             text_fragment=TextFragment(identifier=u"HEAD", lines=[], filtered_lines=[]),
-            begin=times[0],
-            end=times[1],
+            begin=time_values[0],
+            end=time_values[1],
             fragment_type=SyncMapFragment.HEAD
         ), sort=False)
         self.log(u"  Creating REGULAR fragments")
@@ -352,12 +357,12 @@ class AdjustBoundaryAlgorithm(Loggable):
         #      so we cache a copy here instead of
         #      calling it once per loop
         fragments = text_file.fragments
-        for i in range(1, len(times) - 2):
+        for i in range(1, len(time_values) - 2):
             self.log([u"    Adding fragment %d ...", i])
             self.smflist.add(SyncMapFragment(
                 text_fragment=fragments[i - 1],
-                begin=times[i],
-                end=times[i + 1],
+                begin=time_values[i],
+                end=time_values[i + 1],
                 fragment_type=SyncMapFragment.REGULAR
             ), sort=False)
             self.log([u"    Adding fragment %d ... done", i])
@@ -367,11 +372,11 @@ class AdjustBoundaryAlgorithm(Loggable):
             #      otherwise some output format might break
             #      when adding HEAD/TAIL to output
             text_fragment=TextFragment(identifier=u"TAIL", lines=[], filtered_lines=[]),
-            begin=times[len(times) - 2],
+            begin=time_values[len(time_values) - 2],
             end=end,
             fragment_type=SyncMapFragment.TAIL
         ), sort=False)
-        self.log(u"Converting to fragment list... done")
+        self.log(u"Converting time values to fragment list... done")
         self.log(u"Sorting fragment list...")
         self.smflist.sort()
         self.log(u"Sorting fragment list... done")
