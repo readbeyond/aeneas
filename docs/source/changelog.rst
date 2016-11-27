@@ -33,7 +33,8 @@ v1.7.0 (2016-12-??)
 #. Added map from language code to human-readable name for TTS wrappers and for ``Language``, usable by ``aeneas.tools.execute_task``
 #. Marked Afrikaans (``afr``) language as tested
 #. Added more examples to ``aeneas.tools.execute_task``
-#. Added more tool tests
+#. Added more tool and long tests
+#. Added bench tests
 #. Added ``wiki/TESTING.md``
 #. Added ``venvs`` directory with scripts to automate testing with virtual environments
 #. Added ``RuntimeConfiguration`` parameters to switch MFCC masking on, including per level in multilevel tasks

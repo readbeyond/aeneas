@@ -126,6 +126,9 @@ $ bash run_tests.sh python3.5 tool
 $ # long
 $ bash run_tests.sh python3.5 long
 
+$ # bench
+$ bash run_tests.sh python3.5 bench
+
 $ # net
 $ bash run_tests.sh python3.5 net
 

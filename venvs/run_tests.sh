@@ -13,7 +13,7 @@
 
 usage() {
     echo ""
-    echo "Usage: bash $0 [python2.7|python3.4|python3.5|pypy] [all|nonet|fast|tool|long|net|clean]"
+    echo "Usage: bash $0 [python2.7|python3.4|python3.5|pypy] [all|nonet|fast|bench|tool|long|net|clean]"
     echo ""
 }
 
@@ -51,6 +51,12 @@ run_fast() {
     echo "[INFO] Running fast tests..."
     python run_all_unit_tests.py    -v >> $1 2> /dev/null
     echo "[INFO] Running fast tests... done"
+}
+
+run_bench() {
+    echo "[INFO] Running bench tests..."
+    python run_all_unit_tests.py -b -v >> $1 2> /dev/null
+    echo "[INFO] Running bench tests... done"
 }
 
 run_tool() {
@@ -110,7 +116,7 @@ then
 fi
 
 # check the action argument
-if [ "$ACTION" != "all" ] && [ "$ACTION" != "nonet" ] && [ "$ACTION" != "fast" ] && [ "$ACTION" != "tool" ] && [ "$ACTION" != "long" ] && [ "$ACTION" != "net" ] && [ "$ACTION" != "clean" ]
+if [ "$ACTION" != "all" ] && [ "$ACTION" != "nonet" ] && [ "$ACTION" != "fast" ] && [ "$ACTION" != "bench" ] && [ "$ACTION" != "tool" ] && [ "$ACTION" != "long" ] && [ "$ACTION" != "net" ] && [ "$ACTION" != "clean" ]
 then
     usage
     exit 1
@@ -138,6 +144,7 @@ then
     run_fast $L
     run_tool $L
     run_long $L
+    run_bench $L
     run_net $L
     venv_deactivate $D
     grep_log $L
@@ -150,6 +157,7 @@ then
     run_fast $L
     run_tool $L
     run_long $L
+    run_bench $L
     venv_deactivate $D
     grep_log $L
 fi
@@ -159,6 +167,15 @@ then
     copy_tests $EX
     venv_activate $D
     run_fast $L
+    venv_deactivate $D
+    grep_log $L
+fi
+
+if [ "$ACTION" == "bench" ]
+then
+    copy_tests $EX
+    venv_activate $D
+    run_bench $L
     venv_deactivate $D
     grep_log $L
 fi
