@@ -49,6 +49,55 @@ class TestExecuteTaskCLI(unittest.TestCase):
         gf.delete_directory(output_path)
         self.assertEqual(exit_code, expected_exit_code)
 
+    def test_exec_tts_no_cache_empty_fragments(self):
+        self.execute([
+            ("in", "../tools/res/audio.mp3"),
+            ("in", "../tests/res/inputtext/plain_with_empty_lines.txt"),
+            ("", "task_language=eng|is_text_type=plain|os_task_file_format=json"),
+            ("out", "sonnet.json"),
+            ("", "-r=\"tts_cache=False\"")
+        ], 0)
+
+    def test_exec_tts_cache_empty_fragments(self):
+        self.execute([
+            ("in", "../tools/res/audio.mp3"),
+            ("in", "../tests/res/inputtext/plain_with_empty_lines.txt"),
+            ("", "task_language=eng|is_text_type=plain|os_task_file_format=json"),
+            ("out", "sonnet.json"),
+            ("", "-r=\"tts_cache=True\"")
+        ], 0)
+
+    def test_exec_tts_cache_empty_fragments_pure(self):
+        self.execute([
+            ("in", "../tools/res/audio.mp3"),
+            ("in", "../tests/res/inputtext/plain_with_empty_lines.txt"),
+            ("", "task_language=eng|is_text_type=plain|os_task_file_format=json"),
+            ("out", "sonnet.json"),
+            ("", "-r=\"tts_cache=True|cew=False\"")
+        ], 0)
+
+    def test_exec_tts_cache_empty_fragments_festival(self):
+        if not EXTRA_TESTS:
+            return
+        self.execute([
+            ("in", "../tools/res/audio.mp3"),
+            ("in", "../tests/res/inputtext/plain_with_empty_lines.txt"),
+            ("", "task_language=eng|is_text_type=plain|os_task_file_format=json"),
+            ("out", "sonnet.json"),
+            ("", "-r=\"tts=festival|tts_cache=True|cfw=True\"")
+        ], 0)
+
+    def test_exec_tts_cache_empty_fragments_festival_pure(self):
+        if not EXTRA_TESTS:
+            return
+        self.execute([
+            ("in", "../tools/res/audio.mp3"),
+            ("in", "../tests/res/inputtext/plain_with_empty_lines.txt"),
+            ("", "task_language=eng|is_text_type=plain|os_task_file_format=json"),
+            ("out", "sonnet.json"),
+            ("", "-r=\"tts=festival|tts_cache=True|cfw=False\"")
+        ], 0)
+
     def test_exec_rateaggressive_remove_nonspeech(self):
         self.execute([
             ("in", "../tools/res/audio.mp3"),
