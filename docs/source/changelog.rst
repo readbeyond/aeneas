@@ -1,7 +1,7 @@
 Changelog
 =========
 
-v1.7.0 (2016-12-??)
+v1.7.0 (2016-12-07)
 -------------------
 
 #. Moved syncmap I/O functions in ``aeneas.syncmap`` subpackage
@@ -48,6 +48,7 @@ v1.7.0 (2016-12-??)
 #. Added ``FFMPEG_PARAMETERS_SAMPLE_48000`` to ``ffmpegwrapper.py``
 #. Changed ``--rates`` to ``--rate`` in ``ExecuteTaskCLI``
 #. Fixes issue with ``gf.relative_path()`` in Windows, if executed from a drive different than install drive
+#. Fixed a bug with empty fragments when using subprocess TTS with TTS cache enabled
 
 v1.6.0.1 (2016-09-30)
 ---------------------

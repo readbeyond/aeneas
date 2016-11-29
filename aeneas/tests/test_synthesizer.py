@@ -38,13 +38,14 @@ class TestSynthesizer(unittest.TestCase):
     PATH_NOT_WRITEABLE = gf.absolute_path("x/y/z/not_writeable.wav", __file__)
 
     def perform(self, path, expected, expected2=None, logger=None, quit_after=None, backwards=False):
-        def inner(c_ext, cew_subprocess):
+        def inner(c_ext, cew_subprocess, tts_cache):
             handler, output_file_path = gf.tmp_file(suffix=".wav")
             tfl = TextFile(gf.absolute_path(path, __file__), TextFileFormat.PLAIN)
             tfl.set_language(Language.ENG)
             synth = Synthesizer(logger=logger)
             synth.rconf[RuntimeConfiguration.C_EXTENSIONS] = c_ext
             synth.rconf[RuntimeConfiguration.CEW_SUBPROCESS_ENABLED] = cew_subprocess
+            synth.rconf[RuntimeConfiguration.TTS_CACHE] = tts_cache
             result = synth.synthesize(tfl, output_file_path, quit_after=quit_after, backwards=backwards)
             gf.delete_file(handler, output_file_path)
             self.assertEqual(len(result[0]), expected)
@@ -52,7 +53,8 @@ class TestSynthesizer(unittest.TestCase):
                 self.assertAlmostEqual(result[1], expected2, places=0)
         for c_ext in [True, False]:
             for cew_subprocess in [True, False]:
-                inner(c_ext, cew_subprocess)
+                for tts_cache in [True, False]:
+                    inner(c_ext, cew_subprocess, tts_cache)
 
     def test_clear_cache(self):
         synth = Synthesizer()
@@ -92,6 +94,9 @@ class TestSynthesizer(unittest.TestCase):
 
     def test_synthesize_quit_after_backwards(self):
         self.perform("res/inputtext/sonnet_plain.txt", 4, TimeValue("10.000"), quit_after=TimeValue("10.000"), backwards=True)
+
+    def test_synthesize_plain_with_empty_lines(self):
+        self.perform("res/inputtext/plain_with_empty_lines.txt", 19)
 
 
 if __name__ == "__main__":

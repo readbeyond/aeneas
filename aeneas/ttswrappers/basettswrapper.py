@@ -814,8 +814,12 @@ class BaseTTSWrapper(Loggable):
                 self.log_crit(u"An unexpected error occurred in helper_function")
                 return (False, None)
             self.log([u"Synthesizing fragment to '%s'... done", file_path])
-            self.cache.add(fragment_info, file_info)
-            self.log(u"Added fragment to cache")
-
+            duration, sr_nu, enc_nu, samples = data
+            if duration > 0:
+                self.log(u"Fragment has > 0 duration, adding it to cache")
+                self.cache.add(fragment_info, file_info)
+                self.log(u"Added fragment to cache")
+            else:
+                self.log(u"Fragment has zero duration, not adding it to cache")
         self.log([u"Examining fragment %d (cache)... done", num])
         return (True, data)

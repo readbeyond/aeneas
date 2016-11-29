@@ -42,6 +42,7 @@ class TestTextFile(unittest.TestCase):
     EMPTY_FILE_PATH = "res/inputtext/empty.txt"
     BLANK_FILE_PATH = "res/inputtext/blank.txt"
     PLAIN_FILE_PATH = "res/inputtext/sonnet_plain.txt"
+    PLAIN_WITH_EMPTY_LINES_FILE_PATH = "res/inputtext/plain_with_empty_lines.txt"
     PARSED_FILE_PATH = "res/inputtext/sonnet_parsed.txt"
     MPLAIN_FILE_PATH = "res/inputtext/sonnet_mplain.txt"
     MUNPARSED_FILE_PATH = "res/inputtext/sonnet_munparsed.xhtml"
@@ -164,6 +165,9 @@ class TestTextFile(unittest.TestCase):
     def test_read_empty(self):
         for fmt in TextFileFormat.ALLOWED_VALUES:
             self.load(self.EMPTY_FILE_PATH, fmt, 0, self.UNPARSED_PARAMETERS)
+
+    def test_read_plain_with_empty_lines(self):
+        self.load(self.PLAIN_WITH_EMPTY_LINES_FILE_PATH, TextFileFormat.PLAIN, 19, None)
 
     def test_read_blank(self):
         for fmt in TextFileFormat.ALLOWED_VALUES:
