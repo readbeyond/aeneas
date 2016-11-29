@@ -248,7 +248,7 @@ which explains how to use the built-in command line tools.
 * Output an HTML file for fine tuning the sync map manually (`finetuneas` project)
 * Execution parameters tunable at runtime
 * Code suitable for Web app deployment (e.g., on-demand cloud computing instances)
-* Extensive test suite including 1,100+ unit/integration/performance tests, that run and must pass before each release
+* Extensive test suite including 1,200+ unit/integration/performance tests, that run and must pass before each release
 
 
 ## Limitations and Missing Features 
