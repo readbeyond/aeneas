@@ -48,10 +48,20 @@ deps() {
         cd $1
         source bin/activate
         pip install -U pip
-        pip install -U numpy
+        if [ "$2" == "pypy" ]
+        then
+            # on pypy install cython and numpy from its devel repo
+            # as recommended in http://pypy.org/download.html
+            pip install -U cython git+https://github.com/numpy/numpy.git
+        else
+            # otherwise, just install regular numpy
+            pip install -U numpy
+        fi
         pip install -U lxml BeautifulSoup4
         pip install -U pafy requests tgt youtube-dl
-        # NOTE Pillow might cause errors with pypy: try installing it as last
+        # NOTE Pillow might raise errors due to missing libraries
+        #      (e.g., libjpeg, libpng, zlib)
+        #      so install it as the last one
         pip install -U Pillow 
         deactivate
         cd ..
@@ -226,7 +236,7 @@ fi
 
 if [ "$ACTION" == "deps" ]
 then
-    deps $D
+    deps $D $EX
 fi
 
 if [ "$ACTION" == "sdist" ]
@@ -247,6 +257,6 @@ fi
 if [ "$ACTION" == "full" ]
 then
     create $D $FULLEX
-    deps $D
+    deps $D $EX
     copytests $D
 fi
