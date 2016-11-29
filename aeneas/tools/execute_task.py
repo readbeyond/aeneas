@@ -428,6 +428,7 @@ class ExecuteTaskCLI(AbstractCLIProgram):
             u"--list-values : list all parameters for which values can be listed",
             u"--list-values=PARAM : list all allowed values for parameter PARAM",
             u"--output-html : output HTML file for fine tuning",
+            u"--presets-word : apply presets for word-level alignment (MFCC masking)", 
             u"--rate : print rate of each fragment",
             u"--skip-validator : do not validate the given config string",
             u"--zero : print fragments with zero duration",
@@ -470,6 +471,7 @@ class ExecuteTaskCLI(AbstractCLIProgram):
         print_faster_rate = self.has_option(u"--faster-rate")
         print_rates = self.has_option(u"--rate")
         print_zero = self.has_option(u"--zero")
+        presets_word = self.has_option(u"--presets-word")
 
         if demo:
             validate = False
@@ -521,6 +523,11 @@ class ExecuteTaskCLI(AbstractCLIProgram):
             text_file_path = self.actual_arguments[1]
             config_string = self.actual_arguments[2]
             sync_map_file_path = self.actual_arguments[3]
+
+        if presets_word:
+            self.print_info(u"Preset for word-level alignment")
+            self.rconf[RuntimeConfiguration.MFCC_MASK_NONSPEECH] = True
+            self.rconf[RuntimeConfiguration.MFCC_MASK_NONSPEECH_L3] = True
 
         html_file_path = None
         if output_html:

@@ -304,8 +304,13 @@ you need to provide the following additional parameters:
 
 .. note::
     If you are interested in synchronizing at **word granularity**,
-    it is highly suggested to use a **multilevel text format**,
-    even if you are going to use only the timings for the finer granularity.
+    it is highly suggested to use:
+   
+    1. MFCC nonspeech masking; and/or
+    2. a **multilevel text format**,
+       even if you are going to use only the timings for the finer granularity.
+
+    as they generally yield more accurate timings.
 
     (If you do not want the output sync map file to contain
     the multilevel tree hierarchy for the timings,
@@ -315,10 +320,20 @@ you need to provide the following additional parameters:
     :data:`~aeneas.globalconstants.PPN_TASK_OS_FILE_LEVELS`
     with value ``3``).
 
-    There are two main reasons for this suggestion:
+    Since ``aeneas`` v1.7.0,
+    the ``aeneas.tools.execute_task`` has a switch ``--presets-word``
+    that enables MFCC nonspeech masking for single level tasks or
+    MFCC nonspeech masking on level 3 (word) for multilevel tasks.
+    For example::
 
-    1. the computation should be faster, and
-    2. likely, the timings will be more accurate.
+        $ python -m aeneas.tools.execute_task --example-words
+        $ python -m aeneas.tools.execute_task --example-words --presets-word
+        $ python -m aeneas.tools.execute_task --example-words-multilevel
+        $ python -m aeneas.tools.execute_task --example-words-multilevel --presets-word
+
+    The other default settings should be fine for most users,
+    however if you need finer control, feel free to experiment
+    with the following parameters.
 
     Starting with ``aeneas`` v1.5.1,
     you can specify different MFCC parameters for each level, see:
@@ -336,7 +351,22 @@ you need to provide the following additional parameters:
     * :data:`~aeneas.runtimeconfiguration.RuntimeConfiguration.TTS_L1`,
     * :data:`~aeneas.runtimeconfiguration.RuntimeConfiguration.TTS_L2`,
     * :data:`~aeneas.runtimeconfiguration.RuntimeConfiguration.TTS_L3`.
+
+    Starting with ``aeneas`` v1.7.0,
+    you can specify the MFCC nonspeech masking, for both
+    single level tasks and multilevel tasks.
+    In the latter case, you can apply it to each level separately, see:
+
+    * :data:`~aeneas.runtimeconfiguration.RuntimeConfiguration.MFCC_MASK_NONSPEECH`,
+    * :data:`~aeneas.runtimeconfiguration.RuntimeConfiguration.MFCC_MASK_NONSPEECH_L1`,
+    * :data:`~aeneas.runtimeconfiguration.RuntimeConfiguration.MFCC_MASK_NONSPEECH_L2`,
+    * :data:`~aeneas.runtimeconfiguration.RuntimeConfiguration.MFCC_MASK_NONSPEECH_L3`.
     
+    If you are using a multilevel text format,
+    you might want to enable MFCC masking only for level 3 (word),
+    as enabling it for level 1 and 2 does not seem to yield significantly
+    better results.
+
     The ``aeneas`` mailing list contains some interesting threads
     about using aeneas for word-level synchronization.
 

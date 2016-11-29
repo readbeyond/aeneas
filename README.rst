@@ -87,12 +87,13 @@ System Requirements
 Supported Platforms
 ~~~~~~~~~~~~~~~~~~~
 
-**aeneas** has been developed and tested on **Debian 64bit**, which is
-the **only supported OS** at the moment. Nevertheless, **aeneas** has
-been confirmed to work on other Linux distributions, Mac OS X, and
-Windows. See the `PLATFORMS
+**aeneas** has been developed and tested on **Debian 64bit**, with
+**Python 2.7** and **Python 3.5**, which are the **only supported
+platforms** at the moment. Nevertheless, **aeneas** has been confirmed
+to work on other Linux distributions, Mac OS X, and Windows. See the
+`PLATFORMS
 file <https://github.com/readbeyond/aeneas/blob/master/wiki/PLATFORMS.md>`__
-for the details.
+for details.
 
 If installing **aeneas** natively on your OS proves difficult, you are
 strongly encouraged to use
@@ -115,14 +116,16 @@ operating systems.
 
 The generic OS-independent procedure is simple:
 
-1. Install `Python <https://python.org/>`__ (2.7.x preferred),
+1. **Install** `Python <https://python.org/>`__ (2.7.x preferred),
    `FFmpeg <https://www.ffmpeg.org/>`__, and
    `eSpeak <http://espeak.sourceforge.net/>`__
 
-2. Make sure the following executables can be called from your shell:
-   ``espeak``, ``ffmpeg``, ``ffprobe``, ``pip``, and ``python``
+2. Make sure the following **executables** can be called from your
+   **shell**: ``espeak``, ``ffmpeg``, ``ffprobe``, ``pip``, and
+   ``python``
 
-3. First install ``numpy`` with ``pip`` and then ``aeneas``:
+3. First install ``numpy`` with ``pip`` and then ``aeneas`` (this order
+   is important):
 
    .. code:: bash
 
@@ -224,6 +227,8 @@ Documentation and Support
    `HOWITWORKS <https://github.com/readbeyond/aeneas/blob/master/wiki/HOWITWORKS.md>`__
 -  Development history:
    `HISTORY <https://github.com/readbeyond/aeneas/blob/master/wiki/HISTORY.md>`__
+-  Testing:
+   `TESTING <https://github.com/readbeyond/aeneas/blob/master/wiki/TESTING.md>`__
 -  Benchmark suite: https://readbeyond.github.io/aeneas-benchmark/
 
 Supported Features
@@ -268,7 +273,7 @@ Supported Features
 -  Execution parameters tunable at runtime
 -  Code suitable for Web app deployment (e.g., on-demand cloud computing
    instances)
--  Extensive test suite including 1,000+ unit/integration/performance
+-  Extensive test suite including 1,200+ unit/integration/performance
    tests, that run and must pass before each release
 
 Limitations and Missing Features
@@ -278,9 +283,38 @@ Limitations and Missing Features
    might produce a wrong sync map
 -  Audio is assumed to be spoken: not suitable for song captioning, YMMV
    for CC applications
--  No protection against memory trashing if you feed extremely long
-   audio files (>1.5h per single audio file)
+-  No protection against memory swapping: be sure your amount of RAM is
+   adequate for the maximum duration of a single audio file (e.g., 4 GB
+   RAM => max 2h audio; 16 GB RAM => max 10h audio)
 -  `Open issues <https://github.com/readbeyond/aeneas/issues>`__
+
+A Note on Word-Level Alignment
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+A significant number of users runs **aeneas** to align audio and text at
+word-level (i.e., each fragment is a word). Although **aeneas** was not
+designed with word-level alignment in mind and the results might be
+inferior to `ASR-based forced
+aligners <https://github.com/pettarin/forced-alignment-tools>`__ for
+languages with good ASR models, **aeneas** offers some options to
+improve the quality of the alignment at word-level:
+
+-  multilevel text (since v1.5.1), and/or
+-  MFCC nonspeech masking (since v1.7.0, disabled by default).
+
+If you use the ``aeneas.tools.execute_task`` command line tool, you can
+add ``--presets-word`` switch to enable MFCC nonspeech masking, for
+example:
+
+.. code:: bash
+
+    $ python -m aeneas.tools.execute_task --example-words --presets-word
+    $ python -m aeneas.tools.execute_task --example-words-multilevel --presets-word
+
+If you use **aeneas** as a library, just set the appropriate
+``RuntimeConfiguration`` parameters. Please see the `command line
+tutorial <http://www.readbeyond.it/aeneas/docs/clitutorial.html>`__ for
+details.
 
 License
 -------
