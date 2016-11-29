@@ -278,9 +278,31 @@ Limitations and Missing Features
    might produce a wrong sync map
 -  Audio is assumed to be spoken: not suitable for song captioning, YMMV
    for CC applications
--  No protection against memory trashing if you feed extremely long
-   audio files (>1.5h per single audio file)
+-  No protection against memory swapping: be sure your amount of RAM is
+   adequate for the maximum duration of a single audio file (e.g., 4 GB
+   RAM => max 2h audio; 16 GB RAM => max 10h audio)
 -  `Open issues <https://github.com/readbeyond/aeneas/issues>`__
+
+Word-Level Alignment
+~~~~~~~~~~~~~~~~~~~~
+
+A significant number of users runs **aeneas** to align audio and text at
+word-level (i.e., each fragment is a word). Although **aeneas** was not
+designed with word-level alignment in mind and the results might be
+inferior to `ASR-based forced
+aligners <https://github.com/pettarin/forced-alignment-tools>`__ for
+languages with good ASR models, **aeneas** offers some options to
+improve the quality of the alignment at word-level:
+
+-  multilevel text (since v1.5.1), and
+-  MFCC nonspeech masking (since v1.7.0, disabled by default).
+
+If you use the ``aeneas.tools.execute_task`` command line tool, you can
+add ``--presets-word`` switch to enable MFCC nonspeech masking. If you
+use **aeneas** as a library, just set the appropriate
+``RuntimeConfiguration`` parameters. Please see the `command line
+tutorial <http://www.readbeyond.it/aeneas/docs/clitutorial.html>`__ for
+details.
 
 License
 -------

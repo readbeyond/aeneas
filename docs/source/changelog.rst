@@ -49,6 +49,7 @@ v1.7.0 (2016-12-07)
 #. Changed ``--rates`` to ``--rate`` in ``ExecuteTaskCLI``
 #. Fixes issue with ``gf.relative_path()`` in Windows, if executed from a drive different than install drive
 #. Fixed a bug with empty fragments when using subprocess TTS with TTS cache enabled
+#. Added ``--presets-word`` switch to ``aeneas.tools.execute_task``
 
 v1.6.0.1 (2016-09-30)
 ---------------------

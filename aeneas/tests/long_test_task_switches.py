@@ -76,6 +76,15 @@ class TestExecuteTaskCLI(unittest.TestCase):
             ("", "--output-html")
         ], 0)
 
+    def test_exec_presets_word(self):
+        self.execute([
+            ("in", "../tools/res/audio.mp3"),
+            ("in", "../tools/res/words.txt"),
+            ("", "task_language=eng|is_text_type=plain|os_task_file_format=json"),
+            ("out", "sonnet.json"),
+            ("", "--presets-word")
+        ], 0)
+
     def test_exec_rate(self):
         self.execute([
             ("in", "../tools/res/audio.mp3"),
