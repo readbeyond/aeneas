@@ -26,6 +26,10 @@ This module contains the following classes:
 
 * :class:`~aeneas.ttswrappers.espeakttswrapper.ESPEAKTTSWrapper`,
   a wrapper for the ``eSpeak`` TTS engine.
+
+Please refer to
+http://espeak.sourceforge.net/
+for further details.
 """
 
 from __future__ import absolute_import

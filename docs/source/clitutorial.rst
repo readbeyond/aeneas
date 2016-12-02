@@ -514,11 +514,17 @@ Examples:
 
         python -m aeneas.tools.execute_task --example-json -r="tts=festival|tts_path=/path/to/text2wave"
 
-#. use the Nuance TTS API instead of eSpeak::
+#. use the AWS Polly TTS API instead of eSpeak (with TTS caching enabled):
 
     .. code-block:: text
 
-        python -m aeneas.tools.execute_task --example-json -r="tts=nuance|nuance_tts_api_id=YOUR_NUANCE_API_ID|nuance_tts_api_key=YOUR_NUANCE_API_KEY"
+        python -m aeneas.tools.execute_task --example-json -r="tts=aws|tts_cache=True"
+
+#. use the Nuance TTS API instead of eSpeak (with TTS caching enabled):
+
+    .. code-block:: text
+
+        python -m aeneas.tools.execute_task --example-json -r="tts=nuance|nuance_tts_api_id=YOUR_NUANCE_API_ID|nuance_tts_api_key=YOUR_NUANCE_API_KEY|tts_cache=True"
 
 #. use a custom TTS wrapper located at ``/path/to/your/wrapper.py`` (see the ``aeneas/extra/`` directory for examples):
 
@@ -532,11 +538,11 @@ Examples:
 
         python -m aeneas.tools.execute_task --example-json -r="tmp_path=/path/to/tmp/"
 
-#. allow processing tasks with arbitrarily long audio:
+#. allow processing tasks with audio files at most 1 hour (= 3600 seconds) long:
 
     .. code-block:: text
 
-        python -m aeneas.tools.execute_task --example-json -r="task_max_audio_length=0"
+        python -m aeneas.tools.execute_task --example-json -r="task_max_audio_length=3600"
 
 Miscellanea
 -----------
@@ -548,7 +554,7 @@ Miscellanea
    setting each boundary between adjacent fragments to the middle of the nonspeech interval,
    using the :data:`~aeneas.adjustboundaryalgorithm.AdjustBoundaryAlgorithm.PERCENT` algorithm
    with value ``50`` (i.e., ``50%``)
-#. ``--example-rates``: adjust the output sync map, trying to ensure that no fragment has
+#. ``--example-rate``: adjust the output sync map, trying to ensure that no fragment has
    a rate of more than ``14`` character/s,
    using the :data:`~aeneas.adjustboundaryalgorithm.AdjustBoundaryAlgorithm.RATE` algorithm
 #. ``--example-sd``: detect the audio head/tail, each at most ``10.000`` seconds long

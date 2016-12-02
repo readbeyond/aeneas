@@ -561,29 +561,6 @@ class RuntimeConfiguration(Configuration):
     .. versionadded:: 1.5.0
     """
 
-    NUANCE_TTS_API_SLEEP = "nuance_tts_api_sleep"
-    """
-    Wait this number of seconds before the next HTTP POST request
-    to the Nuance TTS API.
-    This parameter can be used to throttle the HTTP usage.
-    It cannot be a negative value.
-
-    Default: ``1.000``.
-
-    .. versionadded:: 1.5.0
-    """
-
-    NUANCE_TTS_API_RETRY_ATTEMPTS = "nuance_tts_api_retry_attempts"
-    """
-    Retry an HTTP POST request to the Nuance TTS API
-    for this number of times before giving up.
-    It must be an integer greater than zero.
-
-    Default: ``5``.
-
-    .. versionadded:: 1.5.0
-    """
-
     SAFETY_CHECKS = "safety_checks"
     """
     If ``True``, perform safety checks on input files and parameters.
@@ -604,9 +581,10 @@ class RuntimeConfiguration(Configuration):
     Maximum length of the audio file of a Task, in seconds.
     If a Task has an audio file longer than this value,
     it will not be executed and an error will be raised.
-    Use ``0`` for disabling this check.
 
-    Default: ``7200`` seconds.
+    Use ``0`` to disable this check.
+
+    Default: ``0`` seconds.
 
     .. versionadded:: 1.4.1
     """
@@ -617,7 +595,7 @@ class RuntimeConfiguration(Configuration):
     If a Task has more text fragments than this value,
     it will not be executed and an error will be raised.
 
-    Use ``0`` for disabling this check.
+    Use ``0`` to disable this check.
 
     Default: ``0`` (disabled).
 
@@ -671,6 +649,17 @@ class RuntimeConfiguration(Configuration):
     one of the directories listed in your ``PATH`` environment variable.
 
     Specify the value
+    :data:`~aeneas.synthesizer.Synthesizer.AWS` (``aws``)
+    to use the built-in AWS Polly TTS API wrapper;
+    you will need to provide your AWS API Access Key and Secret Access Key
+    by either storing them on disk
+    (e.g., in ``~/.aws/credentials`` and ``~/.aws/config``)
+    or setting them in environment variables.
+    Please refer to
+    http://boto3.readthedocs.io/en/latest/guide/configuration.html
+    for further details.
+
+    Specify the value
     :data:`~aeneas.synthesizer.Synthesizer.NUANCE` (``nuance``)
     to use the built-in Nuance TTS API wrapper;
     you will need to provide your Nuance Developer API ID and API Key using the
@@ -689,27 +678,6 @@ class RuntimeConfiguration(Configuration):
     parameter.
 
     .. versionadded:: 1.5.0
-    """
-
-    TTS_CACHE = "tts_cache"
-    """
-    If set to ``True``, synthesize each distinct text fragment
-    only once, caching the resulting audio data as a file on disk.
-
-    The cache files will be removed after the synthesis is compled.
-
-    This option is useful when calling TTS engines,
-    via subprocess or remote APIs,
-    on text files with many identical fragments,
-    for example when aligning at word-level granularity.
-
-    Enabling this option will create the cache files in
-    :data:`~aeneas.runtimeconfiguration.RuntimeConfiguration.TMP_PATH`,
-    so make sure that that path has enough free space.
-
-    Default: ``False``.
-
-    .. versionadded:: 1.6.0
     """
 
     TTS_PATH = "tts_path"
@@ -736,6 +704,56 @@ class RuntimeConfiguration(Configuration):
     associated with the language of your text.
 
     Default: ``None``.
+
+    .. versionadded:: 1.5.0
+    """
+
+    TTS_CACHE = "tts_cache"
+    """
+    If set to ``True``, synthesize each distinct text fragment
+    only once, caching the resulting audio data as a file on disk.
+
+    The cache files will be removed after the synthesis is compled.
+
+    This option is useful when calling TTS engines,
+    via subprocess or remote APIs,
+    on text files with many identical fragments,
+    for example when aligning at word-level granularity.
+
+    Enabling this option will create the cache files in
+    :data:`~aeneas.runtimeconfiguration.RuntimeConfiguration.TMP_PATH`,
+    so make sure that that path has enough free space.
+
+    Default: ``False``.
+
+    .. versionadded:: 1.6.0
+    """
+
+    TTS_API_SLEEP = "tts_api_sleep"
+    """
+    Wait this number of seconds before the next HTTP POST request
+    to the Nuance TTS API.
+    This parameter can be used to throttle the HTTP usage.
+    It cannot be a negative value.
+
+    Note that this parameter was called ``nuance_tts_api_sleep``
+    before v1.7.0.
+
+    Default: ``1.000``.
+
+    .. versionadded:: 1.5.0
+    """
+
+    TTS_API_RETRY_ATTEMPTS = "tts_api_retry_attempts"
+    """
+    Retry an HTTP POST request to the Nuance TTS API
+    for this number of times before giving up.
+    It must be an integer greater than zero.
+
+    Note that this parameter was called ``nuance_tts_api_retry_attempts``
+    before v1.7.0.
+
+    Default: ``5``.
 
     .. versionadded:: 1.5.0
     """
@@ -926,12 +944,10 @@ class RuntimeConfiguration(Configuration):
 
         (NUANCE_TTS_API_ID, (None, None, [], u"Nuance Developer API ID")),
         (NUANCE_TTS_API_KEY, (None, None, [], u"Nuance Developer API Key")),
-        (NUANCE_TTS_API_SLEEP, ("1.000", TimeValue, [], u"sleep between Nuance API calls, in s")),
-        (NUANCE_TTS_API_RETRY_ATTEMPTS, (5, int, [], u"number of retries for a failed Nuance API call")),
 
         (SAFETY_CHECKS, (True, bool, [], u"if True, always perform safety checks")),
 
-        (TASK_MAX_AUDIO_LENGTH, ("7200.0", TimeValue, [], u"max length of single audio file, in s (0 to disable)")),
+        (TASK_MAX_AUDIO_LENGTH, ("0", TimeValue, [], u"max length of single audio file, in s (0 to disable)")),
         (TASK_MAX_TEXT_LENGTH, (0, int, [], u"max length of single text file, in fragments (0 to disable)")),
 
         (TMP_PATH, (None, None, [], u"path to the temporary dir")),
@@ -940,6 +956,8 @@ class RuntimeConfiguration(Configuration):
         (TTS_PATH, (None, None, [], u"path of the TTS executable/wrapper")),                # None (= default) or "espeak" or "/usr/bin/espeak"
         (TTS_VOICE_CODE, (None, None, [], u"overrides TTS voice code selected by language with this value")),
         (TTS_CACHE, (False, bool, [], u"if True, cache synthesized audio files")),
+        (TTS_API_SLEEP, ("1.000", TimeValue, [], u"sleep between TTS API calls, in s")),
+        (TTS_API_RETRY_ATTEMPTS, (5, int, [], u"number of retries for a failed TTS API call")),
 
         (TTS_L1, ("espeak", None, [], u"TTS wrapper to use at level 1 (para)")),
         (TTS_PATH_L1, (None, None, [], u"path to level 1 (para) TTS executable/wrapper")),  # None (= default) or "espeak" or "/usr/bin/espeak"

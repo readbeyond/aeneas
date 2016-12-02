@@ -50,6 +50,9 @@ v1.7.0 (2016-12-07)
 #. Fixes issue with ``gf.relative_path()`` in Windows, if executed from a drive different than install drive
 #. Fixed a bug with empty fragments when using subprocess TTS with TTS cache enabled
 #. Added ``--presets-word`` switch to ``aeneas.tools.execute_task``
+#. Added ``AWSTTSWrapper`` wrapper for AWS Polly TTS API 
+#. Renamed ``nuance_tts_api_sleep`` (``NUANCE_TTS_API_SLEEP``) to ``tts_api_sleep`` (``TTS_API_SLEEP``) in ``RuntimeConfiguration``
+#. Renamed ``nuance_tts_api_retry_attempts`` (``NUANCE_TTS_API_RETRY_ATTEMPTS``) to ``tts_api_retry_attempts`` (``TTS_API_RETRY_ATTEMPTS``) in ``RuntimeConfiguration``
 
 v1.6.0.1 (2016-09-30)
 ---------------------

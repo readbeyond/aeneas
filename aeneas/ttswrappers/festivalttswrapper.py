@@ -26,6 +26,10 @@ This module contains the following classes:
 
 * :class:`~aeneas.ttswrappers.festivalttswrapper.FESTIVALTTSWrapper`,
   a wrapper for the ``Festival`` TTS engine.
+
+Please refer to
+http://www.cstr.ed.ac.uk/projects/festival/
+for further details.
 """
 
 from __future__ import absolute_import
@@ -51,7 +55,7 @@ class FESTIVALTTSWrapper(BaseTTSWrapper):
 
     In abstract terms, it performs one or more calls like ::
 
-        $ echo text | text2wave -eval (language_italian) -o output_file.wav
+        $ echo text | text2wave -eval "(language_italian)" -o output_file.wav
 
     To use this TTS engine, specify ::
 

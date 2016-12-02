@@ -168,12 +168,23 @@ class SynthesizeTextCLI(AbstractCLIProgram):
                 backwards=backwards
             )
             self.print_success(u"Created file '%s'" % output_file_path)
+            synt.clear_cache()
             return self.NO_ERROR_EXIT_CODE
         except ImportError as exc:
-            self.print_error(u"You need to install Python module requests to use the Nuance TTS API wrapper. Run:")
-            self.print_error(u"$ pip install requests")
-            self.print_error(u"or, to install for all users:")
-            self.print_error(u"$ sudo pip install requests")
+            tts = self.rconf[RuntimeConfiguration.TTS]
+            if tts == Synthesizer.AWS:
+                self.print_error(u"You need to install Python module boto3 to use the AWS Polly TTS API wrapper. Run:")
+                self.print_error(u"$ pip install boto3")
+                self.print_error(u"or, to install for all users:")
+                self.print_error(u"$ sudo pip install boto3")
+            elif tts == Synthesizer.NUANCE:
+                self.print_error(u"You need to install Python module requests to use the Nuance TTS API wrapper. Run:")
+                self.print_error(u"$ pip install requests")
+                self.print_error(u"or, to install for all users:")
+                self.print_error(u"$ sudo pip install requests")
+            else:
+                self.print_error(u"An unexpected error occurred while synthesizing text:")
+                self.print_error(u"%s" % exc)
         except Exception as exc:
             self.print_error(u"An unexpected error occurred while synthesizing text:")
             self.print_error(u"%s" % exc)
