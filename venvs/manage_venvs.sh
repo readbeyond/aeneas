@@ -56,7 +56,8 @@ deps() {
             then
                 pip install -U cython git+https://github.com/numpy/numpy.git
             else
-                pip install cython git+https://github.com/numpy/numpy.git
+                #pip install cython git+https://github.com/numpy/numpy.git
+                echo "[INFO] Not upgrading numpy (switch --no-numpy-upgrade)"
             fi
         else
             # otherwise, just install regular numpy
@@ -64,7 +65,8 @@ deps() {
             then
                 pip install -U numpy
             else
-                pip install numpy
+                #pip install numpy
+                echo "[INFO] Not upgrading numpy (switch --no-numpy-upgrade)"
             fi
         fi
         pip install -U lxml BeautifulSoup4
@@ -215,7 +217,6 @@ for PARAM in $@
 do
     if [ "$PARAM" == "--no-numpy-upgrade" ]
     then
-        echo "[INFO] Not upgrading numpy (switch --no-numpy-upgrade)"
         UPGRADENUMPY=0
     fi
 done
