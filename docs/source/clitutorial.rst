@@ -514,13 +514,13 @@ Examples:
 
         python -m aeneas.tools.execute_task --example-json -r="tts=festival|tts_path=/path/to/text2wave"
 
-#. use the AWS Polly TTS API instead of eSpeak (with TTS caching enabled)::
+#. use the AWS Polly TTS API instead of eSpeak (with TTS caching enabled):
 
     .. code-block:: text
 
         python -m aeneas.tools.execute_task --example-json -r="tts=aws|tts_cache=True"
 
-#. use the Nuance TTS API instead of eSpeak (with TTS caching enabled)::
+#. use the Nuance TTS API instead of eSpeak (with TTS caching enabled):
 
     .. code-block:: text
 
@@ -554,7 +554,7 @@ Miscellanea
    setting each boundary between adjacent fragments to the middle of the nonspeech interval,
    using the :data:`~aeneas.adjustboundaryalgorithm.AdjustBoundaryAlgorithm.PERCENT` algorithm
    with value ``50`` (i.e., ``50%``)
-#. ``--example-rates``: adjust the output sync map, trying to ensure that no fragment has
+#. ``--example-rate``: adjust the output sync map, trying to ensure that no fragment has
    a rate of more than ``14`` character/s,
    using the :data:`~aeneas.adjustboundaryalgorithm.AdjustBoundaryAlgorithm.RATE` algorithm
 #. ``--example-sd``: detect the audio head/tail, each at most ``10.000`` seconds long

@@ -4,7 +4,7 @@ NAME
   execute_task - Execute a Task.
 
 SYNOPSIS
-  python -m aeneas.tools.execute_task [-h|--help|--version]
+  python -m aeneas.tools.execute_task [-h|--help|--help-rconf|--version]
   python -m aeneas.tools.execute_task --list-parameters
   python -m aeneas.tools.execute_task --list-values[=PARAM]
   python -m aeneas.tools.execute_task AUDIO_FILE  TEXT_FILE CONFIG_STRING OUTPUT_FILE [OPTIONS]
@@ -13,13 +13,15 @@ SYNOPSIS
 OPTIONS
   --faster-rate : print fragments with rate > task_adjust_boundary_rate_value
   --help : print full help and exit
+  --help-rconf : list all runtime configuration parameters
   --keep-audio : do not delete the audio file downloaded from YouTube (-y only)
   --largest-audio : download largest audio stream (-y only)
   --list-parameters : list all parameters
   --list-values : list all parameters for which values can be listed
   --list-values=PARAM : list all allowed values for parameter PARAM
   --output-html : output HTML file for fine tuning
-  --rates : print rate of each fragment
+  --presets-word : apply presets for word-level alignment (MFCC masking)
+  --rate : print rate of each fragment
   --skip-validator : do not validate the given config string
   --version : print the program name and version and exit
   --zero : print fragments with zero duration

@@ -4,12 +4,14 @@ NAME
   execute_job - Execute a Job, passed as a container.
 
 SYNOPSIS
-  python -m aeneas.tools.execute_job [-h|--help|--version]
+  python -m aeneas.tools.execute_job [-h|--help|--help-rconf|--version]
+  python -m aeneas.tools.execute_job --list-parameters
   python -m aeneas.tools.execute_job CONTAINER OUTPUT_DIR [CONFIG_STRING] [OPTIONS]
 
 OPTIONS
   --cewsubprocess : run cew in separate process (see docs)
   --help : print full help and exit
+  --help-rconf : list all runtime configuration parameters
   --skip-validator : do not validate the given container and/or config string
   --version : print the program name and version and exit
   -h : print short help and exit
