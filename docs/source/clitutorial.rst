@@ -514,11 +514,17 @@ Examples:
 
         python -m aeneas.tools.execute_task --example-json -r="tts=festival|tts_path=/path/to/text2wave"
 
-#. use the Nuance TTS API instead of eSpeak::
+#. use the AWS Polly TTS API instead of eSpeak (with TTS caching enabled)::
 
     .. code-block:: text
 
-        python -m aeneas.tools.execute_task --example-json -r="tts=nuance|nuance_tts_api_id=YOUR_NUANCE_API_ID|nuance_tts_api_key=YOUR_NUANCE_API_KEY"
+        python -m aeneas.tools.execute_task --example-json -r="tts=aws|tts_cache=True"
+
+#. use the Nuance TTS API instead of eSpeak (with TTS caching enabled)::
+
+    .. code-block:: text
+
+        python -m aeneas.tools.execute_task --example-json -r="tts=nuance|nuance_tts_api_id=YOUR_NUANCE_API_ID|nuance_tts_api_key=YOUR_NUANCE_API_KEY|tts_cache=True"
 
 #. use a custom TTS wrapper located at ``/path/to/your/wrapper.py`` (see the ``aeneas/extra/`` directory for examples):
 

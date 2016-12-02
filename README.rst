@@ -251,8 +251,8 @@ Supported Features
    SWE, TUR, UKR
 -  MFCC and DTW computed via Python C extensions to reduce the
    processing time
--  Several built-in TTS engine wrappers: eSpeak (default), eSpeak-ng,
-   Festival, Nuance TTS API
+-  Several built-in TTS engine wrappers: AWS Polly TTS API, eSpeak
+   (default), eSpeak-ng, Festival, Nuance TTS API
 -  Default TTS (eSpeak) called via a Python C extension for fast audio
    synthesis
 -  Possibility of running a custom, user-provided TTS engine Python

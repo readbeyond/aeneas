@@ -45,6 +45,7 @@ from aeneas.task import Task
 from aeneas.task import TaskConfiguration
 from aeneas.textfile import TextFileFormat
 from aeneas.tools.abstract_cli_program import AbstractCLIProgram
+from aeneas.ttswrappers.awsttswrapper import AWSTTSWrapper
 from aeneas.ttswrappers.espeakngttswrapper import ESPEAKNGTTSWrapper
 from aeneas.ttswrappers.espeakttswrapper import ESPEAKTTSWrapper
 from aeneas.ttswrappers.festivalttswrapper import FESTIVALTTSWrapper
@@ -394,6 +395,7 @@ class ExecuteTaskCLI(AbstractCLIProgram):
     PARAMETERS = TaskConfiguration.parameters(sort=True, as_strings=True)
 
     VALUES = {
+        "aws": AWSTTSWrapper.CODE_TO_HUMAN_LIST,
         "espeak": ESPEAKTTSWrapper.CODE_TO_HUMAN_LIST,
         "espeak-ng": ESPEAKNGTTSWrapper.CODE_TO_HUMAN_LIST,
         "festival": FESTIVALTTSWrapper.CODE_TO_HUMAN_LIST,
@@ -428,7 +430,7 @@ class ExecuteTaskCLI(AbstractCLIProgram):
             u"--list-values : list all parameters for which values can be listed",
             u"--list-values=PARAM : list all allowed values for parameter PARAM",
             u"--output-html : output HTML file for fine tuning",
-            u"--presets-word : apply presets for word-level alignment (MFCC masking)", 
+            u"--presets-word : apply presets for word-level alignment (MFCC masking)",
             u"--rate : print rate of each fragment",
             u"--skip-validator : do not validate the given config string",
             u"--zero : print fragments with zero duration",

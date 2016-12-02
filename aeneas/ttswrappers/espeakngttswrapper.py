@@ -26,6 +26,10 @@ This module contains the following classes:
 
 * :class:`~aeneas.ttswrappers.espeakngttswrapper.ESPEAKNGTTSWrapper`,
   a wrapper for the ``eSpeak-ng`` TTS engine.
+
+Please refer to
+https://github.com/espeak-ng/espeak-ng/
+for further details.
 """
 
 from __future__ import absolute_import

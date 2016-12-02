@@ -68,6 +68,9 @@ class TestExecuteTaskCLI(unittest.TestCase):
     def test_list_values_bad(self):
         self.execute([("", "--list-values=foo")], 2)
 
+    def test_list_values_aws(self):
+        self.execute([("", "--list-values=aws")], 2)
+
     def test_list_values_espeak(self):
         self.execute([("", "--list-values=espeak")], 2)
 

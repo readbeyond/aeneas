@@ -61,30 +61,35 @@ PKG_INSTALL_REQUIRES = [
 # required packages to install extra tools
 PKG_EXTRAS_REQUIRE = {
     "full": [
+        "boto3>=1.4.2",
         "pafy>=0.5.2",
         "Pillow>=3.1.1",
         "requests>=2.9.1",
         "tgt>=1.4.2",
-        "youtube-dl>=2016.9.27"
+        "youtube-dl>=2016.9.27",
     ],
     "nopillow": [
+        "boto3>=1.4.2",
         "pafy>=0.5.2",
         "requests>=2.9.1",
         "tgt>=1.4.2",
-        "youtube-dl>=2016.9.27"
+        "youtube-dl>=2016.9.27",
+    ],
+    "boto3": [
+        "boto3>=1.4.2",
     ],
     "pafy": [
         "pafy>=0.5.2",
-        "youtube-dl>=2016.9.27"
+        "youtube-dl>=2016.9.27",
     ],
     "pillow": [
-        "Pillow>=3.1.1"
+        "Pillow>=3.1.1",
     ],
     "requests": [
-        "requests>=2.9.1"
+        "requests>=2.9.1",
     ],
     "tgt": [
-        "tgt>=1.4.2"
+        "tgt>=1.4.2",
     ]
 }
 
@@ -196,6 +201,7 @@ except:
 # PyPI keywords
 PKG_KEYWORDS = [
     "AUD",
+    "AWS Polly TTS API",
     "CSV",
     "DTW",
     "EAF",
@@ -203,9 +209,11 @@ PKG_KEYWORDS = [
     "EPUB 3 Media Overlay",
     "EPUB 3",
     "EPUB",
+    "Festival",
     "JSON",
     "MFCC",
     "Mel-frequency cepstral coefficients",
+    "Nuance TTS API",
     "ReadBeyond Sync",
     "ReadBeyond",
     "SBV",
@@ -213,16 +221,20 @@ PKG_KEYWORDS = [
     "SRT",
     "SSV",
     "SUB",
-    "TextGrid",
     "TGT",
     "TSV",
     "TTML",
+    "TTS",
+    "TextGrid",
     "VTT",
     "XML",
     "aeneas",
     "audio/text alignment",
     "dynamic time warping",
+    "eSpeak",
+    "eSpeak-ng",
     "espeak",
+    "espeak-ng",
     "festival",
     "ffmpeg",
     "ffprobe",
@@ -234,7 +246,8 @@ PKG_KEYWORDS = [
     "sync",
     "synchronization",
     "text to speech",
-    "tts"
+    "text2wave",
+    "tts",
 ]
 
 # PyPI classifiers

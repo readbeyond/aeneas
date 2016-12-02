@@ -37,6 +37,7 @@ from __future__ import print_function
 from aeneas.logger import Loggable
 from aeneas.runtimeconfiguration import RuntimeConfiguration
 from aeneas.textfile import TextFile
+from aeneas.ttswrappers.awsttswrapper import AWSTTSWrapper
 from aeneas.ttswrappers.espeakngttswrapper import ESPEAKNGTTSWrapper
 from aeneas.ttswrappers.espeakttswrapper import ESPEAKTTSWrapper
 from aeneas.ttswrappers.festivalttswrapper import FESTIVALTTSWrapper
@@ -54,10 +55,16 @@ class Synthesizer(Loggable):
     :type  rconf: :class:`~aeneas.runtimeconfiguration.RuntimeConfiguration`
     :param logger: the logger object
     :type  logger: :class:`~aeneas.logger.Logger`
-    :raises: OSError: if a custom TTS engine is requested but it cannot be loaded
-    :raises: ImportError: if the Nuance TTS API wrapper is requested but
-                          the``requests`` module is not installed
+    :raises: OSError: if a custom TTS engine is requested
+                      but it cannot be loaded
+    :raises: ImportError: if the AWS Polly TTS API wrapper is requested
+                          but the ``boto3`` module is not installed, or
+                          if the Nuance TTS API wrapper is requested
+                          but the``requests`` module is not installed
     """
+
+    AWS = "aws"
+    """ Select AWS Polly TTS API wrapper """
 
     CUSTOM = "custom"
     """ Select custom TTS engine wrapper """
@@ -74,7 +81,7 @@ class Synthesizer(Loggable):
     NUANCE = "nuance"
     """ Select Nuance TTS API wrapper """
 
-    ALLOWED_VALUES = [CUSTOM, ESPEAK, ESPEAKNG, FESTIVAL, NUANCE]
+    ALLOWED_VALUES = [AWS, CUSTOM, ESPEAK, ESPEAKNG, FESTIVAL, NUANCE]
     """ List of all the allowed values """
 
     TAG = u"Synthesizer"
@@ -110,9 +117,13 @@ class Synthesizer(Loggable):
                 self.log(u"Creating CustomTTSWrapper instance... done")
             except Exception as exc:
                 self.log_exc(u"Unable to load custom TTS wrapper", exc, True, OSError)
-        elif requested_tts_engine == self.FESTIVAL:
-            self.log(u"TTS engine: Festival")
-            self.tts_engine = FESTIVALTTSWrapper(rconf=self.rconf, logger=self.logger)
+        elif requested_tts_engine == self.AWS:
+            try:
+                import boto3
+            except ImportError as exc:
+                self.log_exc(u"Unable to import boto3 for AWS Polly TTS API wrapper", exc, True, ImportError)
+            self.log(u"TTS engine: AWS Polly TTS API")
+            self.tts_engine = AWSTTSWrapper(rconf=self.rconf, logger=self.logger)
         elif requested_tts_engine == self.NUANCE:
             try:
                 import requests
@@ -123,6 +134,9 @@ class Synthesizer(Loggable):
         elif requested_tts_engine == self.ESPEAKNG:
             self.log(u"TTS engine: eSpeak-ng")
             self.tts_engine = ESPEAKNGTTSWrapper(rconf=self.rconf, logger=self.logger)
+        elif requested_tts_engine == self.FESTIVAL:
+            self.log(u"TTS engine: Festival")
+            self.tts_engine = FESTIVALTTSWrapper(rconf=self.rconf, logger=self.logger)
         else:
             self.log(u"TTS engine: eSpeak")
             self.tts_engine = ESPEAKTTSWrapper(rconf=self.rconf, logger=self.logger)
