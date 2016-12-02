@@ -15,7 +15,7 @@
 | Mac OS X 10.9     | 64        | Yes        | Yes            | Unknown  |
 | Mac OS X 10.10    | 64        | Yes        | Yes            | Unknown  |
 | Mac OS X 10.11    | 64        | Yes        | Yes            | Unknown  |
-| Mac OS X 10.12    | 64        | Yes        | Yes            | Unknown  |
+| Mac OS X 10.12    | 64        | Yes        | Yes            | Yes      |
 | Windows Vista     | 32        | Yes (1)    | Yes (1, 2)     | Unknown  |
 | Windows 7         | 32        | Yes (1)    | Yes (1, 2)     | Unknown  |
 | Windows 7         | 64        | Yes (1)    | Yes (1, 2)     | Unknown  |
@@ -39,7 +39,7 @@ As long as the OS/Python dependencies are available,
 newer versions of ``aeneas`` are expected to work too.
 
 (*) The ``cfw`` Python C++ extension to speed up text synthesis
-with Festival is experimental and probably it only works on Linux.
+with Festival is experimental and it only works on Linux and Mac OS X.
 
 Do you need official support for another OS?
 Consider **sponsoring** this project!

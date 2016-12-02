@@ -21,10 +21,6 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-"""
-TBW
-"""
-
 from __future__ import absolute_import
 from __future__ import print_function
 
@@ -36,6 +32,9 @@ import aeneas.globalfunctions as gf
 
 
 class SyncMapFormatEAF(SyncMapFormatGenericXML):
+    """
+    Handler for ELAN I/O format (EAF).
+    """
 
     TAG = u"SyncMapFormatEAF"
 

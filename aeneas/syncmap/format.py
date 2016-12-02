@@ -108,7 +108,7 @@ class SyncMapFormat(object):
     * Multiple lines: no
 
     Please note that the text is assumed to be contained
-    in double quotes (``"..."``),
+    in double quotes ("..."),
     which are stripped when reading from file,
     and added back when writing to file.
 
@@ -128,7 +128,7 @@ class SyncMapFormat(object):
     * Multiple lines: no
 
     Please note that the text is assumed to be contained
-    in double quotes (``"..."``),
+    in double quotes ("..."),
     which are stripped when reading from file,
     and added back when writing to file.
 
@@ -180,7 +180,7 @@ class SyncMapFormat(object):
     * Multiple levels: no
     * Multiple lines: no
 
-    See also https://tla.mpi.nl/tla-news/documentation-of-eaf-elan-annotation-format/https://tla.mpi.nl/tla-news/documentation-of-eaf-elan-annotation-format/
+    See also https://tla.mpi.nl/tla-news/documentation-of-eaf-elan-annotation-format/
 
     .. versionadded:: 1.5.0
     """
@@ -252,7 +252,7 @@ class SyncMapFormat(object):
     * Multiple levels: no
     * Multiple lines: no
 
-    See also https://github.com/pettarin/rb_smil_emulatorhttps://github.com/pettarin/rb_smil_emulator
+    See also https://github.com/pettarin/rb_smil_emulator
 
     Deprecated, it will be removed in v2.0.0.
 
@@ -750,7 +750,7 @@ class SyncMapFormat(object):
     * Multiple lines: no
 
     Deprecated, it will be removed in v2.0.0.
-    Use XML instead.
+    Use ``XML`` instead.
 
     .. deprecated:: 1.2.0
     """

@@ -10,7 +10,7 @@ subpackage.
 The tests cover both the library ``aeneas``
 and the CLI tools ``aeneas.tools``.
 
-Currently, there are more than 1,000 tests.
+Currently, there are more than 1,200 tests.
 
 ### Structure of the Tests
 
@@ -55,11 +55,14 @@ $ python run_all_unit_tests.py -h
 $ # run all regular tests (< 3 minutes)
 $ python run_all_unit_tests.py
 
-$ # run all tool tests (< 15 minutes)
+$ # run all tool tests (< 5 minutes)
 $ python run_all_unit_tests.py -t
 
-$ # run all long tests (< 5 minutes)
+$ # run all long tests (< 15 minutes)
 $ python run_all_unit_tests.py -l
+
+$ # run all benchmark tests (< 15 minutes)
+$ python run_all_unit_tests.py -b
 
 $ # run all regular tests with verbose output including error messages
 $ python run_all_unit_tests.py -v
@@ -83,7 +86,7 @@ for testing purposes.
 ### Release Process
 
 Before releasing a new version of ``aeneas``,
-all tests (regular, tools, long, network)
+all tests (regular, tools, long, benchmark, network)
 are run on **all**
 [supported platforms and Python interpreters](https://github.com/readbeyond/aeneas/blob/master/wiki/PLATFORMS.md).
 
