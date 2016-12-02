@@ -13,7 +13,7 @@
 
 usage() {
     echo ""
-    echo "Usage: bash $0 [python2.7|python3.4|python3.5|pypy] [uninstall|install|deps|sdist|tests|full]"
+    echo "Usage: bash $0 [py2.7|py3.4|py3.5|py3.6|pypy] [uninstall|install|deps|sdist|tests|full] [--no-numpy-upgrade]"
     echo ""
 }
 
@@ -52,10 +52,20 @@ deps() {
         then
             # on pypy install cython and numpy from its devel repo
             # as recommended in http://pypy.org/download.html
-            pip install -U cython git+https://github.com/numpy/numpy.git
+            if [ "$3" -eq "1" ]
+            then
+                pip install -U cython git+https://github.com/numpy/numpy.git
+            else
+                pip install cython git+https://github.com/numpy/numpy.git
+            fi
         else
             # otherwise, just install regular numpy
-            pip install -U numpy
+            if [ "$3" -eq "1" ]
+            then
+                pip install -U numpy
+            else
+                pip install numpy
+            fi
         fi
         pip install -U lxml BeautifulSoup4
         pip install -U boto3 pafy requests tgt youtube-dl
@@ -200,11 +210,29 @@ fi
 EX=$1
 ACTION=$2
 
-# replace e.g. "venv_python2.7" with "python2.7"
-if [ "${EX:0:5}" == "venv_" ]
-then
-    EX=`echo ${EX:5} | tr -d "/"`
-fi
+UPGRADENUMPY=1
+for PARAM in $@
+do
+    if [ "$PARAM" == "--no-numpy-upgrade" ]
+    then
+        echo "[INFO] Not upgrading numpy (switch --no-numpy-upgrade)"
+        UPGRADENUMPY=0
+    fi
+done
+
+# replace e.g. "venv_python2.7/", "venv_python2.7", "py2.7", "2.7" with "python2.7"
+for V in "2.7" "3.4" "3.5" "3.6" "py"
+do
+    if [ "$EX" == "venv_python$V/" ] || [ "$EX" == "venv_python$V" ] || [ "$EX" == "py$V" ] || [ "$EX" == "$V" ]
+    then
+        if [ "$V" == "py" ]
+        then
+            EX="pypy"
+        else
+            EX="python$V"
+        fi
+    fi
+done
 
 # venv directory name
 D="venv_$EX"
@@ -236,7 +264,7 @@ fi
 
 if [ "$ACTION" == "deps" ]
 then
-    deps $D $EX
+    deps $D $EX $UPGRADENUMPY
 fi
 
 if [ "$ACTION" == "sdist" ]
@@ -257,6 +285,6 @@ fi
 if [ "$ACTION" == "full" ]
 then
     create $D $FULLEX
-    deps $D $EX
+    deps $D $EX $UPGRADENUMPY
     copytests $D
 fi

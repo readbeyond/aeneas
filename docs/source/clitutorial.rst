@@ -538,11 +538,11 @@ Examples:
 
         python -m aeneas.tools.execute_task --example-json -r="tmp_path=/path/to/tmp/"
 
-#. allow processing tasks with arbitrarily long audio:
+#. allow processing tasks with audio files at most 1 hour (= 3600 seconds) long:
 
     .. code-block:: text
 
-        python -m aeneas.tools.execute_task --example-json -r="task_max_audio_length=0"
+        python -m aeneas.tools.execute_task --example-json -r="task_max_audio_length=3600"
 
 Miscellanea
 -----------
