@@ -55,7 +55,9 @@ v1.7.0 (2016-12-07)
 #. Fixed a bug with empty fragments when using subprocess TTS with TTS cache enabled
 #. Added ``--presets-word`` switch to ``aeneas.tools.execute_task``
 #. Added ``AWSTTSWrapper`` wrapper for AWS Polly TTS API 
-#. Reviews docs
+#. Revised docs
+#. Fixed a bug in reading SMIL files with machine-readable timings
+#. Fixed a bug in ``SyncMapFragmentList`` which caused sync map to contain overlapping fragments
 
 v1.6.0.1 (2016-09-30)
 ---------------------
