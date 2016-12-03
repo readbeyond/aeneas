@@ -306,9 +306,10 @@ you need to provide the following additional parameters:
     If you are interested in synchronizing at **word granularity**,
     it is highly suggested to use:
    
-    1. MFCC nonspeech masking; and/or
+    1. MFCC nonspeech masking;
     2. a **multilevel text format**,
-       even if you are going to use only the timings for the finer granularity.
+       even if you are going to use only the timings for the finer granularity;
+    3. better TTS engines, like Festival or AWS/Nuance TTS API;
 
     as they generally yield more accurate timings.
 

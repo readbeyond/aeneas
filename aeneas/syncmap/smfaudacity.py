@@ -21,10 +21,6 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-"""
-TBW
-"""
-
 from __future__ import absolute_import
 from __future__ import print_function
 
@@ -32,6 +28,9 @@ from aeneas.syncmap.smfgtabular import SyncMapFormatGenericTabular
 
 
 class SyncMapFormatAudacity(SyncMapFormatGenericTabular):
+    """
+    Handler for Audacity I/O format.
+    """
 
     TAG = u"SyncMapFormatAudacity"
 

@@ -459,9 +459,18 @@ class SyncMapFragmentList(Loggable):
                         #      | *********** | nsi
                         #      |   ***X      | frag (X=frag.end)
                         #
+                        # NOTE this case might happen as the following:
+                        #
+                        #      *************** nsi shadow
+                        #      |     ***     | nsi
+                        #      | **X         | frag (X=frag.end)
+                        #
+                        #      so we must invalidate the nsi if this happens
+                        #
+                        nsi_counter[nsi_index] = (None, []) 
                         nsi_index += 1
                         frag_index += 1
-                        self.log(u"    nsi_shadow entirely contains frag => skip to next fragment, nsi")
+                        self.log(u"    nsi_shadow entirely contains frag => invalidate nsi, and skip to next fragment, nsi")
                     else:
                         #
                         #      *************** nsi shadow

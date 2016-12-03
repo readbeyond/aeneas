@@ -21,10 +21,6 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-"""
-TBW
-"""
-
 from __future__ import absolute_import
 from __future__ import print_function
 
@@ -35,6 +31,9 @@ import aeneas.globalfunctions as gf
 
 
 class SyncMapFormatSMIL(SyncMapFormatGenericXML):
+    """
+    Handler for SMIL for EPUB 3 I/O format.
+    """
 
     TAG = u"SyncMapFormatSMIL"
 
@@ -70,12 +69,16 @@ class SyncMapFormatSMIL(SyncMapFormatGenericXML):
                 if child.tag == (smil_ns + "text"):
                     identifier = gf.safe_unicode(gf.split_url(child.get("src"))[1])
                 elif child.tag == (smil_ns + "audio"):
-                    begin = gf.time_from_hhmmssmmm(child.get("clipBegin"))
-                    if begin is None:
-                        begin = gf.time_from_ssmmm(child.get("clipBegin"))
-                    end = gf.time_from_hhmmssmmm(child.get("clipEnd"))
-                    if end is None:
-                        end = gf.time_from_ssmmm(child.get("clipEnd"))
+                    begin_text = child.get("clipBegin")
+                    if ":" in begin_text:
+                        begin = gf.time_from_hhmmssmmm(begin_text)
+                    else:
+                        begin = gf.time_from_ssmmm(begin_text)
+                    end_text = child.get("clipEnd")
+                    if ":" in end_text:
+                        end = gf.time_from_hhmmssmmm(end_text)
+                    else:
+                        end = gf.time_from_ssmmm(end_text)
             # TODO read text from additional text_file?
             self._add_fragment(
                 syncmap=syncmap,

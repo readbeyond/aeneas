@@ -299,8 +299,10 @@ aligners <https://github.com/pettarin/forced-alignment-tools>`__ for
 languages with good ASR models, **aeneas** offers some options to
 improve the quality of the alignment at word-level:
 
--  multilevel text (since v1.5.1), and/or
--  MFCC nonspeech masking (since v1.7.0, disabled by default).
+-  multilevel text (since v1.5.1),
+-  MFCC nonspeech masking (since v1.7.0, disabled by default),
+-  use better TTS engines, like Festival or AWS/Nuance TTS API (since
+   v1.5.0).
 
 If you use the ``aeneas.tools.execute_task`` command line tool, you can
 add ``--presets-word`` switch to enable MFCC nonspeech masking, for
