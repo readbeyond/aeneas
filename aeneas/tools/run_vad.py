@@ -115,19 +115,34 @@ class RunVADCLI(AbstractCLIProgram):
         speech = audio_file_mfcc.intervals(speech=True, time=output_time)
         nonspeech = audio_file_mfcc.intervals(speech=False, time=output_time)
         if mode == u"speech":
-            intervals = speech
+            if output_time:
+                intervals = [(i.begin, i.end) for i in speech]
+                template = u"%.3f\t%.3f"
+            else:
+                intervals = speech
+                template = u"%d\t%d"
         elif mode == u"nonspeech":
-            intervals = nonspeech
+            if output_time:
+                intervals = [(i.begin, i.end) for i in nonspeech]
+                template = u"%.3f\t%.3f"
+            else:
+                intervals = nonspeech
+                template = u"%d\t%d"
         elif mode == u"both":
-            speech = [[x[0], x[1], u"speech"] for x in speech]
-            nonspeech = [[x[0], x[1], u"nonspeech"] for x in nonspeech]
+            if output_time:
+                speech = [(i.begin, i.end, u"speech") for i in speech]
+                nonspeech = [(i.begin, i.end, u"nonspeech") for i in nonspeech]
+                template = u"%.3f\t%.3f\t%s"
+            else:
+                speech = [(i[0], i[1], u"speech") for i in speech]
+                nonspeech = [(i[0], i[1], u"nonspeech") for i in nonspeech]
+                template = u"%d\t%d\t%s"
             intervals = sorted(speech + nonspeech)
-        intervals = [tuple(interval) for interval in intervals]
-        self.write_to_file(output_file_path, intervals, output_time)
+        self.write_to_file(output_file_path, intervals, template)
 
         return self.NO_ERROR_EXIT_CODE
 
-    def write_to_file(self, output_file_path, intervals, time):
+    def write_to_file(self, output_file_path, intervals, template):
         """
         Write intervals to file.
 
@@ -137,13 +152,7 @@ class RunVADCLI(AbstractCLIProgram):
         :param intervals: a list of tuples, each representing an interval
         :type  intervals: list of tuples
         """
-        msg = []
-        if len(intervals) > 0:
-            if len(intervals[0]) == 2:
-                template = u"%.3f\t%.3f" if time else u"%d\t%d"
-            else:
-                template = u"%.3f\t%.3f\t%s" if time else u"%d\t%d\t%s"
-            msg = [template % (interval) for interval in intervals]
+        msg = [template % (interval) for interval in intervals]
         if output_file_path is None:
             self.print_info(u"Intervals detected:")
             for line in msg:

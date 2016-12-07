@@ -27,6 +27,10 @@ This module contains the following classes:
 * :class:`~aeneas.ttswrappers.nuancettswrapper.NuanceTTSWrapper`,
   a wrapper for the Nuance TTS API engine.
 
+Please refer to
+https://developer.nuance.com/
+for further details.
+
 .. note:: This module requires Python module ``requests`` (``pip install requests``).
 
 .. warning:: You will be billed according to your Nuance Developers account plan.
@@ -44,9 +48,9 @@ import time
 import uuid
 
 from aeneas.audiofile import AudioFile
+from aeneas.exacttiming import TimeValue
 from aeneas.language import Language
 from aeneas.runtimeconfiguration import RuntimeConfiguration
-from aeneas.timevalue import TimeValue
 from aeneas.ttswrappers.basettswrapper import BaseTTSWrapper
 import aeneas.globalfunctions as gf
 
@@ -68,6 +72,11 @@ class NuanceTTSWrapper(BaseTTSWrapper):
 
     in the ``RuntimeConfiguration`` object,
     substituting your Nuance Developer API ID and Key.
+
+    You might also want to enable the TTS caching,
+    to reduce the number of API calls ::
+
+        "tts=nuance|tts_cache=True"
 
     See :class:`~aeneas.ttswrappers.basettswrapper.BaseTTSWrapper`
     for the available functions.
@@ -172,32 +181,11 @@ class NuanceTTSWrapper(BaseTTSWrapper):
     YUE = Language.YUE
     """ Yue Chinese """
 
-    NLD_BEL = "nld-BEL"
-    """ Dutch (Belgium) """
-
-    FRA_CAN = "fra-CAN"
-    """ French (Canada) """
-
     CMN_CHN = "cmn-CHN"
     """ Mandarin Chinese (China) """
 
     CMN_TWN = "cmn-TWN"
     """ Mandarin Chinese (Taiwan) """
-
-    POR_BRA = "por-BRA"
-    """ Portuguese (Brazil) """
-
-    POR_PRT = "por-PRT"
-    """ Portuguese (Portugal) """
-
-    SPA_ESP = "spa-ESP"
-    """ Spanish (Castillian) """
-
-    SPA_COL = "spa-COL"
-    """ Spanish (Colombia) """
-
-    SPA_MEX = "spa-MEX"
-    """ Spanish (Mexico) """
 
     ENG_AUS = "eng-AUS"
     """ English (Australia) """
@@ -220,23 +208,80 @@ class NuanceTTSWrapper(BaseTTSWrapper):
     ENG_USA = "eng-USA"
     """ English (USA) """
 
+    FRA_CAN = "fra-CAN"
+    """ French (Canada) """
+
+    NLD_BEL = "nld-BEL"
+    """ Dutch (Belgium) """
+
+    POR_BRA = "por-BRA"
+    """ Portuguese (Brazil) """
+
+    POR_PRT = "por-PRT"
+    """ Portuguese (Portugal) """
+
+    SPA_COL = "spa-COL"
+    """ Spanish (Colombia) """
+
+    SPA_ESP = "spa-ESP"
+    """ Spanish (Spain) """
+
+    SPA_MEX = "spa-MEX"
+    """ Spanish (Mexico) """
+
+    CODE_TO_HUMAN = {
+        ARA: u"Arabic",
+        CAT: u"Catalan",
+        CES: u"Czech",
+        CMN: u"Mandarin Chinese",
+        DAN: u"Danish",
+        DEU: u"German",
+        ELL: u"Greek (Modern)",
+        ENG: u"English",
+        EUS: u"Basque",
+        FIN: u"Finnish",
+        FRA: u"French",
+        GLG: u"Galician",
+        HEB: u"Hebrew",
+        HIN: u"Hindi",
+        HUN: u"Hungarian",
+        IND: u"Indonesian",
+        ITA: u"Italian",
+        JPN: u"Japanese",
+        KOR: u"Korean",
+        NLD: u"Dutch",
+        NOR: u"Norwegian",
+        POL: u"Polish",
+        POR: u"Portuguese",
+        RON: u"Romanian",
+        RUS: u"Russian",
+        SLK: u"Slovak",
+        SPA: u"Spanish",
+        SWE: u"Swedish",
+        THA: u"Thai",
+        TUR: u"Turkish",
+        YUE: u"Yue Chinese",
+        CMN_CHN: u"Mandarin Chinese (China)",
+        CMN_TWN: u"Mandarin Chinese (Taiwan)",
+        ENG_AUS: u"English (Australia)",
+        ENG_GBR: u"English (GB)",
+        ENG_IND: u"English (India)",
+        ENG_IRL: u"English (Ireland)",
+        ENG_SCT: u"English (Scotland)",
+        ENG_USA: u"English (USA)",
+        ENG_ZAF: u"English (South Africa)",
+        FRA_CAN: u"French (Canada)",
+        NLD_BEL: u"Dutch (Belgium)",
+        POR_BRA: u"Portuguese (Brazil)",
+        POR_PRT: u"Portuguese (Portugal)",
+        SPA_COL: u"Spanish (Colombia)",
+        SPA_ESP: u"Spanish (Spain)",
+        SPA_MEX: u"Spanish (Mexico)",
+    }
+
+    CODE_TO_HUMAN_LIST = sorted([u"%s\t%s" % (k, v) for k, v in CODE_TO_HUMAN.items()])
+
     LANGUAGE_TO_VOICE_CODE = {
-        CMN_CHN: "Tian-Tian",   # F
-        CMN_TWN: "Mei-Jia",     # F
-        FRA_CAN: "Amelie",      # F, F: Chantal, M: Nicolas
-        ENG_AUS: "Karen",       # F, M: Lee
-        ENG_GBR: "Kate",        # F, F: Serena, M: Daniel, Oliver
-        ENG_IND: "Veena",       # F
-        ENG_IRL: "Moira",       # F
-        ENG_SCT: "Fiona",       # F
-        ENG_USA: "Ava",         # F, F: Allison, Samantha, Susan, Zoe, M: Tom
-        ENG_ZAF: "Tessa",       # F
-        NLD_BEL: "Ellen",       # F
-        POR_BRA: "Luciana",     # F, M: Felipe
-        POR_PRT: "Catarina",    # F, F: Joana
-        SPA_COL: "Soledad",     # F, M: Carlos
-        SPA_ESP: "Monica",      # F, F (Valencian): Empar
-        SPA_MEX: "Angelica",    # F, F: Paulina, M: Juan
         ARA: "Laila",           # F, M: Maged, Tarik
         CAT: "Montserrat",      # F, M: Jordi
         CES: "Iveta",           # F, F: Zuzana
@@ -268,6 +313,22 @@ class NuanceTTSWrapper(BaseTTSWrapper):
         THA: "Kanya",           # F
         TUR: "Yelda",           # F, M: Cem
         YUE: "Sin-Ji",          # F
+        CMN_CHN: "Tian-Tian",   # F
+        CMN_TWN: "Mei-Jia",     # F
+        FRA_CAN: "Amelie",      # F, F: Chantal, M: Nicolas
+        ENG_AUS: "Karen",       # F, M: Lee
+        ENG_GBR: "Kate",        # F, F: Serena, M: Daniel, Oliver
+        ENG_IND: "Veena",       # F
+        ENG_IRL: "Moira",       # F
+        ENG_SCT: "Fiona",       # F
+        ENG_USA: "Ava",         # F, F: Allison, Samantha, Susan, Zoe, M: Tom
+        ENG_ZAF: "Tessa",       # F
+        NLD_BEL: "Ellen",       # F
+        POR_BRA: "Luciana",     # F, M: Felipe
+        POR_PRT: "Catarina",    # F, F: Joana
+        SPA_COL: "Soledad",     # F, M: Carlos
+        SPA_ESP: "Monica",      # F, F (Valencian): Empar
+        SPA_MEX: "Angelica",    # F, F: Paulina, M: Juan
     }
     DEFAULT_LANGUAGE = ENG_GBR
 
@@ -311,17 +372,9 @@ class NuanceTTSWrapper(BaseTTSWrapper):
             voice_code
         )
 
-        # DEBUG
-        # print(self.rconf[RuntimeConfiguration.NUANCE_TTS_API_ID])
-        # print(self.rconf[RuntimeConfiguration.NUANCE_TTS_API_KEY])
-        # #print(headers)
-        # print(url)
-        # print(voice_code)
-        # raise ValueError("Stop execution here")
-
         # post request
-        sleep_delay = self.rconf[RuntimeConfiguration.NUANCE_TTS_API_SLEEP]
-        attempts = self.rconf[RuntimeConfiguration.NUANCE_TTS_API_RETRY_ATTEMPTS]
+        sleep_delay = self.rconf[RuntimeConfiguration.TTS_API_SLEEP]
+        attempts = self.rconf[RuntimeConfiguration.TTS_API_RETRY_ATTEMPTS]
         self.log([u"Sleep delay:    %.3f", sleep_delay])
         self.log([u"Retry attempts: %d", attempts])
         while attempts > 0:
@@ -344,7 +397,7 @@ class NuanceTTSWrapper(BaseTTSWrapper):
                 attempts -= 1
 
         if attempts < 0:
-            self.log_exc(u"All HTTP POST requests returned status code != 200", None, True, ValueError)
+            self.log_exc(u"All API requests returned status code != 200", None, True, ValueError)
 
         # save to file if requested
         if output_file_path is None:

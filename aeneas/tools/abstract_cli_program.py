@@ -82,6 +82,8 @@ class AbstractCLIProgram(Loggable):
         ]
     }
 
+    RCONF_PARAMETERS = RuntimeConfiguration.parameters(sort=True, as_strings=True)
+
     TAG = u"CLI"
 
     def __init__(self, use_sys=True, invoke=None, rconf=None, logger=None):
@@ -184,7 +186,7 @@ class AbstractCLIProgram(Loggable):
 
         synopsis = [
             u"SYNOPSIS",
-            u"  %s [-h|--help|--version]" % (self.invoke)
+            u"  %s [-h|--help|--help-rconf|--version]" % (self.invoke),
         ]
         if "synopsis" in self.HELP:
             for syn, opt in self.HELP["synopsis"]:
@@ -199,6 +201,7 @@ class AbstractCLIProgram(Loggable):
         options = [
             u"  -h : print short help and exit",
             u"  --help : print full help and exit",
+            u"  --help-rconf : list all runtime configuration parameters",
             u"  --version : print the program name and version and exit",
             u"  -l[=FILE], --log[=FILE] : log verbose output to tmp file or FILE if specified",
             u"  -r=CONF, --runtime-configuration=CONF : apply runtime configuration CONF",
@@ -264,6 +267,15 @@ class AbstractCLIProgram(Loggable):
             self.print_generic(u"%s v%s" % (self.NAME, aeneas_version))
         return self.exit(self.HELP_EXIT_CODE)
 
+    def print_rconf_parameters(self):
+        """
+        Print the list of runtime configuration parameters and exit.
+        """
+        if self.use_sys:
+            self.print_info(u"Available runtime configuration parameters:")
+            self.print_generic(u"\n" + u"\n".join(self.RCONF_PARAMETERS) + u"\n")
+        return self.exit(self.HELP_EXIT_CODE)
+
     def run(self, arguments, show_help=True):
         """
         Program entry point.
@@ -301,6 +313,9 @@ class AbstractCLIProgram(Loggable):
 
             if u"--help" in args:
                 return self.print_help(short=False)
+
+            if u"--help-rconf" in args:
+                return self.print_rconf_parameters()
 
             if u"--version" in args:
                 return self.print_name_version()
@@ -353,7 +368,7 @@ class AbstractCLIProgram(Loggable):
         self.logger = Logger(tee=self.verbose, tee_show_datetime=self.very_verbose)
         self.log([u"Formal arguments: %s", self.formal_arguments])
         self.log([u"Actual arguments: %s", self.actual_arguments])
-        self.log([u"Runtime configuration: '%s'", self.rconf.config_string()])
+        self.log([u"Runtime configuration: '%s'", self.rconf.config_string])
 
         # perform command
         exit_code = self.perform_command()

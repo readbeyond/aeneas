@@ -1,4 +1,22 @@
-aeneas (1.6.0.11) stable; urgency=medium
+aeneas (1.7.0) stable; urgency=medium
+
+  * More robust and generic reading of SRT-like files, especially WebVTT
+  * Added TextGrid output format
+  * Optional MFCC masking for better word-level alignment
+  * In multilevel tasks, DTW margin can be specified for each level now
+  * Added human-readable descriptions of parameters and languages, listable in aeneas.tools.execute_task
+  * Added human-readable descriptions of runtime configuration parameters, listable by all aeneas.tool.*
+  * Ability to remove long nonspeech intervals from the output sync map
+  * Marked Afrikaans (afr) language as tested
+  * Added AWS Polly TTS API wrapper
+  * Added benchmark tests
+  * Added scripts to manage virtual environments for testing
+  * Fix a couple of bugs
+  * Code, test, and documentation improvements
+
+ -- alberto <alberto@nievo>  Fri, 02 Dec 2016 22:40:51 +0100
+
+aeneas (1.6.0.1) stable; urgency=medium
 
   * Fixed bug in Nuance TTS wrapper 
 

@@ -48,6 +48,7 @@ class TestFFPROBEWrapperCLI(unittest.TestCase):
         self.execute([], 2)
         self.execute([("", "-h")], 2)
         self.execute([("", "--help")], 2)
+        self.execute([("", "--help-rconf")], 2)
         self.execute([("", "--version")], 2)
 
     def test_probe(self):
@@ -82,5 +83,5 @@ class TestFFPROBEWrapperCLI(unittest.TestCase):
         ], 1)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     unittest.main()

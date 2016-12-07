@@ -26,14 +26,18 @@ This module contains the following classes:
 
 * :class:`~aeneas.ttswrappers.espeakngttswrapper.ESPEAKNGTTSWrapper`,
   a wrapper for the ``eSpeak-ng`` TTS engine.
+
+Please refer to
+https://github.com/espeak-ng/espeak-ng/
+for further details.
 """
 
 from __future__ import absolute_import
 from __future__ import print_function
 
+from aeneas.exacttiming import TimeValue
 from aeneas.language import Language
 from aeneas.runtimeconfiguration import RuntimeConfiguration
-from aeneas.timevalue import TimeValue
 from aeneas.ttswrappers.basettswrapper import BaseTTSWrapper
 import aeneas.globalfunctions as gf
 
@@ -72,7 +76,7 @@ class ESPEAKNGTTSWrapper(BaseTTSWrapper):
     """
 
     AFR = Language.AFR
-    """ Afrikaans (not tested) """
+    """ Afrikaans """
 
     AMH = Language.AMH
     """ Amharic (not tested) """
@@ -339,7 +343,7 @@ class ESPEAKNGTTSWrapper(BaseTTSWrapper):
     """ Portuguese (Portugal) """
 
     AF = "af"
-    """ Afrikaans (not tested) """
+    """ Afrikaans """
 
     AN = "an"
     """ Aragonese (not tested) """
@@ -625,6 +629,192 @@ class ESPEAKNGTTSWrapper(BaseTTSWrapper):
 
     ZH_YUE = "zh-yue"
     """ Yue Chinese (not tested) """
+
+    CODE_TO_HUMAN = {
+        AFR: u"Afrikaans",
+        AMH: u"Amharic (not tested)",
+        ARG: u"Aragonese (not tested)",
+        ASM: u"Assamese (not tested)",
+        AZE: u"Azerbaijani (not tested)",
+        BEN: u"Bengali (not tested)",
+        BOS: u"Bosnian (not tested)",
+        BUL: u"Bulgarian",
+        CAT: u"Catalan",
+        CES: u"Czech",
+        CMN: u"Mandarin Chinese (not tested)",
+        CYM: u"Welsh",
+        DAN: u"Danish",
+        DEU: u"German",
+        ELL: u"Greek (Modern)",
+        ENG: u"English",
+        EPO: u"Esperanto (not tested)",
+        EST: u"Estonian",
+        EUS: u"Basque (not tested)",
+        FAS: u"Persian",
+        FIN: u"Finnish",
+        FRA: u"French",
+        GLA: u"Scottish Gaelic (not tested)",
+        GLE: u"Irish",
+        GRC: u"Greek (Ancient)",
+        GRN: u"Guarani (not tested)",
+        GUJ: u"Gujarati (not tested)",
+        HIN: u"Hindi (not tested)",
+        HRV: u"Croatian",
+        HUN: u"Hungarian",
+        HYE: u"Armenian (not tested)",
+        INA: u"Interlingua (not tested)",
+        IND: u"Indonesian (not tested)",
+        ISL: u"Icelandic",
+        ITA: u"Italian",
+        JBO: u"Lojban (not tested)",
+        KAL: u"Greenlandic (not tested)",
+        KAN: u"Kannada (not tested)",
+        KAT: u"Georgian (not tested)",
+        KIR: u"Kirghiz (not tested)",
+        KUR: u"Kurdish (not tested)",
+        LAT: u"Latin",
+        LAV: u"Latvian",
+        LFN: u"Lingua Franca Nova (not tested)",
+        LIT: u"Lithuanian",
+        MAL: u"Malayalam (not tested)",
+        MAR: u"Marathi (not tested)",
+        MKD: u"Macedonian (not tested)",
+        MLT: u"Maltese (not tested)",
+        MSA: u"Malay (not tested)",
+        MYA: u"Burmese (not tested)",
+        NAH: u"Nahuatl (not tested)",
+        NEP: u"Nepali (not tested)",
+        NLD: u"Dutch",
+        NOR: u"Norwegian",
+        ORI: u"Oriya (not tested)",
+        ORM: u"Oromo (not tested)",
+        PAN: u"Panjabi (not tested)",
+        PAP: u"Papiamento (not tested)",
+        POL: u"Polish",
+        POR: u"Portuguese",
+        RON: u"Romanian",
+        RUS: u"Russian",
+        SIN: u"Sinhala (not tested)",
+        SLK: u"Slovak",
+        SLV: u"Slovenian (not tested)",
+        SPA: u"Spanish",
+        SQI: u"Albanian (not tested)",
+        SRP: u"Serbian",
+        SWA: u"Swahili",
+        SWE: u"Swedish",
+        TAM: u"Tamil (not tested)",
+        TAT: u"Tatar (not tested)",
+        TEL: u"Telugu (not tested)",
+        TSN: u"Tswana (not tested)",
+        TUR: u"Turkish",
+        UKR: u"Ukrainian",
+        URD: u"Urdu (not tested)",
+        VIE: u"Vietnamese (not tested)",
+        YUE: u"Yue Chinese (not tested)",
+        ZHO: u"Chinese (not tested)",
+        ENG_GBR: u"English (GB)",
+        ENG_SCT: u"English (Scotland) (not tested)",
+        ENG_USA: u"English (USA)",
+        SPA_ESP: u"Spanish (Castillan)",
+        FRA_BEL: u"French (Belgium) (not tested)",
+        FRA_FRA: u"French (France)",
+        POR_BRA: u"Portuguese (Brazil) (not tested)",
+        POR_PRT: u"Portuguese (Portugal)",
+        AF: u"Afrikaans",
+        AN: u"Aragonese (not tested)",
+        AM: u"Amharic (not tested)",
+        AS: u"Assamese (not tested)",
+        AZ: u"Azerbaijani (not tested)",
+        BG: u"Bulgarian",
+        BN: u"Bengali (not tested)",
+        BS: u"Bosnian (not tested)",
+        CA: u"Catalan",
+        CS: u"Czech",
+        CY: u"Welsh",
+        DA: u"Danish",
+        DE: u"German",
+        EL: u"Greek (Modern)",
+        EN: u"English",
+        EN_GB: u"English (GB)",
+        EN_GB_SCOTLAND: u"English (Scotland) (not tested)",
+        EN_GB_X_GBCLAN: u"English (Northern) (not tested)",
+        EN_GB_X_GBCWMD: u"English (Midlands) (not tested)",
+        EN_GB_X_RP: u"English (Received Pronunciation) (not tested)",
+        EN_US: u"English (USA)",
+        EN_029: u"English (West Indies) (not tested)",
+        EO: u"Esperanto (not tested)",
+        ES: u"Spanish (Castillan)",
+        ES_419: u"Spanish (Latin America) (not tested)",
+        ET: u"Estonian",
+        EU: u"Basque (not tested)",
+        FA: u"Persian",
+        FA_LATN: u"Persian (Pinglish)",
+        FI: u"Finnish",
+        FR: u"French",
+        FR_BE: u"French (Belgium) (not tested)",
+        FR_FR: u"French (France)",
+        GA: u"Irish",
+        GD: u"Scottish Gaelic (not tested)",
+        GN: u"Guarani (not tested)",
+        GU: u"Gujarati (not tested)",
+        HI: u"Hindi (not tested)",
+        HR: u"Croatian",
+        HU: u"Hungarian",
+        HY: u"Armenian (not tested)",
+        HY_AREVMDA: u"Armenian (West) (not tested)",
+        IA: u"Interlingua (not tested)",
+        ID: u"Indonesian (not tested)",
+        IS: u"Icelandic",
+        IT: u"Italian",
+        KA: u"Georgian (not tested)",
+        KL: u"Greenlandic (not tested)",
+        KN: u"Kannada (not tested)",
+        KU: u"Kurdish (not tested)",
+        KY: u"Kirghiz (not tested)",
+        LA: u"Latin",
+        LT: u"Lithuanian",
+        LV: u"Latvian",
+        MK: u"Macedonian (not tested)",
+        ML: u"Malayalam (not tested)",
+        MR: u"Marathi (not tested)",
+        MS: u"Malay (not tested)",
+        MT: u"Maltese (not tested)",
+        MY: u"Burmese (not tested)",
+        NCI: u"Nahuatl (not tested)",
+        NE: u"Nepali (not tested)",
+        NL: u"Dutch",
+        NO: u"Norwegian",
+        OM: u"Oromo (not tested)",
+        OR: u"Oriya (not tested)",
+        PA: u"Panjabi (not tested)",
+        PL: u"Polish",
+        PT: u"Portuguese",
+        PT_BR: u"Portuguese (Brazil) (not tested)",
+        PT_PT: u"Portuguese (Portugal)",
+        RO: u"Romanian",
+        RU: u"Russian",
+        SI: u"Sinhala (not tested)",
+        SK: u"Slovak",
+        SL: u"Slovenian (not tested)",
+        SQ: u"Albanian (not tested)",
+        SR: u"Serbian",
+        SV: u"Swedish",
+        SW: u"Swahili",
+        TA: u"Tamil (not tested)",
+        TE: u"Telugu (not tested)",
+        TN: u"Tswana (not tested)",
+        TR: u"Turkish",
+        TT: u"Tatar (not tested)",
+        UK: u"Ukrainian",
+        UR: u"Urdu (not tested)",
+        VI: u"Vietnamese (not tested)",
+        VI_VN_X_CENTRAL: u"Vietnamese (hue) (not tested)",
+        VI_VN_X_SOUTH: u"Vietnamese (sgn) (not tested)",
+        ZH: u"Mandarin Chinese (not tested)",
+        ZH_YUE: u"Yue Chinese (not tested)",
+    }
+
+    CODE_TO_HUMAN_LIST = sorted([u"%s\t%s" % (k, v) for k, v in CODE_TO_HUMAN.items()])
 
     LANGUAGE_TO_VOICE_CODE = {
         AF: "af",

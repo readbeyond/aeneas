@@ -59,3 +59,8 @@ with refactored TTS engine wrappers,
 added TTS cache, and
 experimental cfw C++ extension for Festival.
 
+**December 2016**: release of v1.7.0,
+with TextGrid output,
+MFCC masking for better word-level alignment,
+revised code for boundary adjustment,
+and removal of long nonspeech intervals.

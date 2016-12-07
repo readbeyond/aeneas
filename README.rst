@@ -4,8 +4,8 @@ aeneas
 **aeneas** is a Python/C library and a set of tools to automagically
 synchronize audio and text (aka forced alignment).
 
--  Version: 1.6.0.1
--  Date: 2016-09-30
+-  Version: 1.7.0
+-  Date: 2016-12-07
 -  Developed by: `ReadBeyond <http://www.readbeyond.it/>`__
 -  Lead Developer: `Alberto Pettarin <http://www.albertopettarin.it/>`__
 -  License: the GNU Affero General Public License Version 3 (AGPL v3)
@@ -58,10 +58,15 @@ interval in the audio file:
 
    Waveform with aligned labels, detail
 
-This synchronization map can be output to file in several formats: EAF
-for research purposes, SMIL for EPUB 3, SBV/SRT/SUB/TTML/VTT for closed
-captioning, JSON for Web usage, or raw AUD/CSV/SSV/TSV/TXT/XML for
-further processing.
+This synchronization map can be output to file in several formats,
+depending on its application:
+
+-  research: Audacity (AUD), ELAN (EAF), TextGrid;
+-  digital publishing: SMIL for EPUB 3;
+-  closed captioning: SubRip (SRT), SubViewer (SBV/SUB), TTML, WebVTT
+   (VTT);
+-  Web: JSON;
+-  further processing: CSV, SSV, TSV, TXT, XML.
 
 System Requirements, Supported Platforms and Installation
 ---------------------------------------------------------
@@ -82,12 +87,13 @@ System Requirements
 Supported Platforms
 ~~~~~~~~~~~~~~~~~~~
 
-**aeneas** has been developed and tested on **Debian 64bit**, which is
-the **only supported OS** at the moment. Nevertheless, **aeneas** has
-been confirmed to work on other Linux distributions, OS X, and Windows.
-See the `PLATFORMS
+**aeneas** has been developed and tested on **Debian 64bit**, with
+**Python 2.7** and **Python 3.5**, which are the **only supported
+platforms** at the moment. Nevertheless, **aeneas** has been confirmed
+to work on other Linux distributions, Mac OS X, and Windows. See the
+`PLATFORMS
 file <https://github.com/readbeyond/aeneas/blob/master/wiki/PLATFORMS.md>`__
-for the details.
+for details.
 
 If installing **aeneas** natively on your OS proves difficult, you are
 strongly encouraged to use
@@ -110,14 +116,16 @@ operating systems.
 
 The generic OS-independent procedure is simple:
 
-1. Install `Python <https://python.org/>`__ (2.7.x preferred),
+1. **Install** `Python <https://python.org/>`__ (2.7.x preferred),
    `FFmpeg <https://www.ffmpeg.org/>`__, and
    `eSpeak <http://espeak.sourceforge.net/>`__
 
-2. Make sure the following executables can be called from your shell:
-   ``espeak``, ``ffmpeg``, ``ffprobe``, ``pip``, and ``python``
+2. Make sure the following **executables** can be called from your
+   **shell**: ``espeak``, ``ffmpeg``, ``ffprobe``, ``pip``, and
+   ``python``
 
-3. First install ``numpy`` with ``pip`` and then ``aeneas``:
+3. First install ``numpy`` with ``pip`` and then ``aeneas`` (this order
+   is important):
 
    .. code:: bash
 
@@ -219,6 +227,8 @@ Documentation and Support
    `HOWITWORKS <https://github.com/readbeyond/aeneas/blob/master/wiki/HOWITWORKS.md>`__
 -  Development history:
    `HISTORY <https://github.com/readbeyond/aeneas/blob/master/wiki/HISTORY.md>`__
+-  Testing:
+   `TESTING <https://github.com/readbeyond/aeneas/blob/master/wiki/TESTING.md>`__
 -  Benchmark suite: https://readbeyond.github.io/aeneas-benchmark/
 
 Supported Features
@@ -234,15 +244,15 @@ Supported Features
    paragraph, etc.)
 -  Input audio file formats: all those readable by ``ffmpeg``
 -  Output sync map formats: AUD, CSV, EAF, JSON, SMIL, SRT, SSV, SUB,
-   TSV, TTML, TXT, VTT, XML
--  Confirmed working on 37 languages: ARA, BUL, CAT, CYM, CES, DAN, DEU,
-   ELL, ENG, EPO, EST, FAS, FIN, FRA, GLE, GRC, HRV, HUN, ISL, ITA, JPN,
-   LAT, LAV, LIT, NLD, NOR, RON, RUS, POL, POR, SLK, SPA, SRP, SWA, SWE,
-   TUR, UKR
+   TEXTGRID, TSV, TTML, TXT, VTT, XML
+-  Confirmed working on 38 languages: AFR, ARA, BUL, CAT, CYM, CES, DAN,
+   DEU, ELL, ENG, EPO, EST, FAS, FIN, FRA, GLE, GRC, HRV, HUN, ISL, ITA,
+   JPN, LAT, LAV, LIT, NLD, NOR, RON, RUS, POL, POR, SLK, SPA, SRP, SWA,
+   SWE, TUR, UKR
 -  MFCC and DTW computed via Python C extensions to reduce the
    processing time
--  Several built-in TTS engine wrappers: eSpeak (default), eSpeak-ng,
-   Festival, Nuance TTS API
+-  Several built-in TTS engine wrappers: AWS Polly TTS API, eSpeak
+   (default), eSpeak-ng, Festival, Nuance TTS API
 -  Default TTS (eSpeak) called via a Python C extension for fast audio
    synthesis
 -  Possibility of running a custom, user-provided TTS engine Python
@@ -251,8 +261,8 @@ Supported Features
 -  Download audio from a YouTube video
 -  In multilevel mode, recursive alignment from paragraph to sentence to
    word level
--  In multilevel mode, time resolution and/or TTS engine can be
-   specified for each level independently
+-  In multilevel mode, MFCC resolution, MFCC masking, DTW margin, and
+   TTS engine can be specified for each level independently
 -  Robust against misspelled/mispronounced words, local rearrangements
    of words, background noise/sporadic spikes
 -  Adjustable splitting times, including a max character/second
@@ -261,9 +271,9 @@ Supported Features
 -  Output an HTML file for fine tuning the sync map manually
    (``finetuneas`` project)
 -  Execution parameters tunable at runtime
--  Code suitable for Web app deployment (e.g., on-demand cloud
-   computing)
--  Extensive test suite including 800+ unit/integration/performance
+-  Code suitable for Web app deployment (e.g., on-demand cloud computing
+   instances)
+-  Extensive test suite including 1,200+ unit/integration/performance
    tests, that run and must pass before each release
 
 Limitations and Missing Features
@@ -273,9 +283,40 @@ Limitations and Missing Features
    might produce a wrong sync map
 -  Audio is assumed to be spoken: not suitable for song captioning, YMMV
    for CC applications
--  No protection against memory trashing if you feed extremely long
-   audio files (>1.5h per single audio file)
+-  No protection against memory swapping: be sure your amount of RAM is
+   adequate for the maximum duration of a single audio file (e.g., 4 GB
+   RAM => max 2h audio; 16 GB RAM => max 10h audio)
 -  `Open issues <https://github.com/readbeyond/aeneas/issues>`__
+
+A Note on Word-Level Alignment
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+A significant number of users runs **aeneas** to align audio and text at
+word-level (i.e., each fragment is a word). Although **aeneas** was not
+designed with word-level alignment in mind and the results might be
+inferior to `ASR-based forced
+aligners <https://github.com/pettarin/forced-alignment-tools>`__ for
+languages with good ASR models, **aeneas** offers some options to
+improve the quality of the alignment at word-level:
+
+-  multilevel text (since v1.5.1),
+-  MFCC nonspeech masking (since v1.7.0, disabled by default),
+-  use better TTS engines, like Festival or AWS/Nuance TTS API (since
+   v1.5.0).
+
+If you use the ``aeneas.tools.execute_task`` command line tool, you can
+add ``--presets-word`` switch to enable MFCC nonspeech masking, for
+example:
+
+.. code:: bash
+
+    $ python -m aeneas.tools.execute_task --example-words --presets-word
+    $ python -m aeneas.tools.execute_task --example-words-multilevel --presets-word
+
+If you use **aeneas** as a library, just set the appropriate
+``RuntimeConfiguration`` parameters. Please see the `command line
+tutorial <http://www.readbeyond.it/aeneas/docs/clitutorial.html>`__ for
+details.
 
 License
 -------
@@ -316,6 +357,10 @@ Sponsors
 -  **April 2016**: the Fruch Foundation kindly sponsored the development
    and documentation of v1.5.0
 
+-  **December 2016**: the `Centro Internazionale Del Libro Parlato
+   "Adriano Sernagiotto" <http://www.libroparlato.org/>`__ (Feltre,
+   Italy) partially sponsored the development of v1.7.0
+
 Supporting
 ~~~~~~~~~~
 
@@ -326,8 +371,7 @@ I accept sponsorships to
 -  fix bugs,
 -  add new features,
 -  improve the quality and the performance of the code,
--  port the code to other languages/platforms,
--  support of third party installations, and
+-  port the code to other languages/platforms, and
 -  improve the documentation.
 
 Feel free to `get in touch <mailto:aeneas@readbeyond.it>`__.
@@ -370,6 +414,9 @@ the installers for Mac OS X and Windows.
 
 **Firat Ozdemir** contributed the ``finetuneas`` HTML/JS code for fine
 tuning sync maps in the browser.
+
+**Willem van der Walt** contributed the code snippet to output a sync
+map in TextGrid format.
 
 All the mighty `GitHub
 contributors <https://github.com/readbeyond/aeneas/graphs/contributors>`__,

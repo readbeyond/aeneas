@@ -36,9 +36,9 @@ from __future__ import print_function
 import re
 import subprocess
 
+from aeneas.exacttiming import TimeValue
 from aeneas.logger import Loggable
 from aeneas.runtimeconfiguration import RuntimeConfiguration
-from aeneas.timevalue import TimeValue
 import aeneas.globalfunctions as gf
 
 

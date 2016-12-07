@@ -48,76 +48,8 @@ class TestExecuteJobCLI(unittest.TestCase):
         self.execute([], 2)
         self.execute([("", "-h")], 2)
         self.execute([("", "--help")], 2)
+        self.execute([("", "--help-rconf")], 2)
         self.execute([("", "--version")], 2)
-
-    def test_exec_container(self):
-        self.execute([
-            ("in", "../tools/res/job.zip"),
-            ("out", "")
-        ], 0)
-
-    def test_exec_container_pure(self):
-        self.execute([
-            ("in", "../tools/res/job.zip"),
-            ("out", ""),
-            ("", "-r=\"c_extensions=False\"")
-        ], 0)
-
-    def test_exec_container_no_cew(self):
-        self.execute([
-            ("in", "../tools/res/job.zip"),
-            ("out", ""),
-            ("", "-r=\"cew=False\"")
-        ], 0)
-
-    def test_exec_container_no_cmfcc(self):
-        self.execute([
-            ("in", "../tools/res/job.zip"),
-            ("out", ""),
-            ("", "-r=\"cmfcc=False\"")
-        ], 0)
-
-    def test_exec_container_no_cdtw(self):
-        self.execute([
-            ("in", "../tools/res/job.zip"),
-            ("out", ""),
-            ("", "-r=\"cdtw=False\"")
-        ], 0)
-
-    def test_exec_container_cew_subprocess_flag(self):
-        self.execute([
-            ("in", "../tools/res/job.zip"),
-            ("out", ""),
-            ("", "--cewsubprocess")
-        ], 0)
-
-    def test_exec_container_cew_subprocess(self):
-        self.execute([
-            ("in", "../tools/res/job.zip"),
-            ("out", ""),
-            ("", "-r=\"cew_subprocess_enabled=True\"")
-        ], 0)
-
-    def test_exec_container_mfcc_window_shift(self):
-        self.execute([
-            ("in", "../tools/res/job.zip"),
-            ("out", ""),
-            ("", "-r=\"mfcc_window_length=0.250|mfcc_window_shift=0.100\"")
-        ], 0)
-
-    def test_exec_container_dtw_margin(self):
-        self.execute([
-            ("in", "../tools/res/job.zip"),
-            ("out", ""),
-            ("", "-r=\"dtw_margin=30\"")
-        ], 0)
-
-    def test_exec_container_dtw_algorithm(self):
-        self.execute([
-            ("in", "../tools/res/job.zip"),
-            ("out", ""),
-            ("", "-r=\"c_extensions=False|dtw_algorithm=exact\"")
-        ], 0)
 
     def test_exec_container_too_many_jobs(self):
         self.execute([
@@ -138,26 +70,12 @@ class TestExecuteJobCLI(unittest.TestCase):
             ("out", "")
         ], 1)
 
-    def test_exec_container_skip_validator_1(self):
-        self.execute([
-            ("in", "../tools/res/job.zip"),
-            ("out", ""),
-            ("", "--skip-validator")
-        ], 0)
-
     def test_exec_container_skip_validator_2(self):
         self.execute([
             ("in", "../tools/res/job_no_config.zip"),
             ("out", ""),
             ("", "--skip-validator")
         ], 1)
-
-    def test_exec_container_wizard(self):
-        self.execute([
-            ("in", "../tools/res/job_no_config.zip"),
-            ("out", ""),
-            ("", "is_hierarchy_type=flat|is_hierarchy_prefix=assets/|is_text_file_relative_path=.|is_text_file_name_regex=.*\.xhtml|is_text_type=unparsed|is_audio_file_relative_path=.|is_audio_file_name_regex=.*\.mp3|is_text_unparsed_id_regex=f[0-9]+|is_text_unparsed_id_sort=numeric|os_job_file_name=demo_sync_job_output|os_job_file_container=zip|os_job_file_hierarchy_type=flat|os_job_file_hierarchy_prefix=assets/|os_task_file_name=\$PREFIX.xhtml.smil|os_task_file_format=smil|os_task_file_smil_page_ref=\$PREFIX.xhtml|os_task_file_smil_audio_ref=../Audio/\$PREFIX.mp3|job_language=eng|job_description=Demo Sync Job")
-        ], 0)
 
     def test_exec_missing_1(self):
         self.execute([
@@ -182,5 +100,5 @@ class TestExecuteJobCLI(unittest.TestCase):
         ], 1)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     unittest.main()

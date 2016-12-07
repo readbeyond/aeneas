@@ -1,10 +1,10 @@
 <?xml version='1.0' encoding='UTF-8'?>
 <map>
-  <fragment id="f000001" begin="0.000" end="2.640">
+  <fragment id="f000001" begin="0.000" end="2.680">
     <line>I</line>
     <children/>
   </fragment>
-  <fragment id="f000002" begin="2.640" end="5.880">
+  <fragment id="f000002" begin="2.680" end="5.880">
     <line>From fairest creatures</line>
     <line>we desire increase,</line>
     <children/>
@@ -14,17 +14,17 @@
     <line>might never die,</line>
     <children/>
   </fragment>
-  <fragment id="f000004" begin="9.240" end="11.640">
+  <fragment id="f000004" begin="9.240" end="11.920">
     <line>But as the riper</line>
     <line>should by time decease,</line>
     <children/>
   </fragment>
-  <fragment id="f000005" begin="11.640" end="15.240">
+  <fragment id="f000005" begin="11.920" end="15.280">
     <line>His tender heir</line>
     <line>might bear his memory:</line>
     <children/>
   </fragment>
-  <fragment id="f000006" begin="15.240" end="18.560">
+  <fragment id="f000006" begin="15.280" end="18.560">
     <line>But thou contracted</line>
     <line>to thine own bright eyes,</line>
     <children/>
@@ -34,22 +34,22 @@
     <line>with self-substantial fuel,</line>
     <children/>
   </fragment>
-  <fragment id="f000008" begin="22.800" end="25.680">
+  <fragment id="f000008" begin="22.800" end="25.640">
     <line>Making a famine</line>
     <line>where abundance lies,</line>
     <children/>
   </fragment>
-  <fragment id="f000009" begin="25.680" end="31.240">
+  <fragment id="f000009" begin="25.640" end="31.240">
     <line>Thy self thy foe,</line>
     <line>to thy sweet self too cruel:</line>
     <children/>
   </fragment>
-  <fragment id="f000010" begin="31.240" end="34.280">
+  <fragment id="f000010" begin="31.240" end="34.440">
     <line>Thou that art now</line>
     <line>the world’s fresh ornament,</line>
     <children/>
   </fragment>
-  <fragment id="f000011" begin="34.280" end="36.960">
+  <fragment id="f000011" begin="34.440" end="36.960">
     <line>And only herald to the gaudy spring,</line>
     <children/>
   </fragment>
@@ -58,16 +58,16 @@
     <line>buriest thy content,</line>
     <children/>
   </fragment>
-  <fragment id="f000013" begin="40.680" end="43.600">
+  <fragment id="f000013" begin="40.680" end="43.640">
     <line>And tender churl mak’st waste in niggarding:</line>
     <children/>
   </fragment>
-  <fragment id="f000014" begin="43.600" end="48.080">
+  <fragment id="f000014" begin="43.640" end="48.520">
     <line>Pity the world,</line>
     <line>or else this glutton be,</line>
     <children/>
   </fragment>
-  <fragment id="f000015" begin="48.080" end="53.240">
+  <fragment id="f000015" begin="48.520" end="53.240">
     <line>To eat the world’s due,</line>
     <line>by the grave and thee.</line>
     <children/>

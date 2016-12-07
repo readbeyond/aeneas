@@ -26,14 +26,18 @@ This module contains the following classes:
 
 * :class:`~aeneas.ttswrappers.festivalttswrapper.FESTIVALTTSWrapper`,
   a wrapper for the ``Festival`` TTS engine.
+
+Please refer to
+http://www.cstr.ed.ac.uk/projects/festival/
+for further details.
 """
 
 from __future__ import absolute_import
 from __future__ import print_function
 
+from aeneas.exacttiming import TimeValue
 from aeneas.language import Language
 from aeneas.runtimeconfiguration import RuntimeConfiguration
-from aeneas.timevalue import TimeValue
 from aeneas.ttswrappers.basettswrapper import BaseTTSWrapper
 import aeneas.globalfunctions as gf
 
@@ -51,7 +55,7 @@ class FESTIVALTTSWrapper(BaseTTSWrapper):
 
     In abstract terms, it performs one or more calls like ::
 
-        $ echo text | text2wave -eval (language_italian) -o output_file.wav
+        $ echo text | text2wave -eval "(language_italian)" -o output_file.wav
 
     To use this TTS engine, specify ::
 
@@ -106,15 +110,30 @@ class FESTIVALTTSWrapper(BaseTTSWrapper):
         CES: CES,
         CYM: CYM,
         ENG: ENG,
-        ENG_GBR: ENG_GBR,
-        ENG_SCT: ENG_SCT,
-        ENG_USA: ENG_USA,
         SPA: SPA,
         FIN: FIN,
         ITA: ITA,
-        RUS: RUS
+        RUS: RUS,
+        ENG_GBR: ENG_GBR,
+        ENG_SCT: ENG_SCT,
+        ENG_USA: ENG_USA,
     }
     DEFAULT_LANGUAGE = ENG
+
+    CODE_TO_HUMAN = {
+        CES: u"Czech",
+        CYM: u"Welsh",
+        ENG: u"English",
+        FIN: u"Finnish",
+        ITA: u"Italian",
+        RUS: u"Russian",
+        SPA: u"Spanish",
+        ENG_GBR: u"English (GB)",
+        ENG_SCT: u"English (Scotland)",
+        ENG_USA: u"English (USA)",
+    }
+
+    CODE_TO_HUMAN_LIST = sorted([u"%s\t%s" % (k, v) for k, v in CODE_TO_HUMAN.items()])
 
     VOICE_CODE_TO_SUBPROCESS = {
         CES: u"(language_czech)",
@@ -160,7 +179,7 @@ class FESTIVALTTSWrapper(BaseTTSWrapper):
 
         Return a tuple (anchors, total_time, num_chars).
 
-        :rtype: (bool, (list, :class:`~aeneas.timevalue.TimeValue`, int))
+        :rtype: (bool, (list, :class:`~aeneas.exacttiming.TimeValue`, int))
         """
         self.log(u"Synthesizing using C extension...")
 

@@ -355,9 +355,10 @@ Values: listed in :class:`~aeneas.language.Language`
 
 Example::
 
+    task_language=eng
     task_language=eng-GBR
     task_language=eng-USA
-    task_language=ita-ITA
+    task_language=ita
 
 """
 
@@ -419,6 +420,24 @@ Example::
     task_adjust_boundary_beforenext_value=0.200
 
 .. versionadded:: 1.0.4
+"""
+
+PPN_TASK_ADJUST_BOUNDARY_NO_ZERO = "task_adjust_boundary_no_zero"
+"""
+If specified, do not allow fragments with zero duration.
+
+Note: before version 1.7.0 this parameter
+was called ``os_task_file_no_zero``.
+
+Usage: config string, TXT config file, XML config file
+
+Values: string
+
+Example::
+
+    task_adjust_boundary_no_zero=True
+
+.. versionadded:: 1.5.0
 """
 
 PPN_TASK_ADJUST_BOUNDARY_OFFSET_VALUE = "task_adjust_boundary_offset_value"
@@ -483,6 +502,48 @@ Example::
     task_adjust_boundary_rate_value=21.0
 
 .. versionadded:: 1.0.4
+"""
+
+PPN_TASK_ADJUST_BOUNDARY_NONSPEECH_MIN = "task_adjust_boundary_nonspeech_min"
+"""
+If greater than zero, create a new sync map fragment
+for each nonspeech interval
+with duration greater than or equal to this value.
+
+The text to be associated with these nonspeech intervals
+can be specified with ``task_adjust_boundary_nonspeech_string``.
+
+Usage: config string, TXT config file, XML config file
+
+Values: float
+
+Example::
+
+    task_adjust_boundary_nonspeech_min=0.500
+
+.. versionadded:: 1.7.0
+"""
+
+PPN_TASK_ADJUST_BOUNDARY_NONSPEECH_STRING = "task_adjust_boundary_nonspeech_string"
+"""
+Specify the text to be associated with nonspeech intervals
+of length greater than or equal to
+the value provided in ``task_adjust_boundary_nonspeech_min``.
+
+Use the string ``PPV_TASK_ADJUST_BOUNDARY_NONSPEECH_REMOVE``
+to remove these intervals from the output sync map.
+
+Usage: config string, TXT config file, XML config file
+
+Values: string
+
+Example::
+
+    task_adjust_boundary_nonspeech_string=REMOVE
+    task_adjust_boundary_nonspeech_string=(sil)
+    task_adjust_boundary_nonspeech_string=<sil>
+
+.. versionadded:: 1.7.0
 """
 
 PPN_TASK_IS_AUDIO_FILE_DETECT_HEAD_MAX = "is_audio_file_detect_head_max"
@@ -883,21 +944,6 @@ Example::
 
 """
 
-PPN_TASK_OS_FILE_NO_ZERO = "os_task_file_no_zero"
-"""
-If specified, do not allow fragments with zero duration.
-
-Usage: config string, TXT config file, XML config file
-
-Values: string
-
-Example::
-
-    os_task_file_no_zero=True
-
-.. versionadded:: 1.5.0
-"""
-
 PPN_TASK_OS_FILE_EAF_AUDIO_REF = "os_task_file_eaf_audio_ref"
 """
 The value of the ``<MEDIA_URL>`` element in the output sync map,
@@ -1006,4 +1052,13 @@ Example::
 
     os_task_file_name=$PREFIX.smil
 
+"""
+
+PPV_TASK_ADJUST_BOUNDARY_NONSPEECH_REMOVE = "REMOVE"
+"""
+Use this string as the value of
+the ``PPN_TASK_ADJUST_BOUNDARY_NONSPEECH_STRING`` parameter
+to remove long nonspeech intervals from the output sync map.
+
+.. versionadded:: 1.7.0
 """

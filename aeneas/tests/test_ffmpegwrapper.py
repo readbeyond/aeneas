@@ -105,5 +105,5 @@ class TestFFMPEGWrapper(unittest.TestCase):
             self.convert(f["path"], runtime_configuration=rc)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     unittest.main()

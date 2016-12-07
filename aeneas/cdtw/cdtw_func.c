@@ -191,7 +191,8 @@ int _compute_accumulated_cost_matrix(
                 cost1 = accumulated_cost_matrix_ptr[  (i) * delta + (j-1)];
             }
             cost2 = NPY_INFINITY;
-            if (((j+offset-1) < delta) && ((j+offset-1) >= 0)) {
+            // if (((j+offset-1) < delta) && ((j+offset-1) >= 0)) {
+            if (((j+offset-1) < delta) && ((j+offset) >= 1)) {
                 cost2 = accumulated_cost_matrix_ptr[(i-1) * delta + (j+offset-1)];
             }
             current_idx = i * delta + j;
@@ -242,7 +243,8 @@ int _compute_accumulated_cost_matrix_in_place(
                 cost1 = cost_matrix_ptr[  (i) * delta + (j-1)];
             }
             cost2 = NPY_INFINITY;
-            if (((j+offset-1) < delta) && ((j+offset-1) >= 0)) {
+            //if (((j+offset-1) < delta) && ((j+offset-1) >= 0)) {
+            if (((j+offset-1) < delta) && ((j+offset) >= 1)) {
                 cost2 = cost_matrix_ptr[(i-1) * delta + (j+offset-1)];
             }
             current_idx = i * delta + j;
@@ -303,7 +305,8 @@ int _compute_best_path(
                 cost1 = accumulated_cost_matrix_ptr[  (i) * delta + (r_j-1)];
             }
             cost2 = NPY_INFINITY;
-            if ((r_j > 0) && ((r_j+offset-1 < delta) && ((r_j+offset-1) >= 0))) {
+            //if ((r_j > 0) && ((r_j+offset-1 < delta) && ((r_j+offset-1) >= 0))) {
+            if ((r_j > 0) && ((r_j+offset-1 < delta) && ((r_j+offset) >= 1))) {
                 cost2 = accumulated_cost_matrix_ptr[(i-1) * delta + (r_j+offset-1)];
             }
             argmin = _three_way_argmin(cost0, cost1, cost2);

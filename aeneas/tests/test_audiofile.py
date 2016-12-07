@@ -27,7 +27,7 @@ import unittest
 from aeneas.audiofile import AudioFile
 from aeneas.audiofile import AudioFileNotInitializedError
 from aeneas.audiofile import AudioFileUnsupportedFormatError
-from aeneas.timevalue import TimeValue
+from aeneas.exacttiming import TimeValue
 import aeneas.globalfunctions as gf
 
 
@@ -278,5 +278,5 @@ class TestAudioFile(unittest.TestCase):
         self.assertEqual(audiofile.audio_samples[9], 6)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     unittest.main()

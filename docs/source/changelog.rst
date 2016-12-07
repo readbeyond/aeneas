@@ -1,6 +1,64 @@
 Changelog
 =========
 
+v1.7.0 (2016-12-07)
+-------------------
+
+#. Moved syncmap I/O functions in ``aeneas.syncmap`` subpackage
+#. Renamed ``aeneas.timevalue`` into ``aeneas.exacttiming``
+#. Renamed ``audio_duration`` into ``length`` in ``SyncMapFragment`` for consistency with ``TimeInterval``
+#. Renamed ``os_task_file_no_zero`` (``PPN_OS_TASK_FILE_NO_ZERO``) to ``task_adjust_boundary_no_zero`` (``PPN_TASK_ADJUST_BOUNDARY_NO_ZERO``) in ``TaskConfiguration``
+#. Renamed ``nuance_tts_api_sleep`` (``NUANCE_TTS_API_SLEEP``) to ``tts_api_sleep`` (``TTS_API_SLEEP``) in ``RuntimeConfiguration``
+#. Renamed ``nuance_tts_api_retry_attempts`` (``NUANCE_TTS_API_RETRY_ATTEMPTS``) to ``tts_api_retry_attempts`` (``TTS_API_RETRY_ATTEMPTS``) in ``RuntimeConfiguration``
+#. Renamed ``--rates`` to ``--rate`` in ``ExecuteTaskCLI``
+#. Renamed ``--example-rates`` to ``--example-rate`` in ``ExecuteTaskCLI``
+#. Changed ``config_string()`` to property in ``aeneas.configuration.Configuration``
+#. Changed the default value of ``TASK_MAX_AUDIO_LENGTH`` to ``0`` (i.e., process audio file with arbitrary audio length)
+#. Added two new output formats: ``TEXTGRID`` (Praat long TextGrid) and ``TEXTGRID_SHORT`` (Praat short TextGrid)
+#. More robust and generic reading of SRT-like files, especially WebVTT
+#. Fixed typos in ``SyncMapFormat`` docstrings
+#. Added ``safety_checks`` parameter to ``RuntimeConfiguration`` that can be disabled to trade safety for speed (issue #117)
+#. Added Makefile files to C/C++ extensions, replacing previous Bash scripts
+#. Simplified ``ExecuteTask``, offloading some sub-tasks to ``SyncMap``, ``SyncMapFragmentList``, and ``AdjustBoundaryAlgorithm``
+#. Simplified ``AdjustBoundaryAlgorithm``
+#. Added method ``sync_map_vleaves`` in ``Task`` for quick access to sync map fragments (vleaves)
+#. Added ``aeneas.exacttiming.TimeInterval`` class to represent time intervals and act upon them
+#. Added tests for ``TimeInterval``
+#. Added ``has_zero_length`` in ``SyncMapFragment``
+#. Added comparison functions to ``SyncMapFragment``, based on ``TimeInterval``
+#. Added ``aeneas.syncmap.fragmentlist.SyncMapFragmentList`` class to represent a list of sync map fragments, sorted and with positional/timing constraints
+#. Added tests for ``SyncMapFragmentList``
+#. Added ``clone()`` method to ``aeneas.configuration.Configuration``
+#. Removed ``clone()`` method to ``aeneas.runtimeconfiguration.RuntimeConfiguration`` (now it inherits from ``Configuration``)
+#. Added ``clone()`` method to ``aeneas.tree.Tree``
+#. Added more tests for ``Tree``
+#. Added ``PPN_TASK_ADJUST_BOUNDARY_NONSPEECH_MIN`` and ``PPN_TASK_ADJUST_BOUNDARY_NONSPEECH_STRING`` to ``TaskConfiguration``
+#. Added ``ABA_NONSPEECH_TOLERANCE`` and ``ABA_NO_ZERO_DURATION`` parameters to ``RuntimeConfiguration``
+#. Added more tests for ``Configuration`` and ``RuntimeConfiguration``
+#. Added map from language code to human-readable name for TTS wrappers and for ``Language``, usable by ``aeneas.tools.execute_task``
+#. Marked Afrikaans (``afr``) language as tested
+#. Added more examples to ``aeneas.tools.execute_task``
+#. Added more tool and long tests
+#. Added bench tests
+#. Added ``wiki/TESTING.md``
+#. Added ``venvs`` directory with scripts to automate testing with virtual environments
+#. Added ``RuntimeConfiguration`` parameters to switch MFCC masking on, including per level in multilevel tasks
+#. Modified ``DTWAligner``, ``AudioFileMFCC``, ``ExecuteTask``, and ``VAD`` to allow MFCC masking
+#. Added field human-readable descriptions in ``Configuration`` and its subclasses
+#. Better ``--list-parameters`` in ``ExecuteTask``
+#. Added ``--list-parameters`` in ``ExecuteJob``
+#. Added ``--help-rconf`` option to all tools
+#. Added check in ``ExecuteTask`` on the consistency of the computed sync map
+#. Added ``RuntimeConfiguration`` parameters ``DTW_MARGIN_L1``, ``DTW_MARGIN_L2``, ``DTW_MARGIN_L3``, to change DTW margin of each level
+#. Added ``FFMPEG_PARAMETERS_SAMPLE_48000`` to ``ffmpegwrapper.py``
+#. Fixes issue with ``gf.relative_path()`` in Windows, if executed from a drive different than the install drive
+#. Fixed a bug with empty fragments when using subprocess TTS with TTS cache enabled
+#. Added ``--presets-word`` switch to ``aeneas.tools.execute_task``
+#. Added ``AWSTTSWrapper`` wrapper for AWS Polly TTS API 
+#. Revised docs
+#. Fixed a bug in reading SMIL files with machine-readable timings
+#. Fixed a bug in ``SyncMapFragmentList`` which caused sync map to contain overlapping fragments
+
 v1.6.0.1 (2016-09-30)
 ---------------------
 

@@ -35,10 +35,10 @@ import os
 from aeneas.adjustboundaryalgorithm import AdjustBoundaryAlgorithm
 from aeneas.audiofile import AudioFile
 from aeneas.configuration import Configuration
+from aeneas.exacttiming import Decimal
+from aeneas.exacttiming import TimeValue
 from aeneas.logger import Loggable
 from aeneas.textfile import TextFile
-from aeneas.timevalue import Decimal
-from aeneas.timevalue import TimeValue
 import aeneas.globalconstants as gc
 import aeneas.globalfunctions as gf
 
@@ -146,6 +146,23 @@ class Task(Loggable):
     def sync_map_file_path_absolute(self, sync_map_file_path_absolute):
         self.__sync_map_file_path_absolute = sync_map_file_path_absolute
 
+    def sync_map_leaves(self, fragment_type=None):
+        """
+        Return the list of non-empty leaves
+        in the sync map associated with the task.
+
+        If ``fragment_type`` has been specified,
+        return only leaves of that fragment type.
+
+        :param int fragment_type: type of fragment to return
+        :rtype: list
+
+        .. versionadded:: 1.7.0
+        """
+        if (self.sync_map is None) or (self.sync_map.fragments_tree is None):
+            return []
+        return [f for f in self.sync_map.leaves(fragment_type)]
+
     def output_sync_map_file(self, container_root_path=None):
         """
         Output the sync map file for this task.
@@ -183,19 +200,25 @@ class Task(Loggable):
         gf.ensure_parent_directory(path)
         self.log([u"Output sync map to %s", path])
 
-        sync_map_format = self.configuration["o_format"]
         eaf_audio_ref = self.configuration["o_eaf_audio_ref"]
+        head_tail_format = self.configuration["o_h_t_format"]
+        levels = self.configuration["o_levels"]
         smil_audio_ref = self.configuration["o_smil_audio_ref"]
         smil_page_ref = self.configuration["o_smil_page_ref"]
+        sync_map_format = self.configuration["o_format"]
 
-        self.log([u"sync_map_format is %s", sync_map_format])
         self.log([u"eaf_audio_ref is %s", eaf_audio_ref])
+        self.log([u"head_tail_format is %s", head_tail_format])
+        self.log([u"levels is %s", levels])
         self.log([u"smil_audio_ref is %s", smil_audio_ref])
         self.log([u"smil_page_ref is %s", smil_page_ref])
+        self.log([u"sync_map_format is %s", sync_map_format])
 
         self.log(u"Calling sync_map.write...")
         parameters = {
             gc.PPN_TASK_OS_FILE_EAF_AUDIO_REF: eaf_audio_ref,
+            gc.PPN_TASK_OS_FILE_HEAD_TAIL_FORMAT: head_tail_format,
+            gc.PPN_TASK_OS_FILE_LEVELS: levels,
             gc.PPN_TASK_OS_FILE_SMIL_AUDIO_REF: smil_audio_ref,
             gc.PPN_TASK_OS_FILE_SMIL_PAGE_REF: smil_page_ref,
         }
@@ -268,9 +291,12 @@ class TaskConfiguration(Configuration):
     * :data:`~aeneas.globalconstants.PPN_TASK_ADJUST_BOUNDARY_AFTERCURRENT_VALUE` or ``aba_aftercurrent_value``
     * :data:`~aeneas.globalconstants.PPN_TASK_ADJUST_BOUNDARY_ALGORITHM`          or ``aba_algorithm``
     * :data:`~aeneas.globalconstants.PPN_TASK_ADJUST_BOUNDARY_BEFORENEXT_VALUE`   or ``aba_beforenext_value``
+    * :data:`~aeneas.globalconstants.PPN_TASK_ADJUST_BOUNDARY_NO_ZERO`            or ``aba_no_zero``
     * :data:`~aeneas.globalconstants.PPN_TASK_ADJUST_BOUNDARY_OFFSET_VALUE`       or ``aba_offset_value``
     * :data:`~aeneas.globalconstants.PPN_TASK_ADJUST_BOUNDARY_PERCENT_VALUE`      or ``aba_percent_value``
     * :data:`~aeneas.globalconstants.PPN_TASK_ADJUST_BOUNDARY_RATE_VALUE`         or ``aba_rate_value``
+    * :data:`~aeneas.globalconstants.PPN_TASK_ADJUST_BOUNDARY_NONSPEECH_MIN`      or ``aba_nonspeech_min``
+    * :data:`~aeneas.globalconstants.PPN_TASK_ADJUST_BOUNDARY_NONSPEECH_STRING`   or ``aba_nonspeech_string``
     * :data:`~aeneas.globalconstants.PPN_TASK_IS_AUDIO_FILE_DETECT_HEAD_MAX`      or ``i_a_head_max``
     * :data:`~aeneas.globalconstants.PPN_TASK_IS_AUDIO_FILE_DETECT_HEAD_MIN`      or ``i_a_head_min``
     * :data:`~aeneas.globalconstants.PPN_TASK_IS_AUDIO_FILE_DETECT_TAIL_MAX`      or ``i_a_tail_max``
@@ -304,41 +330,43 @@ class TaskConfiguration(Configuration):
     """
 
     FIELDS = [
-        (gc.PPN_TASK_CUSTOM_ID, (None, None, ["custom_id"])),
-        (gc.PPN_TASK_DESCRIPTION, (None, None, ["description"])),
-        (gc.PPN_TASK_LANGUAGE, (None, None, ["language"])),
-        (gc.PPN_TASK_ADJUST_BOUNDARY_AFTERCURRENT_VALUE, (None, TimeValue, ["aba_aftercurrent_value"])),
-        (gc.PPN_TASK_ADJUST_BOUNDARY_ALGORITHM, (None, None, ["aba_algorithm"])),
-        (gc.PPN_TASK_ADJUST_BOUNDARY_BEFORENEXT_VALUE, (None, TimeValue, ["aba_beforenext_value"])),
-        (gc.PPN_TASK_ADJUST_BOUNDARY_OFFSET_VALUE, (None, TimeValue, ["aba_offset_value"])),
-        (gc.PPN_TASK_ADJUST_BOUNDARY_PERCENT_VALUE, (None, int, ["aba_percent_value"])),
-        (gc.PPN_TASK_ADJUST_BOUNDARY_RATE_VALUE, (None, Decimal, ["aba_rate_value"])),
-        (gc.PPN_TASK_IS_AUDIO_FILE_DETECT_HEAD_MAX, (None, TimeValue, ["i_a_head_max"])),
-        (gc.PPN_TASK_IS_AUDIO_FILE_DETECT_HEAD_MIN, (None, TimeValue, ["i_a_head_min"])),
-        (gc.PPN_TASK_IS_AUDIO_FILE_DETECT_TAIL_MAX, (None, TimeValue, ["i_a_tail_max"])),
-        (gc.PPN_TASK_IS_AUDIO_FILE_DETECT_TAIL_MIN, (None, TimeValue, ["i_a_tail_min"])),
-        (gc.PPN_TASK_IS_AUDIO_FILE_HEAD_LENGTH, (None, TimeValue, ["i_a_head"])),
-        (gc.PPN_TASK_IS_AUDIO_FILE_PROCESS_LENGTH, (None, TimeValue, ["i_a_process"])),
-        (gc.PPN_TASK_IS_AUDIO_FILE_TAIL_LENGTH, (None, TimeValue, ["i_a_tail"])),
-        (gc.PPN_TASK_IS_TEXT_FILE_FORMAT, (None, None, ["i_t_format"])),
-        (gc.PPN_TASK_IS_TEXT_FILE_IGNORE_REGEX, (None, None, ["i_t_ignore_regex"])),
-        (gc.PPN_TASK_IS_TEXT_FILE_TRANSLITERATE_MAP, (None, None, ["i_t_transliterate_map"])),
-        (gc.PPN_TASK_IS_TEXT_MPLAIN_WORD_SEPARATOR, (None, None, ["i_t_mplain_word_separator"])),
-        (gc.PPN_TASK_IS_TEXT_MUNPARSED_L1_ID_REGEX, (None, None, ["i_t_munparsed_l1_id_regex"])),
-        (gc.PPN_TASK_IS_TEXT_MUNPARSED_L2_ID_REGEX, (None, None, ["i_t_munparsed_l2_id_regex"])),
-        (gc.PPN_TASK_IS_TEXT_MUNPARSED_L3_ID_REGEX, (None, None, ["i_t_munparsed_l3_id_regex"])),
-        (gc.PPN_TASK_IS_TEXT_UNPARSED_CLASS_REGEX, (None, None, ["i_t_unparsed_class_regex"])),
-        (gc.PPN_TASK_IS_TEXT_UNPARSED_ID_REGEX, (None, None, ["i_t_unparsed_id_regex"])),
-        (gc.PPN_TASK_IS_TEXT_UNPARSED_ID_SORT, (None, None, ["i_t_unparsed_id_sort"])),
-        (gc.PPN_TASK_OS_FILE_EAF_AUDIO_REF, (None, None, ["o_eaf_audio_ref"])),
-        (gc.PPN_TASK_OS_FILE_FORMAT, (None, None, ["o_format"])),
-        (gc.PPN_TASK_OS_FILE_HEAD_TAIL_FORMAT, (None, None, ["o_h_t_format"])),
-        (gc.PPN_TASK_OS_FILE_ID_REGEX, (None, None, ["o_id_regex"])),
-        (gc.PPN_TASK_OS_FILE_LEVELS, (None, None, ["o_levels"])),
-        (gc.PPN_TASK_OS_FILE_NAME, (None, None, ["o_name"])),
-        (gc.PPN_TASK_OS_FILE_NO_ZERO, (None, bool, ["o_no_zero"])),
-        (gc.PPN_TASK_OS_FILE_SMIL_AUDIO_REF, (None, None, ["o_smil_audio_ref"])),
-        (gc.PPN_TASK_OS_FILE_SMIL_PAGE_REF, (None, None, ["o_smil_page_ref"])),
+        (gc.PPN_TASK_CUSTOM_ID, (None, None, ["custom_id"], u"custom ID")),
+        (gc.PPN_TASK_DESCRIPTION, (None, None, ["description"], u"description")),
+        (gc.PPN_TASK_LANGUAGE, (None, None, ["language"], u"language (REQ, *)")),
+        (gc.PPN_TASK_ADJUST_BOUNDARY_AFTERCURRENT_VALUE, (None, TimeValue, ["aba_aftercurrent_value"], u"offset value, in s (aftercurrent)")),
+        (gc.PPN_TASK_ADJUST_BOUNDARY_ALGORITHM, (None, None, ["aba_algorithm"], u"algorithm to adjust sync map values (*)")),
+        (gc.PPN_TASK_ADJUST_BOUNDARY_BEFORENEXT_VALUE, (None, TimeValue, ["aba_beforenext_value"], u"offset value, in s (beforenext)")),
+        (gc.PPN_TASK_ADJUST_BOUNDARY_OFFSET_VALUE, (None, TimeValue, ["aba_offset_value"], u"offset value, in s (offset)")),
+        (gc.PPN_TASK_ADJUST_BOUNDARY_NO_ZERO, (None, bool, ["aba_no_zero"], u"if True, do not allow zero-length fragments")),
+        (gc.PPN_TASK_ADJUST_BOUNDARY_PERCENT_VALUE, (None, int, ["aba_percent_value"], u"percent value in [0..100] (percent)")),
+        (gc.PPN_TASK_ADJUST_BOUNDARY_RATE_VALUE, (None, Decimal, ["aba_rate_value"], u"max rate, in chars/s (rate, rateaggressive)")),
+        (gc.PPN_TASK_ADJUST_BOUNDARY_NONSPEECH_MIN, (None, TimeValue, ["aba_nonspeech_min"], u"minimum long nonspeech duration, in s")),
+        (gc.PPN_TASK_ADJUST_BOUNDARY_NONSPEECH_STRING, (None, None, ["aba_nonspeech_string"], u"replace long nonspeech with this string or specify REMOVE")),
+        (gc.PPN_TASK_IS_AUDIO_FILE_DETECT_HEAD_MAX, (None, TimeValue, ["i_a_head_max"], u"detect audio head, at most this many seconds")),
+        (gc.PPN_TASK_IS_AUDIO_FILE_DETECT_HEAD_MIN, (None, TimeValue, ["i_a_head_min"], u"detect audio head, at least this many seconds")),
+        (gc.PPN_TASK_IS_AUDIO_FILE_DETECT_TAIL_MAX, (None, TimeValue, ["i_a_tail_max"], u"detect audio tail, at most this many seconds")),
+        (gc.PPN_TASK_IS_AUDIO_FILE_DETECT_TAIL_MIN, (None, TimeValue, ["i_a_tail_min"], u"detect audio tail, at least this many seconds")),
+        (gc.PPN_TASK_IS_AUDIO_FILE_HEAD_LENGTH, (None, TimeValue, ["i_a_head"], u"ignore this many seconds at begin of audio")),
+        (gc.PPN_TASK_IS_AUDIO_FILE_PROCESS_LENGTH, (None, TimeValue, ["i_a_process"], u"process this many seconds of audio")),
+        (gc.PPN_TASK_IS_AUDIO_FILE_TAIL_LENGTH, (None, TimeValue, ["i_a_tail"], u"ignore this many seconds at end of audio")),
+        (gc.PPN_TASK_IS_TEXT_FILE_FORMAT, (None, None, ["i_t_format"], u"text format (REQ, *)")),
+        (gc.PPN_TASK_IS_TEXT_FILE_IGNORE_REGEX, (None, None, ["i_t_ignore_regex"], u"for the alignment, ignore text matched by regex")),
+        (gc.PPN_TASK_IS_TEXT_FILE_TRANSLITERATE_MAP, (None, None, ["i_t_transliterate_map"], u"for the alignment, apply this transliteration map to text")),
+        (gc.PPN_TASK_IS_TEXT_MPLAIN_WORD_SEPARATOR, (None, None, ["i_t_mplain_word_separator"], u"word separator (mplain)")),
+        (gc.PPN_TASK_IS_TEXT_MUNPARSED_L1_ID_REGEX, (None, None, ["i_t_munparsed_l1_id_regex"], u"regex matching level 1 id attributes (munparsed)")),
+        (gc.PPN_TASK_IS_TEXT_MUNPARSED_L2_ID_REGEX, (None, None, ["i_t_munparsed_l2_id_regex"], u"regex matching level 2 id attributes (munparsed)")),
+        (gc.PPN_TASK_IS_TEXT_MUNPARSED_L3_ID_REGEX, (None, None, ["i_t_munparsed_l3_id_regex"], u"regex matching level 3 id attributes (munparsed)")),
+        (gc.PPN_TASK_IS_TEXT_UNPARSED_CLASS_REGEX, (None, None, ["i_t_unparsed_class_regex"], u"regex matching class attributes (unparsed)")),
+        (gc.PPN_TASK_IS_TEXT_UNPARSED_ID_REGEX, (None, None, ["i_t_unparsed_id_regex"], u"regex matching id attributes (unparsed)")),
+        (gc.PPN_TASK_IS_TEXT_UNPARSED_ID_SORT, (None, None, ["i_t_unparsed_id_sort"], u"algorithm to sort matched element (unparsed) (*)")),
+        (gc.PPN_TASK_OS_FILE_EAF_AUDIO_REF, (None, None, ["o_eaf_audio_ref"], u"audio ref value (eaf)")),
+        (gc.PPN_TASK_OS_FILE_FORMAT, (None, None, ["o_format"], u"sync map format (REQ, *)")),
+        (gc.PPN_TASK_OS_FILE_HEAD_TAIL_FORMAT, (None, None, ["o_h_t_format"], u"audio head/tail format (*)")),
+        (gc.PPN_TASK_OS_FILE_ID_REGEX, (None, None, ["o_id_regex"], u"regex to build sync map id's (subtitles, plain)")),
+        (gc.PPN_TASK_OS_FILE_LEVELS, (None, None, ["o_levels"], u"output the specified levels only (mplain, munparserd)")),
+        (gc.PPN_TASK_OS_FILE_NAME, (None, None, ["o_name"], u"sync map file name (ignored)")),
+        (gc.PPN_TASK_OS_FILE_SMIL_AUDIO_REF, (None, None, ["o_smil_audio_ref"], u"audio ref value (smil, smilh, smilm)")),
+        (gc.PPN_TASK_OS_FILE_SMIL_PAGE_REF, (None, None, ["o_smil_page_ref"], u"text ref value (smil, smilh, smilm)")),
     ]
 
     TAG = u"TaskConfiguration"
@@ -348,11 +376,17 @@ class TaskConfiguration(Configuration):
 
     def aba_parameters(self):
         """
-        Return a tuple ``(aba_algorithm, aba_parameters)``
-        representing the :class:`~aeneas.adjustboundaryalgorithm.AdjustBoundaryAlgorithm`
-        algorithm and its parameters.
+        Return a dictionary representing the
+        :class:`~aeneas.adjustboundaryalgorithm.AdjustBoundaryAlgorithm`
+        parameters stored in this task configuration.
 
-        :rtype: tuple
+        Available keys:
+
+        * ``algorithm``, tuple: (string, list)
+        * ``nonspeech``, tuple: (TimeValue or None, string)
+        * ``nozero``, bool
+
+        :rtype: dict
         """
         ABA_MAP = {
             AdjustBoundaryAlgorithm.AFTERCURRENT: [self[gc.PPN_TASK_ADJUST_BOUNDARY_AFTERCURRENT_VALUE]],
@@ -363,7 +397,12 @@ class TaskConfiguration(Configuration):
             AdjustBoundaryAlgorithm.RATE: [self[gc.PPN_TASK_ADJUST_BOUNDARY_RATE_VALUE]],
             AdjustBoundaryAlgorithm.RATEAGGRESSIVE: [self[gc.PPN_TASK_ADJUST_BOUNDARY_RATE_VALUE]]
         }
-        aba_algorithm = self["aba_algorithm"]
-        if aba_algorithm is None:
-            aba_algorithm = AdjustBoundaryAlgorithm.AUTO
-        return (aba_algorithm, ABA_MAP[aba_algorithm])
+        aba_algorithm = self[gc.PPN_TASK_ADJUST_BOUNDARY_ALGORITHM] or AdjustBoundaryAlgorithm.AUTO
+        ns_min = self[gc.PPN_TASK_ADJUST_BOUNDARY_NONSPEECH_MIN]
+        ns_string = self[gc.PPN_TASK_ADJUST_BOUNDARY_NONSPEECH_STRING]
+        nozero = self[gc.PPN_TASK_ADJUST_BOUNDARY_NO_ZERO] or False
+        return {
+            "algorithm": (aba_algorithm, ABA_MAP[aba_algorithm]),
+            "nonspeech": (ns_min, ns_string),
+            "nozero": nozero
+        }

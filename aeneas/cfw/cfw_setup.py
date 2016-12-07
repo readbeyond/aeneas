@@ -24,7 +24,7 @@
 """
 Compile the Python C Extension for synthesizing text with Festival.
 
-.. versionadded:: 1.6.1
+.. versionadded:: 1.6.0
 """
 
 from __future__ import absolute_import
@@ -54,7 +54,7 @@ CMODULE = Extension(
 
 setup(
     name="cfw",
-    version="1.6.1",
+    version="1.7.0",
     description="Python C Extension for synthesizing text with Festival.",
     ext_modules=[CMODULE]
 )

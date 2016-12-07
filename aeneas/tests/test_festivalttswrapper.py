@@ -36,5 +36,5 @@ class TestFESTIVALTTSWrapper(TestBaseTTSWrapper):
     TTS_LANGUAGE_VARIATION = FESTIVALTTSWrapper.ENG_GBR
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     unittest.main()

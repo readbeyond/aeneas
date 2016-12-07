@@ -7,7 +7,7 @@
 #     Copyright 2015-2016, Alberto Pettarin (www.albertopettarin.it)
 #     """
 # __license__ = "GNU AGPL 3"
-# __version__ = "1.6.0"
+# __version__ = "1.7.0"
 # __email__ = "aeneas@readbeyond.it"
 # __status__ = "Production"
 
@@ -53,11 +53,15 @@
     sudo apt-get install -y espeak espeak-data libespeak1 libespeak-dev
     echo "[INFO] B.2 Installing espeak... done"
 
-    echo "[INFO] B.3 Installing common libs using apt-get..."
+    echo "[INFO] B.3 Installing festival..."
+    sudo apt-get install -y festival*
+    echo "[INFO] B.3 Installing festival... done"
+
+    echo "[INFO] B.4 Installing common libs using apt-get..."
     sudo apt-get install -y build-essential
     sudo apt-get install -y flac libasound2-dev libsndfile1-dev vorbis-tools
     sudo apt-get install -y libxml2-dev libxslt-dev zlib1g-dev
     sudo apt-get install -y python-dev python-pip
-    echo "[INFO] B.3 Installing common libs using apt-get... done"
+    echo "[INFO] B.4 Installing common libs using apt-get... done"
 
 echo "[INFO] Congratulations, now you can use aeneas!"

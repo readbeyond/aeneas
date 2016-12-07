@@ -59,5 +59,5 @@ class TestIDSortingAlgorithm(unittest.TestCase):
         self.assertTrue(sids == bad_ids)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     unittest.main()

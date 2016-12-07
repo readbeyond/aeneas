@@ -3,11 +3,11 @@
  <fragment>
   <identifier>f000001</identifier>
   <start>0.000</start>
-  <end>2.640</end>
+  <end>2.680</end>
  </fragment>
  <fragment>
   <identifier>f000002</identifier>
-  <start>2.640</start>
+  <start>2.680</start>
   <end>5.880</end>
  </fragment>
  <fragment>
@@ -18,16 +18,16 @@
  <fragment>
   <identifier>f000004</identifier>
   <start>9.240</start>
-  <end>11.640</end>
+  <end>11.920</end>
  </fragment>
  <fragment>
   <identifier>f000005</identifier>
-  <start>11.640</start>
-  <end>15.240</end>
+  <start>11.920</start>
+  <end>15.280</end>
  </fragment>
  <fragment>
   <identifier>f000006</identifier>
-  <start>15.240</start>
+  <start>15.280</start>
   <end>18.560</end>
  </fragment>
  <fragment>
@@ -38,21 +38,21 @@
  <fragment>
   <identifier>f000008</identifier>
   <start>22.800</start>
-  <end>25.680</end>
+  <end>25.640</end>
  </fragment>
  <fragment>
   <identifier>f000009</identifier>
-  <start>25.680</start>
+  <start>25.640</start>
   <end>31.240</end>
  </fragment>
  <fragment>
   <identifier>f000010</identifier>
   <start>31.240</start>
-  <end>34.280</end>
+  <end>34.440</end>
  </fragment>
  <fragment>
   <identifier>f000011</identifier>
-  <start>34.280</start>
+  <start>34.440</start>
   <end>36.960</end>
  </fragment>
  <fragment>
@@ -63,16 +63,16 @@
  <fragment>
   <identifier>f000013</identifier>
   <start>40.680</start>
-  <end>43.600</end>
+  <end>43.640</end>
  </fragment>
  <fragment>
   <identifier>f000014</identifier>
-  <start>43.600</start>
-  <end>48.080</end>
+  <start>43.640</start>
+  <end>48.520</end>
  </fragment>
  <fragment>
   <identifier>f000015</identifier>
-  <start>48.080</start>
+  <start>48.520</start>
   <end>53.240</end>
  </fragment>
 </map>

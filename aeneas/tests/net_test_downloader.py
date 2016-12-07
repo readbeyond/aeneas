@@ -84,10 +84,10 @@ class TestDownloader(unittest.TestCase):
 
     def test_download_list(self):
         audiostreams = self.audio_from_youtube(self.URL_VALID, download=False)
-        self.assertEqual(len(audiostreams), 6)
+        self.assertEqual(len(audiostreams), 5)
 
     def test_download_simple(self):
-        self.download(2303039)
+        self.download(1147614)
 
     def test_download_smallest(self):
         self.download(353237, largest_audio=False)
@@ -98,20 +98,20 @@ class TestDownloader(unittest.TestCase):
             fmt = "ogg"
         else:
             fmt = "opus"
-        self.download(880809, preferred_format=fmt)
+        self.download(1147614, preferred_format=fmt)
 
     def test_download_format_smallest(self):
         self.download(1147614, preferred_format="m4a", largest_audio=False)
 
     def test_download_index(self):
-        self.download(405826, preferred_index=4)
+        self.download(880809, preferred_index=4)
 
     def test_download_index_out_of_range(self):
-        self.download(2303039, preferred_index=1000)
+        self.download(1147614, preferred_index=1000)
 
     def test_download_index_and_bad_format(self):
-        self.download(405826, preferred_index=4, preferred_format="m4a", largest_audio=True)
+        self.download(880809, preferred_index=4, preferred_format="m4a", largest_audio=True)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     unittest.main()

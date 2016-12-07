@@ -304,8 +304,14 @@ you need to provide the following additional parameters:
 
 .. note::
     If you are interested in synchronizing at **word granularity**,
-    it is highly suggested to use a **multilevel text format**,
-    even if you are going to use only the timings for the finer granularity.
+    it is highly suggested to use:
+   
+    1. MFCC nonspeech masking;
+    2. a **multilevel text format**,
+       even if you are going to use only the timings for the finer granularity;
+    3. better TTS engines, like Festival or AWS/Nuance TTS API;
+
+    as they generally yield more accurate timings.
 
     (If you do not want the output sync map file to contain
     the multilevel tree hierarchy for the timings,
@@ -315,10 +321,20 @@ you need to provide the following additional parameters:
     :data:`~aeneas.globalconstants.PPN_TASK_OS_FILE_LEVELS`
     with value ``3``).
 
-    There are two main reasons for this suggestion:
+    Since ``aeneas`` v1.7.0,
+    the ``aeneas.tools.execute_task`` has a switch ``--presets-word``
+    that enables MFCC nonspeech masking for single level tasks or
+    MFCC nonspeech masking on level 3 (word) for multilevel tasks.
+    For example::
 
-    1. the computation should be faster, and
-    2. likely, the timings will be more accurate.
+        $ python -m aeneas.tools.execute_task --example-words
+        $ python -m aeneas.tools.execute_task --example-words --presets-word
+        $ python -m aeneas.tools.execute_task --example-words-multilevel
+        $ python -m aeneas.tools.execute_task --example-words-multilevel --presets-word
+
+    The other default settings should be fine for most users,
+    however if you need finer control, feel free to experiment
+    with the following parameters.
 
     Starting with ``aeneas`` v1.5.1,
     you can specify different MFCC parameters for each level, see:
@@ -336,7 +352,22 @@ you need to provide the following additional parameters:
     * :data:`~aeneas.runtimeconfiguration.RuntimeConfiguration.TTS_L1`,
     * :data:`~aeneas.runtimeconfiguration.RuntimeConfiguration.TTS_L2`,
     * :data:`~aeneas.runtimeconfiguration.RuntimeConfiguration.TTS_L3`.
+
+    Starting with ``aeneas`` v1.7.0,
+    you can specify the MFCC nonspeech masking, for both
+    single level tasks and multilevel tasks.
+    In the latter case, you can apply it to each level separately, see:
+
+    * :data:`~aeneas.runtimeconfiguration.RuntimeConfiguration.MFCC_MASK_NONSPEECH`,
+    * :data:`~aeneas.runtimeconfiguration.RuntimeConfiguration.MFCC_MASK_NONSPEECH_L1`,
+    * :data:`~aeneas.runtimeconfiguration.RuntimeConfiguration.MFCC_MASK_NONSPEECH_L2`,
+    * :data:`~aeneas.runtimeconfiguration.RuntimeConfiguration.MFCC_MASK_NONSPEECH_L3`.
     
+    If you are using a multilevel text format,
+    you might want to enable MFCC masking only for level 3 (word),
+    as enabling it for level 1 and 2 does not seem to yield significantly
+    better results.
+
     The ``aeneas`` mailing list contains some interesting threads
     about using aeneas for word-level synchronization.
 
@@ -484,11 +515,17 @@ Examples:
 
         python -m aeneas.tools.execute_task --example-json -r="tts=festival|tts_path=/path/to/text2wave"
 
-#. use the Nuance TTS API instead of eSpeak::
+#. use the AWS Polly TTS API instead of eSpeak (with TTS caching enabled):
 
     .. code-block:: text
 
-        python -m aeneas.tools.execute_task --example-json -r="tts=nuance|nuance_tts_api_id=YOUR_NUANCE_API_ID|nuance_tts_api_key=YOUR_NUANCE_API_KEY"
+        python -m aeneas.tools.execute_task --example-json -r="tts=aws|tts_cache=True"
+
+#. use the Nuance TTS API instead of eSpeak (with TTS caching enabled):
+
+    .. code-block:: text
+
+        python -m aeneas.tools.execute_task --example-json -r="tts=nuance|nuance_tts_api_id=YOUR_NUANCE_API_ID|nuance_tts_api_key=YOUR_NUANCE_API_KEY|tts_cache=True"
 
 #. use a custom TTS wrapper located at ``/path/to/your/wrapper.py`` (see the ``aeneas/extra/`` directory for examples):
 
@@ -502,11 +539,11 @@ Examples:
 
         python -m aeneas.tools.execute_task --example-json -r="tmp_path=/path/to/tmp/"
 
-#. allow processing tasks with arbitrarily long audio:
+#. allow processing tasks with audio files at most 1 hour (= 3600 seconds) long:
 
     .. code-block:: text
 
-        python -m aeneas.tools.execute_task --example-json -r="task_max_audio_length=0"
+        python -m aeneas.tools.execute_task --example-json -r="task_max_audio_length=3600"
 
 Miscellanea
 -----------
@@ -518,7 +555,7 @@ Miscellanea
    setting each boundary between adjacent fragments to the middle of the nonspeech interval,
    using the :data:`~aeneas.adjustboundaryalgorithm.AdjustBoundaryAlgorithm.PERCENT` algorithm
    with value ``50`` (i.e., ``50%``)
-#. ``--example-rates``: adjust the output sync map, trying to ensure that no fragment has
+#. ``--example-rate``: adjust the output sync map, trying to ensure that no fragment has
    a rate of more than ``14`` character/s,
    using the :data:`~aeneas.adjustboundaryalgorithm.AdjustBoundaryAlgorithm.RATE` algorithm
 #. ``--example-sd``: detect the audio head/tail, each at most ``10.000`` seconds long

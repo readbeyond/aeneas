@@ -42,6 +42,7 @@ class TestTextFile(unittest.TestCase):
     EMPTY_FILE_PATH = "res/inputtext/empty.txt"
     BLANK_FILE_PATH = "res/inputtext/blank.txt"
     PLAIN_FILE_PATH = "res/inputtext/sonnet_plain.txt"
+    PLAIN_WITH_EMPTY_LINES_FILE_PATH = "res/inputtext/plain_with_empty_lines.txt"
     PARSED_FILE_PATH = "res/inputtext/sonnet_parsed.txt"
     MPLAIN_FILE_PATH = "res/inputtext/sonnet_mplain.txt"
     MUNPARSED_FILE_PATH = "res/inputtext/sonnet_munparsed.xhtml"
@@ -164,6 +165,9 @@ class TestTextFile(unittest.TestCase):
     def test_read_empty(self):
         for fmt in TextFileFormat.ALLOWED_VALUES:
             self.load(self.EMPTY_FILE_PATH, fmt, 0, self.UNPARSED_PARAMETERS)
+
+    def test_read_plain_with_empty_lines(self):
+        self.load(self.PLAIN_WITH_EMPTY_LINES_FILE_PATH, TextFileFormat.PLAIN, 19, None)
 
     def test_read_blank(self):
         for fmt in TextFileFormat.ALLOWED_VALUES:
@@ -545,13 +549,17 @@ class TestTextFile(unittest.TestCase):
         self.filter_transliterate([u"TUTTE"], [u"wwwwE"])
 
     def test_filter_transliterate_replace_codepoint_length(self):
-        self.filter_transliterate([u"x" + u"\u0008" + u"z"], [u"xaz"])
-        self.filter_transliterate([u"x" + u"\u0088" + u"z"], [u"xaz"])
-        self.filter_transliterate([u"x" + u"\u0888" + u"z"], [u"xaz"])
-        self.filter_transliterate([u"x" + u"\u8888" + u"z"], [u"xaz"])
-        self.filter_transliterate([u"x" + u"\U00088888" + u"z"], [u"xaz"])
-        self.filter_transliterate([u"x" + u"\U00108888" + u"z"], [u"xaz"])
+        self.filter_transliterate([u"x" + gf.safe_unichr(0x0008) + u"z"], [u"xaz"])
+        self.filter_transliterate([u"x" + gf.safe_unichr(0x0088) + u"z"], [u"xaz"])
+        self.filter_transliterate([u"x" + gf.safe_unichr(0x0888) + u"z"], [u"xaz"])
+        self.filter_transliterate([u"x" + gf.safe_unichr(0x8888) + u"z"], [u"xaz"])
+        if gf.is_py2_narrow_build():
+            # NOTE Python 2 narrow builds cannot handle codepoints above 0x10000 correctly
+            pass
+        else:
+            self.filter_transliterate([u"x" + gf.safe_unichr(0x88888) + u"z"], [u"xaz"])
+            self.filter_transliterate([u"x" + gf.safe_unichr(0x108888) + u"z"], [u"xaz"])
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     unittest.main()

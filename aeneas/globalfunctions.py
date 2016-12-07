@@ -37,8 +37,8 @@ import sys
 import tempfile
 import uuid
 
+from aeneas.exacttiming import TimeValue
 import aeneas.globalconstants as gc
-from aeneas.timevalue import TimeValue
 
 
 # RUNTIME CONSTANTS
@@ -560,7 +560,7 @@ def time_from_ttml(string):
     and return a time value.
 
     :param string string: the string to be parsed
-    :rtype: :class:`~aeneas.timevalue.TimeValue`
+    :rtype: :class:`~aeneas.exacttiming.TimeValue`
     """
     if (string is None) or (len(string) < 2):
         return 0
@@ -594,7 +594,7 @@ def time_from_ssmmm(string):
     Parse the given ``SS.mmm`` string and return a time value.
 
     :param string string: the string to be parsed
-    :rtype: :class:`~aeneas.timevalue.TimeValue`
+    :rtype: :class:`~aeneas.exacttiming.TimeValue`
     """
     if (string is None) or (len(string) < 1):
         return TimeValue("0.000")
@@ -626,7 +626,7 @@ def time_from_hhmmssmmm(string, decimal_separator="."):
 
     :param string string: the string to be parsed
     :param string decimal_separator: the decimal separator to be used
-    :rtype: :class:`~aeneas.timevalue.TimeValue`
+    :rtype: :class:`~aeneas.exacttiming.TimeValue`
     """
     if decimal_separator == ",":
         pattern = HHMMSS_MMM_PATTERN_COMMA
@@ -685,6 +685,16 @@ def time_to_hhmmssmmm(time_value, decimal_separator="."):
     )
 
 
+def time_from_srt(string):
+    """
+    Parse the given ``HH:MM:SS,mmm`` string and return a time value.
+
+    :param string string: the string to be parsed
+    :rtype: :class:`~aeneas.exacttiming.TimeValue`
+    """
+    return time_from_hhmmssmmm(string, decimal_separator=",")
+
+
 def time_to_srt(time_value):
     """
     Format the given time value into a ``HH:MM:SS,mmm`` string,
@@ -705,7 +715,7 @@ def time_to_srt(time_value):
     :param float time_value: a time value, in seconds
     :rtype: string
     """
-    return time_to_hhmmssmmm(time_value, ",")
+    return time_to_hhmmssmmm(time_value, decimal_separator=",")
 
 
 def split_url(url):
@@ -764,6 +774,15 @@ def is_windows():
     :rtype: bool
     """
     return os.name == "nt"
+
+
+def is_py2_narrow_build():
+    """
+    Return ``True`` if running on a Python 2 narrow build.
+
+    :rtype: bool
+    """
+    return (PY2) and (sys.maxunicode == 65535)
 
 
 def fix_slash(path):
@@ -1032,6 +1051,14 @@ def relative_path(path, from_file):
         return None
     abs_path_target = absolute_path(path, from_file)
     abs_path_cwd = os.getcwd()
+    if is_windows():
+        # NOTE on Windows, if the two paths are on different drives,
+        #      the notion of relative path is not defined:
+        #      return the absolute path of the target instead.
+        t_drive, t_tail = os.path.splitdrive(abs_path_target)
+        c_drive, c_tail = os.path.splitdrive(abs_path_cwd)
+        if t_drive != c_drive:
+            return abs_path_target
     return os.path.relpath(abs_path_target, start=abs_path_cwd)
 
 
@@ -1161,7 +1188,9 @@ def safe_unichr(codepoint):
     :param int codepoint: the codepoint
     :rtype: string
     """
-    if PY2:
+    if is_py2_narrow_build():
+        return ("\\U%08x" % codepoint).decode("unicode-escape")
+    elif PY2:
         return unichr(codepoint)
     return chr(codepoint)
 

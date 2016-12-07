@@ -1,4 +1,40 @@
+$ python -m aeneas.tools.execute_task --list-values
+
+[INFO] Parameters for which values can be listed:
+aws
+espeak
+espeak-ng
+festival
+is_text_type
+is_text_unparsed_id_sort
+nuance
+os_task_file_format
+os_task_file_head_tail_format
+task_adjust_boundary_algorithm
+task_language
+
+
 $ python -m aeneas.tools.execute_task --list-values=is_text_type
 
 [INFO] Available values for parameter 'is_text_type':
-mplain, munparsed, parsed, plain, subtitles, unparsed
+mplain
+munparsed
+parsed
+plain
+subtitles
+unparsed
+
+
+$ python -m aeneas.tools.execute_task --list-values=espeak
+
+[INFO] Available values for parameter 'espeak':
+af	    Afrikaans
+afr	    Afrikaans
+an	    Aragonese (not tested)
+arg	    Aragonese (not tested)
+...
+yue     Yue Chinese (not tested)
+zh	    Mandarin Chinese (not tested)
+zh-yue	Yue Chinese (not tested)
+zho	    Chinese (not tested)
+

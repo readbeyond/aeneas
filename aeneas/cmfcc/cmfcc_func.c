@@ -647,7 +647,7 @@ int compute_mfcc_from_data(
     ) {
 
     // to keep the compile happy, it will never be used
-    struct WAVE_INFO header;
+    struct WAVE_INFO header = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
 
     return _compute_mfcc(
         data_ptr,
@@ -686,7 +686,7 @@ int compute_mfcc_from_file(
 ) {
 
     FILE *audio_file_ptr;
-    struct WAVE_INFO header;
+    struct WAVE_INFO header = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
     uint32_t sample_rate_loc;
     uint32_t data_length_loc;
     int ret;
