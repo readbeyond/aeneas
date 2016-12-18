@@ -54,7 +54,7 @@ PKG_VERSION = "1.7.1.0"
 # NOTE: this list should be the same as requirements.txt
 PKG_INSTALL_REQUIRES = [
     "BeautifulSoup4>=4.5.1",
-    "lxml>=3.6.4",
+    "lxml>=3.6.0",
     "numpy>=1.9"
 ]
 
