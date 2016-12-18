@@ -118,7 +118,7 @@ class FESTIVALTTSWrapper(BaseTTSWrapper):
         ENG_SCT: ENG_SCT,
         ENG_USA: ENG_USA,
     }
-    DEFAULT_LANGUAGE = ENG
+    DEFAULT_LANGUAGE = ENG_USA
 
     CODE_TO_HUMAN = {
         CES: u"Czech",
