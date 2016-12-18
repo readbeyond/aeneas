@@ -366,6 +366,7 @@ class AbstractCLIProgram(Loggable):
 
         # create logger
         self.logger = Logger(tee=self.verbose, tee_show_datetime=self.very_verbose)
+        self.log([u"Running aeneas %s", aeneas_version])
         self.log([u"Formal arguments: %s", self.formal_arguments])
         self.log([u"Actual arguments: %s", self.actual_arguments])
         self.log([u"Runtime configuration: '%s'", self.rconf.config_string])
