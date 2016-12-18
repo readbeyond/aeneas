@@ -562,6 +562,14 @@ class TestGlobalFunctions(unittest.TestCase):
         gf.delete_directory(orig)
         self.assertFalse(gf.directory_exists(orig))
 
+    def test_close_file_handler(self):
+        handler, path = gf.tmp_file()
+        self.assertTrue(gf.file_exists(path))
+        gf.close_file_handler(handler)
+        self.assertTrue(gf.file_exists(path))
+        gf.delete_file(handler, path)
+        self.assertFalse(gf.file_exists(path))
+
     def test_delete_file_existing(self):
         handler, path = gf.tmp_file()
         self.assertTrue(gf.file_exists(path))

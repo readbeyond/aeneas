@@ -628,7 +628,8 @@ class BaseTTSWrapper(Loggable):
         # read audio data
         ret = self._read_audio_data(output_file_path) if return_audio_data else (True, None)
 
-        # if the output file was temporary, remove it
+        # if the output file was temporary, remove it;
+        # otherwise just close the corresponding file handler
         if synt_tmp_file:
             self.log([u"Removing temporary output file path '%s'", output_file_path])
             gf.delete_file(output_file_handler, output_file_path)
@@ -821,5 +822,7 @@ class BaseTTSWrapper(Loggable):
                 self.log(u"Added fragment to cache")
             else:
                 self.log(u"Fragment has zero duration, not adding it to cache")
+            self.log([u"Closing file handler for cached output file path '%s'", file_path])
+            gf.close_file_handler(file_handler)
         self.log([u"Examining fragment %d (cache)... done", num])
         return (True, data)
