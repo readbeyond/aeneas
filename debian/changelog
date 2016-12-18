@@ -1,3 +1,12 @@
+aeneas (1.7.1) stable; urgency=medium
+
+  * Fix bug #151
+  * Downgraded dependency on lxml to lxml>=3.6.0 to help packaging the Windows installer
+  * Added aeneas version to log
+  * Changed default voice for Festival TTS Wrapper to eng-USA to help people installing from source on Mac OS X
+
+ -- alberto <alberto@nievo>  Sun, 18 Dec 2016 14:32:51 +0100
+
 aeneas (1.7.0) stable; urgency=medium
 
   * More robust and generic reading of SRT-like files, especially WebVTT
