@@ -628,8 +628,7 @@ class BaseTTSWrapper(Loggable):
         # read audio data
         ret = self._read_audio_data(output_file_path) if return_audio_data else (True, None)
 
-        # if the output file was temporary, remove it;
-        # otherwise just close the corresponding file handler
+        # if the output file was temporary, remove it
         if synt_tmp_file:
             self.log([u"Removing temporary output file path '%s'", output_file_path])
             gf.delete_file(output_file_handler, output_file_path)
