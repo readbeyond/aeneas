@@ -470,7 +470,7 @@ class BaseTTSWrapper(Loggable):
         return the audio data at the end of the function call;
         if ``False``, just return ``(True, None)`` in case of success.
 
-        :rtype: tuple (result, (duration, sample_rate, encoding, data)) or (result, None)
+        :rtype: tuple (result, (duration, sample_rate, codec, data)) or (result, None)
         """
         raise NotImplementedError(u"This function must be implemented in concrete subclasses supporting Python call")
 
@@ -489,7 +489,7 @@ class BaseTTSWrapper(Loggable):
         If ``output_file_path`` is ``None``,
         the audio data will not persist to file at the end of the method.
 
-        :rtype: tuple (result, (duration, sample_rate, encoding, data))
+        :rtype: tuple (result, (duration, sample_rate, codec, data))
         """
         raise NotImplementedError(u"This function might be implemented in concrete subclasses supporting C extension call")
 
@@ -521,12 +521,12 @@ class BaseTTSWrapper(Loggable):
         return the audio data at the end of the function call;
         if ``False``, just return ``(True, None)`` in case of success.
 
-        :rtype: tuple (result, (duration, sample_rate, encoding, data)) or (result, None)
+        :rtype: tuple (result, (duration, sample_rate, codec, data)) or (result, None)
         """
         # return zero if text is the empty string
         if len(text) == 0:
             #
-            # NOTE sample_rate, encoding, data do not matter
+            # NOTE sample_rate, codec, data do not matter
             #      if the duration is 0.000 => set them to None
             #
             self.log(u"len(text) is zero: returning 0.000")
@@ -640,7 +640,7 @@ class BaseTTSWrapper(Loggable):
         """
         Read audio data from file.
 
-        :rtype: tuple (True, (duration, sample_rate, encoding, data)) or (False, None) on exception
+        :rtype: tuple (True, (duration, sample_rate, codec, data)) or (False, None) on exception
         """
         try:
             self.log(u"Reading audio data...")
@@ -680,22 +680,30 @@ class BaseTTSWrapper(Loggable):
         """
         self.log(u"Calling TTS engine using multiple generic function...")
 
-        # get sample rate and encoding
-        self.log(u"Determining codec and sample rate with dummy text...")
-        succeeded, data = helper_function(
-            text=u"Dummy text to get sample_rate",
-            voice_code=self._language_to_voice_code(self.DEFAULT_LANGUAGE),
-            output_file_path=None
-        )
-        if not succeeded:
-            self.log_crit(u"An unexpected error occurred in helper_function")
-            return (False, None)
-        du_nu, sample_rate, encoding, da_nu = data
-        self.log(u"Determining codec and sample rate with dummy text... done")
+        # get sample rate and codec
+        self.log(u"Determining codec and sample rate...")
+        if (self.OUTPUT_AUDIO_FORMAT is None) or (len(self.OUTPUT_AUDIO_FORMAT) != 3):
+            self.log(u"Determining codec and sample rate with dummy text...")
+            succeeded, data = helper_function(
+                text=u"Dummy text to get sample_rate",
+                voice_code=self._language_to_voice_code(self.DEFAULT_LANGUAGE),
+                output_file_path=None
+            )
+            if not succeeded:
+                self.log_crit(u"An unexpected error occurred in helper_function")
+                return (False, None)
+            du_nu, sample_rate, codec, da_nu = data
+            self.log(u"Determining codec and sample rate with dummy text... done")
+        else:
+            self.log(u"Reading codec and sample rate from OUTPUT_AUDIO_FORMAT")
+            codec, channels_nu, sample_rate = self.OUTPUT_AUDIO_FORMAT
+        self.log(u"Determining codec and sample rate... done")
+        self.log([u"  codec:       %s", codec])
+        self.log([u"  sample rate: %d", sample_rate])
 
         # open output file
         output_file = AudioFile(rconf=self.rconf, logger=self.logger)
-        output_file.audio_format = encoding
+        output_file.audio_format = codec
         output_file.audio_channels = 1
         output_file.audio_sample_rate = sample_rate
 
@@ -821,5 +829,7 @@ class BaseTTSWrapper(Loggable):
                 self.log(u"Added fragment to cache")
             else:
                 self.log(u"Fragment has zero duration, not adding it to cache")
+            self.log([u"Closing file handler for cached output file path '%s'", file_path])
+            gf.close_file_handler(file_handler)
         self.log([u"Examining fragment %d (cache)... done", num])
         return (True, data)

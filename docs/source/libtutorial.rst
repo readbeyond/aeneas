@@ -126,7 +126,7 @@ Dependencies
 ------------
 
 * ``numpy`` (v1.9 or later)
-* ``lxml`` (v3.6.4 or later)
+* ``lxml`` (v3.6.0 or later)
 * ``BeautifulSoup`` (v4.5.1 or later)
 
 Only ``numpy`` is actually needed, as it is heavily used for the alignment computation.
