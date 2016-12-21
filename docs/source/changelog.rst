@@ -1,6 +1,14 @@
 Changelog
 =========
 
+v1.7.1 (2016-12-20)
+-------------------
+
+#. Fix bug #151
+#. Downgraded dependency on lxml to lxml>=3.6.0 to help packaging the Windows installer
+#. Added aeneas version to log
+#. Changed default voice for Festival TTS Wrapper to ``eng-USA`` to help people installing from source on Mac OS X
+
 v1.7.0 (2016-12-07)
 -------------------
 

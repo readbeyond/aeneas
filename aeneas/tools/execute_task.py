@@ -133,7 +133,7 @@ class ExecuteTaskCLI(AbstractCLIProgram):
             u"description": u"input: plain text, output: TSV, tts engine: Festival",
             u"audio": AUDIO_FILE,
             u"text": gf.relative_path("res/plain.txt", __file__),
-            u"config": u"task_language=eng|is_text_type=plain|os_task_file_format=tsv",
+            u"config": u"task_language=eng-USA|is_text_type=plain|os_task_file_format=tsv",
             u"syncmap": "output/sonnet.festival.tsv",
             u"options": u"-r=\"tts=festival\"",
             u"show": False
@@ -205,7 +205,7 @@ class ExecuteTaskCLI(AbstractCLIProgram):
             u"description": u"input: multilevel plain text (mplain), different TTS engines, output: JSON",
             u"audio": AUDIO_FILE,
             u"text": gf.relative_path("res/mplain.txt", __file__),
-            u"config": u"task_language=eng|is_text_type=mplain|os_task_file_format=json",
+            u"config": u"task_language=eng-USA|is_text_type=mplain|os_task_file_format=json",
             u"syncmap": "output/sonnet.mplain.json",
             u"options": u"-r=\"tts_l1=festival|tts_l2=festival|tts_l3=espeak\"",
             u"show": False
@@ -376,7 +376,7 @@ class ExecuteTaskCLI(AbstractCLIProgram):
             u"description": u"input: single word granularity plain text, output: AUD, tts engine: Festival, TTS cache on",
             u"audio": AUDIO_FILE,
             u"text": gf.relative_path("res/words.txt", __file__),
-            u"config": u"task_language=eng|is_text_type=plain|os_task_file_format=aud",
+            u"config": u"task_language=eng-USA|is_text_type=plain|os_task_file_format=aud",
             u"syncmap": "output/sonnet.words.aud",
             u"options": u"-r=\"tts=festival|tts_cache=True\"",
             u"show": False

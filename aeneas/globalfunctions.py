@@ -1005,6 +1005,19 @@ def delete_directory(path):
             pass
 
 
+def close_file_handler(handler):
+    """
+    Safely close the given file handler.
+
+    :param object handler: the file handler (as returned by tempfile)
+    """
+    if handler is not None:
+        try:
+            os.close(handler)
+        except:
+            pass
+
+
 def delete_file(handler, path):
     """
     Safely delete file.
@@ -1012,11 +1025,7 @@ def delete_file(handler, path):
     :param object handler: the file handler (as returned by tempfile)
     :param string path: the file path
     """
-    if handler is not None:
-        try:
-            os.close(handler)
-        except:
-            pass
+    close_file_handler(handler)
     if path is not None:
         try:
             os.remove(path)

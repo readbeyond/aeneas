@@ -36,7 +36,7 @@ __copyright__ = """
 """
 __license__ = "GNU AGPL 3"
 __status__ = "Production"
-__version__ = "1.7.0"
+__version__ = "1.7.1"
 
 
 ##############################################################################
@@ -47,14 +47,14 @@ __version__ = "1.7.0"
 
 # package version
 # NOTE: generate a new one for each PyPI upload, otherwise it will fail
-PKG_VERSION = "1.7.0.0"
+PKG_VERSION = "1.7.1.0"
 
 # required packages to install
 # NOTE: always use exact version numbers
 # NOTE: this list should be the same as requirements.txt
 PKG_INSTALL_REQUIRES = [
     "BeautifulSoup4>=4.5.1",
-    "lxml>=3.6.4",
+    "lxml>=3.6.0",
     "numpy>=1.9"
 ]
 

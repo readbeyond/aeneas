@@ -1,16 +1,16 @@
-# aeneas 
+# aeneas
 
 **aeneas** is a Python/C library and a set of tools to automagically synchronize audio and text (aka forced alignment).
 
-* Version: 1.7.0
-* Date: 2016-12-07
+* Version: 1.7.1
+* Date: 2016-12-21
 * Developed by: [ReadBeyond](http://www.readbeyond.it/)
 * Lead Developer: [Alberto Pettarin](http://www.albertopettarin.it/)
 * License: the GNU Affero General Public License Version 3 (AGPL v3)
 * Contact: [aeneas@readbeyond.it](mailto:aeneas@readbeyond.it)
 * Quick Links: [Home](http://www.readbeyond.it/aeneas/) - [GitHub](https://github.com/readbeyond/aeneas/) - [PyPI](https://pypi.python.org/pypi/aeneas/) - [Docs](http://www.readbeyond.it/aeneas/docs/) - [Tutorial](http://www.readbeyond.it/aeneas/docs/clitutorial.html) - [Benchmark](https://readbeyond.github.io/aeneas-benchmark/) - [Mailing List](https://groups.google.com/d/forum/aeneas-forced-alignment) - [Web App](http://aeneasweb.org)
 
- 
+
 ## Goal
 
 **aeneas** automatically generates a **synchronization map**
@@ -109,7 +109,7 @@ The generic OS-independent procedure is simple:
    `espeak`, `ffmpeg`, `ffprobe`, `pip`, and `python`
 
 3. First install `numpy` with `pip` and then `aeneas` (this order is important):
-    
+
     ```bash
     pip install numpy
     pip install aeneas
@@ -185,7 +185,7 @@ The generic OS-independent procedure is simple:
     ```bash
     python -m aeneas.tools.execute_job job.zip output_directory
     ```
-    
+
    File `job.zip` should contain a `config.txt` or `config.xml`
    configuration file, providing **aeneas**
    with all the information needed to parse the input assets
@@ -251,7 +251,7 @@ which explains how to use the built-in command line tools.
 * Extensive test suite including 1,200+ unit/integration/performance tests, that run and must pass before each release
 
 
-## Limitations and Missing Features 
+## Limitations and Missing Features
 
 * Audio should match the text: large portions of spurious text or audio might produce a wrong sync map
 * Audio is assumed to be spoken: not suitable for song captioning, YMMV for CC applications
@@ -304,7 +304,7 @@ No copy rights were harmed in the making of this project.
 
 ## Supporting and Contributing
 
-### Sponsors 
+### Sponsors
 
 * **July 2015**: [Michele Gianella](https://plus.google.com/+michelegianella/about) generously supported the development of the boundary adjustment code (v1.0.4)
 
