@@ -49,6 +49,7 @@ from aeneas.ttswrappers.awsttswrapper import AWSTTSWrapper
 from aeneas.ttswrappers.espeakngttswrapper import ESPEAKNGTTSWrapper
 from aeneas.ttswrappers.espeakttswrapper import ESPEAKTTSWrapper
 from aeneas.ttswrappers.festivalttswrapper import FESTIVALTTSWrapper
+from aeneas.ttswrappers.macosttswrapper import MacOSTTSWrapper
 from aeneas.ttswrappers.nuancettswrapper import NuanceTTSWrapper
 from aeneas.validator import Validator
 import aeneas.globalconstants as gc
@@ -399,6 +400,7 @@ class ExecuteTaskCLI(AbstractCLIProgram):
         "espeak": ESPEAKTTSWrapper.CODE_TO_HUMAN_LIST,
         "espeak-ng": ESPEAKNGTTSWrapper.CODE_TO_HUMAN_LIST,
         "festival": FESTIVALTTSWrapper.CODE_TO_HUMAN_LIST,
+        "macos": MacOSTTSWrapper.CODE_TO_HUMAN_LIST,
         "nuance": NuanceTTSWrapper.CODE_TO_HUMAN_LIST,
         "task_language": Language.CODE_TO_HUMAN_LIST,
         "is_text_type": TextFileFormat.ALLOWED_VALUES,
