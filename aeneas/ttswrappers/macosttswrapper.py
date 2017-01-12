@@ -82,7 +82,7 @@ class MacOSTTSWrapper(BaseTTSWrapper):
     """ German """
 
     ELL = Language.ELL
-    """ Greek """
+    """ Greek (Modern) """
 
     ENG = Language.ENG
     """ English """
@@ -142,7 +142,7 @@ class MacOSTTSWrapper(BaseTTSWrapper):
     """ Swedish """
 
     THA = Language.THA
-    """ Thia """
+    """ Thai """
 
     TUR = Language.TUR
     """ Turkish """
@@ -180,6 +180,7 @@ class MacOSTTSWrapper(BaseTTSWrapper):
         SWE: u"Swedish",
         THA: u"Thai",
         TUR: u"Turkish",
+        ZHO: u"Chinese",
         ENG_GBR: u"English (GB)",
     }
 
