@@ -7,7 +7,7 @@
 #     Copyright 2015-2016, Alberto Pettarin (www.albertopettarin.it)
 #     """
 # __license__ = "GNU AGPL 3"
-# __version__ = "1.7.0"
+# __version__ = "1.7.2"
 # __email__ = "aeneas@readbeyond.it"
 # __status__ = "Production"
 
@@ -74,7 +74,7 @@ deps() {
         # NOTE Pillow might raise errors due to missing libraries
         #      (e.g., libjpeg, libpng, zlib)
         #      so install it as the last one
-        pip install -U Pillow 
+        pip install -U Pillow
         deactivate
         cd ..
         echo "[INFO] Installing Python dependencies in $1 ... done"
@@ -98,20 +98,20 @@ sdist() {
         echo "[INFO] venv $1 does not exist."
         echo "[INFO] Use 'install' or 'full' to create it."
     else
-       
+
         cd $1
         source bin/activate
-        
+
         echo "[INFO] Uninstalling aeneas..."
         rm -f *.tar.gz
         rm -rf output
         mkdir output
         pip uninstall aeneas -y
         echo "[INFO] Uninstalling aeneas... done"
-        
+
         deactivate
         cd ..
-       
+
         if [ "$2" == "--remove" ]
         then
             echo "[INFO] Uninstall only: returning."
@@ -170,12 +170,12 @@ copytests() {
         echo "[INFO] Copying tests in $1 ..."
         cd $1
         source bin/activate
-       
-        # delete old stuff, if any 
+
+        # delete old stuff, if any
         rm -rf tests
         mkdir tests
         mkdir tests/output
-        
+
         # copy current code locally and set it up
         cp -r ../../aeneas ../../setup.py ../../setupmeta.py ../../run_all_unit_tests.py tests/
         cd tests

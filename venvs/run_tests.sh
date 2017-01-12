@@ -7,7 +7,7 @@
 #     Copyright 2015-2016, Alberto Pettarin (www.albertopettarin.it)
 #     """
 # __license__ = "GNU AGPL 3"
-# __version__ = "1.7.0"
+# __version__ = "1.7.2"
 # __email__ = "aeneas@readbeyond.it"
 # __status__ = "Production"
 
@@ -21,7 +21,7 @@ clean() {
     echo "[INFO] Cleaning $1 ..."
     cd $1
     rm -rf tests
-    cd .. 
+    cd ..
     echo "[INFO] Cleaning $1 ... done"
 }
 
@@ -134,7 +134,7 @@ fi
 if [ ! -e "$D" ]
 then
     echo "[ERRO] Install venv with 'bash manage_venvs.sh $EX full', aborting."
-    exit 1 
+    exit 1
 fi
 
 # remove log file, if already existing

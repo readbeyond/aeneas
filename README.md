@@ -2,8 +2,8 @@
 
 **aeneas** is a Python/C library and a set of tools to automagically synchronize audio and text (aka forced alignment).
 
-* Version: 1.7.1
-* Date: 2016-12-21
+* Version: 1.7.2
+* Date: 2017-??-??
 * Developed by: [ReadBeyond](http://www.readbeyond.it/)
 * Lead Developer: [Alberto Pettarin](http://www.albertopettarin.it/)
 * License: the GNU Affero General Public License Version 3 (AGPL v3)
@@ -379,10 +379,9 @@ HTML/JS code for fine tuning sync maps in the browser.
 **Willem van der Walt** contributed the code snippet
 to output a sync map in TextGrid format.
 
+**Chris Vaughn** contributed the MacOS TTS wrapper.
+
 All the mighty
 [GitHub contributors](https://github.com/readbeyond/aeneas/graphs/contributors),
 and the members of the
 [Google Group](https://groups.google.com/d/forum/aeneas-forced-alignment).
-
-
-

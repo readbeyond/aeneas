@@ -54,7 +54,7 @@ CMODULE = Extension(
 
 setup(
     name="cfw",
-    version="1.7.1",
+    version="1.7.2",
     description="Python C Extension for synthesizing text with Festival.",
     ext_modules=[CMODULE]
 )
