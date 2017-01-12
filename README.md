@@ -235,7 +235,7 @@ which explains how to use the built-in command line tools.
 * Output sync map formats: AUD, CSV, EAF, JSON, SMIL, SRT, SSV, SUB, TEXTGRID, TSV, TTML, TXT, VTT, XML
 * Confirmed working on 38 languages: AFR, ARA, BUL, CAT, CYM, CES, DAN, DEU, ELL, ENG, EPO, EST, FAS, FIN, FRA, GLE, GRC, HRV, HUN, ISL, ITA, JPN, LAT, LAV, LIT, NLD, NOR, RON, RUS, POL, POR, SLK, SPA, SRP, SWA, SWE, TUR, UKR
 * MFCC and DTW computed via Python C extensions to reduce the processing time
-* Several built-in TTS engine wrappers: AWS Polly TTS API, eSpeak (default), eSpeak-ng, Festival, Nuance TTS API
+* Several built-in TTS engine wrappers: AWS Polly TTS API, eSpeak (default), eSpeak-ng, Festival, MacOS (via say), Nuance TTS API
 * Default TTS (eSpeak) called via a Python C extension for fast audio synthesis
 * Possibility of running a custom, user-provided TTS engine Python wrapper (e.g., included example for speect)
 * Batch processing of multiple audio/text pairs
