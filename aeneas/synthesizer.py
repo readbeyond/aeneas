@@ -41,6 +41,7 @@ from aeneas.ttswrappers.awsttswrapper import AWSTTSWrapper
 from aeneas.ttswrappers.espeakngttswrapper import ESPEAKNGTTSWrapper
 from aeneas.ttswrappers.espeakttswrapper import ESPEAKTTSWrapper
 from aeneas.ttswrappers.festivalttswrapper import FESTIVALTTSWrapper
+from aeneas.ttswrappers.macosttswrapper import MacOSTTSWrapper
 from aeneas.ttswrappers.nuancettswrapper import NuanceTTSWrapper
 import aeneas.globalfunctions as gf
 
@@ -78,10 +79,13 @@ class Synthesizer(Loggable):
     FESTIVAL = "festival"
     """ Select Festival wrapper """
 
+    MACOS = "macos"
+    """ Select macOS "say" wrapper """
+
     NUANCE = "nuance"
     """ Select Nuance TTS API wrapper """
 
-    ALLOWED_VALUES = [AWS, CUSTOM, ESPEAK, ESPEAKNG, FESTIVAL, NUANCE]
+    ALLOWED_VALUES = [AWS, CUSTOM, ESPEAK, ESPEAKNG, FESTIVAL, MACOS, NUANCE]
     """ List of all the allowed values """
 
     TAG = u"Synthesizer"
@@ -137,6 +141,9 @@ class Synthesizer(Loggable):
         elif requested_tts_engine == self.FESTIVAL:
             self.log(u"TTS engine: Festival")
             self.tts_engine = FESTIVALTTSWrapper(rconf=self.rconf, logger=self.logger)
+        elif requested_tts_engine == self.MACOS:
+            self.log(u"TTS engine: macOS")
+            self.tts_engine = MacOSTTSWrapper(rconf=self.rconf, logger=self.logger)
         else:
             self.log(u"TTS engine: eSpeak")
             self.tts_engine = ESPEAKTTSWrapper(rconf=self.rconf, logger=self.logger)
