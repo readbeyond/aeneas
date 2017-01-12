@@ -5,6 +5,7 @@ v1.7.2 (2017-??-??)
 -------------------
 
 #. Added MacOS TTS Wrapper (courtesy of Chris Vaughn)
+#. Updated copyright strings with 2017
 
 v1.7.1 (2016-12-20)
 -------------------

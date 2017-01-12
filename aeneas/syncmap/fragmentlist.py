@@ -6,7 +6,7 @@
 #
 # Copyright (C) 2012-2013, Alberto Pettarin (www.albertopettarin.it)
 # Copyright (C) 2013-2015, ReadBeyond Srl   (www.readbeyond.it)
-# Copyright (C) 2015-2016, Alberto Pettarin (www.albertopettarin.it)
+# Copyright (C) 2015-2017, Alberto Pettarin (www.albertopettarin.it)
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Affero General Public License as published by
@@ -467,7 +467,7 @@ class SyncMapFragmentList(Loggable):
                         #
                         #      so we must invalidate the nsi if this happens
                         #
-                        nsi_counter[nsi_index] = (None, []) 
+                        nsi_counter[nsi_index] = (None, [])
                         nsi_index += 1
                         frag_index += 1
                         self.log(u"    nsi_shadow entirely contains frag => invalidate nsi, and skip to next fragment, nsi")
