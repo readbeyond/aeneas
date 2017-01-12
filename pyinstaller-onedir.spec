@@ -9,13 +9,13 @@
 #"""
 #__license__ = "GNU AGPL 3"
 #__status__ = "Production"
-#__version__ = "1.7.1"
+#__version__ = "1.7.2"
 
 datas = [
     # required
     ("aeneas/res/*",            "aeneas/res"),
     ("aeneas/tools/res/*",      "aeneas/tools/res"),
-    # optional, copy files 
+    # optional, copy files
     ("aeneas/extra/*.py",       "aeneas/extra"),
     # optional, create output directory
     ("aeneas/extra/.gitignore", "output"),

@@ -2,8 +2,8 @@
 
 **aeneas** is a Python/C library and a set of tools to automagically synchronize audio and text (aka forced alignment).
 
-* Version: 1.7.1
-* Date: 2016-12-21
+* Version: 1.7.2
+* Date: 2017-??-??
 * Developed by: [ReadBeyond](http://www.readbeyond.it/)
 * Lead Developer: [Alberto Pettarin](http://www.albertopettarin.it/)
 * License: the GNU Affero General Public License Version 3 (AGPL v3)
@@ -235,7 +235,7 @@ which explains how to use the built-in command line tools.
 * Output sync map formats: AUD, CSV, EAF, JSON, SMIL, SRT, SSV, SUB, TEXTGRID, TSV, TTML, TXT, VTT, XML
 * Confirmed working on 38 languages: AFR, ARA, BUL, CAT, CYM, CES, DAN, DEU, ELL, ENG, EPO, EST, FAS, FIN, FRA, GLE, GRC, HRV, HUN, ISL, ITA, JPN, LAT, LAV, LIT, NLD, NOR, RON, RUS, POL, POR, SLK, SPA, SRP, SWA, SWE, TUR, UKR
 * MFCC and DTW computed via Python C extensions to reduce the processing time
-* Several built-in TTS engine wrappers: AWS Polly TTS API, eSpeak (default), eSpeak-ng, Festival, Nuance TTS API
+* Several built-in TTS engine wrappers: AWS Polly TTS API, eSpeak (default), eSpeak-ng, Festival, MacOS (via say), Nuance TTS API
 * Default TTS (eSpeak) called via a Python C extension for fast audio synthesis
 * Possibility of running a custom, user-provided TTS engine Python wrapper (e.g., included example for speect)
 * Batch processing of multiple audio/text pairs
@@ -379,10 +379,9 @@ HTML/JS code for fine tuning sync maps in the browser.
 **Willem van der Walt** contributed the code snippet
 to output a sync map in TextGrid format.
 
+**Chris Vaughn** contributed the MacOS TTS wrapper.
+
 All the mighty
 [GitHub contributors](https://github.com/readbeyond/aeneas/graphs/contributors),
 and the members of the
 [Google Group](https://groups.google.com/d/forum/aeneas-forced-alignment).
-
-
-

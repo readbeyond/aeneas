@@ -6,7 +6,7 @@
 #
 # Copyright (C) 2012-2013, Alberto Pettarin (www.albertopettarin.it)
 # Copyright (C) 2013-2015, ReadBeyond Srl   (www.readbeyond.it)
-# Copyright (C) 2015-2016, Alberto Pettarin (www.albertopettarin.it)
+# Copyright (C) 2015-2017, Alberto Pettarin (www.albertopettarin.it)
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Affero General Public License as published by
@@ -82,7 +82,7 @@ class MacOSTTSWrapper(BaseTTSWrapper):
     """ German """
 
     ELL = Language.ELL
-    """ Greek """
+    """ Greek (Modern) """
 
     ENG = Language.ENG
     """ English """
@@ -142,7 +142,7 @@ class MacOSTTSWrapper(BaseTTSWrapper):
     """ Swedish """
 
     THA = Language.THA
-    """ Thia """
+    """ Thai """
 
     TUR = Language.TUR
     """ Turkish """
@@ -152,6 +152,39 @@ class MacOSTTSWrapper(BaseTTSWrapper):
 
     ENG_GBR = "eng-GBR"
     """ English (GB) """
+
+    CODE_TO_HUMAN = {
+        ARA: u"Arabic",
+        CES: u"Czech",
+        DAN: u"Danish",
+        DEU: u"German",
+        ELL: u"Greek (Modern)",
+        ENG: u"English",
+        FIN: u"Finnish",
+        FRA: u"French",
+        HEB: u"Hebrew",
+        HIN: u"Hindi",
+        HUN: u"Hungarian",
+        IND: u"Indonesian",
+        ITA: u"Italian",
+        JPN: u"Japanese",
+        KOR: u"Korean",
+        NLD: u"Dutch",
+        NOR: u"Norwegian",
+        POL: u"Polish",
+        POR: u"Portuguese",
+        RON: u"Romanian",
+        RUS: u"Russian",
+        SLK: u"Slovak",
+        SPA: u"Spanish",
+        SWE: u"Swedish",
+        THA: u"Thai",
+        TUR: u"Turkish",
+        ZHO: u"Chinese",
+        ENG_GBR: u"English (GB)",
+    }
+
+    CODE_TO_HUMAN_LIST = sorted([u"%s\t%s" % (k, v) for k, v in CODE_TO_HUMAN.items()])
 
     LANGUAGE_TO_VOICE_CODE = {
         ARA: "Maged",
@@ -201,6 +234,6 @@ class MacOSTTSWrapper(BaseTTSWrapper):
             u"-o",                                  # append "-o"
             self.CLI_PARAMETER_WAVE_PATH,           # it will be replaced by the actual output file
             self.CLI_PARAMETER_TEXT_STDIN,          # text is read from stdin,
-            '--data-format',                        # set output data format
-            'LEF32@22050'                           # data format string
+            u"--data-format",                       # set output data format
+            u"LEF32@22050"                          # data format string
         ])

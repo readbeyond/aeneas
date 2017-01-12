@@ -479,6 +479,7 @@ in the synthesis step of the alignment procedure.
     espeakttswrapper
     espeakngttswrapper
     festivalttswrapper
+    macosttswrapper
     nuancettswrapper
 
 

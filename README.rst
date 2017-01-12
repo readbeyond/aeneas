@@ -4,8 +4,8 @@ aeneas
 **aeneas** is a Python/C library and a set of tools to automagically
 synchronize audio and text (aka forced alignment).
 
--  Version: 1.7.1
--  Date: 2016-12-21
+-  Version: 1.7.2
+-  Date: 2017-??-??
 -  Developed by: `ReadBeyond <http://www.readbeyond.it/>`__
 -  Lead Developer: `Alberto Pettarin <http://www.albertopettarin.it/>`__
 -  License: the GNU Affero General Public License Version 3 (AGPL v3)
@@ -252,7 +252,7 @@ Supported Features
 -  MFCC and DTW computed via Python C extensions to reduce the
    processing time
 -  Several built-in TTS engine wrappers: AWS Polly TTS API, eSpeak
-   (default), eSpeak-ng, Festival, Nuance TTS API
+   (default), eSpeak-ng, Festival, MacOS (via say), Nuance TTS API
 -  Default TTS (eSpeak) called via a Python C extension for fast audio
    synthesis
 -  Possibility of running a custom, user-provided TTS engine Python
@@ -417,6 +417,8 @@ tuning sync maps in the browser.
 
 **Willem van der Walt** contributed the code snippet to output a sync
 map in TextGrid format.
+
+**Chris Vaughn** contributed the MacOS TTS wrapper.
 
 All the mighty `GitHub
 contributors <https://github.com/readbeyond/aeneas/graphs/contributors>`__,
