@@ -153,6 +153,38 @@ class MacOSTTSWrapper(BaseTTSWrapper):
     ENG_GBR = "eng-GBR"
     """ English (GB) """
 
+    CODE_TO_HUMAN = {
+        ARA: u"Arabic",
+        CES: u"Czech",
+        DAN: u"Danish",
+        DEU: u"German",
+        ELL: u"Greek (Modern)",
+        ENG: u"English",
+        FIN: u"Finnish",
+        FRA: u"French",
+        HEB: u"Hebrew",
+        HIN: u"Hindi",
+        HUN: u"Hungarian",
+        IND: u"Indonesian",
+        ITA: u"Italian",
+        JPN: u"Japanese",
+        KOR: u"Korean",
+        NLD: u"Dutch",
+        NOR: u"Norwegian",
+        POL: u"Polish",
+        POR: u"Portuguese",
+        RON: u"Romanian",
+        RUS: u"Russian",
+        SLK: u"Slovak",
+        SPA: u"Spanish",
+        SWE: u"Swedish",
+        THA: u"Thai",
+        TUR: u"Turkish",
+        ENG_GBR: u"English (GB)",
+    }
+
+    CODE_TO_HUMAN_LIST = sorted([u"%s\t%s" % (k, v) for k, v in CODE_TO_HUMAN.items()])
+
     LANGUAGE_TO_VOICE_CODE = {
         ARA: "Maged",
         CES: "Zuzana",
