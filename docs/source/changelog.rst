@@ -1,6 +1,11 @@
 Changelog
 =========
 
+v1.7.2 (2017-??-??)
+-------------------
+
+#. Added MacOS TTS Wrapper (courtesy of Chris Vaughn)
+
 v1.7.1 (2016-12-20)
 -------------------
 

@@ -201,6 +201,6 @@ class MacOSTTSWrapper(BaseTTSWrapper):
             u"-o",                                  # append "-o"
             self.CLI_PARAMETER_WAVE_PATH,           # it will be replaced by the actual output file
             self.CLI_PARAMETER_TEXT_STDIN,          # text is read from stdin,
-            '--data-format',                        # set output data format
-            'LEF32@22050'                           # data format string
+            u"--data-format",                       # set output data format
+            u"LEF32@22050"                          # data format string
         ])
