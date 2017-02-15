@@ -621,9 +621,12 @@ class SyncMapFragmentList(Loggable):
                     fixable = True
                 if fixable:
                     for index, move_type, move_amount in moves[::-1]:
+                        self.log([u"    Calling move_end_at with %.3f at index %d", current_time, index])
                         self[index].interval.move_end_at(current_time)
                         if move_type == "ENLARGE":
+                            self.log([u"    Calling enlarge with %.3f at index %d", move_amount, index])
                             self[index].interval.enlarge(move_amount)
+                        self.log([u"    Interval %d is now: %s", index, self[index].interval])
                         current_time = self[index].interval.begin
                 else:
                     self.log([u"Unable to fix fragment %d (%s)", i, self[i].interval])
@@ -641,6 +644,9 @@ class SyncMapFragmentList(Loggable):
                 self.log([u"  Original was %.3f", original_last_end])
                 self.log([u"  New      is  %.3f", self[max_index].begin])
                 self[max_index].begin = self[max_index - 1].end
+        self.log(u"Fragments after fixing:")
+        for i, fragment in enumerate(self):
+            self.log([u"  %d => %.3f %.3f", i, fragment.interval.begin, fragment.interval.end])
 
     def fix_fragment_rate(self, fragment_index, max_rate, aggressive=False):
         def fix_pair(current_index, donor_index):

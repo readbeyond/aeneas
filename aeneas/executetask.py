@@ -208,7 +208,8 @@ class ExecuteTask(Loggable):
                 self.task.text_file,
                 sync_root=sync_root,
                 force_aba_auto=False,
-                log=True
+                log=True,
+                leaf_level=True
             )
             self._clear_cache_synthesizer()
 
@@ -346,7 +347,8 @@ class ExecuteTask(Loggable):
                     text_file,
                     sync_root=sync_root,
                     force_aba_auto=force_aba_auto,
-                    log=False
+                    log=False,
+                    leaf_level=(level == 3)
                 )
             # store next level roots
             next_level_text_files.extend(text_file.children_not_empty)
@@ -355,7 +357,7 @@ class ExecuteTask(Loggable):
         self._clear_cache_synthesizer()
         return (next_level_text_files, next_level_sync_roots)
 
-    def _execute_inner(self, audio_file_mfcc, text_file, sync_root=None, force_aba_auto=False, log=True):
+    def _execute_inner(self, audio_file_mfcc, text_file, sync_root=None, force_aba_auto=False, log=True, leaf_level=False):
         """
         Align a subinterval of the given AudioFileMFCC
         with the given TextFile.
@@ -377,6 +379,7 @@ class ExecuteTask(Loggable):
         :type  sync_root: :class:`~aeneas.tree.Tree`
         :param bool force_aba_auto: if ``True``, do not run aba algorithm
         :param bool log: if ``True``, log steps
+        :param bool leaf_level: alert aba if the computation is at a leaf level
         :rtype: :class:`~aeneas.tree.Tree`
         """
         self._step_begin(u"synthesize text", log=log)
@@ -396,7 +399,7 @@ class ExecuteTask(Loggable):
         self._step_end(log=log)
 
         self._step_begin(u"adjust boundaries", log=log)
-        self._adjust_boundaries(indices, text_file, audio_file_mfcc, sync_root, force_aba_auto)
+        self._adjust_boundaries(indices, text_file, audio_file_mfcc, sync_root, force_aba_auto, leaf_level)
         self._step_end(log=log)
 
     def _load_audio_file(self):
@@ -555,7 +558,7 @@ class ExecuteTask(Loggable):
         self.log(u"Computing boundary indices... done")
         return boundary_indices
 
-    def _adjust_boundaries(self, boundary_indices, text_file, real_wave_mfcc, sync_root, force_aba_auto=False):
+    def _adjust_boundaries(self, boundary_indices, text_file, real_wave_mfcc, sync_root, force_aba_auto=False, leaf_level=False):
         """
         Adjust boundaries as requested by the user.
 
@@ -580,6 +583,7 @@ class ExecuteTask(Loggable):
             real_wave_mfcc=real_wave_mfcc,
             boundary_indices=boundary_indices,
             text_file=text_file,
+            allow_arbitrary_shift=leaf_level
         )
         aba.append_fragment_list_to_sync_root(sync_root=sync_root)
 
