@@ -325,11 +325,14 @@ class ExecuteTask(Loggable):
             self.log([u"Text level %d, fragment %d", level, text_file_index])
             self.log([u"  Len:   %d", len(text_file)])
             sync_root = sync_roots[text_file_index]
-            if (level > 1) and (len(text_file) == 1) and (not sync_root.is_empty):
+            if (level > 1) and (len(text_file) == 1):
                 self.log(u"Level > 1 and only one text fragment => return trivial tree")
-                self._append_trivial_tree(text_file, audio_file_mfcc.audio_length, sync_root)
+                self._append_trivial_tree(text_file, sync_root)
+            elif (level > 1) and (sync_root.value.begin == sync_root.value.end):
+                self.log(u"Level > 1 and parent has begin == end => return trivial tree")
+                self._append_trivial_tree(text_file, sync_root)
             else:
-                self.log(u"Level == 1 or more than one text fragment => compute tree")
+                self.log(u"Level == 1 or more than one text fragment with non-zero parent => compute tree")
                 if not sync_root.is_empty:
                     begin = sync_root.value.begin
                     end = sync_root.value.end
@@ -580,15 +583,30 @@ class ExecuteTask(Loggable):
         )
         aba.append_fragment_list_to_sync_root(sync_root=sync_root)
 
-    def _append_trivial_tree(self, text_file, end, sync_root):
+    def _append_trivial_tree(self, text_file, sync_root):
         """
-        Append trivial tree, made by HEAD, one fragment, and TAIL.
+        Append trivial tree, made by one HEAD,
+        one sync map fragment for each element of ``text_file``,
+        and one TAIL.
+
+        This function is called if either ``text_file`` has only one element,
+        or if ``sync_root.value`` is an interval with zero length
+        (i.e., ``sync_root.value.begin == sync_root.value.end``).
         """
         interval = sync_root.value
+        #
+        # NOTE the following is correct, but it is a bit obscure
+        # time_values = [interval.begin] * (1 + len(text_file)) + [interval.end] * 2
+        #
+        if len(text_file) == 1:
+            time_values = [interval.begin, interval.begin, interval.end, interval.end]
+        else:
+            # interval.begin == interval.end
+            time_values = [interval.begin] * (3 + len(text_file))
         aba = AdjustBoundaryAlgorithm(rconf=self.rconf, logger=self.logger)
         aba.intervals_to_fragment_list(
             text_file=text_file,
-            time_values=[TimeValue("0.000"), interval.begin, interval.end, end],
+            time_values=time_values
         )
         aba.append_fragment_list_to_sync_root(sync_root=sync_root)
 

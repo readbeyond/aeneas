@@ -4,6 +4,7 @@ Changelog
 v1.7.2 (2017-??-??)
 -------------------
 
+#. Fixed bug #160
 #. Added MacOS TTS Wrapper (courtesy of Chris Vaughn)
 #. Updated copyright strings with 2017
 
