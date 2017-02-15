@@ -4,6 +4,8 @@ Changelog
 v1.7.2 (2017-??-??)
 -------------------
 
+#. Fixed bug #160
+#. Fixed a latent bug with arbitrary shifts in aba when using the ``task_adjust_boundary_no_zero`` option
 #. Added MacOS TTS Wrapper (courtesy of Chris Vaughn)
 #. Updated copyright strings with 2017
 

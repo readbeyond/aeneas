@@ -1001,7 +1001,7 @@ class TestSyncMapFragmentList(unittest.TestCase):
                 i = TimeInterval(begin=TimeValue(b), end=TimeValue(e))
                 s = SyncMapFragment(interval=i)
                 l.add(s)
-            l.fix_zero_length_fragments(min_index=1, max_index=(len(l) - 1))
+            l.fix_zero_length_fragments(duration=TimeValue("0.001"), min_index=1, max_index=(len(l) - 1))
             for j, fragment in enumerate(l.fragments):
                 b, e = exp[j]
                 exp_i = TimeInterval(begin=TimeValue(b), end=TimeValue(e))

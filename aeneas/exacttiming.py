@@ -37,6 +37,7 @@ from __future__ import absolute_import
 from __future__ import print_function
 from decimal import Decimal
 from decimal import InvalidOperation
+import math
 import sys
 
 
@@ -62,6 +63,18 @@ class TimeValue(Decimal):
         :rtype: bool
         """
         return self == int(self)
+
+    def geq_multiple(self, other):
+        """
+        Return the next multiple of this time value,
+        greater than or equal to ``other``.
+        If ``other`` is zero, return this time value.
+
+        :rtype: :class:`~aeneas.exacttiming.TimeValue`
+        """
+        if other == TimeValue("0.000"):
+            return self
+        return int(math.ceil(other / self)) * self
 
     # NOTE overriding so that the result
     #      is still an instance of TimeValue
