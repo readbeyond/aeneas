@@ -26,7 +26,7 @@ This module contains the following classes:
 
 * :class:`~aeneas.downloader.Downloader`, which download files from various Web sources.
 
-.. note:: This module requires Python modules ``youtube-dl`` and ``pafy`` (``pip install youtube-dl pafy``).
+.. note:: This module requires Python module ``youtube-dl`` (``pip install youtube-dl``).
 """
 
 from __future__ import absolute_import
@@ -35,6 +35,10 @@ from __future__ import print_function
 from aeneas.logger import Loggable
 from aeneas.runtimeconfiguration import RuntimeConfiguration
 import aeneas.globalfunctions as gf
+
+
+class DownloadError(Exception):
+    pass
 
 
 class Downloader(Loggable):
@@ -54,9 +58,8 @@ class Downloader(Loggable):
             source_url,
             download=True,
             output_file_path=None,
-            preferred_index=None,
+            download_format=None,
             largest_audio=True,
-            preferred_format=None
     ):
         """
         Download an audio stream from a YouTube video,
@@ -80,76 +83,120 @@ class Downloader(Loggable):
 
         :param string source_url: the URL of the YouTube video
         :param bool download: if ``True``, download the audio stream
-                              best matching ``preferred_index`` or ``preferred_format``
+                               best matching ``preferred_index`` or ``preferred_format``
                               and ``largest_audio``;
                               if ``False``, return the list of available audio streams
         :param string output_file_path: the path where the downloaded audio should be saved;
                                         if ``None``, create a temporary file
-        :param int preferred_index: preferably download this audio stream
+        :param int download_format: download the audio stream with given format index
         :param bool largest_audio: if ``True``, download the largest audio stream available;
                                    if ``False``, download the smallest one.
-        :param string preferred_format: preferably download this audio format
-        :rtype: string or list of pafy audio streams
-        :raises: ImportError: if ``pafy`` is not installed
+        :rtype: string or list of dict
+        :raises: ImportError: if ``youtube-dl`` is not installed
         :raises: OSError: if ``output_file_path`` cannot be written
         :raises: ValueError: if ``source_url`` is not a valid YouTube URL
         """
-        def select_audiostream(audiostreams):
-            """ Select the audiostream best matching the given parameters. """
-            if preferred_index is not None:
-                if preferred_index in range(len(audiostreams)):
-                    self.log([u"Selecting audiostream with index %d", preferred_index])
-                    return audiostreams[preferred_index]
-                else:
-                    self.log_warn([u"Audio stream index '%d' not allowed", preferred_index])
-                    self.log_warn(u"Ignoring the requested audio stream index")
-            # selecting by preferred format
-            streams = audiostreams
-            if preferred_format is not None:
-                self.log([u"Selecting audiostreams by preferred format %s", preferred_format])
-                streams = [audiostream for audiostream in streams if audiostream.extension == preferred_format]
-                if len(streams) < 1:
-                    self.log([u"No audiostream with preferred format %s", preferred_format])
-                    streams = audiostreams
-            # sort by size
-            streams = sorted([(audio.get_filesize(), audio) for audio in streams])
-            if largest_audio:
-                self.log(u"Selecting largest audiostream")
-                selected = streams[-1][1]
-            else:
-                self.log(u"Selecting smallest audiostream")
-                selected = streams[0][1]
+
+        def _list_audiostreams(self, source_url):
+            """
+            Return a list of dicts, each describing
+            an available audiostream for the given ``source_url``.
+            """
+            self.log(u"Getting audiostreams...")
+            audiostreams = []
+            options = {
+                "download": False,
+                "quiet": True,
+                "skip_download": True,
+            }
+            try:
+                with youtube_dl.YoutubeDL(options) as ydl:
+                    info = ydl.extract_info(source_url, download=False)
+                    audio_formats = [f for f in info["formats"] if f["vcodec"] == "none" and f["acodec"] != "none"]
+                    for a in audio_formats:
+                        audiostreams.append({
+                            "format": a["format"].split(" ")[0],
+                            "filesize": a["filesize"],
+                            "ext": a["ext"],
+                            "abr": a["abr"]
+                        })
+            except (IOError, OSError, youtube_dl.DownloadError) as exc:
+                self.log_exc(u"The specified source URL '%s' is not a valid YouTube URL or you are offline" % (source_url), None, True, DownloadError)
+            self.log(u"Getting audiostreams... done")
+            return audiostreams
+
+        def _select_audiostream(self, audiostreams, download_format=None, largest_audio=False):
+            """
+            Select the best-matching audiostream:
+            if a ``download_format`` is given, use it,
+            otherwise act according to ``largest_audio``.
+            If ``download_format`` is not matching any
+            of the available audiostreams, then just act
+            according to ``largest_audio``.
+            """
+            self.log(u"Selecting best-matching audiostream...")
+            selected = None
+            if download_format is not None:
+                matching = [a for a in audiostreams if a["format"] == download_format]
+                if len(matching) > 0:
+                    selected = matching[0]
+            if selected is None:
+                sa = sorted(audiostreams, key=lambda x: x["filesize"])
+                selected = sa[-1] if largest_audio else sa[0]
+            self.log(u"Selecting best-matching audiostream... done")
             return selected
 
+        def _compose_output_file_path(self, extension, output_file_path=None):
+            """
+            If ``output_file_path`` is given, use it.
+            Otherwise (``output_file_path`` is ``None``),
+            create a temporary file with the correct extension.
+            """
+            self.log(u"Determining output file path...")
+            if output_file_path is None:
+                self.log(u"output_file_path is None: creating temp file")
+                handler, output_file_path = gf.tmp_file(
+                    root=self.rconf[RuntimeConfiguration.TMP_PATH],
+                    suffix=(".%s" % extension)
+                )
+                gf.delete_file(handler, output_file_path)
+            else:
+                self.log(u"output_file_path is not None: cheking that file can be written")
+                if not gf.file_can_be_written(output_file_path):
+                    self.log_exc(u"Path '%s' cannot be written. Wrong permissions?" % (output_file_path), None, True, OSError)
+            self.log(u"Determining output file path... done")
+            self.log([u"Output file path is '%s'", output_file_path])
+            return output_file_path
+
+        def _download_audiostream(self, source_url, fmt, output_path):
+            self.log(u"Downloading audiostream...")
+            options = {
+                "download": True,
+                "format": fmt,
+                "outtmpl": output_path,
+                "quiet": True,
+                "skip_download": False,
+            }
+            try:
+                with youtube_dl.YoutubeDL(options) as ydl:
+                    ydl.download([source_url])
+            except (IOError, OSError, youtube_dl.DownloadError) as exc:
+                self.log_exc(u"The specified source URL '%s' is not a valid YouTube URL or you are offline" % (source_url), None, True, DownloadError)
+            self.log(u"Downloading audiostream... done")
+
         try:
-            import pafy
+            import youtube_dl
         except ImportError as exc:
-            self.log_exc(u"Python module pafy is not installed", exc, True, ImportError)
+            self.log_exc(u"Python module youtube-dl is not installed", exc, True, ImportError)
 
-        try:
-            video = pafy.new(source_url)
-        except (IOError, OSError, ValueError) as exc:
-            self.log_exc(u"The specified source URL '%s' is not a valid YouTube URL or you are offline" % (source_url), exc, True, ValueError)
-
+        audiostreams = _list_audiostreams(self, source_url)
         if not download:
-            self.log(u"Returning the list of audio streams")
-            return video.audiostreams
+            self.log(u"Returning list of audiostreams")
+            return audiostreams
+        if len(audiostreams) == 0:
+            self.log_exc(u"No audiostreams available for the provided URL", None, True, OSError)
 
-        output_path = output_file_path
-        if output_file_path is None:
-            self.log(u"output_path is None: creating temp file")
-            handler, output_path = gf.tmp_file(root=self.rconf[RuntimeConfiguration.TMP_PATH])
-        else:
-            if not gf.file_can_be_written(output_path):
-                self.log_exc(u"Path '%s' cannot be written. Wrong permissions?" % (output_path), None, True, OSError)
-
-        audiostream = select_audiostream(video.audiostreams)
-        if output_file_path is None:
-            gf.delete_file(handler, output_path)
-            output_path += "." + audiostream.extension
-
-        self.log([u"output_path is '%s'", output_path])
-        self.log(u"Downloading...")
-        audiostream.download(filepath=output_path, quiet=True)
-        self.log(u"Downloading... done")
+        audiostream = _select_audiostream(self, audiostreams, download_format, largest_audio)
+        output_path = _compose_output_file_path(self, audiostream["ext"], output_file_path)
+        _download_audiostream(self, source_url, audiostream["format"], output_path)
         return output_path

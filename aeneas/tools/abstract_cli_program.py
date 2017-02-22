@@ -535,11 +535,11 @@ class AbstractCLIProgram(Loggable):
                 self.print_error(u"Cannot read file '%s'" % (text))
             return None
 
-    def print_no_pafy_error(self):
-        self.print_error(u"You need to install Python modules youtube-dl and pafy to download audio from YouTube. Run:")
-        self.print_error(u"$ pip install youtube-dl pafy")
+    def print_no_dependency_error(self):
+        self.print_error(u"You need to install Python module youtube-dl to download audio from YouTube. Run:")
+        self.print_error(u"$ pip install youtube-dl")
         self.print_error(u"or, to install for all users:")
-        self.print_error(u"$ sudo pip install youtube-dl pafy")
+        self.print_error(u"$ sudo pip install youtube-dl")
 
 
 def main():

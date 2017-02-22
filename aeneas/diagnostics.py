@@ -167,7 +167,7 @@ class Diagnostics(object):
         """
         try:
             from aeneas.tools.convert_syncmap import ConvertSyncMapCLI
-            # disabling this check, as it requires the optional dependency pafy
+            # disabling this check, as it requires the optional dependency youtube-dl
             # COMMENTED from aeneas.tools.download import DownloadCLI
             from aeneas.tools.execute_job import ExecuteJobCLI
             from aeneas.tools.execute_task import ExecuteTaskCLI

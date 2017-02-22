@@ -62,7 +62,6 @@ PKG_INSTALL_REQUIRES = [
 PKG_EXTRAS_REQUIRE = {
     "full": [
         "boto3>=1.4.2",
-        "pafy>=0.5.2",
         "Pillow>=3.1.1",
         "requests>=2.9.1",
         "tgt>=1.4.2",
@@ -70,17 +69,12 @@ PKG_EXTRAS_REQUIRE = {
     ],
     "nopillow": [
         "boto3>=1.4.2",
-        "pafy>=0.5.2",
         "requests>=2.9.1",
         "tgt>=1.4.2",
         "youtube-dl>=2016.9.27",
     ],
     "boto3": [
         "boto3>=1.4.2",
-    ],
-    "pafy": [
-        "pafy>=0.5.2",
-        "youtube-dl>=2016.9.27",
     ],
     "pillow": [
         "Pillow>=3.1.1",

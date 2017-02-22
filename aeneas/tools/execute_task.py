@@ -588,7 +588,7 @@ class ExecuteTaskCLI(AbstractCLIProgram):
                 )
                 self.print_info(u"Downloading audio from '%s' ... done" % youtube_url)
             except ImportError:
-                self.print_no_pafy_error()
+                self.print_no_dependency_error()
                 return self.ERROR_EXIT_CODE
             except Exception as exc:
                 self.print_error(u"An unexpected error occurred while downloading audio from YouTube:")
