@@ -539,7 +539,7 @@ class ExecuteTaskCLI(AbstractCLIProgram):
             html_file_path = sync_map_file_path + u".html"
 
         if download_from_youtube:
-            youtube_url = audio_file_path
+            youtube_url = gf.safe_unicode(audio_file_path)
 
         if (not download_from_youtube) and (not self.check_input_file(audio_file_path)):
             return self.ERROR_EXIT_CODE
