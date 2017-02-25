@@ -692,16 +692,6 @@ class ExecuteTaskCLI(AbstractCLIProgram):
             example = self.DEMOS[key]
             if full or example["show"]:
                 msg.append(u"Example %d (%s)" % (i, example[u"description"]))
-                # NOTE too verbose now that we have dozens of examples
-                # COMMENTED msg.append(u"  $ CONFIG_STRING=\"%s\"" % (example[u"config"]))
-                # COMMENTED msg.append(u"  $ %s %s %s \"$CONFIG_STRING\" %s %s" % (
-                # COMMENTED     self.invoke,
-                # COMMENTED     example[u"audio"],
-                # COMMENTED     example[u"text"],
-                # COMMENTED     example[u"syncmap"],
-                # COMMENTED     example[u"options"]
-                # COMMENTED ))
-                # COMMENTED msg.append(u"  or")
                 msg.append(u"  $ %s %s" % (self.invoke, key))
                 msg.append(u"")
                 i += 1

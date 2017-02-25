@@ -24,6 +24,8 @@
 """
 This module contains the following classes:
 
+* :class:`~aeneas.downloader.DownloadError`, which represents an error occurred
+  while downloading a Web resource.
 * :class:`~aeneas.downloader.Downloader`, which download files from various Web sources.
 
 .. note:: This module requires Python module ``youtube-dl`` (``pip install youtube-dl``).
@@ -31,6 +33,7 @@ This module contains the following classes:
 
 from __future__ import absolute_import
 from __future__ import print_function
+import time
 
 from aeneas.logger import Loggable
 from aeneas.runtimeconfiguration import RuntimeConfiguration
@@ -38,12 +41,19 @@ import aeneas.globalfunctions as gf
 
 
 class DownloadError(Exception):
+    """
+    Error raised when a given URL is not valid or
+    it cannot be downloaded because of temporary
+    network issues.
+    """
     pass
 
 
 class Downloader(Loggable):
     """
     Download files from various Web sources.
+    At the moment, only YouTube videos
+    are officially supported.
 
     :param rconf: a runtime configuration
     :type  rconf: :class:`~aeneas.runtimeconfiguration.RuntimeConfiguration`
@@ -70,8 +80,8 @@ class Downloader(Loggable):
 
         Otherwise, download the audio stream best matching
         the provided parameters, as follows.
-        If ``preferred_index`` is not ``None``,
-        download the audio stream at that index.
+        If ``download_format`` is not ``None``,
+        download the audio stream with the specified format.
         If ``largest_audio`` is ``True``,
         download the largest audiostream;
         otherwise, download the smallest audiostream.
@@ -83,18 +93,20 @@ class Downloader(Loggable):
 
         :param string source_url: the URL of the YouTube video
         :param bool download: if ``True``, download the audio stream
-                               best matching ``preferred_index`` or ``preferred_format``
-                              and ``largest_audio``;
+                              best matching ``preferred_index`` or
+                              ``preferred_format`` and ``largest_audio``;
                               if ``False``, return the list of available audio streams
         :param string output_file_path: the path where the downloaded audio should be saved;
                                         if ``None``, create a temporary file
-        :param int download_format: download the audio stream with given format index
+        :param int download_format: download the audio stream with the given format
         :param bool largest_audio: if ``True``, download the largest audio stream available;
                                    if ``False``, download the smallest one.
         :rtype: string or list of dict
         :raises: ImportError: if ``youtube-dl`` is not installed
         :raises: OSError: if ``output_file_path`` cannot be written
-        :raises: ValueError: if ``source_url`` is not a valid YouTube URL
+        :raises: :class:`~aeneas.downloader.DownloadError`: if ``source_url`` is not a valid YouTube URL
+                                                            or it cannot be downloaded e.g. for temporary
+                                                            network issues
         """
 
         def _list_audiostreams(self, source_url):
@@ -109,19 +121,16 @@ class Downloader(Loggable):
                 "quiet": True,
                 "skip_download": True,
             }
-            try:
-                with youtube_dl.YoutubeDL(options) as ydl:
-                    info = ydl.extract_info(source_url, download=False)
-                    audio_formats = [f for f in info["formats"] if f["vcodec"] == "none" and f["acodec"] != "none"]
-                    for a in audio_formats:
-                        audiostreams.append({
-                            "format": a["format"].split(" ")[0],
-                            "filesize": a["filesize"],
-                            "ext": a["ext"],
-                            "abr": a["abr"]
-                        })
-            except (IOError, OSError, youtube_dl.DownloadError) as exc:
-                self.log_exc(u"The specified source URL '%s' is not a valid YouTube URL or you are offline" % (source_url), None, True, DownloadError)
+            with youtube_dl.YoutubeDL(options) as ydl:
+                info = ydl.extract_info(source_url, download=False)
+                audio_formats = [f for f in info["formats"] if f["vcodec"] == "none" and f["acodec"] != "none"]
+                for a in audio_formats:
+                    audiostreams.append({
+                        "format": a["format"].split(" ")[0],
+                        "filesize": a["filesize"],
+                        "ext": a["ext"],
+                        "abr": a["abr"]
+                    })
             self.log(u"Getting audiostreams... done")
             return audiostreams
 
@@ -177,11 +186,8 @@ class Downloader(Loggable):
                 "quiet": True,
                 "skip_download": False,
             }
-            try:
-                with youtube_dl.YoutubeDL(options) as ydl:
-                    ydl.download([source_url])
-            except (IOError, OSError, youtube_dl.DownloadError) as exc:
-                self.log_exc(u"The specified source URL '%s' is not a valid YouTube URL or you are offline" % (source_url), None, True, DownloadError)
+            with youtube_dl.YoutubeDL(options) as ydl:
+                ydl.download([source_url])
             self.log(u"Downloading audiostream... done")
 
         try:
@@ -189,14 +195,48 @@ class Downloader(Loggable):
         except ImportError as exc:
             self.log_exc(u"Python module youtube-dl is not installed", exc, True, ImportError)
 
-        audiostreams = _list_audiostreams(self, source_url)
+        # retry parameters
+        sleep_delay = self.rconf[RuntimeConfiguration.DOWNLOADER_SLEEP]
+        attempts = self.rconf[RuntimeConfiguration.DOWNLOADER_RETRY_ATTEMPTS]
+        self.log([u"Sleep delay:    %.3f", sleep_delay])
+        self.log([u"Retry attempts: %d", attempts])
+
+        # get audiostreams
+        att = attempts
+        while att > 0:
+            self.log(u"Sleeping to throttle API usage...")
+            time.sleep(sleep_delay)
+            self.log(u"Sleeping to throttle API usage... done")
+            try:
+                audiostreams = _list_audiostreams(self, source_url)
+                break
+            except:
+                self.log_warn(u"Unable to list audio streams, retry")
+                att -= 1
+        if att <= 0:
+            self.log_exc(u"All downloader requests failed: wrong URL or you are offline", None, True, DownloadError)
+
         if not download:
             self.log(u"Returning list of audiostreams")
             return audiostreams
+
+        # download the best-matching audiostream
         if len(audiostreams) == 0:
             self.log_exc(u"No audiostreams available for the provided URL", None, True, OSError)
-
         audiostream = _select_audiostream(self, audiostreams, download_format, largest_audio)
         output_path = _compose_output_file_path(self, audiostream["ext"], output_file_path)
-        _download_audiostream(self, source_url, audiostream["format"], output_path)
+        att = attempts
+        while att > 0:
+            self.log(u"Sleeping to throttle API usage...")
+            time.sleep(sleep_delay)
+            self.log(u"Sleeping to throttle API usage... done")
+            try:
+                _download_audiostream(self, source_url, audiostream["format"], output_path)
+                break
+            except:
+                self.log_warn(u"Unable to download audio streams, retry")
+                att -= 1
+        if att <= 0:
+            self.log_exc(u"All downloader requests failed: wrong URL or you are offline", None, True, DownloadError)
+
         return output_path

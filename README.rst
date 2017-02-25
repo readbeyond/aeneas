@@ -5,7 +5,7 @@ aeneas
 synchronize audio and text (aka forced alignment).
 
 -  Version: 1.7.2
--  Date: 2017-??-??
+-  Date: 2017-03-03
 -  Developed by: `ReadBeyond <http://www.readbeyond.it/>`__
 -  Lead Developer: `Alberto Pettarin <http://www.albertopettarin.it/>`__
 -  License: the GNU Affero General Public License Version 3 (AGPL v3)
@@ -359,7 +359,8 @@ Sponsors
 
 -  **December 2016**: the `Centro Internazionale Del Libro Parlato
    "Adriano Sernagiotto" <http://www.libroparlato.org/>`__ (Feltre,
-   Italy) partially sponsored the development of v1.7.0
+   Italy) partially sponsored the development of v1.7.0, v1.7.1, and
+   v1.7.2
 
 Supporting
 ~~~~~~~~~~

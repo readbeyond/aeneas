@@ -13,7 +13,7 @@
 
 usage() {
     echo ""
-    echo "Usage: bash $0 [py2.7|py3.4|py3.5|py3.6|pypy] [uninstall|install|deps|sdist|tests|full] [--no-numpy-upgrade]"
+    echo "Usage: bash $0 [py2.7|py3.5|py3.6|pypy] [uninstall|install|deps|sdist|tests|full] [--no-numpy-upgrade]"
     echo ""
 }
 
@@ -222,7 +222,7 @@ do
 done
 
 # replace e.g. "venv_python2.7/", "venv_python2.7", "py2.7", "2.7" with "python2.7"
-for V in "2.7" "3.4" "3.5" "3.6" "py"
+for V in "2.7" "3.5" "3.6" "py"
 do
     if [ "$EX" == "venv_python$V/" ] || [ "$EX" == "venv_python$V" ] || [ "$EX" == "py$V" ] || [ "$EX" == "$V" ]
     then
