@@ -539,7 +539,7 @@ class ExecuteTaskCLI(AbstractCLIProgram):
             html_file_path = sync_map_file_path + u".html"
 
         if download_from_youtube:
-            youtube_url = audio_file_path
+            youtube_url = gf.safe_unicode(audio_file_path)
 
         if (not download_from_youtube) and (not self.check_input_file(audio_file_path)):
             return self.ERROR_EXIT_CODE
@@ -588,7 +588,7 @@ class ExecuteTaskCLI(AbstractCLIProgram):
                 )
                 self.print_info(u"Downloading audio from '%s' ... done" % youtube_url)
             except ImportError:
-                self.print_no_pafy_error()
+                self.print_no_dependency_error()
                 return self.ERROR_EXIT_CODE
             except Exception as exc:
                 self.print_error(u"An unexpected error occurred while downloading audio from YouTube:")
@@ -692,16 +692,6 @@ class ExecuteTaskCLI(AbstractCLIProgram):
             example = self.DEMOS[key]
             if full or example["show"]:
                 msg.append(u"Example %d (%s)" % (i, example[u"description"]))
-                # NOTE too verbose now that we have dozens of examples
-                # COMMENTED msg.append(u"  $ CONFIG_STRING=\"%s\"" % (example[u"config"]))
-                # COMMENTED msg.append(u"  $ %s %s %s \"$CONFIG_STRING\" %s %s" % (
-                # COMMENTED     self.invoke,
-                # COMMENTED     example[u"audio"],
-                # COMMENTED     example[u"text"],
-                # COMMENTED     example[u"syncmap"],
-                # COMMENTED     example[u"options"]
-                # COMMENTED ))
-                # COMMENTED msg.append(u"  or")
                 msg.append(u"  $ %s %s" % (self.invoke, key))
                 msg.append(u"")
                 i += 1

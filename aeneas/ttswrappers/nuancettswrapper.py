@@ -396,7 +396,7 @@ class NuanceTTSWrapper(BaseTTSWrapper):
                 self.log_warn(u"Got status code other than 200, retry")
                 attempts -= 1
 
-        if attempts < 0:
+        if attempts <= 0:
             self.log_exc(u"All API requests returned status code != 200", None, True, ValueError)
 
         # save to file if requested

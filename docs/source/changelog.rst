@@ -1,12 +1,15 @@
 Changelog
 =========
 
-v1.7.2 (2017-??-??)
+v1.7.2 (2017-03-03)
 -------------------
 
+#. Added MacOS TTS Wrapper (courtesy of Chris Vaughn)
+#. Removed dependency from ``pafy``, using ``youtube-dl`` directly (#159)
+#. Added retry mechanism to ``Downloader``, including ``DOWNLOADER_SLEEP`` and ``DOWNLOADER_RETRY_ATTEMPTS`` in ``RuntimeConfiguration``
 #. Fixed bug #160
 #. Fixed a latent bug with arbitrary shifts in aba when using the ``task_adjust_boundary_no_zero`` option
-#. Added MacOS TTS Wrapper (courtesy of Chris Vaughn)
+#. Fixed a latent bug in AWS Polly and Nuance wrappers
 #. Updated copyright strings with 2017
 
 v1.7.1 (2016-12-20)
