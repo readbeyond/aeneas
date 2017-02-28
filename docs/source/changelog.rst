@@ -11,6 +11,7 @@ v1.7.2 (2017-03-03)
 #. Fixed a latent bug with arbitrary shifts in aba when using the ``task_adjust_boundary_no_zero`` option
 #. Fixed a latent bug in AWS Polly and Nuance wrappers
 #. Updated copyright strings with 2017
+#. Updated ``INSTALL.md`` to brew install from Daniel Bair's tap instead of official brew repo since they removed the formula for aeneas (#165)
 
 v1.7.1 (2016-12-20)
 -------------------

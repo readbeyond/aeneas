@@ -45,12 +45,12 @@ Below you can find detailed procedures for each operating system.
     containing the C headers (`python-dev` or similar).
 
 2. Install `aeneas` system-wise with `pip`:
-    
+
     ```bash
     $ sudo pip install numpy
     $ sudo pip install aeneas
     ```
-    
+
     **Note**: you must install `numpy` before `aeneas`,
     otherwise the setup process will fail.
 
@@ -96,7 +96,7 @@ you can install all the dependencies by downloading and running
     and you can confidently run **aeneas** in production.
 
 3. In alternative to the previous point, you can install `aeneas` with `pip`:
-    
+
     ```bash
     $ sudo pip install numpy
     $ sudo pip install aeneas
@@ -148,8 +148,15 @@ Feel free to jump to step 3 if you already have `brew` installed in your system.
 4. Install `aeneas`:
 
     ```bash
-    $ brew install homebrew/python/aeneas
+    $ brew install danielbair/tap/aeneas
     ```
+
+    **NOTE** (2017-02-28): apparently the `brew` formula for `aeneas` has been removed
+    from the official `brew` repository
+    (it was installable with `brew install homebrew/python/aeneas`),
+    when the `homebrew-python` repository was deprecated.
+    While we try to upload the formula for `aeneas` back to the official repository,
+    you can use the tap by Daniel Bair to install `aeneas`.
 
 ### Manual Procedure
 
@@ -212,7 +219,7 @@ Feel free to jump to step 9 if you already have
     ```bash
     $ which python
     /usr/local/bin/python
-    
+
     $ python --version
     Python 2.7.10 (or later)
     ```
@@ -232,7 +239,7 @@ Feel free to jump to step 9 if you already have
     and you can confidently run **aeneas** in production.
 
 10. In alternative to the previous point, you can install `aeneas` with `pip`:
-    
+
     ```bash
     $ sudo pip install numpy
     $ sudo pip install aeneas
@@ -284,7 +291,7 @@ that you can download from
 ### Manual Procedure
 
 On Windows it is recommended to run **aeneas**
-with Python 2.7, since compiling the C extensions on Python 3.4 or 3.5
+with Python 2.7, since compiling the C extensions on Python 3.5
 requires [a complex setup process](http://stackoverflow.com/questions/29909330/microsoft-visual-c-compiler-for-python-3-4).
 
 The following guide was kindly provided by Richard Margetts of [SIL International](http://www.sil.org),
@@ -343,7 +350,7 @@ otherwise the modification will not be in effect.)
 1. Go to [http://ffmpeg.zeranoe.com/builds/](http://ffmpeg.zeranoe.com/builds/) .
 2. Download the `Static` version, 64-bit or 32-bit, depending on your system.
    You do not need the `Shared` or `Dev` versions.
-3. Unzip it to a new folder `C:\sync\ffmpeg`. 
+3. Unzip it to a new folder `C:\sync\ffmpeg`.
 4. Add the `C:\sync\ffmpeg\bin` path to your system `PATH` variable, as you did for eSpeak above.
    Do not forget the `bin` part of the path.
    The `bin` sub-folder contains three executables: `ffmpeg.exe`, `ffplay.exe`, and `ffprobe.exe` which are used by aeneas.
