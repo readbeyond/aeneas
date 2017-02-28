@@ -75,7 +75,7 @@ System Requirements
 ~~~~~~~~~~~~~~~~~~~
 
 1. a reasonably recent machine (recommended 4 GB RAM, 2 GHz 64bit CPU)
-2. `Python <https://python.org/>`__ 2.7 (Linux, OS X, Windows) or 3.4 or
+2. `Python <https://python.org/>`__ 2.7 (Linux, OS X, Windows) or 3.5 or
    later (Linux, OS X)
 3. `FFmpeg <https://www.ffmpeg.org/>`__
 4. `eSpeak <http://espeak.sourceforge.net/>`__

@@ -60,7 +60,7 @@ first try to recognize what the speaker says,
 then they align the recognized text with the ground truth text,
 producing the final text-to-audio synchronization map.
 
-Unlike ASRs, 
+Unlike ASRs,
 **aeneas** uses a **more classic, signal-processing-based approach**,
 called [**Dynamic Time Warping**](https://en.wikipedia.org/wiki/Dynamic_time_warping) (DTW)
 leveraging text-to-speech (TTS) synthesis.
@@ -86,7 +86,7 @@ but you must bear in mind that
 **aeneas** actually operates on `C`,
 that is, the mono WAVE version of `R`.
 
-**NOTE**: 
+**NOTE**:
 The above observation is true
 for all the modern audio formats,
 considered at "file level".
@@ -301,7 +301,7 @@ M = [
     "His tender heir might bear his memory:"         -> [11.920, 15.280]
     ...
     "To eat the world's due, by the grave and thee." -> [48.080, 53.240]
-]         
+]
 ```
 
 ![Waveform with aligned labels, detail](align.png)
