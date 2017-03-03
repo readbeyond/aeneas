@@ -6,7 +6,7 @@
 #
 # Copyright (C) 2012-2013, Alberto Pettarin (www.albertopettarin.it)
 # Copyright (C) 2013-2015, ReadBeyond Srl   (www.readbeyond.it)
-# Copyright (C) 2015-2016, Alberto Pettarin (www.albertopettarin.it)
+# Copyright (C) 2015-2017, Alberto Pettarin (www.albertopettarin.it)
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Affero General Public License as published by
@@ -1001,7 +1001,7 @@ class TestSyncMapFragmentList(unittest.TestCase):
                 i = TimeInterval(begin=TimeValue(b), end=TimeValue(e))
                 s = SyncMapFragment(interval=i)
                 l.add(s)
-            l.fix_zero_length_fragments(min_index=1, max_index=(len(l) - 1))
+            l.fix_zero_length_fragments(duration=TimeValue("0.001"), min_index=1, max_index=(len(l) - 1))
             for j, fragment in enumerate(l.fragments):
                 b, e = exp[j]
                 exp_i = TimeInterval(begin=TimeValue(b), end=TimeValue(e))

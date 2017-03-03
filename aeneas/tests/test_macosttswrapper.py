@@ -21,36 +21,20 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-"""
-Compile the Python C Extension for synthesizing text with eSpeak.
+import unittest
 
-.. versionadded:: 1.3.0
-"""
-
-from __future__ import absolute_import
-from __future__ import print_function
-from setuptools import Extension
-from setuptools import setup
-import sys
+from aeneas.tests.base_ttswrapper import TestBaseTTSWrapper
+from aeneas.ttswrappers.macosttswrapper import MacOSTTSWrapper
 
 
-CMODULE = Extension(
-    name="cew",
-    sources=[
-        "cew_py.c",
-        "cew_func.c"
-    ],
-    libraries=[
-        "espeak"
-    ]
-)
+class TestESPEAKNGTTSWrapper(TestBaseTTSWrapper):
 
-setup(
-    name="cew",
-    version="1.7.2",
-    description="Python C Extension for synthesizing text with eSpeak.",
-    ext_modules=[CMODULE]
-)
+    TTS = u"macos"
+    TTS_PATH = u"/usr/bin/say"
+    TTS_CLASS = MacOSTTSWrapper
+    TTS_LANGUAGE = MacOSTTSWrapper.ENG
+    TTS_LANGUAGE_VARIATION = MacOSTTSWrapper.ENG_GBR
 
-print("\n[INFO] Module cew successfully compiled\n")
-sys.exit(0)
+
+if __name__ == "__main__":
+    unittest.main()

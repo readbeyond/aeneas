@@ -144,7 +144,7 @@ you might need to install the following optional dependencies:
 * ``requests`` (for using the Nuance TTS API wrapper)
 * ``Pillow`` (for plotting waveforms with :mod:`~aeneas.plotter`)
 * ``tgt`` (for outputting sync maps to TextGrid format)
-* ``youtube-dl`` and ``pafy`` (for downloading audio from Internet with :class:`~aeneas.downloader.Downloader`)
+* ``youtube-dl`` (for downloading audio from Internet with :class:`~aeneas.downloader.Downloader`)
 
 
 
@@ -479,6 +479,7 @@ in the synthesis step of the alignment procedure.
     espeakttswrapper
     espeakngttswrapper
     festivalttswrapper
+    macosttswrapper
     nuancettswrapper
 
 

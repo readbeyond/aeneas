@@ -6,7 +6,7 @@
 #
 # Copyright (C) 2012-2013, Alberto Pettarin (www.albertopettarin.it)
 # Copyright (C) 2013-2015, ReadBeyond Srl   (www.readbeyond.it)
-# Copyright (C) 2015-2016, Alberto Pettarin (www.albertopettarin.it)
+# Copyright (C) 2015-2017, Alberto Pettarin (www.albertopettarin.it)
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Affero General Public License as published by
@@ -32,11 +32,11 @@ __email__ = "aeneas@readbeyond.it"
 __copyright__ = """
     Copyright 2012-2013, Alberto Pettarin (www.albertopettarin.it)
     Copyright 2013-2015, ReadBeyond Srl   (www.readbeyond.it)
-    Copyright 2015-2016, Alberto Pettarin (www.albertopettarin.it)
+    Copyright 2015-2017, Alberto Pettarin (www.albertopettarin.it)
 """
 __license__ = "GNU AGPL 3"
 __status__ = "Production"
-__version__ = "1.7.1"
+__version__ = "1.7.2"
 
 
 ##############################################################################
@@ -47,7 +47,7 @@ __version__ = "1.7.1"
 
 # package version
 # NOTE: generate a new one for each PyPI upload, otherwise it will fail
-PKG_VERSION = "1.7.1.0"
+PKG_VERSION = "1.7.2.0"
 
 # required packages to install
 # NOTE: always use exact version numbers
@@ -62,7 +62,6 @@ PKG_INSTALL_REQUIRES = [
 PKG_EXTRAS_REQUIRE = {
     "full": [
         "boto3>=1.4.2",
-        "pafy>=0.5.2",
         "Pillow>=3.1.1",
         "requests>=2.9.1",
         "tgt>=1.4.2",
@@ -70,17 +69,12 @@ PKG_EXTRAS_REQUIRE = {
     ],
     "nopillow": [
         "boto3>=1.4.2",
-        "pafy>=0.5.2",
         "requests>=2.9.1",
         "tgt>=1.4.2",
         "youtube-dl>=2016.9.27",
     ],
     "boto3": [
         "boto3>=1.4.2",
-    ],
-    "pafy": [
-        "pafy>=0.5.2",
-        "youtube-dl>=2016.9.27",
     ],
     "pillow": [
         "Pillow>=3.1.1",

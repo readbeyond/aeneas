@@ -6,7 +6,7 @@
 #
 # Copyright (C) 2012-2013, Alberto Pettarin (www.albertopettarin.it)
 # Copyright (C) 2013-2015, ReadBeyond Srl   (www.readbeyond.it)
-# Copyright (C) 2015-2016, Alberto Pettarin (www.albertopettarin.it)
+# Copyright (C) 2015-2017, Alberto Pettarin (www.albertopettarin.it)
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Affero General Public License as published by
@@ -37,6 +37,7 @@ from __future__ import absolute_import
 from __future__ import print_function
 from decimal import Decimal
 from decimal import InvalidOperation
+import math
 import sys
 
 
@@ -62,6 +63,18 @@ class TimeValue(Decimal):
         :rtype: bool
         """
         return self == int(self)
+
+    def geq_multiple(self, other):
+        """
+        Return the next multiple of this time value,
+        greater than or equal to ``other``.
+        If ``other`` is zero, return this time value.
+
+        :rtype: :class:`~aeneas.exacttiming.TimeValue`
+        """
+        if other == TimeValue("0.000"):
+            return self
+        return int(math.ceil(other / self)) * self
 
     # NOTE overriding so that the result
     #      is still an instance of TimeValue

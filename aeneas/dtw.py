@@ -6,7 +6,7 @@
 #
 # Copyright (C) 2012-2013, Alberto Pettarin (www.albertopettarin.it)
 # Copyright (C) 2013-2015, ReadBeyond Srl   (www.readbeyond.it)
-# Copyright (C) 2015-2016, Alberto Pettarin (www.albertopettarin.it)
+# Copyright (C) 2015-2017, Alberto Pettarin (www.albertopettarin.it)
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Affero General Public License as published by
@@ -155,10 +155,14 @@ class DTWAligner(Loggable):
             self.real_wave_mfcc = AudioFileMFCC(self.real_wave_path, rconf=self.rconf, logger=self.logger)
         if (self.synt_wave_mfcc is None) and (self.synt_wave_path is not None):
             self.synt_wave_mfcc = AudioFileMFCC(self.synt_wave_path, rconf=self.rconf, logger=self.logger)
+        self.dtw = None
 
     def compute_accumulated_cost_matrix(self):
         """
         Compute the accumulated cost matrix, and return it.
+
+        Return ``None`` if the accumulated cost matrix cannot be computed
+        because one of the two waves is empty after masking (if requested).
 
         :rtype: :class:`numpy.ndarray` (2D)
         :raises: RuntimeError: if both the C extension and
@@ -166,9 +170,12 @@ class DTWAligner(Loggable):
 
         .. versionadded:: 1.2.0
         """
-        dtw = self._setup_dtw()
+        self._setup_dtw()
+        if self.dtw is None:
+            self.log(u"Inner self.dtw is None => returning None")
+            return None
         self.log(u"Returning accumulated cost matrix")
-        return dtw.compute_accumulated_cost_matrix()
+        return self.dtw.compute_accumulated_cost_matrix()
 
     def compute_path(self):
         """
@@ -183,13 +190,19 @@ class DTWAligner(Loggable):
         and ``s_i`` are the indices in the synthesized wave,
         and ``k`` is the length of the min cost path.
 
+        Return ``None`` if the accumulated cost matrix cannot be computed
+        because one of the two waves is empty after masking (if requested).
+
         :rtype: tuple (see above)
         :raises: RuntimeError: if both the C extension and
                                the pure Python code did not succeed.
         """
-        dtw = self._setup_dtw()
+        self._setup_dtw()
+        if self.dtw is None:
+            self.log(u"Inner self.dtw is None => returning None")
+            return None
         self.log(u"Computing path...")
-        wave_path = dtw.compute_path()
+        wave_path = self.dtw.compute_path()
         self.log(u"Computing path... done")
         self.log(u"Translating path to full wave indices...")
         real_indices = numpy.array([t[0] for t in wave_path])
@@ -230,6 +243,16 @@ class DTWAligner(Loggable):
 
         :rtype: :class:`numpy.ndarray` (1D)
         """
+        self._setup_dtw()
+        if self.dtw is None:
+            self.log(u"Inner self.dtw is None => returning artificial boundary indices")
+            begin = self.real_wave_mfcc.middle_begin
+            end = self.real_wave_mfcc.tail_begin
+            n = len(synt_anchors)
+            step = float(end - begin) / n
+            boundary_indices = [begin + int(i * step) for i in range(n)] + [end]
+            return numpy.array(boundary_indices)
+
         self.log(u"Computing path...")
         real_indices, synt_indices = self.compute_path()
         self.log(u"Computing path... done")
@@ -276,6 +299,10 @@ class DTWAligner(Loggable):
         """
         Set the DTW object up.
         """
+        # check if the DTW object has already been set up
+        if self.dtw is not None:
+            return
+
         # check we have the AudioFileMFCC objects
         if (self.real_wave_mfcc is None) or (self.real_wave_mfcc.middle_mfcc is None):
             self.log_exc(u"The real wave MFCCs are not initialized", None, True, DTWAlignerNotInitialized)
@@ -308,26 +335,32 @@ class DTWAligner(Loggable):
             self.log(u"Using unmasked MFCC")
             real_mfcc = self.real_wave_mfcc.middle_mfcc
             synt_mfcc = self.synt_wave_mfcc.middle_mfcc
-
-        # execute the selected algorithm
-        if algorithm == DTWAlgorithm.EXACT:
-            self.log(u"Computing with EXACT algo")
-            dtw = DTWExact(
-                m1=real_mfcc,
-                m2=synt_mfcc,
-                rconf=self.rconf,
-                logger=self.logger
-            )
+        n = real_mfcc.shape[1]
+        m = synt_mfcc.shape[1]
+        self.log([u"  Number of MFCC frames in real wave: %d", n])
+        self.log([u"  Number of MFCC frames in synt wave: %d", m])
+        if (n == 0) or (m == 0):
+            self.log(u"Setting self.dtw to None")
+            self.dtw = None
         else:
-            self.log(u"Computing with STRIPE algo")
-            dtw = DTWStripe(
-                m1=real_mfcc,
-                m2=synt_mfcc,
-                delta=delta,
-                rconf=self.rconf,
-                logger=self.logger
-            )
-        return dtw
+            # set the selected algorithm
+            if algorithm == DTWAlgorithm.EXACT:
+                self.log(u"Computing with EXACT algo")
+                self.dtw = DTWExact(
+                    m1=real_mfcc,
+                    m2=synt_mfcc,
+                    rconf=self.rconf,
+                    logger=self.logger
+                )
+            else:
+                self.log(u"Computing with STRIPE algo")
+                self.dtw = DTWStripe(
+                    m1=real_mfcc,
+                    m2=synt_mfcc,
+                    delta=delta,
+                    rconf=self.rconf,
+                    logger=self.logger
+                )
 
 
 class DTWStripe(Loggable):

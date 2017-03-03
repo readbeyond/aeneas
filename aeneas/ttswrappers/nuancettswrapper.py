@@ -6,7 +6,7 @@
 #
 # Copyright (C) 2012-2013, Alberto Pettarin (www.albertopettarin.it)
 # Copyright (C) 2013-2015, ReadBeyond Srl   (www.readbeyond.it)
-# Copyright (C) 2015-2016, Alberto Pettarin (www.albertopettarin.it)
+# Copyright (C) 2015-2017, Alberto Pettarin (www.albertopettarin.it)
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Affero General Public License as published by
@@ -396,7 +396,7 @@ class NuanceTTSWrapper(BaseTTSWrapper):
                 self.log_warn(u"Got status code other than 200, retry")
                 attempts -= 1
 
-        if attempts < 0:
+        if attempts <= 0:
             self.log_exc(u"All API requests returned status code != 200", None, True, ValueError)
 
         # save to file if requested

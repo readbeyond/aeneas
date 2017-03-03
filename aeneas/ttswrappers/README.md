@@ -1,4 +1,4 @@
-# aeneas TTS Wrappers 
+# aeneas TTS Wrappers
 
 This Python package contains the Python wrappers for several built-in
 TTS engines that can be used by ``aeneas``
@@ -18,6 +18,7 @@ Currently, the available TTS engines are:
 * `ESPEAKNGTTSWrapper` for `eSpeak-ng` (subprocess)
 * `FESTIVALTTSWrapper` for `Festival` (subprocess)
 * `NuanceTTSWrapper` for `Nuance TTS API` (Python calling remote Nuance API)
+* `MacOSTTSWrapper` for `macOS` (subprocess)
 
 Moreover, custom TTS wrappers can be specified at runtime.
 The wrapper must be implemented in a `CustomTTSWrapper` class,

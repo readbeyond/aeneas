@@ -4,16 +4,16 @@
 # __copyright__ = """
 #     Copyright 2012-2013, Alberto Pettarin (www.albertopettarin.it)
 #     Copyright 2013-2015, ReadBeyond Srl   (www.readbeyond.it)
-#     Copyright 2015-2016, Alberto Pettarin (www.albertopettarin.it)
+#     Copyright 2015-2017, Alberto Pettarin (www.albertopettarin.it)
 #     """
 # __license__ = "GNU AGPL 3"
-# __version__ = "1.7.0"
+# __version__ = "1.7.2"
 # __email__ = "aeneas@readbeyond.it"
 # __status__ = "Production"
 
 usage() {
     echo ""
-    echo "Usage: bash $0 [py2.7|py3.4|py3.5|py3.6|pypy] [uninstall|install|deps|sdist|tests|full] [--no-numpy-upgrade]"
+    echo "Usage: bash $0 [py2.7|py3.5|py3.6|pypy] [uninstall|install|deps|sdist|tests|full] [--no-numpy-upgrade]"
     echo ""
 }
 
@@ -70,11 +70,11 @@ deps() {
             fi
         fi
         pip install -U lxml BeautifulSoup4
-        pip install -U boto3 pafy requests tgt youtube-dl
+        pip install -U boto3 requests tgt youtube-dl
         # NOTE Pillow might raise errors due to missing libraries
         #      (e.g., libjpeg, libpng, zlib)
         #      so install it as the last one
-        pip install -U Pillow 
+        pip install -U Pillow
         deactivate
         cd ..
         echo "[INFO] Installing Python dependencies in $1 ... done"
@@ -98,20 +98,20 @@ sdist() {
         echo "[INFO] venv $1 does not exist."
         echo "[INFO] Use 'install' or 'full' to create it."
     else
-       
+
         cd $1
         source bin/activate
-        
+
         echo "[INFO] Uninstalling aeneas..."
         rm -f *.tar.gz
         rm -rf output
         mkdir output
         pip uninstall aeneas -y
         echo "[INFO] Uninstalling aeneas... done"
-        
+
         deactivate
         cd ..
-       
+
         if [ "$2" == "--remove" ]
         then
             echo "[INFO] Uninstall only: returning."
@@ -170,12 +170,12 @@ copytests() {
         echo "[INFO] Copying tests in $1 ..."
         cd $1
         source bin/activate
-       
-        # delete old stuff, if any 
+
+        # delete old stuff, if any
         rm -rf tests
         mkdir tests
         mkdir tests/output
-        
+
         # copy current code locally and set it up
         cp -r ../../aeneas ../../setup.py ../../setupmeta.py ../../run_all_unit_tests.py tests/
         cd tests
@@ -222,7 +222,7 @@ do
 done
 
 # replace e.g. "venv_python2.7/", "venv_python2.7", "py2.7", "2.7" with "python2.7"
-for V in "2.7" "3.4" "3.5" "3.6" "py"
+for V in "2.7" "3.5" "3.6" "py"
 do
     if [ "$EX" == "venv_python$V/" ] || [ "$EX" == "venv_python$V" ] || [ "$EX" == "py$V" ] || [ "$EX" == "$V" ]
     then

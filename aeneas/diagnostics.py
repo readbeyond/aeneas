@@ -6,7 +6,7 @@
 #
 # Copyright (C) 2012-2013, Alberto Pettarin (www.albertopettarin.it)
 # Copyright (C) 2013-2015, ReadBeyond Srl   (www.readbeyond.it)
-# Copyright (C) 2015-2016, Alberto Pettarin (www.albertopettarin.it)
+# Copyright (C) 2015-2017, Alberto Pettarin (www.albertopettarin.it)
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Affero General Public License as published by
@@ -167,7 +167,7 @@ class Diagnostics(object):
         """
         try:
             from aeneas.tools.convert_syncmap import ConvertSyncMapCLI
-            # disabling this check, as it requires the optional dependency pafy
+            # disabling this check, as it requires the optional dependency youtube-dl
             # COMMENTED from aeneas.tools.download import DownloadCLI
             from aeneas.tools.execute_job import ExecuteJobCLI
             from aeneas.tools.execute_task import ExecuteTaskCLI

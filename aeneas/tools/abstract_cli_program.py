@@ -6,7 +6,7 @@
 #
 # Copyright (C) 2012-2013, Alberto Pettarin (www.albertopettarin.it)
 # Copyright (C) 2013-2015, ReadBeyond Srl   (www.readbeyond.it)
-# Copyright (C) 2015-2016, Alberto Pettarin (www.albertopettarin.it)
+# Copyright (C) 2015-2017, Alberto Pettarin (www.albertopettarin.it)
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Affero General Public License as published by
@@ -60,11 +60,11 @@ class AbstractCLIProgram(Loggable):
 
     NAME = gf.file_name_without_extension(__file__)
 
-    AENEAS_URL = u"http://www.readbeyond.it/aeneas/"
-    DOCS_URL = u"http://www.readbeyond.it/aeneas/docs/"
+    AENEAS_URL = u"https://www.readbeyond.it/aeneas/"
+    DOCS_URL = u"https://www.readbeyond.it/aeneas/docs/"
     GITHUB_URL = u"https://github.com/ReadBeyond/aeneas/"
     ISSUES_URL = u"https://github.com/ReadBeyond/aeneas/issues/"
-    RB_URL = u"http://www.readbeyond.it"
+    RB_URL = u"https://www.readbeyond.it"
 
     NO_ERROR_EXIT_CODE = 0
     ERROR_EXIT_CODE = 1
@@ -240,7 +240,7 @@ class AbstractCLIProgram(Loggable):
             u"  Please use the GitHub Issues Web page : %s" % (self.ISSUES_URL),
             u"",
             u"COPYRIGHT",
-            u"  2012-2016, Alberto Pettarin and ReadBeyond Srl",
+            u"  2012-2017, Alberto Pettarin and ReadBeyond Srl",
             u"  This software is available under the terms of the GNU Affero General Public License Version 3",
             u"",
             u"SEE ALSO",
@@ -535,11 +535,11 @@ class AbstractCLIProgram(Loggable):
                 self.print_error(u"Cannot read file '%s'" % (text))
             return None
 
-    def print_no_pafy_error(self):
-        self.print_error(u"You need to install Python modules youtube-dl and pafy to download audio from YouTube. Run:")
-        self.print_error(u"$ pip install youtube-dl pafy")
+    def print_no_dependency_error(self):
+        self.print_error(u"You need to install Python module youtube-dl to download audio from YouTube. Run:")
+        self.print_error(u"$ pip install youtube-dl")
         self.print_error(u"or, to install for all users:")
-        self.print_error(u"$ sudo pip install youtube-dl pafy")
+        self.print_error(u"$ sudo pip install youtube-dl")
 
 
 def main():

@@ -6,7 +6,7 @@
 #
 # Copyright (C) 2012-2013, Alberto Pettarin (www.albertopettarin.it)
 # Copyright (C) 2013-2015, ReadBeyond Srl   (www.readbeyond.it)
-# Copyright (C) 2015-2016, Alberto Pettarin (www.albertopettarin.it)
+# Copyright (C) 2015-2017, Alberto Pettarin (www.albertopettarin.it)
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Affero General Public License as published by
@@ -109,6 +109,8 @@ class TestRuntimeConfiguration(unittest.TestCase):
             (u"cmfcc=False", "cmfcc", False),
             (u"cew_subprocess_enabled=True", "cew_subprocess_enabled", True),
             (u"cew_subprocess_path=/foo/bar/python", "cew_subprocess_path", "/foo/bar/python"),
+            (u"downloader_sleep=5.000", "downloader_sleep", TimeValue("5.000")),
+            (u"downloader_retry_attempts=5", "downloader_retry_attempts", 5),
             (u"dtw_algorithm=exact", "dtw_algorithm", "exact"),
             (u"dtw_margin=100", "dtw_margin", TimeValue("100")),
             (u"ffmpeg_path=/foo/bar/ffmpeg", "ffmpeg_path", "/foo/bar/ffmpeg"),

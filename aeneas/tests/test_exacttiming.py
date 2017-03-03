@@ -6,7 +6,7 @@
 #
 # Copyright (C) 2012-2013, Alberto Pettarin (www.albertopettarin.it)
 # Copyright (C) 2013-2015, ReadBeyond Srl   (www.readbeyond.it)
-# Copyright (C) 2015-2016, Alberto Pettarin (www.albertopettarin.it)
+# Copyright (C) 2015-2017, Alberto Pettarin (www.albertopettarin.it)
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Affero General Public License as published by
@@ -51,6 +51,18 @@ class TestExactTiming(unittest.TestCase):
     def test_repr(self):
         tv1 = TimeValue("1.234")
         self.assertEqual(tv1.__repr__(), "TimeValue('1.234')")
+
+    def test_geq_multiple(self):
+        tv1 = TimeValue("0.005")
+        tv2 = TimeValue("0.000")
+        tv3 = TimeValue("0.001")
+        tv4 = TimeValue("0.006")
+        tv5 = TimeValue("0.010")
+        self.check(tv1.geq_multiple(tv1), tv1)
+        self.check(tv1.geq_multiple(tv2), tv1)
+        self.check(tv1.geq_multiple(tv3), tv1)
+        self.check(tv1.geq_multiple(tv4), tv5)
+        self.check(tv1.geq_multiple(tv5), tv5)
 
     def test_add(self):
         tv1 = TimeValue("1.100")

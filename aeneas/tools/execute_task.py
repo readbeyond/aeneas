@@ -6,7 +6,7 @@
 #
 # Copyright (C) 2012-2013, Alberto Pettarin (www.albertopettarin.it)
 # Copyright (C) 2013-2015, ReadBeyond Srl   (www.readbeyond.it)
-# Copyright (C) 2015-2016, Alberto Pettarin (www.albertopettarin.it)
+# Copyright (C) 2015-2017, Alberto Pettarin (www.albertopettarin.it)
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Affero General Public License as published by
@@ -49,6 +49,7 @@ from aeneas.ttswrappers.awsttswrapper import AWSTTSWrapper
 from aeneas.ttswrappers.espeakngttswrapper import ESPEAKNGTTSWrapper
 from aeneas.ttswrappers.espeakttswrapper import ESPEAKTTSWrapper
 from aeneas.ttswrappers.festivalttswrapper import FESTIVALTTSWrapper
+from aeneas.ttswrappers.macosttswrapper import MacOSTTSWrapper
 from aeneas.ttswrappers.nuancettswrapper import NuanceTTSWrapper
 from aeneas.validator import Validator
 import aeneas.globalconstants as gc
@@ -399,6 +400,7 @@ class ExecuteTaskCLI(AbstractCLIProgram):
         "espeak": ESPEAKTTSWrapper.CODE_TO_HUMAN_LIST,
         "espeak-ng": ESPEAKNGTTSWrapper.CODE_TO_HUMAN_LIST,
         "festival": FESTIVALTTSWrapper.CODE_TO_HUMAN_LIST,
+        "macos": MacOSTTSWrapper.CODE_TO_HUMAN_LIST,
         "nuance": NuanceTTSWrapper.CODE_TO_HUMAN_LIST,
         "task_language": Language.CODE_TO_HUMAN_LIST,
         "is_text_type": TextFileFormat.ALLOWED_VALUES,
@@ -537,7 +539,7 @@ class ExecuteTaskCLI(AbstractCLIProgram):
             html_file_path = sync_map_file_path + u".html"
 
         if download_from_youtube:
-            youtube_url = audio_file_path
+            youtube_url = gf.safe_unicode(audio_file_path)
 
         if (not download_from_youtube) and (not self.check_input_file(audio_file_path)):
             return self.ERROR_EXIT_CODE
@@ -586,7 +588,7 @@ class ExecuteTaskCLI(AbstractCLIProgram):
                 )
                 self.print_info(u"Downloading audio from '%s' ... done" % youtube_url)
             except ImportError:
-                self.print_no_pafy_error()
+                self.print_no_dependency_error()
                 return self.ERROR_EXIT_CODE
             except Exception as exc:
                 self.print_error(u"An unexpected error occurred while downloading audio from YouTube:")
@@ -690,16 +692,6 @@ class ExecuteTaskCLI(AbstractCLIProgram):
             example = self.DEMOS[key]
             if full or example["show"]:
                 msg.append(u"Example %d (%s)" % (i, example[u"description"]))
-                # NOTE too verbose now that we have dozens of examples
-                # COMMENTED msg.append(u"  $ CONFIG_STRING=\"%s\"" % (example[u"config"]))
-                # COMMENTED msg.append(u"  $ %s %s %s \"$CONFIG_STRING\" %s %s" % (
-                # COMMENTED     self.invoke,
-                # COMMENTED     example[u"audio"],
-                # COMMENTED     example[u"text"],
-                # COMMENTED     example[u"syncmap"],
-                # COMMENTED     example[u"options"]
-                # COMMENTED ))
-                # COMMENTED msg.append(u"  or")
                 msg.append(u"  $ %s %s" % (self.invoke, key))
                 msg.append(u"")
                 i += 1

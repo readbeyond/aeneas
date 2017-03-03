@@ -4,16 +4,16 @@
 # __copyright__ = """
 #     Copyright 2012-2013, Alberto Pettarin (www.albertopettarin.it)
 #     Copyright 2013-2015, ReadBeyond Srl   (www.readbeyond.it)
-#     Copyright 2015-2016, Alberto Pettarin (www.albertopettarin.it)
+#     Copyright 2015-2017, Alberto Pettarin (www.albertopettarin.it)
 #     """
 # __license__ = "GNU AGPL 3"
-# __version__ = "1.7.0"
+# __version__ = "1.7.2"
 # __email__ = "aeneas@readbeyond.it"
 # __status__ = "Production"
 
 usage() {
     echo ""
-    echo "Usage: bash $0 [py2.7|py3.4|py3.5|py3.6|pypy] [all|nonet|noben|fast|bench|tool|long|net|clean]"
+    echo "Usage: bash $0 [py2.7|py3.5|py3.6|pypy] [all|nonet|noben|fast|bench|tool|long|net|clean]"
     echo ""
 }
 
@@ -21,7 +21,7 @@ clean() {
     echo "[INFO] Cleaning $1 ..."
     cd $1
     rm -rf tests
-    cd .. 
+    cd ..
     echo "[INFO] Cleaning $1 ... done"
 }
 
@@ -98,7 +98,7 @@ EX=$1
 ACTION=$2
 
 # replace e.g. "venv_python2.7/", "venv_python2.7", "py2.7", "2.7" with "python2.7"
-for V in "2.7" "3.4" "3.5" "py"
+for V in "2.7" "3.5" "py"
 do
     if [ "$EX" == "venv_python$V/" ] || [ "$EX" == "venv_python$V" ] || [ "$EX" == "py$V" ] || [ "$EX" == "$V" ]
     then
@@ -134,7 +134,7 @@ fi
 if [ ! -e "$D" ]
 then
     echo "[ERRO] Install venv with 'bash manage_venvs.sh $EX full', aborting."
-    exit 1 
+    exit 1
 fi
 
 # remove log file, if already existing

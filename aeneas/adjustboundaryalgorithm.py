@@ -6,7 +6,7 @@
 #
 # Copyright (C) 2012-2013, Alberto Pettarin (www.albertopettarin.it)
 # Copyright (C) 2013-2015, ReadBeyond Srl   (www.readbeyond.it)
-# Copyright (C) 2015-2016, Alberto Pettarin (www.albertopettarin.it)
+# Copyright (C) 2015-2017, Alberto Pettarin (www.albertopettarin.it)
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Affero General Public License as published by
@@ -239,6 +239,7 @@ class AdjustBoundaryAlgorithm(Loggable):
         boundary_indices,
         real_wave_mfcc,
         text_file,
+        allow_arbitrary_shift=False
     ):
         """
         Adjust the boundaries of the text map
@@ -255,6 +256,7 @@ class AdjustBoundaryAlgorithm(Loggable):
         :type  real_wave_mfcc: :class:`~aeneas.audiofilemfcc.AudioFileMFCC`
         :param text_file: the text file containing the text fragments associated
         :type  text_file: :class:`~aeneas.textfile.TextFile`
+        :param bool allow_arbitrary_shift: if ``True``, allow arbitrary shifts when adjusting zero length
 
         :rtype: list of :class:`~aeneas.syncmap.SyncMapFragmentList`
         """
@@ -281,7 +283,7 @@ class AdjustBoundaryAlgorithm(Loggable):
         self.log(u"  Converting boundary indices to fragment list... done")
 
         self.log(u"  Processing fragments with zero length...")
-        self._process_zero_length(nozero)
+        self._process_zero_length(nozero, allow_arbitrary_shift)
         self.log(u"  Processing fragments with zero length... done")
 
         self.log(u"  Processing nonspeech fragments...")
@@ -402,7 +404,7 @@ class AdjustBoundaryAlgorithm(Loggable):
     # NO ZERO AND LONG NONSPEECH FUNCTIONS
     # #####################################################
 
-    def _process_zero_length(self, nozero):
+    def _process_zero_length(self, nozero, allow_arbitrary_shift):
         """
         If ``nozero`` is ``True``, modify the sync map fragment list
         so that no fragment will have zero length.
@@ -414,7 +416,11 @@ class AdjustBoundaryAlgorithm(Loggable):
         self.log(u"Processing zero length intervals requested")
         self.log(u"  Checking and fixing...")
         duration = self.rconf[RuntimeConfiguration.ABA_NO_ZERO_DURATION]
-        self.log([u"  No zero duration: %.3f", duration])
+        self.log([u"  Requested no zero duration: %.3f", duration])
+        if not allow_arbitrary_shift:
+            self.log(u"  No arbitrary shift => taking max with mws")
+            duration = self.rconf.mws.geq_multiple(duration)
+        self.log([u"  Actual no zero duration: %.3f", duration])
         # ignore HEAD and TAIL
         max_index = len(self.smflist) - 1
         self.smflist.fix_zero_length_fragments(

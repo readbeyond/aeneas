@@ -4,8 +4,8 @@ aeneas
 **aeneas** is a Python/C library and a set of tools to automagically
 synchronize audio and text (aka forced alignment).
 
--  Version: 1.7.1
--  Date: 2016-12-21
+-  Version: 1.7.2
+-  Date: 2017-03-03
 -  Developed by: `ReadBeyond <http://www.readbeyond.it/>`__
 -  Lead Developer: `Alberto Pettarin <http://www.albertopettarin.it/>`__
 -  License: the GNU Affero General Public License Version 3 (AGPL v3)
@@ -75,7 +75,7 @@ System Requirements
 ~~~~~~~~~~~~~~~~~~~
 
 1. a reasonably recent machine (recommended 4 GB RAM, 2 GHz 64bit CPU)
-2. `Python <https://python.org/>`__ 2.7 (Linux, OS X, Windows) or 3.4 or
+2. `Python <https://python.org/>`__ 2.7 (Linux, OS X, Windows) or 3.5 or
    later (Linux, OS X)
 3. `FFmpeg <https://www.ffmpeg.org/>`__
 4. `eSpeak <http://espeak.sourceforge.net/>`__
@@ -252,7 +252,7 @@ Supported Features
 -  MFCC and DTW computed via Python C extensions to reduce the
    processing time
 -  Several built-in TTS engine wrappers: AWS Polly TTS API, eSpeak
-   (default), eSpeak-ng, Festival, Nuance TTS API
+   (default), eSpeak-ng, Festival, MacOS (via say), Nuance TTS API
 -  Default TTS (eSpeak) called via a Python C extension for fast audio
    synthesis
 -  Possibility of running a custom, user-provided TTS engine Python
@@ -359,7 +359,8 @@ Sponsors
 
 -  **December 2016**: the `Centro Internazionale Del Libro Parlato
    "Adriano Sernagiotto" <http://www.libroparlato.org/>`__ (Feltre,
-   Italy) partially sponsored the development of v1.7.0
+   Italy) partially sponsored the development of v1.7.0, v1.7.1, and
+   v1.7.2
 
 Supporting
 ~~~~~~~~~~
@@ -417,6 +418,8 @@ tuning sync maps in the browser.
 
 **Willem van der Walt** contributed the code snippet to output a sync
 map in TextGrid format.
+
+**Chris Vaughn** contributed the MacOS TTS wrapper.
 
 All the mighty `GitHub
 contributors <https://github.com/readbeyond/aeneas/graphs/contributors>`__,
