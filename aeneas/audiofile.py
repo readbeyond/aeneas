@@ -644,4 +644,4 @@ class AudioFile(Loggable):
         This function fails silently if one of the two is ``None``.
         """
         if (self.audio_sample_rate is not None) and (self.__samples is not None):
-            self.audio_length = TimeValue(self.__samples_length / self.audio_sample_rate)
+            self.audio_length = TimeValue(self.__samples_length) / TimeValue(self.audio_sample_rate)
