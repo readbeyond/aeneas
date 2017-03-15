@@ -41,7 +41,7 @@ __copyright__ = """
 """
 __license__ = "GNU AGPL 3"
 __status__ = "Production"
-__version__ = "1.7.2"
+__version__ = "1.7.3"
 
 TEST_DIRECTORY = "aeneas/tests"
 MAP = {
