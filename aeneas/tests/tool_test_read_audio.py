@@ -56,9 +56,21 @@ class TestReadAudioCLI(unittest.TestCase):
             ("in", "../tools/res/audio.wav")
         ], 0)
 
+    def test_read_audio_full(self):
+        self.execute([
+            ("in", "../tools/res/audio.wav"),
+            ("", "-f")
+        ], 0)
+
     def test_read_audio_mp3(self):
         self.execute([
             ("in", "../tools/res/audio.mp3")
+        ], 0)
+
+    def test_read_audio_mp3_full(self):
+        self.execute([
+            ("in", "../tools/res/audio.mp3"),
+            ("", "-f")
         ], 0)
 
     def test_read_audio_path(self):

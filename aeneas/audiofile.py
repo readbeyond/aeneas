@@ -209,9 +209,12 @@ class AudioFile(Loggable):
         self.__samples = None
 
     def __unicode__(self):
+        fmt = self.file_format
+        if isinstance(fmt, tuple):
+            fmt = u"%s %d %d" % fmt
         msg = [
             u"File path:         %s" % self.file_path,
-            u"File format:       %s" % self.file_format,
+            u"File format:       %s" % fmt,
             u"File size (bytes): %s" % gf.safe_int(self.file_size),
             u"Audio length (s):  %s" % gf.safe_float(self.audio_length),
             u"Audio format:      %s" % self.audio_format,
@@ -644,4 +647,7 @@ class AudioFile(Loggable):
         This function fails silently if one of the two is ``None``.
         """
         if (self.audio_sample_rate is not None) and (self.__samples is not None):
-            self.audio_length = TimeValue(self.__samples_length / self.audio_sample_rate)
+            # NOTE computing TimeValue (... / ...) yields wrong results,
+            #      see issue #168
+            #      self.audio_length = TimeValue(self.__samples_length / self.audio_sample_rate)
+            self.audio_length = TimeValue(self.__samples_length) / TimeValue(self.audio_sample_rate)

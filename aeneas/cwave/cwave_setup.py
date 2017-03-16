@@ -49,7 +49,7 @@ CMODULE = Extension(
 
 setup(
     name="cwave",
-    version="1.7.2",
+    version="1.7.3",
     description="Python C Extension for for reading WAVE files.",
     ext_modules=[CMODULE],
     include_dirs=[misc_util.get_numpy_include_dirs()]

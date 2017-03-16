@@ -36,6 +36,7 @@ class TestAudioFile(unittest.TestCase):
     AUDIO_FILE_WAVE = "res/audioformats/mono.16000.wav"
     AUDIO_FILE_EMPTY = "res/audioformats/p001.empty"
     AUDIO_FILE_NOT_WAVE = "res/audioformats/p001.mp3"
+    AUDIO_FILE_EXACT = "res/audioformats/exact.5600.16000.wav"
     NOT_EXISTING_FILE = "res/audioformats/x/y/z/not_existing.wav"
     FILES = [
         {
@@ -162,6 +163,11 @@ class TestAudioFile(unittest.TestCase):
         audiofile = self.load(self.AUDIO_FILE_WAVE, rs=True)
         audiofile.clear_data()
         self.assertAlmostEqual(audiofile.audio_length, TimeValue("53.3"), places=1)     # 53.266
+
+    def test_length_exact(self):
+        audiofile = self.load(self.AUDIO_FILE_EXACT, rs=True)
+        audiofile.clear_data()
+        self.assertAlmostEqual(audiofile.audio_length, TimeValue("5.600"), places=3)     # 5.600
 
     def test_add_samples_file(self):
         audiofile = self.load(self.AUDIO_FILE_WAVE, rs=True)

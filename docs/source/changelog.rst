@@ -1,6 +1,12 @@
 Changelog
 =========
 
+v1.7.3 (2017-03-15)
+-------------------
+
+#. Fixed bug #168 and added a regression test for it
+#. Added option ``-f, --full`` to ``aeneas.tools.read_audio`` and tests for it
+
 v1.7.2 (2017-03-03)
 -------------------
 
