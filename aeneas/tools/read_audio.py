@@ -51,6 +51,7 @@ class ReadAudioCLI(AbstractCLIProgram):
             (u"AUDIO_FILE", True)
         ],
         "options": [
+            u"-f, --full : load samples from file, possibly converting to WAVE"
         ],
         "parameters": [
         ],
@@ -72,6 +73,8 @@ class ReadAudioCLI(AbstractCLIProgram):
         try:
             audiofile = AudioFile(audio_file_path, rconf=self.rconf, logger=self.logger)
             audiofile.read_properties()
+            if self.has_option([u"-f", u"--full"]):
+                audiofile.read_samples_from_file()
             self.print_generic(audiofile.__unicode__())
             return self.NO_ERROR_EXIT_CODE
         except OSError:
