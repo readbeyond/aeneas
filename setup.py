@@ -188,7 +188,7 @@ FORCE_CFW = os.getenv("AENEAS_FORCE_CFW", "False") in TRUE_VALUES
 
 class BuildExtension(BaseBuildExtension):
     def finalize_options(self):
-        BuildExtension.finalize_options(self)
+        BaseBuildExtension.finalize_options(self)
         # Prevent numpy from thinking it is still in its setup process:
         __builtins__.__NUMPY_SETUP__ = False
         import numpy
