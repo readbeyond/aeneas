@@ -28,8 +28,9 @@ Set the aeneas package up.
 import os
 import shutil
 
-from setuptools import setup, Extension
-from setuptools.command.build_ext import build_ext as _build_ext
+from setuptools import setup
+from setuptools import Extension
+from setuptools.command.build_ext import build_ext as BaseBuildExtension
 from setupmeta import PKG_AUTHOR
 from setupmeta import PKG_AUTHOR_EMAIL
 from setupmeta import PKG_CLASSIFIERS
@@ -183,9 +184,9 @@ FORCE_CFW = os.getenv("AENEAS_FORCE_CFW", "False") in TRUE_VALUES
 ##############################################################################
 
 
-class build_ext(_build_ext):
+class BuildExtension(BaseBuildExtension):
     def finalize_options(self):
-        _build_ext.finalize_options(self)
+        BuildExtension.finalize_options(self)
         # Prevent numpy from thinking it is still in its setup process:
         __builtins__.__NUMPY_SETUP__ = False
         import numpy
@@ -338,7 +339,7 @@ setup(
     license=PKG_LICENSE,
     keywords=PKG_KEYWORDS,
     classifiers=PKG_CLASSIFIERS,
-    cmdclass={'build_ext': build_ext},
+    cmdclass={'build_ext': BuildExtension},
     setup_requires=['numpy>=1.9'],
     install_requires=PKG_INSTALL_REQUIRES,
     extras_require=PKG_EXTRAS_REQUIRE,
