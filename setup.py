@@ -28,9 +28,10 @@ Set the aeneas package up.
 import os
 import shutil
 
-from setuptools import setup
 from setuptools import Extension
+from setuptools import setup
 from setuptools.command.build_ext import build_ext as BaseBuildExtension
+
 from setupmeta import PKG_AUTHOR
 from setupmeta import PKG_AUTHOR_EMAIL
 from setupmeta import PKG_CLASSIFIERS
@@ -43,6 +44,7 @@ from setupmeta import PKG_NAME
 from setupmeta import PKG_PACKAGES
 from setupmeta import PKG_PACKAGE_DATA
 from setupmeta import PKG_SCRIPTS
+from setupmeta import PKG_SETUP_REQUIRES
 from setupmeta import PKG_SHORT_DESCRIPTION
 from setupmeta import PKG_URL
 from setupmeta import PKG_VERSION
@@ -243,6 +245,9 @@ EXTENSION_CFW = Extension(
         "eststring",
     ]
 )
+
+CMDCLASS = {'build_ext': BuildExtension}
+
 # cwave is ready, but currently not used
 # EXTENSION_CWAVE = Extension(
 #     name="aeneas.cwave.cwave",
@@ -339,8 +344,8 @@ setup(
     license=PKG_LICENSE,
     keywords=PKG_KEYWORDS,
     classifiers=PKG_CLASSIFIERS,
-    cmdclass={'build_ext': BuildExtension},
-    setup_requires=['numpy>=1.9'],
+    cmdclass=CMDCLASS,
+    setup_requires=PKG_SETUP_REQUIRES,
     install_requires=PKG_INSTALL_REQUIRES,
     extras_require=PKG_EXTRAS_REQUIRE,
     scripts=PKG_SCRIPTS,
