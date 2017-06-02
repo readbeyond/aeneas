@@ -25,12 +25,12 @@
 Set the aeneas package up.
 """
 
-from setuptools import Extension
-from setuptools import setup
-import io
 import os
 import shutil
-import sys
+
+from setuptools import Extension
+from setuptools import setup
+from setuptools.command.build_ext import build_ext as BaseBuildExtension
 
 from setupmeta import PKG_AUTHOR
 from setupmeta import PKG_AUTHOR_EMAIL
@@ -44,6 +44,7 @@ from setupmeta import PKG_NAME
 from setupmeta import PKG_PACKAGES
 from setupmeta import PKG_PACKAGE_DATA
 from setupmeta import PKG_SCRIPTS
+from setupmeta import PKG_SETUP_REQUIRES
 from setupmeta import PKG_SHORT_DESCRIPTION
 from setupmeta import PKG_URL
 from setupmeta import PKG_VERSION
@@ -184,18 +185,14 @@ FORCE_CFW = os.getenv("AENEAS_FORCE_CFW", "False") in TRUE_VALUES
 #
 ##############################################################################
 
-# try importing numpy: if it fails, warn user and exit
-try:
-    from numpy import get_include
-    from numpy.distutils import misc_util
-except ImportError:
-    print("[ERRO] You must install numpy before installing aeneas")
-    print("[INFO] Try the following command:")
-    print("[INFO] $ sudo pip install numpy")
-    sys.exit(1)
 
-# to compile cdtw and cmfcc, we need to include the NumPy dirs
-INCLUDE_DIRS = [misc_util.get_numpy_include_dirs()]
+class BuildExtension(BaseBuildExtension):
+    def finalize_options(self):
+        BaseBuildExtension.finalize_options(self)
+        # Prevent numpy from thinking it is still in its setup process:
+        __builtins__.__NUMPY_SETUP__ = False
+        import numpy
+        self.include_dirs.append(numpy.get_include())
 
 # scripts to be installed globally
 # on Linux and Mac OS X, use the file without extension
@@ -211,9 +208,6 @@ EXTENSION_CDTW = Extension(
         "aeneas/cdtw/cdtw_func.c",
         "aeneas/cint/cint.c"
     ],
-    include_dirs=[
-        get_include()
-    ]
 )
 EXTENSION_CMFCC = Extension(
     name="aeneas.cmfcc.cmfcc",
@@ -223,9 +217,6 @@ EXTENSION_CMFCC = Extension(
         "aeneas/cwave/cwave_func.c",
         "aeneas/cint/cint.c"
     ],
-    include_dirs=[
-        get_include()
-    ]
 )
 EXTENSION_CEW = Extension(
     name="aeneas.cew.cew",
@@ -254,6 +245,9 @@ EXTENSION_CFW = Extension(
         "eststring",
     ]
 )
+
+CMDCLASS = {'build_ext': BuildExtension}
+
 # cwave is ready, but currently not used
 # EXTENSION_CWAVE = Extension(
 #     name="aeneas.cwave.cwave",
@@ -350,9 +344,10 @@ setup(
     license=PKG_LICENSE,
     keywords=PKG_KEYWORDS,
     classifiers=PKG_CLASSIFIERS,
+    cmdclass=CMDCLASS,
+    setup_requires=PKG_SETUP_REQUIRES,
     install_requires=PKG_INSTALL_REQUIRES,
     extras_require=PKG_EXTRAS_REQUIRE,
     scripts=PKG_SCRIPTS,
-    include_dirs=INCLUDE_DIRS,
     ext_modules=EXTENSIONS
 )
