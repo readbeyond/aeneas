@@ -381,6 +381,8 @@ to output a sync map in TextGrid format.
 
 **Chris Vaughn** contributed the MacOS TTS wrapper.
 
+**Martin Gaitan** contributed the setup code to bootstrap numpy.
+
 All the mighty
 [GitHub contributors](https://github.com/readbeyond/aeneas/graphs/contributors),
 and the members of the
