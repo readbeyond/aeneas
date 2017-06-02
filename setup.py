@@ -25,12 +25,12 @@
 Set the aeneas package up.
 """
 
-import os
-import shutil
 
 from setuptools import Extension
 from setuptools import setup
 from setuptools.command.build_ext import build_ext as BaseBuildExtension
+import os
+import shutil
 
 from setupmeta import PKG_AUTHOR
 from setupmeta import PKG_AUTHOR_EMAIL
@@ -246,7 +246,9 @@ EXTENSION_CFW = Extension(
     ]
 )
 
-CMDCLASS = {'build_ext': BuildExtension}
+CMDCLASS = {
+    "build_ext": BuildExtension
+}
 
 # cwave is ready, but currently not used
 # EXTENSION_CWAVE = Extension(

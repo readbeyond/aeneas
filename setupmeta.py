@@ -58,7 +58,7 @@ PKG_INSTALL_REQUIRES = [
     "numpy>=1.9"
 ]
 
-PKG_SETUP_REQUIRES = ['numpy>=1.9']
+PKG_SETUP_REQUIRES = ["numpy>=1.9"]
 
 # required packages to install extra tools
 PKG_EXTRAS_REQUIRE = {
