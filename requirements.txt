@@ -1,3 +1,4 @@
 BeautifulSoup4>=4.5.1
 lxml>=3.6.0
 numpy>=1.9
+tgt>=1.4.3
