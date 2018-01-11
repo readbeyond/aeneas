@@ -195,7 +195,7 @@ except ImportError:
     sys.exit(1)
 
 # to compile cdtw and cmfcc, we need to include the NumPy dirs
-INCLUDE_DIRS = [misc_util.get_numpy_include_dirs()]
+INCLUDE_DIRS = misc_util.get_numpy_include_dirs()
 
 # scripts to be installed globally
 # on Linux and Mac OS X, use the file without extension
