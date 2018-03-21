@@ -52,7 +52,7 @@ First, we need some definitions:
     it declares a time interval in the audio file where
     the text of the fragment is spoken.
     The actual format of the sync map file depends on the intended application.
-    Available formats are listed in :data:`~aeneas.syncmap.SyncMapFormat.ALLOWED_VALUES`.
+    Available formats are listed in :data:`~aeneas.syncmap.format.SyncMapFormat.ALLOWED_VALUES`.
     Text fragments can be represented by the full text and/or by their unique idenfiers.
 
     Example of a sync map file in :data:`~aeneas.syncmap.SyncMapFormat.CSV` format::
