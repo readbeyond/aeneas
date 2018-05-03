@@ -1,0 +1,8 @@
+BeautifulSoup4>=4.5.1
+lxml>=3.6.0
+numpy>=1.9
+boto3>=1.4.2
+Pillow>=3.1.1
+requests>=2.9.1
+tgt>=1.4.2
+youtube-dl>=2016.9.27

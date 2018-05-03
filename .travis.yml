@@ -16,7 +16,7 @@ addons:
       - ffmpeg
       - espeak
 
-install: pip install -r requirements.txt
+install: pip install -r requirements_dev.txt
 
 script: python run_all_unit_tests.py --verbose
 
@@ -33,6 +33,6 @@ matrix:
         - brew install python3 ffmpeg espeak
         - python3 -m venv venv
         - source venv/bin/activate
-        - pip3 install -r requirements.txt
+        - pip3 install -r requirements_dev.txt
       script: python3 run_all_unit_tests.py --verbose
 
