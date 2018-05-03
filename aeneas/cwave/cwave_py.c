@@ -111,6 +111,7 @@ static PyObject *read_audio_data(PyObject *self, PyObject *args) {
     // create data object
     audio_data_dimensions[0] = num_samples;
     audio_data = (PyArrayObject *)PyArray_SimpleNewFromData(1, audio_data_dimensions, NPY_DOUBLE, buffer);
+    PyArray_ENABLEFLAGS(audio_data, NPY_ARRAY_OWNDATA);
 
     // build the tuple to be returned
     tuple = PyTuple_New(2);
