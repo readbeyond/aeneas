@@ -6,7 +6,7 @@
 #
 # Copyright (C) 2012-2013, Alberto Pettarin (www.albertopettarin.it)
 # Copyright (C) 2013-2015, ReadBeyond Srl   (www.readbeyond.it)
-# Copyright (C) 2015-2017, Alberto Pettarin (www.albertopettarin.it)
+# Copyright (C) 2015-2018, Alberto Pettarin (www.albertopettarin.it)
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Affero General Public License as published by
@@ -47,7 +47,7 @@ CMODULE = Extension(
 
 setup(
     name="cew",
-    version="1.7.3",
+    version="1.7.4",
     description="Python C Extension for synthesizing text with eSpeak.",
     ext_modules=[CMODULE]
 )

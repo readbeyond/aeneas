@@ -3,7 +3,7 @@
 #
 # Copyright (C) 2012-2013, Alberto Pettarin (www.albertopettarin.it)
 # Copyright (C) 2013-2015, ReadBeyond Srl   (www.readbeyond.it)
-# Copyright (C) 2015-2017, Alberto Pettarin (www.albertopettarin.it)
+# Copyright (C) 2015-2018, Alberto Pettarin (www.albertopettarin.it)
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Affero General Public License as published by
@@ -40,7 +40,7 @@ PYTHON=python
 all: driver py
 
 $(DRIVER_WO_FO): $(SRCS)
-	$(CC) $(SRCS) -o $(DRIVER_WO_FO) $(CLIBS) $(CFLAGS) 
+	$(CC) $(SRCS) -o $(DRIVER_WO_FO) $(CLIBS) $(CFLAGS)
 
 $(DRIVER_WO_FF): $(SRCS)
 	$(CC) $(SRCS) -o $(DRIVER_WO_FF) $(CLIBS) $(CFLAGS) -lrfftw -lfftw -DUSE_FFTW
