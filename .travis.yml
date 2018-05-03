@@ -30,7 +30,8 @@ matrix:
       python: "3.6"
       install:
         - brew update
-        - brew install python3 ffmpeg espeak
+        - brew install python ffmpeg espeak
+        - brew upgrade python
         - python3 -m venv venv
         - source venv/bin/activate
         - pip3 install -r requirements_dev.txt
