@@ -27,7 +27,7 @@ from aeneas.tests.base_ttswrapper import TestBaseTTSWrapper
 from aeneas.ttswrappers.macosttswrapper import MacOSTTSWrapper
 
 
-class TestESPEAKNGTTSWrapper(TestBaseTTSWrapper):
+class TestMacOSTTSWrapper(TestBaseTTSWrapper):
 
     TTS = u"macos"
     TTS_PATH = u"/usr/bin/say"
