@@ -425,6 +425,8 @@ bootstrap numpy.
 
 **Jackie Xiao** spotted a dead link in the documentation.
 
+**Ben Hagen** provided the Travis CI configuration file.
+
 All the mighty `GitHub
 contributors <https://github.com/readbeyond/aeneas/graphs/contributors>`__,
 and the members of the `Google
