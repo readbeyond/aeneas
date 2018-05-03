@@ -9,6 +9,7 @@ v1.7.4 (2018-05-??)
 #. Minor documentation improvements
 #. Updated copyright strings with 2018
 #. Updated acknowledgements
+#. Added Travis CI (Linux, macOS)
 
 v1.7.3 (2017-03-15)
 -------------------
