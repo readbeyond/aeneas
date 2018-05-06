@@ -6,6 +6,7 @@ v1.7.4 (2018-05-??)
 
 #. Fixed bug #203 (support for macOS TTS)
 #. Fixed bugs #177 and #191 (installation issues with numpy)
+#. Fixed bug #205 (memory leak in Python C extension)
 #. Minor documentation improvements
 #. Updated copyright strings with 2018
 #. Updated acknowledgements

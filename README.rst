@@ -427,6 +427,9 @@ bootstrap numpy.
 
 **Ben Hagen** provided the Travis CI configuration file.
 
+**Rotem Dam** provided a fix for a memory leak in the Python C
+extensions.
+
 All the mighty `GitHub
 contributors <https://github.com/readbeyond/aeneas/graphs/contributors>`__,
 and the members of the `Google
