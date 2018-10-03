@@ -70,6 +70,9 @@ class Language(object):
     BEN = "ben"
     """ Bengali """
 
+    BPY = "bpy"
+    """ Bishnupriya Manipuri """
+
     BOS = "bos"
     """ Bosnian """
 
@@ -136,6 +139,9 @@ class Language(object):
     GUJ = "guj"
     """ Gujarati """
 
+    HAT = "hat"
+    """ Haitian Creole """
+
     HEB = "heb"
     """ Hebrew """
 
@@ -183,6 +189,9 @@ class Language(object):
 
     KOR = "kor"
     """ Korean """
+
+    KOK = "kok"
+    """ Konkani """
 
     KUR = "kur"
     """ Kurdish """
