@@ -1,7 +1,7 @@
 Changelog
 =========
 
-v1.7.4 (2018-05-??)
+v1.7.4 (2020-05-??)
 -------------------
 
 #. Fixed bug #203 (support for macOS TTS)
@@ -11,6 +11,8 @@ v1.7.4 (2018-05-??)
 #. Updated copyright strings with 2018
 #. Updated acknowledgements
 #. Added Travis CI (Linux, macOS)
+#. Fixed spurious warnings about not using UTF-8 when "utf-8" is seen
+#. Added debian packaging for python3-aeneas
 
 v1.7.3 (2017-03-15)
 -------------------
