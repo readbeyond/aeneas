@@ -1,5 +1,9 @@
 Changelog
 =========
+v1.7.3.1 (2020-05-06)
+---------------------
+#. Fixed spurious warnings about not using UTF-8 when "utf-8" is seen
+#. Added debian packaging for python3-aeneas
 
 v1.7.3 (2017-03-15)
 -------------------

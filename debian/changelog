@@ -1,3 +1,10 @@
+aeneas (1.7.3.1) stable; urgency=medium
+
+  * Fix spurious warnings about "encoding is not UTF-8" when encoding is "utf-8"
+  * Add debian packaging for python3-aeneas
+
+ -- Stephen McConnel <stephen_mcconnel@sil.org>  Thu, 02 Apr 2020 16:45:00 -0600
+
 aeneas (1.7.1) stable; urgency=medium
 
   * Fix bug #151

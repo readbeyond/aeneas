@@ -56,9 +56,9 @@ class Diagnostics(object):
         """
         is_in_utf8 = True
         is_out_utf8 = True
-        if sys.stdin.encoding not in ["UTF-8", "UTF8"]:
+        if sys.stdin.encoding not in ["UTF-8", "UTF8", "utf-8", "utf8"]:
             is_in_utf8 = False
-        if sys.stdout.encoding not in ["UTF-8", "UTF8"]:
+        if sys.stdout.encoding not in ["UTF-8", "UTF8", "utf-8", "utf8"]:
             is_out_utf8 = False
         if (is_in_utf8) and (is_out_utf8):
             gf.print_success(u"shell encoding OK")
