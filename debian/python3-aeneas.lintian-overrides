@@ -1,0 +1,2 @@
+python3-aeneas: binary-without-manpage
+python3-aeneas: debian-changelog-file-contains-invalid-email-address
