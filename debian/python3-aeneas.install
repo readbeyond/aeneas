@@ -1,0 +1,3 @@
+aeneas_check_setup.py /usr/share/python3-aeneas
+VERSION /usr/share/python3-aeneas
+aeneas/tools/res/audio.mp3 /usr/share/python3-aeneas/aeneas/tools/res
