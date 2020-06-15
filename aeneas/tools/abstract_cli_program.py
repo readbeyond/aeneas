@@ -295,10 +295,10 @@ class AbstractCLIProgram(Loggable):
         if self.use_sys:
             # check that sys.stdin.encoding and sys.stdout.encoding are set to utf-8
             if not gf.FROZEN:
-                if sys.stdin.encoding not in ["UTF-8", "UTF8"]:
+                if sys.stdin.encoding not in ["UTF-8", "UTF8", "utf-8", "utf8"]:
                     self.print_warning(u"The default input encoding is not UTF-8.")
                     self.print_warning(u"You might want to set 'PYTHONIOENCODING=UTF-8' in your shell.")
-                if sys.stdout.encoding not in ["UTF-8", "UTF8"]:
+                if sys.stdout.encoding not in ["UTF-8", "UTF8", "utf-8", "utf8"]:
                     self.print_warning(u"The default output encoding is not UTF-8.")
                     self.print_warning(u"You might want to set 'PYTHONIOENCODING=UTF-8' in your shell.")
             # decode using sys.stdin.encoding
