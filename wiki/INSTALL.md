@@ -78,6 +78,9 @@ you can install all the dependencies by downloading and running
     just make sure you have
     `ffmpeg`, `ffprobe` (usually provided by the `ffmpeg` package),
     and `espeak` installed and available on your command line.
+    You might need to install the `libespeak-dev` development package
+    to compile the `cew` C extension correctly.
+    (The name might vary, depending on your Linux distribution.)
     You also need Python and its development package
     containing the C headers (`python-dev` or similar).
 

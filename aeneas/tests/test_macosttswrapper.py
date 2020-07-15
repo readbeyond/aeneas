@@ -6,7 +6,7 @@
 #
 # Copyright (C) 2012-2013, Alberto Pettarin (www.albertopettarin.it)
 # Copyright (C) 2013-2015, ReadBeyond Srl   (www.readbeyond.it)
-# Copyright (C) 2015-2017, Alberto Pettarin (www.albertopettarin.it)
+# Copyright (C) 2015-2018, Alberto Pettarin (www.albertopettarin.it)
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Affero General Public License as published by
@@ -27,7 +27,7 @@ from aeneas.tests.base_ttswrapper import TestBaseTTSWrapper
 from aeneas.ttswrappers.macosttswrapper import MacOSTTSWrapper
 
 
-class TestESPEAKNGTTSWrapper(TestBaseTTSWrapper):
+class TestMacOSTTSWrapper(TestBaseTTSWrapper):
 
     TTS = u"macos"
     TTS_PATH = u"/usr/bin/say"

@@ -6,7 +6,7 @@
 #
 # Copyright (C) 2012-2013, Alberto Pettarin (www.albertopettarin.it)
 # Copyright (C) 2013-2015, ReadBeyond Srl   (www.readbeyond.it)
-# Copyright (C) 2015-2017, Alberto Pettarin (www.albertopettarin.it)
+# Copyright (C) 2015-2018, Alberto Pettarin (www.albertopettarin.it)
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Affero General Public License as published by
@@ -81,6 +81,9 @@ class ESPEAKNGTTSWrapper(BaseTTSWrapper):
     AMH = Language.AMH
     """ Amharic (not tested) """
 
+    ARA = Language.ARA
+    """ Arabic """
+
     ARG = Language.ARG
     """ Aragonese (not tested) """
 
@@ -92,6 +95,9 @@ class ESPEAKNGTTSWrapper(BaseTTSWrapper):
 
     BEN = Language.BEN
     """ Bengali (not tested) """
+
+    BPY = Language.BPY
+    """ Bishnupriya Manipuri (not tested) """
 
     BOS = Language.BOS
     """ Bosnian (not tested) """
@@ -156,6 +162,9 @@ class ESPEAKNGTTSWrapper(BaseTTSWrapper):
     GUJ = Language.GUJ
     """ Gujarati (not tested) """
 
+    HAT = Language.HAT
+    """ Haitian Creole (not tested) """
+
     HIN = Language.HIN
     """ Hindi (not tested) """
 
@@ -183,6 +192,9 @@ class ESPEAKNGTTSWrapper(BaseTTSWrapper):
     JBO = Language.JBO
     """ Lojban (not tested) """
 
+    JPN = Language.JPN
+    """ Japanese (not tested) """
+
     KAL = Language.KAL
     """ Greenlandic (not tested) """
 
@@ -194,6 +206,12 @@ class ESPEAKNGTTSWrapper(BaseTTSWrapper):
 
     KIR = Language.KIR
     """ Kirghiz (not tested) """
+
+    KOK = Language.KOK
+    """ Konkani (not tested) """
+
+    KOR = Language.KOR
+    """ Korean (not tested) """
 
     KUR = Language.KUR
     """ Kurdish (not tested) """
@@ -345,11 +363,14 @@ class ESPEAKNGTTSWrapper(BaseTTSWrapper):
     AF = "af"
     """ Afrikaans """
 
+    AM = "am"
+    """ Amharic (not tested) """
+
     AN = "an"
     """ Aragonese (not tested) """
 
-    AM = "am"
-    """ Amharic (not tested) """
+    AR = "ar"
+    """ Arabic """
 
     AS = "as"
     """ Assamese (not tested) """
@@ -463,6 +484,9 @@ class ESPEAKNGTTSWrapper(BaseTTSWrapper):
     HR = "hr"
     """ Croatian """
 
+    HT = "ht"
+    """ Haitian Creole (not tested) """
+
     HU = "hu"
     """ Hungarian """
 
@@ -488,6 +512,9 @@ class ESPEAKNGTTSWrapper(BaseTTSWrapper):
     # COMMENTED JBO = "jbo"
     # COMMENTED """ Lojban (not tested) """
 
+    JA = Language.JPN
+    """ Japanese (not tested) """
+
     KA = "ka"
     """ Georgian (not tested) """
 
@@ -496,6 +523,9 @@ class ESPEAKNGTTSWrapper(BaseTTSWrapper):
 
     KN = "kn"
     """ Kannada (not tested) """
+
+    KO = "ko"
+    """ Korean (not tested) """
 
     KU = "ku"
     """ Kurdish (not tested) """
@@ -633,10 +663,12 @@ class ESPEAKNGTTSWrapper(BaseTTSWrapper):
     CODE_TO_HUMAN = {
         AFR: u"Afrikaans",
         AMH: u"Amharic (not tested)",
+        ARA: u"Arabic",
         ARG: u"Aragonese (not tested)",
         ASM: u"Assamese (not tested)",
         AZE: u"Azerbaijani (not tested)",
         BEN: u"Bengali (not tested)",
+        BPY: u"Bishnupriya Manipuri (not tested)",
         BOS: u"Bosnian (not tested)",
         BUL: u"Bulgarian",
         CAT: u"Catalan",
@@ -658,6 +690,7 @@ class ESPEAKNGTTSWrapper(BaseTTSWrapper):
         GRC: u"Greek (Ancient)",
         GRN: u"Guarani (not tested)",
         GUJ: u"Gujarati (not tested)",
+        HAT: u"Haitian Creole (not tested)",
         HIN: u"Hindi (not tested)",
         HRV: u"Croatian",
         HUN: u"Hungarian",
@@ -667,10 +700,13 @@ class ESPEAKNGTTSWrapper(BaseTTSWrapper):
         ISL: u"Icelandic",
         ITA: u"Italian",
         JBO: u"Lojban (not tested)",
+        JPN: u"Japanese (not tested)",
         KAL: u"Greenlandic (not tested)",
         KAN: u"Kannada (not tested)",
         KAT: u"Georgian (not tested)",
         KIR: u"Kirghiz (not tested)",
+        KOK: u"Konkani (not tested)",
+        KOR: u"Korean (not tested)",
         KUR: u"Kurdish (not tested)",
         LAT: u"Latin",
         LAV: u"Latvian",
@@ -723,6 +759,7 @@ class ESPEAKNGTTSWrapper(BaseTTSWrapper):
         AF: u"Afrikaans",
         AN: u"Aragonese (not tested)",
         AM: u"Amharic (not tested)",
+        AR: u"Arabic",
         AS: u"Assamese (not tested)",
         AZ: u"Azerbaijani (not tested)",
         BG: u"Bulgarian",
@@ -759,6 +796,7 @@ class ESPEAKNGTTSWrapper(BaseTTSWrapper):
         GU: u"Gujarati (not tested)",
         HI: u"Hindi (not tested)",
         HR: u"Croatian",
+        HT: u"Haitian Creole (not tested)",
         HU: u"Hungarian",
         HY: u"Armenian (not tested)",
         HY_AREVMDA: u"Armenian (West) (not tested)",
@@ -766,9 +804,11 @@ class ESPEAKNGTTSWrapper(BaseTTSWrapper):
         ID: u"Indonesian (not tested)",
         IS: u"Icelandic",
         IT: u"Italian",
+        JA: u"Japanese (not tested)",
         KA: u"Georgian (not tested)",
         KL: u"Greenlandic (not tested)",
         KN: u"Kannada (not tested)",
+        KO: u"Korean (not tested)",
         KU: u"Kurdish (not tested)",
         KY: u"Kirghiz (not tested)",
         LA: u"Latin",
@@ -819,6 +859,7 @@ class ESPEAKNGTTSWrapper(BaseTTSWrapper):
     LANGUAGE_TO_VOICE_CODE = {
         AF: "af",
         AM: "am",
+        AR: "ar",
         AN: "an",
         AS: "as",
         AZ: "az",
@@ -857,9 +898,11 @@ class ESPEAKNGTTSWrapper(BaseTTSWrapper):
         GU: "gu",
         HI: "hi",
         HR: "hr",
+        HT: "ht",
         HU: "hu",
         HY: "hy",
         HY_AREVMDA: "hy-arevmda",
+        JA: "ja",
         IA: "ia",
         ID: "id",
         IS: "is",
@@ -868,6 +911,7 @@ class ESPEAKNGTTSWrapper(BaseTTSWrapper):
         KA: "ka",
         KL: "kl",
         KN: "kn",
+        KO: "ko",
         KU: "ku",
         KY: "ky",
         LA: "la",
@@ -915,10 +959,12 @@ class ESPEAKNGTTSWrapper(BaseTTSWrapper):
         ZH_YUE: "zh-yue",
         AFR: "af",
         AMH: "am",
+        ARA: "ar",
         ARG: "an",
         ASM: "as",
         AZE: "az",
         BEN: "bn",
+        BPY: "bpy",
         BOS: "bs",
         BUL: "bg",
         CAT: "ca",
@@ -939,6 +985,7 @@ class ESPEAKNGTTSWrapper(BaseTTSWrapper):
         GRC: "grc",
         GRN: "gn",
         GUJ: "gu",
+        HAT: "ht",
         HIN: "hi",
         HRV: "hr",
         HUN: "hu",
@@ -948,10 +995,13 @@ class ESPEAKNGTTSWrapper(BaseTTSWrapper):
         ISL: "is",
         ITA: "it",
         JBO: "jbo",
+        JPN: "ja",
         KAL: "kl",
         KAN: "kn",
         KAT: "ka",
         KIR: "ky",
+        KOK: "kok",
+        KOR: "ko",
         KUR: "ku",
         LAT: "la",
         LAV: "lv",

@@ -3,6 +3,7 @@
 *.pyo
 *.swp
 *.so
+.mypy_cache
 .pybuild
 aeneas.egg-info
 aeneas/build

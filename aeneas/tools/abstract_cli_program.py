@@ -6,7 +6,7 @@
 #
 # Copyright (C) 2012-2013, Alberto Pettarin (www.albertopettarin.it)
 # Copyright (C) 2013-2015, ReadBeyond Srl   (www.readbeyond.it)
-# Copyright (C) 2015-2017, Alberto Pettarin (www.albertopettarin.it)
+# Copyright (C) 2015-2018, Alberto Pettarin (www.albertopettarin.it)
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Affero General Public License as published by
@@ -240,7 +240,7 @@ class AbstractCLIProgram(Loggable):
             u"  Please use the GitHub Issues Web page : %s" % (self.ISSUES_URL),
             u"",
             u"COPYRIGHT",
-            u"  2012-2017, Alberto Pettarin and ReadBeyond Srl",
+            u"  2012-2018, Alberto Pettarin and ReadBeyond Srl",
             u"  This software is available under the terms of the GNU Affero General Public License Version 3",
             u"",
             u"SEE ALSO",

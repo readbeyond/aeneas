@@ -3,3 +3,4 @@ __pycache__
 
 *.so
 cdtw_driver
+cdtw.egg-info

@@ -6,7 +6,7 @@
 #
 # Copyright (C) 2012-2013, Alberto Pettarin (www.albertopettarin.it)
 # Copyright (C) 2013-2015, ReadBeyond Srl   (www.readbeyond.it)
-# Copyright (C) 2015-2017, Alberto Pettarin (www.albertopettarin.it)
+# Copyright (C) 2015-2018, Alberto Pettarin (www.albertopettarin.it)
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Affero General Public License as published by
@@ -218,7 +218,7 @@ class MacOSTTSWrapper(BaseTTSWrapper):
     }
     DEFAULT_LANGUAGE = ENG
 
-    OUTPUT_AUDIO_FORMAT = ("pcm_s16le", 1, 22050)
+    OUTPUT_AUDIO_FORMAT = ("pcm_s16le", 1, 16000)
 
     HAS_SUBPROCESS_CALL = True
 
@@ -235,5 +235,5 @@ class MacOSTTSWrapper(BaseTTSWrapper):
             self.CLI_PARAMETER_WAVE_PATH,           # it will be replaced by the actual output file
             self.CLI_PARAMETER_TEXT_STDIN,          # text is read from stdin,
             u"--data-format",                       # set output data format
-            u"LEF32@22050"                          # data format string
+            u"LEI16@16000"                          # data format string
         ])

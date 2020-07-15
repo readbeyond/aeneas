@@ -4,10 +4,10 @@
 # __copyright__ = """
 #     Copyright 2012-2013, Alberto Pettarin (www.albertopettarin.it)
 #     Copyright 2013-2015, ReadBeyond Srl   (www.readbeyond.it)
-#     Copyright 2015-2017, Alberto Pettarin (www.albertopettarin.it)
+#     Copyright 2015-2018, Alberto Pettarin (www.albertopettarin.it)
 #     """
 # __license__ = "GNU AGPL 3"
-# __version__ = "1.7.3"
+# __version__ = "1.7.4"
 # __email__ = "aeneas@readbeyond.it"
 # __status__ = "Production"
 

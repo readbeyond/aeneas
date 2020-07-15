@@ -9,7 +9,7 @@ See the [__init__.py](__init__.py) file.
 ## Compiling the Python C++ extension locally
 
 ```bash
-$ make py 
+$ make py
 ```
 
 ## Compiling the pure C++ driver program

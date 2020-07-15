@@ -6,7 +6,7 @@
 #
 # Copyright (C) 2012-2013, Alberto Pettarin (www.albertopettarin.it)
 # Copyright (C) 2013-2015, ReadBeyond Srl   (www.readbeyond.it)
-# Copyright (C) 2015-2017, Alberto Pettarin (www.albertopettarin.it)
+# Copyright (C) 2015-2018, Alberto Pettarin (www.albertopettarin.it)
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Affero General Public License as published by
@@ -32,11 +32,11 @@ __email__ = "aeneas@readbeyond.it"
 __copyright__ = """
     Copyright 2012-2013, Alberto Pettarin (www.albertopettarin.it)
     Copyright 2013-2015, ReadBeyond Srl   (www.readbeyond.it)
-    Copyright 2015-2017, Alberto Pettarin (www.albertopettarin.it)
+    Copyright 2015-2018, Alberto Pettarin (www.albertopettarin.it)
 """
 __license__ = "GNU AGPL 3"
 __status__ = "Production"
-__version__ = "1.7.3"
+__version__ = "1.7.4"
 
 
 ##############################################################################
@@ -47,7 +47,7 @@ __version__ = "1.7.3"
 
 # package version
 # NOTE: generate a new one for each PyPI upload, otherwise it will fail
-PKG_VERSION = "1.7.3.0"
+PKG_VERSION = "1.7.4.0"
 
 # required packages to install
 # NOTE: always use exact version numbers
@@ -57,6 +57,8 @@ PKG_INSTALL_REQUIRES = [
     "lxml>=3.6.0",
     "numpy>=1.9"
 ]
+
+PKG_SETUP_REQUIRES = ["numpy>=1.9"]
 
 # required packages to install extra tools
 PKG_EXTRAS_REQUIRE = {

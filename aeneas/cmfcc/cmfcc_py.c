@@ -5,7 +5,7 @@
 #
 # Copyright (C) 2012-2013, Alberto Pettarin (www.albertopettarin.it)
 # Copyright (C) 2013-2015, ReadBeyond Srl   (www.readbeyond.it)
-# Copyright (C) 2015-2017, Alberto Pettarin (www.albertopettarin.it)
+# Copyright (C) 2015-2018, Alberto Pettarin (www.albertopettarin.it)
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Affero General Public License as published by
@@ -111,6 +111,7 @@ static PyObject *compute_from_data(PyObject *self, PyObject *args) {
     mfcc_dimensions[0] = mfcc_length;
     mfcc_dimensions[1] = mfcc_size;
     mfcc = (PyArrayObject *)PyArray_SimpleNewFromData(2, mfcc_dimensions, NPY_DOUBLE, mfcc_ptr);
+    PyArray_ENABLEFLAGS(mfcc, NPY_ARRAY_OWNDATA);
 
     // build the tuple to be returned
     tuple = PyTuple_New(3);
@@ -120,7 +121,7 @@ static PyObject *compute_from_data(PyObject *self, PyObject *args) {
     return tuple;
 }
 
-// compute the MFCCs of the given audio file 
+// compute the MFCCs of the given audio file
 static PyObject *compute_from_file(PyObject *self, PyObject *args) {
     char *audio_file_path;      // path of the WAVE file
     uint32_t filter_bank_size;  // number of filters in the filter bank (default: 40)
@@ -184,6 +185,7 @@ static PyObject *compute_from_file(PyObject *self, PyObject *args) {
     mfcc_dimensions[0] = mfcc_length;
     mfcc_dimensions[1] = mfcc_size;
     mfcc = (PyArrayObject *)PyArray_SimpleNewFromData(2, mfcc_dimensions, NPY_DOUBLE, mfcc_ptr);
+    PyArray_ENABLEFLAGS(mfcc, NPY_ARRAY_OWNDATA);
 
     // build the tuple to be returned
     tuple = PyTuple_New(3);

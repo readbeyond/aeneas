@@ -5,7 +5,7 @@
 #
 # Copyright (C) 2012-2013, Alberto Pettarin (www.albertopettarin.it)
 # Copyright (C) 2013-2015, ReadBeyond Srl   (www.readbeyond.it)
-# Copyright (C) 2015-2017, Alberto Pettarin (www.albertopettarin.it)
+# Copyright (C) 2015-2018, Alberto Pettarin (www.albertopettarin.it)
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Affero General Public License as published by
@@ -111,6 +111,7 @@ static PyObject *read_audio_data(PyObject *self, PyObject *args) {
     // create data object
     audio_data_dimensions[0] = num_samples;
     audio_data = (PyArrayObject *)PyArray_SimpleNewFromData(1, audio_data_dimensions, NPY_DOUBLE, buffer);
+    PyArray_ENABLEFLAGS(audio_data, NPY_ARRAY_OWNDATA);
 
     // build the tuple to be returned
     tuple = PyTuple_New(2);

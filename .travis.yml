@@ -1,0 +1,39 @@
+language: python
+
+cache: pip
+
+python:
+  - "2.7"
+  - "3.5"
+  - "3.6"
+  - "nightly"
+
+addons:
+  apt:
+    sources:
+      - sourceline: "ppa:mc3man/trusty-media"
+    packages:
+      - ffmpeg
+      - espeak
+
+install: pip install -r requirements_dev.txt
+
+script: python run_all_unit_tests.py --verbose
+
+matrix:
+  fast_finish: true
+  allow_failures:
+    - python: "nightly"
+  include:
+    - os: osx
+      language: generic
+      python: "3.6"
+      install:
+        - brew update
+        - brew install ffmpeg espeak
+        - brew upgrade python
+        - python3 -m venv venv
+        - source venv/bin/activate
+        - pip3 install -r requirements_dev.txt
+      script: python3 run_all_unit_tests.py --verbose
+

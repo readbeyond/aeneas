@@ -6,7 +6,7 @@
 #
 # Copyright (C) 2012-2013, Alberto Pettarin (www.albertopettarin.it)
 # Copyright (C) 2013-2015, ReadBeyond Srl   (www.readbeyond.it)
-# Copyright (C) 2015-2017, Alberto Pettarin (www.albertopettarin.it)
+# Copyright (C) 2015-2018, Alberto Pettarin (www.albertopettarin.it)
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Affero General Public License as published by
@@ -39,14 +39,17 @@ class TestAudioFile(unittest.TestCase):
     AUDIO_FILE_EXACT = "res/audioformats/exact.5600.16000.wav"
     NOT_EXISTING_FILE = "res/audioformats/x/y/z/not_existing.wav"
     FILES = [
-        {
-            "path": "res/audioformats/p001.aac",
-            "size": 72196,
-            "rate": 44100,
-            "channels": 2,
-            "format": "aac",
-            "length": TimeValue("7.9"),     # 7.907558 Estimating duration from bitrate, this may be inaccurate
-        },
+        #
+        # Disabling this test case since the computed duration is not reliable
+        #
+        #{
+        #    "path": "res/audioformats/p001.aac",
+        #    "size": 72196,
+        #    "rate": 44100,
+        #    "channels": 2,
+        #    "format": "aac",
+        #    "length": TimeValue("7.8"),     # 7.833661 Estimating duration from bitrate, this may be inaccurate
+        #},
         {
             "path": "res/audioformats/p001.aiff",
             "size": 1586770,
