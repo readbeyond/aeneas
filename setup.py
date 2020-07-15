@@ -79,16 +79,25 @@ def prepare_cew_for_windows():
 
     :rtype: bool
     """
+
     try:
         # copy espeak_sapi.dll to C:\Windows\System32\espeak.dll
-        espeak_dll_win_path = "C:\\Windows\\System32\\espeak.dll"
-        espeak_dll_dst_path = "aeneas\\cew\\espeak.dll"
-        espeak_dll_src_paths = [
-            "C:\\aeneas\\eSpeak\\espeak_sapi.dll",
-            "C:\\sync\\eSpeak\\espeak_sapi.dll",
-            "C:\\Program Files\\eSpeak\\espeak_sapi.dll",
-            "C:\\Program Files (x86)\\eSpeak\\espeak_sapi.dll",
-        ]
+        if USE_ESPEAKNG:
+            espeak_dll_win_path = "C:\\Windows\\System32\\libespeak-ng.dll"
+            espeak_dll_dst_path = "aeneas\\cew\\libespeak-ng.dll"
+            espeak_dll_src_paths = [
+                "C:\\Program Files\\eSpeak NG\\libespeak-ng.dll",
+                "C:\\Program Files (x86)\\eSpeak NG\\libespeak-ng.dll",
+            ]
+        else:
+            espeak_dll_win_path = "C:\\Windows\\System32\\espeak.dll"
+            espeak_dll_dst_path = "aeneas\\cew\\espeak.dll"
+            espeak_dll_src_paths = [
+                "C:\\aeneas\\eSpeak\\espeak_sapi.dll",
+                "C:\\sync\\eSpeak\\espeak_sapi.dll",
+                "C:\\Program Files\\eSpeak\\espeak_sapi.dll",
+                "C:\\Program Files (x86)\\eSpeak\\espeak_sapi.dll",
+            ]
         if os.path.exists(espeak_dll_dst_path):
             print("[INFO] Found eSpeak DLL in %s" % espeak_dll_dst_path)
         else:
@@ -122,13 +131,20 @@ def prepare_cew_for_windows():
         #       so, we copy it in the current working directory from the included thirdparty\ directory
         # NOTE: PREV: copy thirdparty\espeak.lib to $PYTHON\libs\espeak.lib
         # NOTE: PREV: espeak_lib_dst_path = os.path.join(sys.prefix, "libs", "espeak.lib")
-        espeak_lib_src_path = os.path.join(os.path.dirname(__file__), "thirdparty", "espeak.lib")
-        espeak_lib_dst_path = os.path.join(os.path.dirname(__file__), "espeak.lib")
+        if USE_ESPEAKNG:
+            if IS_64BITS:
+                espeak_lib_src_path = os.path.join(os.path.dirname(__file__), "thirdparty", "libespeak-ng-x64.lib")
+            else:
+                espeak_lib_src_path = os.path.join(os.path.dirname(__file__), "thirdparty", "libespeak-ng-x86.lib")
+            espeak_lib_dst_path = os.path.join(os.path.dirname(__file__), "espeak-ng.lib")
+        else:
+            espeak_lib_src_path = os.path.join(os.path.dirname(__file__), "thirdparty", "espeak.lib")
+            espeak_lib_dst_path = os.path.join(os.path.dirname(__file__), "espeak.lib")
         if os.path.exists(espeak_lib_dst_path):
             print("[INFO] Found eSpeak LIB in %s" % espeak_lib_dst_path)
         else:
             try:
-                print("[INFO] Copying eSpeak LIB into %s" % espeak_lib_dst_path)
+                print("[INFO] Copying eSpeak LIB from %s into %s" % (espeak_lib_src_path, espeak_lib_dst_path))
                 shutil.copyfile(espeak_lib_src_path, espeak_lib_dst_path)
                 print("[INFO] Copied eSpeak LIB")
             except:
@@ -144,6 +160,55 @@ def prepare_cew_for_windows():
         print("[WARN] Unexpected exception while preparing cew: %s" % e)
     return False
 
+def prepare_cew_speak_lib():
+    """
+    Copy files needed to compile the ``cew`` Python C extension on Windows.
+
+    Return ``True`` if successful, ``False`` otherwise.
+
+    :rtype: bool
+    """
+
+    try:
+        # NOTE: speak_lib.h is needed only while compiling the C extension, not when using it
+        #       so, we copy it in the current working directory from the included thirdparty\ directory
+        if USE_ESPEAKNG:
+            espeak_lib_src_path = os.path.join(os.path.dirname(__file__), "thirdparty", "speak-ng_lib.h")
+        else:
+            espeak_lib_src_path = os.path.join(os.path.dirname(__file__), "thirdparty", "speak_lib.h")
+        espeak_lib_dst_path = os.path.join(os.path.dirname(__file__), "aeneas", "cew", "speak_lib.h")
+        if os.path.exists(espeak_lib_dst_path):
+            print("[INFO] Found eSpeak LIB in %s" % espeak_lib_dst_path)
+        else:
+            try:
+                print("[INFO] Copying eSpeak LIB from %s into %s" % (espeak_lib_src_path, espeak_lib_dst_path))
+                shutil.copyfile(espeak_lib_src_path, espeak_lib_dst_path)
+                print("[INFO] Copied eSpeak LIB")
+            except:
+                print("[WARN] Unable to copy the eSpeak LIB, probably because you are not running with admin privileges.")
+                print("[WARN] If you want to compile the C extension cew,")
+                print("[WARN] please copy espeak.lib from the thirdparty directory into %s" % espeak_lib_dst_path)
+                print("[WARN] and run the aeneas setup again.")
+                return False
+
+        # if here, we have completed the setup, return True
+        return True
+    except Exception as e:
+        print("[WARN] Unexpected exception while preparing cew: %s" % e)
+    return False
+
+def get_espeak_lib():
+    """
+    Return ``espeak-ng`` if true, ``espeak`` otherwise.
+
+    :rtype: string
+    """
+
+    if USE_ESPEAKNG:
+        return "espeak-ng"
+    else:
+        return "espeak"
+
 
 ##############################################################################
 #
@@ -155,6 +220,7 @@ def prepare_cew_for_windows():
 IS_LINUX = (os.name == "posix") and (os.uname()[0] == "Linux")
 IS_OSX = (os.name == "posix") and (os.uname()[0] == "Darwin")
 IS_WINDOWS = (os.name == "nt")
+IS_64BITS = (sys.maxsize > 2**32)
 
 # define what values of environment variables are considered equal to True
 TRUE_VALUES = [
@@ -176,6 +242,7 @@ WITHOUT_CMFCC = os.getenv("AENEAS_WITH_CMFCC", "True") not in TRUE_VALUES
 WITHOUT_CEW = os.getenv("AENEAS_WITH_CEW", "True") not in TRUE_VALUES
 FORCE_CEW = os.getenv("AENEAS_FORCE_CEW", "False") in TRUE_VALUES
 FORCE_CFW = os.getenv("AENEAS_FORCE_CFW", "False") in TRUE_VALUES
+USE_ESPEAKNG = os.getenv("AENEAS_USE_ESPEAKNG", "False") in TRUE_VALUES
 
 
 ##############################################################################
@@ -234,7 +301,7 @@ EXTENSION_CEW = Extension(
         "aeneas/cew/cew_func.c"
     ],
     libraries=[
-        "espeak"
+        get_espeak_lib()
     ]
 )
 EXTENSION_CFW = Extension(
@@ -297,8 +364,15 @@ elif FORCE_CEW:
     print("[INFO] ")
     EXTENSIONS.append(EXTENSION_CEW)
 else:
+    print("[INFO] ********************************************************************************")
+    print("[INFO] Specify AENEAS_USE_ESPEAKNG=True to build aeneas with espeak-ng libraries")
+    print("[INFO] ********************************************************************************")
+    print("[INFO] ")
     if IS_LINUX:
-        EXTENSIONS.append(EXTENSION_CEW)
+        if prepare_cew_speak_lib():
+            EXTENSIONS.append(EXTENSION_CEW)
+        else:
+            print("[WARN] Unable to complete the setup for C extension cew, not building it.")
     elif IS_OSX:
         print("[INFO] *********************************************************************************")
         print("[INFO] Compiling the C extension cew on Mac OS X is experimental.")
@@ -312,7 +386,10 @@ else:
         print("[INFO] Please see the aeneas installation documentation for details.")
         print("[INFO] ********************************************************************************")
         print("[INFO] ")
-        EXTENSIONS.append(EXTENSION_CEW)
+        if prepare_cew_speak_lib():
+            EXTENSIONS.append(EXTENSION_CEW)
+        else:
+            print("[WARN] Unable to complete the setup for C extension cew, not building it.")
     elif IS_WINDOWS:
         print("[INFO] *****************************************************************")
         print("[INFO] Compiling the C extension cew on Windows is experimental.")
@@ -322,8 +399,11 @@ else:
         print("[INFO] Please see the aeneas installation documentation for details.")
         print("[INFO] *****************************************************************")
         print("[INFO] ")
-        if prepare_cew_for_windows():
-            EXTENSIONS.append(EXTENSION_CEW)
+        if prepare_cew_speak_lib():
+            if prepare_cew_for_windows():
+                EXTENSIONS.append(EXTENSION_CEW)
+            else:
+                print("[WARN] Unable to complete the setup for C extension cew, not building it.")
         else:
             print("[WARN] Unable to complete the setup for C extension cew, not building it.")
     else:
