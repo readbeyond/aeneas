@@ -3,5 +3,7 @@
 export PYBUILD_NAME=aeneas
 
 %: 
-	dh $@ --with python2 --buildsystem=pybuild
+	dh $@ --with python2,python3 --buildsystem=pybuild
 
+override_dh_shlibdeps:
+	dh_shlibdeps && dh_numpy && dh_numpy3
