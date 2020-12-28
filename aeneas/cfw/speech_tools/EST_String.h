@@ -171,7 +171,7 @@ private:
 
     /**@name Chop out part of string */
     //@{
-    /// Locate subsring and chop.
+    /// Locate substring and chop.
     EST_String chop_internal(const char *s, int length, int pos, EST_chop_direction directionult) const;
     /// Chop at given position.
     EST_String chop_internal(int pos, int length, EST_chop_direction directionult) const;
