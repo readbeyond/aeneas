@@ -22,6 +22,7 @@ include README.md
 include README.rst
 include requirements.txt
 include setupmeta.py
+include pyproject.toml
 recursive-include thirdparty *
 include VERSION
 recursive-include wiki *
