@@ -1,12 +1,10 @@
 # Building aeneas in docker
 
-[aeneas](https://github.com/readbeyond/aeneas) is a Python/C library and a set of tools to automagically synchronize audio and text (aka forced alignment).
-
 Additionally, russian [espeak libraries](https://espeak.sourceforge.net/data/) add into container.
 
 ### Build
 
-You need to install [Docker](https://docs.docker.com/engine/install/) and, optionally, [Docker Compose](https://docs.docker.com/compose/install/).
+You need to have [Docker](https://docs.docker.com/engine/install/).
 
 Clone this project, cd to its folder and run:
 ```
@@ -31,7 +29,3 @@ $ docker run --name aenaes --rm aenaes python -m aeneas.tools.execute_task \
 	--presets-word
     map.json
 ```
-
-P.S. I recommend to use `--presets-word` option to get better rusults.
-
-For more information, see official repo: https://github.com/readbeyond/aeneas#usage

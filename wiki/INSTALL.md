@@ -56,7 +56,7 @@ Below you can find detailed procedures for each operating system.
 
 ## OS Independent Via `Docker`
 
-See [docker](https://github.com/readbeyond/aeneas/blob/master/docker/) directory.
+See [docker](aeneas/blob/master/docker/) directory.
 
 ## Linux
 
