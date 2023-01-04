@@ -54,6 +54,9 @@ Below you can find detailed procedures for each operating system.
     **Note**: you must install `numpy` before `aeneas`,
     otherwise the setup process will fail.
 
+## OS Independent Via `Docker`
+
+See [docker](https://github.com/readbeyond/aeneas/blob/master/docker/) directory.
 
 ## Linux
 
