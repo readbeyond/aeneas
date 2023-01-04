@@ -6,7 +6,7 @@ Additionally, russian [espeak libraries](https://espeak.sourceforge.net/data/) a
 
 You need to have [Docker](https://docs.docker.com/engine/install/).
 
-Clone this project, cd to its folder and run:
+Clone this project, cd to this folder and run:
 ```
 $ docker build -t aenaes:latest .
 ```
