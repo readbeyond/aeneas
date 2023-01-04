@@ -2,7 +2,7 @@
 
 Additionally, russian [espeak libraries](https://espeak.sourceforge.net/data/) add into container.
 
-### Build
+## Build
 
 You need to have [Docker](https://docs.docker.com/engine/install/).
 
@@ -11,7 +11,7 @@ Clone this project, cd to this folder and run:
 $ docker build -t aenaes:latest .
 ```
 
-### Usage
+## Usage
 
 To check (get the usage message):
 
