@@ -19,13 +19,16 @@ To check (get the usage message):
 $ docker run --name aenaes --rm aenaes python -m aeneas.tools.execute_task
 ```
 
-To compute a synchronization map `map.json` for a pair (`audio.mp3`, `text.txt` in [plain](http://www.readbeyond.it/aeneas/docs/textfile.html#aeneas.textfile.TextFileFormat.PLAIN) text format):
+To compute a synchronization map `map.json` for a pair (`/path/to/your/files/audio.mp3`, `/path/to/your/files/text.txt` in [plain](http://www.readbeyond.it/aeneas/docs/textfile.html#aeneas.textfile.TextFileFormat.PLAIN) text format):
 
 ```
-$ docker run --name aenaes --rm aenaes python -m aeneas.tools.execute_task \
-    audio.mp3 \
-    text.txt \
+$ docker run --name aenaes --rm --volume /path/to/your/files:/data aenaes \
+    python -m aeneas.tools.execute_task \
+    /data/audio.mp3 \
+    /data/text.txt \
     "task_language=eng|os_task_file_format=json|is_text_type=plain" \
-	--presets-word
-    map.json
+    map.json \
+    --rate --presets-word
 ```
+
+You will get a file `/path/to/your/files/map.json` as a result.
