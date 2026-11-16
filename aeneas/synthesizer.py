@@ -42,6 +42,7 @@ from aeneas.ttswrappers.espeakngttswrapper import ESPEAKNGTTSWrapper
 from aeneas.ttswrappers.espeakttswrapper import ESPEAKTTSWrapper
 from aeneas.ttswrappers.festivalttswrapper import FESTIVALTTSWrapper
 from aeneas.ttswrappers.macosttswrapper import MacOSTTSWrapper
+from aeneas.ttswrappers.minimaxttswrapper import MiniMaxTTSWrapper
 from aeneas.ttswrappers.nuancettswrapper import NuanceTTSWrapper
 import aeneas.globalfunctions as gf
 
@@ -82,10 +83,13 @@ class Synthesizer(Loggable):
     MACOS = "macos"
     """ Select macOS "say" wrapper """
 
+    MINIMAX = "minimax"
+    """ Select MiniMax TTS API wrapper """
+
     NUANCE = "nuance"
     """ Select Nuance TTS API wrapper """
 
-    ALLOWED_VALUES = [AWS, CUSTOM, ESPEAK, ESPEAKNG, FESTIVAL, MACOS, NUANCE]
+    ALLOWED_VALUES = [AWS, CUSTOM, ESPEAK, ESPEAKNG, FESTIVAL, MACOS, MINIMAX, NUANCE]
     """ List of all the allowed values """
 
     TAG = u"Synthesizer"
@@ -128,6 +132,9 @@ class Synthesizer(Loggable):
                 self.log_exc(u"Unable to import boto3 for AWS Polly TTS API wrapper", exc, True, ImportError)
             self.log(u"TTS engine: AWS Polly TTS API")
             self.tts_engine = AWSTTSWrapper(rconf=self.rconf, logger=self.logger)
+        elif requested_tts_engine == self.MINIMAX:
+            self.log(u"TTS engine: MiniMax TTS API")
+            self.tts_engine = MiniMaxTTSWrapper(rconf=self.rconf, logger=self.logger)
         elif requested_tts_engine == self.NUANCE:
             try:
                 import requests

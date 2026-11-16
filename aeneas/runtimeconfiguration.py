@@ -550,6 +550,12 @@ class RuntimeConfiguration(Configuration):
     .. versionadded:: 1.7.0
     """
 
+    MINIMAX_TTS_MODEL = "minimax_tts_model"
+    """ MiniMax speech synthesis model. """
+
+    MINIMAX_TTS_REGION = "minimax_tts_region"
+    """ MiniMax API region: ``global_en`` or ``cn_zh``. """
+
     NUANCE_TTS_API_ID = "nuance_tts_api_id"
     """
     Your ID value to use the Nuance TTS API.
@@ -691,6 +697,11 @@ class RuntimeConfiguration(Configuration):
     :data:`~aeneas.runtimeconfiguration.RuntimeConfiguration.NUANCE_TTS_API_KEY`
     parameters.
     Please note that you will be billed according to your Nuance Developers account plan.
+
+    Specify ``minimax`` to use the MiniMax TTS API wrapper.
+    Set the ``MINIMAX_API_KEY`` environment variable and provide a voice ID
+    using ``tts_voice_code``. See
+    :class:`~aeneas.ttswrappers.minimaxttswrapper.MiniMaxTTSWrapper`.
 
     Specify the value
     :data:`~aeneas.synthesizer.Synthesizer.CUSTOM` (``custom``)
@@ -967,6 +978,9 @@ class RuntimeConfiguration(Configuration):
         (MFCC_MASK_NONSPEECH_L3, (False, bool, [], u"if True, mask MFCC nonspeech frames on level 3 (word)")),
         (MFCC_WINDOW_LENGTH_L3, ("0.020", TimeValue, [], u"level 3 (word) MFCC window length, in s")),
         (MFCC_WINDOW_SHIFT_L3, ("0.005", TimeValue, [], u"level 3 (word) MFCC window shift, in s")),
+
+        (MINIMAX_TTS_MODEL, ('speech-2.8-hd', None, [], u"MiniMax speech synthesis model")),
+        (MINIMAX_TTS_REGION, ("global_en", None, [], u"MiniMax API region")),
 
         (NUANCE_TTS_API_ID, (None, None, [], u"Nuance Developer API ID")),
         (NUANCE_TTS_API_KEY, (None, None, [], u"Nuance Developer API Key")),
